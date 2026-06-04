@@ -194,7 +194,12 @@ button,label,.tab-btn,.card{-webkit-user-select:none;user-select:none;}
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;"><div style="font-family:Playfair Display,serif;font-size:20px;color:#3e1828;">Paramètres</div><button onclick="closeSettings()" style="background:none;border:none;cursor:pointer;font-size:24px;color:#b07a90;line-height:1;padding:0 4px;">×</button></div>
     <label class="lbl">Marié.e 1</label><input class="inp" id="set-p1" style="margin-bottom:10px;">
     <label class="lbl">Marié.e 2</label><input class="inp" id="set-p2" style="margin-bottom:10px;">
-    <label class="lbl">Date du mariage</label><input class="inp" id="set-date" type="date" style="margin-bottom:10px;">
+    <label class="lbl">Date du mariage</label>
+<input type="hidden" id="set-date">
+<div class="inp" id="set-date-display" onclick="openDatePicker()" style="margin-bottom:10px;cursor:pointer;color:#3e1828;display:flex;align-items:center;justify-content:space-between;">
+  <span id="set-date-label" style="color:#b07a90;">Choisir une date</span>
+  <span style="color:#d4607a;font-size:16px;">📅</span>
+</div>
     <label class="lbl">Nouveau mot de passe</label>
     <input class="inp" id="set-pass" type="password" placeholder="Laisser vide pour ne pas changer" style="margin-bottom:10px;">
     <div id="set-pass2-wrap" style="display:none;"><label class="lbl">Confirmer</label><input class="inp" id="set-pass2" type="password" style="margin-bottom:10px;"></div>
@@ -253,6 +258,33 @@ button,label,.tab-btn,.card{-webkit-user-select:none;user-select:none;}
     <div style="display:flex;gap:8px;">
       <button onclick="acceptCookies()" style="background:#d4607a;color:#fff;border:none;border-radius:8px;padding:8px 18px;cursor:pointer;font-family:Lora,serif;font-size:12px;font-weight:700;">Accepter</button>
       <button onclick="refuseCookies()" style="background:transparent;color:#f0c0d0;border:1px solid #f0c0d0;border-radius:8px;padding:8px 18px;cursor:pointer;font-family:Lora,serif;font-size:12px;">Refuser les non-essentiels</button>
+    </div>
+  </div>
+</div>
+
+<!-- Sélecteur de date custom -->
+<div id="datepicker-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1200;display:none;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fff;border-radius:20px;width:100%;max-width:340px;overflow:hidden;box-shadow:0 8px 32px rgba(62,24,40,0.2);">
+    <!-- Header -->
+    <div style="background:#d4607a;padding:20px 24px 16px;">
+      <div id="dp-year" style="font-family:'Josefin Sans',sans-serif;font-size:13px;font-weight:300;letter-spacing:2px;color:rgba(255,255,255,0.7);margin-bottom:4px;"></div>
+      <div id="dp-selected" style="font-family:Lora,serif;font-size:26px;font-weight:700;color:#fff;"></div>
+    </div>
+    <!-- Navigation mois -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px 8px;">
+      <button onclick="dpPrevMonth()" style="background:none;border:none;cursor:pointer;font-size:20px;color:#d4607a;padding:4px 8px;">‹</button>
+      <div id="dp-month-title" style="font-family:Lora,serif;font-size:15px;font-weight:700;color:#3e1828;"></div>
+      <button onclick="dpNextMonth()" style="background:none;border:none;cursor:pointer;font-size:20px;color:#d4607a;padding:4px 8px;">›</button>
+    </div>
+    <!-- Jours de la semaine -->
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);padding:0 12px;margin-bottom:4px;">
+      ${['L','M','M','J','V','S','D'].map(d=>`<div style="text-align:center;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:1px;color:#b07a90;padding:4px 0;">${d}</div>`).join('')}
+    </div>
+    <div id="dp-grid" style="display:grid;grid-template-columns:repeat(7,1fr);padding:0 12px 12px;gap:2px;"></div>
+    <!-- Boutons -->
+    <div style="display:flex;gap:8px;padding:12px 16px 16px;">
+      <button onclick="closeDatePicker()" style="flex:1;background:#fbe6ee;color:#d4607a;border:1.5px solid #d8a0b8;border-radius:11px;padding:10px;cursor:pointer;font-family:Lora,serif;font-size:13px;font-weight:700;">Annuler</button>
+      <button onclick="confirmDatePicker()" style="flex:1;background:#d4607a;color:#fff;border:none;border-radius:11px;padding:10px;cursor:pointer;font-family:Lora,serif;font-size:13px;font-weight:700;">Confirmer</button>
     </div>
   </div>
 </div>
@@ -1335,6 +1367,115 @@ function checkCookieBanner(){
   }catch{}
 }
 
+// ── DATEPICKER CUSTOM ────────────────────────────────────────────────────────
+let _dpYear, _dpMonth, _dpSelectedDate = null;
+
+const _dpMonths = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const _dpDays = ['L','M','M','J','V','S','D'];
+
+function openDatePicker(){
+  const current = document.getElementById('set-date').value;
+  const d = current ? new Date(current) : new Date();
+  _dpYear = d.getFullYear();
+  _dpMonth = d.getMonth();
+  _dpSelectedDate = current ? new Date(current) : null;
+  document.getElementById('datepicker-modal').style.display = 'flex';
+  _dpRender();
+}
+
+function closeDatePicker(){
+  document.getElementById('datepicker-modal').style.display = 'none';
+}
+
+function confirmDatePicker(){
+  if(!_dpSelectedDate) return;
+  const y = _dpSelectedDate.getFullYear();
+  const m = String(_dpSelectedDate.getMonth()+1).padStart(2,'0');
+  const d = String(_dpSelectedDate.getDate()).padStart(2,'0');
+  const val = y+'-'+m+'-'+d;
+  document.getElementById('set-date').value = val;
+  _dpUpdateLabel(val);
+  closeDatePicker();
+}
+
+function _dpUpdateLabel(val){
+  if(!val){ document.getElementById('set-date-label').textContent='Choisir une date'; return; }
+  const d = new Date(val);
+  const days = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+  document.getElementById('set-date-label').style.color = '#3e1828';
+  document.getElementById('set-date-label').textContent = days[d.getDay()]+' '+d.getDate()+' '+_dpMonths[d.getMonth()]+' '+d.getFullYear();
+}
+
+function dpPrevMonth(){
+  _dpMonth--;
+  if(_dpMonth < 0){ _dpMonth = 11; _dpYear--; }
+  _dpRender();
+}
+
+function dpNextMonth(){
+  _dpMonth++;
+  if(_dpMonth > 11){ _dpMonth = 0; _dpYear++; }
+  _dpRender();
+}
+
+function _dpSelectDay(day){
+  _dpSelectedDate = new Date(_dpYear, _dpMonth, day);
+  _dpRender();
+}
+
+function _dpRender(){
+  // Header
+  const days = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+  if(_dpSelectedDate){
+    document.getElementById('dp-year').textContent = _dpSelectedDate.getFullYear();
+    document.getElementById('dp-selected').textContent = days[_dpSelectedDate.getDay()]+' '+_dpSelectedDate.getDate()+' '+_dpMonths[_dpSelectedDate.getMonth()].substring(0,3)+'.';
+  } else {
+    document.getElementById('dp-year').textContent = _dpYear;
+    document.getElementById('dp-selected').textContent = 'Choisir une date';
+  }
+  // Titre mois
+  document.getElementById('dp-month-title').textContent = _dpMonths[_dpMonth]+' '+_dpYear;
+  // Grille
+  const grid = document.getElementById('dp-grid');
+  grid.innerHTML = '';
+  // Jours de la semaine (header)
+  _dpDays.forEach(d => {
+    const el = document.createElement('div');
+    el.style.cssText = 'text-align:center;font-family:Josefin Sans,sans-serif;font-size:11px;letter-spacing:1px;color:#b07a90;padding:4px 0;';
+    el.textContent = d;
+    grid.appendChild(el);
+  });
+  // Premier jour du mois (0=dim, 1=lun...)
+  const firstDay = new Date(_dpYear, _dpMonth, 1).getDay();
+  const offset = firstDay === 0 ? 6 : firstDay - 1; // Lundi = 0
+  const daysInMonth = new Date(_dpYear, _dpMonth+1, 0).getDate();
+  // Cases vides
+  for(let i=0; i<offset; i++){
+    grid.appendChild(document.createElement('div'));
+  }
+  // Jours
+  for(let d=1; d<=daysInMonth; d++){
+    const isSelected = _dpSelectedDate &&
+      _dpSelectedDate.getDate()===d &&
+      _dpSelectedDate.getMonth()===_dpMonth &&
+      _dpSelectedDate.getFullYear()===_dpYear;
+    const btn = document.createElement('button');
+    btn.textContent = d;
+    btn.onclick = ()=>_dpSelectDay(d);
+    btn.style.cssText = 'width:100%;aspect-ratio:1;border:none;border-radius:50%;cursor:pointer;font-family:Lora,serif;font-size:13px;transition:all .15s;'+
+      (isSelected
+        ? 'background:#d4607a;color:#fff;font-weight:700;'
+        : 'background:transparent;color:#3e1828;');
+    grid.appendChild(btn);
+  }
+}
+
+// Initialiser le label au chargement des paramètres
+function _dpInitLabel(){
+  const val = document.getElementById('set-date') ? document.getElementById('set-date').value : '';
+  if(val) _dpUpdateLabel(val);
+}
+
 function doLogout(){
   // Déconnecter Firebase Auth aussi
   if(window.firebaseAuth && window.firebaseAuthLib){
@@ -1511,6 +1652,7 @@ function closeMenuOutside(e){
 
 function openSettings(){history.pushState({settings:true},'',location.href);window._settingsOpen=true;
   loadPartnerStatus();
+  _dpInitLabel();
   el('set-p1').value=USER.p1; el('set-p2').value=USER.p2; el('set-date').value=USER.wDate||'';
   el('set-pass').value=''; el('set-pass2').value=''; el('set-pass2-wrap').style.display='none';
   el('set-err').style.display='none'; el('settings-modal').style.display='block';
