@@ -277,8 +277,14 @@ button,label,.tab-btn,.card{-webkit-user-select:none;user-select:none;}
       <button onclick="dpNextMonth()" style="background:none;border:none;cursor:pointer;font-size:20px;color:#d4607a;padding:4px 8px;">›</button>
     </div>
     <!-- Jours de la semaine -->
-    <div style="display:grid;grid-template-columns:repeat(7,1fr);padding:0 12px;margin-bottom:4px;">
-      ${['L','M','M','J','V','S','D'].map(d=>`<div style="text-align:center;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:1px;color:#b07a90;padding:4px 0;">${d}</div>`).join('')}
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);padding:0 12px 4px;">
+      <div style="text-align:center;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:1px;color:#b07a90;padding:4px 0;">L</div>
+      <div style="text-align:center;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:1px;color:#b07a90;padding:4px 0;">M</div>
+      <div style="text-align:center;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:1px;color:#b07a90;padding:4px 0;">M</div>
+      <div style="text-align:center;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:1px;color:#b07a90;padding:4px 0;">J</div>
+      <div style="text-align:center;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:1px;color:#b07a90;padding:4px 0;">V</div>
+      <div style="text-align:center;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:1px;color:#b07a90;padding:4px 0;">S</div>
+      <div style="text-align:center;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:1px;color:#b07a90;padding:4px 0;">D</div>
     </div>
     <div id="dp-grid" style="display:grid;grid-template-columns:repeat(7,1fr);padding:0 12px 12px;gap:2px;"></div>
     <!-- Boutons -->
@@ -1438,13 +1444,6 @@ function _dpRender(){
   // Grille
   const grid = document.getElementById('dp-grid');
   grid.innerHTML = '';
-  // Jours de la semaine (header)
-  _dpDays.forEach(d => {
-    const el = document.createElement('div');
-    el.style.cssText = 'text-align:center;font-family:Josefin Sans,sans-serif;font-size:11px;letter-spacing:1px;color:#b07a90;padding:4px 0;';
-    el.textContent = d;
-    grid.appendChild(el);
-  });
   // Premier jour du mois (0=dim, 1=lun...)
   const firstDay = new Date(_dpYear, _dpMonth, 1).getDay();
   const offset = firstDay === 0 ? 6 : firstDay - 1; // Lundi = 0
