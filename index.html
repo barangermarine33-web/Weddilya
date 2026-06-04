@@ -1015,7 +1015,7 @@ async function doForgotPassword(){
 
     // ─── Envoi de l'email de réinitialisation ───
     console.log('[doForgotPassword] Sending reset to', email);
-    const actionCodeSettings={url:'https://barangermarine33-web.github.io/wedding-dream/',handleCodeInApp:true};
+    const actionCodeSettings={url:'https://barangermarine33-web.github.io/Weddilya/',handleCodeInApp:true};
     await sendPasswordResetEmail(window.firebaseAuth, email, actionCodeSettings);
     console.log('[doForgotPassword] sendPasswordResetEmail OK (Firebase accepted)');
     err.style.background='#f0fff0';err.style.borderColor='#c8e6c9';err.style.color='#2e7d32';
@@ -1141,7 +1141,7 @@ async function sendPartnerInvite(){
       _inviteToken: token
     }, {merge: true});
     // Construire le lien d'invitation
-    const inviteUrl = 'https://barangermarine33-web.github.io/wedding-dream/?invite='+token;
+    const inviteUrl = 'https://barangermarine33-web.github.io/Weddilya/?invite='+token;
     // Ouvrir le client email avec le lien
     const subject = encodeURIComponent(USER.p1 ? USER.p1+' vous invite sur Weddilya' : 'Invitation sur Weddilya');
     const body = encodeURIComponent(
@@ -1220,7 +1220,7 @@ async function doConfirmReset(oobCode){
     await confirmPasswordReset(window.firebaseAuth, oobCode, p1);
     msg.style.background='#f0fff0';msg.style.borderColor='#c8e6c9';msg.style.color='#2e7d32';
     msg.textContent='✓ Mot de passe mis à jour ! Tu peux te connecter.';msg.style.display='block';
-    setTimeout(()=>{ window.location.href='https://barangermarine33-web.github.io/wedding-dream/'; }, 2000);
+    setTimeout(()=>{ window.location.href='https://barangermarine33-web.github.io/Weddilya/'; }, 2000);
   } catch(e){
     console.error('confirmPasswordReset:', e.code, e.message);
     if(e.code==='auth/expired-action-code') showErr('Ce lien a expiré. Redemande un email de réinitialisation.');
