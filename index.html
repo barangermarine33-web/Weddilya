@@ -346,6 +346,10 @@ function _isSyncKey(k){
 
 // Normalise un email pour servir d'ID Firestore (pas de '.', '/', '@', etc.)
 function _emailToDocId(email){
+  // Utiliser l'UID Firebase si disponible (plus sécurisé)
+  if(window.firebaseAuth && window.firebaseAuth.currentUser && window.firebaseAuth.currentUser.uid){
+    return window.firebaseAuth.currentUser.uid;
+  }
   return (email||'').toLowerCase().replace(/[^a-z0-9]/gi,'_');
 }
 
@@ -372,7 +376,8 @@ async function _flushFirestoreSync(){
       const sess = localStorage.getItem('sess');
       const email = sess ? JSON.parse(sess) : null;
       if(!email) continue;
-      const docId = window._activeDataDocId || _emailToDocId(email);
+      const uid = window.firebaseAuth && window.firebaseAuth.currentUser ? window.firebaseAuth.currentUser.uid : null;
+      const docId = window._activeDataDocId || uid || _emailToDocId(email);
       // Stockage : userData/{docId} = un seul document avec tous les items en champs
       // (plus simple que sub-collection items et économise les requêtes)
       await setDoc(doc(window.firebaseDB, 'userData', docId), {
@@ -407,14 +412,28 @@ const ld=(k,d)=>{try{const v=localStorage.getItem(k);return v!==null?JSON.parse(
 async function loadUserDataFromFirestore(email){
   if(!window.firebaseDB || !window.firebaseLib || !email) return false;
   try{
-    const {doc, getDoc} = window.firebaseLib;
-    let docId = _emailToDocId(email);
+    const {doc, getDoc, setDoc} = window.firebaseLib;
+    const uid = window.firebaseAuth.currentUser.uid;
+    const oldDocId = (email||'').toLowerCase().replace(/[^a-z0-9]/gi,'_');
+
+    // ── MIGRATION : si données existent sous l'ancien ID email, les copier sous l'UID ──
+    const uidSnap = await getDoc(doc(window.firebaseDB, 'userData', uid));
+    if(!uidSnap.exists()){
+      const oldSnap = await getDoc(doc(window.firebaseDB, 'userData', oldDocId));
+      if(oldSnap.exists()){
+        // Copier les données sous le nouvel ID (UID)
+        await setDoc(doc(window.firebaseDB, 'userData', uid), oldSnap.data());
+        console.log('[Migration] Données migrées de', oldDocId, 'vers', uid);
+      }
+    }
+
+    let docId = uid;
     // Vérifier si cet utilisateur est un partenaire lié à un autre compte
     const mySnap = await getDoc(doc(window.firebaseDB, 'userData', docId));
     if(mySnap.exists() && mySnap.data()._sharedOwnerDocId){
-      docId = mySnap.data()._sharedOwnerDocId; // lire les données du propriétaire
+      docId = mySnap.data()._sharedOwnerDocId;
     }
-    window._activeDataDocId = docId; // mémoriser pour les écritures
+    window._activeDataDocId = docId;
     const snap = await getDoc(doc(window.firebaseDB, 'userData', docId));
     if(!snap.exists()) return false;
     const data = snap.data() || {};
@@ -847,12 +866,18 @@ async function doLogin(){
       // Login réussi : récupérer les infos du mariage depuis Firestore
       if(window.firebaseDB && window.firebaseLib){
         const {doc,getDoc}=window.firebaseLib;
-        const snap=await getDoc(doc(window.firebaseDB,'mariages',email));
+        const uid = window.firebaseAuth.currentUser.uid;
+        // Chercher d'abord sous l'UID, puis sous l'email (legacy)
+        let snap = await getDoc(doc(window.firebaseDB,'mariages',uid));
+        if(!snap.exists()) snap = await getDoc(doc(window.firebaseDB,'mariages',email));
         if(snap.exists()){
           const data=snap.data();
           u={email,pass,p1:data.p1,p2:data.p2,wDate:data.wDate,albumCode:data.albumCode};
+          // Migrer sous l'UID si nécessaire
+          if(snap.id !== uid){
+            setDoc(doc(window.firebaseDB,'mariages',uid),{...data}).catch(()=>{});
+          }
         } else {
-          // Données mariage manquantes, on garde au moins l'email pour permettre la saisie
           u={email,pass,p1:'',p2:'',wDate:'',albumCode:Math.random().toString(36).substring(2,8).toUpperCase()};
         }
         sv('u_'+email,u);
@@ -970,7 +995,8 @@ async function doRegister(){
   // Sauvegarder les infos du mariage dans Firestore
   if(window.firebaseDB && window.firebaseLib){
     const {doc,setDoc,serverTimestamp}=window.firebaseLib;
-    setDoc(doc(window.firebaseDB,'mariages',email),{
+    const uid = window.firebaseAuth && window.firebaseAuth.currentUser ? window.firebaseAuth.currentUser.uid : email;
+    setDoc(doc(window.firebaseDB,'mariages',uid),{
       email,p1,p2,wDate,albumCode,createdAt:serverTimestamp()
     }).catch(e=>console.log('Firebase sync:',e));
   }
@@ -1340,7 +1366,7 @@ async function deleteAccount(){
   if(window.firebaseDB && window.firebaseLib){
     try{
       const {doc, deleteDoc} = window.firebaseLib;
-      const albumId = btoa(email).replace(/[^a-zA-Z0-9]/g,'').substring(0,20);
+      const albumId = (window.firebaseAuth && window.firebaseAuth.currentUser) ? window.firebaseAuth.currentUser.uid : btoa(email).replace(/[^a-zA-Z0-9]/g,'').substring(0,20);
       deleteDoc(doc(window.firebaseDB,'mariages',albumId)).catch(e=>console.warn(e));
     }catch(e){console.warn(e);}
   }
@@ -1357,7 +1383,7 @@ function startApp(u){
   // Load driveUrl from Firebase if not in localStorage
   if(!ld('drive_url_'+u.email,'') && window.firebaseDB && window.firebaseLib){
     const {doc, getDoc} = window.firebaseLib;
-    const albumId = btoa(u.email).replace(/[^a-zA-Z0-9]/g,'').substring(0,20);
+    const albumId = (window.firebaseAuth && window.firebaseAuth.currentUser) ? window.firebaseAuth.currentUser.uid : btoa(u.email).replace(/[^a-zA-Z0-9]/g,'').substring(0,20);
     getDoc(doc(window.firebaseDB,'mariages',albumId)).then(snap=>{
       if(snap.exists() && snap.data().driveUrl){
         sv('drive_url_'+u.email, snap.data().driveUrl);
@@ -4266,7 +4292,7 @@ async function saveDriveUrl(){
   sv('drive_url_'+USER.email, url);
   if(window.firebaseDB && window.firebaseLib){
     const {doc, setDoc} = window.firebaseLib;
-    const albumId = btoa(USER.email).replace(/[^a-zA-Z0-9]/g,'').substring(0,20);
+    const albumId = (window.firebaseAuth && window.firebaseAuth.currentUser) ? window.firebaseAuth.currentUser.uid : btoa(USER.email).replace(/[^a-zA-Z0-9]/g,'').substring(0,20);
     setDoc(doc(window.firebaseDB,'mariages',albumId),{driveUrl:url},{merge:true}).catch(e=>console.warn(e));
   }
   renderAlbum();
