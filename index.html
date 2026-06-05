@@ -304,7 +304,7 @@ button,label,.tab-btn,.card{-webkit-user-select:none;user-select:none;}
 <script type="module">
 
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, getDoc, getDocs, query, where, onSnapshot, addDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import { getFirestore, enableNetwork, collection, doc, setDoc, getDoc, getDocs, query, where, onSnapshot, addDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
   import {
     getAuth,
     createUserWithEmailAndPassword,
@@ -329,10 +329,9 @@ button,label,.tab-btn,.card{-webkit-user-select:none;user-select:none;}
   };
 
   const app = initializeApp(firebaseConfig);
-  // Activer la persistance offline Firestore
-  const db = initializeFirestore(app, {
-    localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()})
-  });
+  const db = getFirestore(app);
+  // Forcer Firestore à se connecter au réseau
+  enableNetwork(db).catch(e=>console.warn('enableNetwork:', e));
   const auth = getAuth(app);
   // Garder la session entre les ouvertures du navigateur — AWAIT obligatoire
   try { await setPersistence(auth, browserLocalPersistence); } catch(e){ console.warn('Auth persistence:', e); }
