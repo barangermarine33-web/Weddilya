@@ -352,9 +352,17 @@ button,label,.tab-btn,.card{-webkit-user-select:none;user-select:none;}
   };
 
   console.log("Firebase + Auth initialisés ✓");
+  // Signaler que Firebase est prêt
+  window._firebaseReady = true;
+  document.dispatchEvent(new Event('firebase-ready'));
 
 </script>
 <script>
+// Attendre Firebase avant d'exécuter le code principal
+function _onFirebaseReady(fn){
+  if(window._firebaseReady) fn();
+  else document.addEventListener('firebase-ready', fn, {once:true});
+}
 
 // ── STORAGE (localStorage + sync Firestore) ─────────────────────────────────
 //
@@ -1571,22 +1579,24 @@ function startApp(u){
   el('app').style.display='block';
   updateHeader();
 
-  // ── TEST FIRESTORE — attendre que currentUser soit prêt ──
-  const _waitForUser = () => new Promise(resolve => {
-    if(window.firebaseAuth && window.firebaseAuth.currentUser) return resolve(window.firebaseAuth.currentUser);
+  // ── SYNC FIRESTORE — attendre que Firebase soit prêt ──
+  _onFirebaseReady(function(){
+    if(!window.firebaseDB || !window.firebaseLib || !window.firebaseAuth) return;
     const {onAuthStateChanged} = window.firebaseAuthLib;
-    const unsub = onAuthStateChanged(window.firebaseAuth, user => { unsub(); resolve(user); });
-  });
-  _waitForUser().then(user => {
-    if(!user || !window.firebaseDB || !window.firebaseLib) return;
-    window._activeDataDocId = user.uid;
-    const {doc, setDoc} = window.firebaseLib;
-    setDoc(doc(window.firebaseDB, 'userData', user.uid), {
-      _test: 'connexion_ok_' + Date.now(),
-      email: u.email
-    }, {merge:true})
-    .then(()=>console.log('✅ Firestore connecté, UID:', user.uid))
-    .catch(e=>console.error('❌ Firestore erreur:', e.code, e.message));
+    onAuthStateChanged(window.firebaseAuth, function(user){
+      if(!user) return;
+      window._activeDataDocId = user.uid;
+      const {doc, setDoc} = window.firebaseLib;
+      setDoc(doc(window.firebaseDB, 'userData', user.uid), {
+        email: u.email,
+        p1: USER.p1||'',
+        p2: USER.p2||'',
+        wDate: USER.wDate||'',
+        _lastLogin: Date.now()
+      }, {merge:true})
+      .then(()=>console.log('✅ Firestore sync OK, UID:', user.uid))
+      .catch(e=>console.error('❌ Firestore erreur:', e.code, e.message));
+    });
   });
   startCountdown();
   buildTabs();
