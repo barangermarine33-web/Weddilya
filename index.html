@@ -1351,19 +1351,27 @@ async function doRegisterInvite(token){
     // Stocker le token et traiter le lien
     try{ localStorage.setItem('_pendingInviteToken', token); }catch{}
     await _processInviteToken(email);
-    // Charger les données depuis le compte propriétaire (via _activeDataDocId défini par _processInviteToken)
-    await loadUserDataFromFirestore(email);
-    // Récupérer les infos du propriétaire depuis Firestore
+    console.log('[doRegisterInvite] _activeDataDocId:', window._activeDataDocId);
+    // Charger directement depuis le document du propriétaire
     let u = {email, pass, p1:'', p2:'', wDate:'', albumCode: Math.random().toString(36).substring(2,8).toUpperCase()};
     if(window.firebaseDB && window.firebaseLib && window._activeDataDocId){
       try{
         const {doc, getDoc} = window.firebaseLib;
         const snap = await getDoc(doc(window.firebaseDB, 'userData', window._activeDataDocId));
+        console.log('[doRegisterInvite] owner snap exists:', snap.exists(), 'data:', snap.exists() ? snap.data() : null);
         if(snap.exists()){
           const d = snap.data();
           u = {...u, p1: d.p1||'', p2: d.p2||'', wDate: d.wDate||''};
+          // Charger aussi toutes les autres données du propriétaire en localStorage
+          const keys = ['tasks','budget','guests','tables','notes','menu','vendorsFav','vendorsCho'];
+          keys.forEach(k => {
+            if(d[k+'_'+d.email] !== undefined) sv(k+'_'+email, d[k+'_'+d.email]);
+            else if(d[k] !== undefined) sv(k+'_'+email, d[k]);
+          });
         }
-      } catch(e){ console.warn('load owner data:', e); }
+      } catch(e){ console.warn('[doRegisterInvite] load owner data:', e); }
+    } else {
+      console.warn('[doRegisterInvite] _activeDataDocId manquant !');
     }
     sv('u_'+email, u);
     sv('sess', email);
