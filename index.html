@@ -1697,6 +1697,14 @@ function saveSettings(){
   const np=el('set-pass').value,cp=el('set-pass2').value;
   if(np&&np!==cp){el('set-err').textContent='Mots de passe différents.';el('set-err').style.display='block';return;}
   USER={...USER,p1,p2,wDate,pass:np||USER.pass}; sv(`u_${USER.email}`,USER);
+  // Sync Firestore
+  if(window.firebaseDB && window.firebaseLib && window.firebaseAuth && window.firebaseAuth.currentUser){
+    const {doc,setDoc}=window.firebaseLib;
+    const uid=window.firebaseAuth.currentUser.uid;
+    setDoc(doc(window.firebaseDB,'userData',uid),{p1,p2,wDate,email:USER.email},{merge:true})
+      .then(()=>console.log('[saveSettings] Firestore sync OK'))
+      .catch(e=>console.warn('[saveSettings] Firestore error:',e));
+  }
   updateHeader(); startCountdown(); closeSettings();
 }
 
