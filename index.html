@@ -915,23 +915,20 @@ async function doLogin(){
       await signInWithEmailAndPassword(window.firebaseAuth, email, pass);
       // Login réussi — Firestore en arrière-plan (non-bloquant)
       u={email,pass,p1:'',p2:'',wDate:'',albumCode:Math.random().toString(36).substring(2,8).toUpperCase()};
-      if(window.firebaseDB && window.firebaseLib){
+      // Charger les données depuis userData (nouvelle structure)
+      if(window.firebaseDB && window.firebaseLib && window.firebaseAuth && window.firebaseAuth.currentUser){
         try{
           const {doc,getDoc}=window.firebaseLib;
           const uid = window.firebaseAuth.currentUser.uid;
-          let snap = await Promise.race([
-            getDoc(doc(window.firebaseDB,'mariages',uid)),
+          const snap = await Promise.race([
+            getDoc(doc(window.firebaseDB,'userData',uid)),
             new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),5000))
-          ]);
-          if(!snap.exists()) snap = await Promise.race([
-            getDoc(doc(window.firebaseDB,'mariages',email)),
-            new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),3000))
           ]);
           if(snap.exists()){
             const data=snap.data();
             u={email,pass,p1:data.p1||'',p2:data.p2||'',wDate:data.wDate||'',albumCode:data.albumCode||u.albumCode};
           }
-        } catch(fsErr){ console.warn('Firestore indisponible au login, démarrage sans données cloud:', fsErr.message); }
+        } catch(fsErr){ console.warn('Firestore indisponible au login:', fsErr.message); }
         sv('u_'+email,u);
       }
       if(btn){btn.textContent='Se connecter';btn.disabled=false;}
@@ -1539,14 +1536,14 @@ function startApp(u){
   USER = u;
   checkCookieBanner();
   // Load driveUrl from Firebase if not in localStorage
-  if(!ld('drive_url_'+u.email,'') && window.firebaseDB && window.firebaseLib){
+  if(!ld('drive_url_'+u.email,'') && window.firebaseDB && window.firebaseLib && window.firebaseAuth && window.firebaseAuth.currentUser){
     const {doc, getDoc} = window.firebaseLib;
-    const albumId = (window.firebaseAuth && window.firebaseAuth.currentUser) ? window.firebaseAuth.currentUser.uid : btoa(u.email).replace(/[^a-zA-Z0-9]/g,'').substring(0,20);
+    const albumId = window.firebaseAuth.currentUser.uid;
     getDoc(doc(window.firebaseDB,'mariages',albumId)).then(snap=>{
       if(snap.exists() && snap.data().driveUrl){
         sv('drive_url_'+u.email, snap.data().driveUrl);
       }
-    }).catch(e=>console.warn(e));
+    }).catch(e=>console.warn('[mariages]', e.code));
   }
   // Load all data
   TASKS = ld(`tasks_${u.email}`, []);
