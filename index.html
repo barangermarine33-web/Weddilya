@@ -1139,6 +1139,35 @@ function _genToken(){
   return Math.random().toString(36).substring(2,10)+Math.random().toString(36).substring(2,10);
 }
 
+// Traite un token d'invitation directement (sans localStorage)
+async function _processInviteTokenDirect(token, email, uid){
+  if(!token || !window.firebaseDB || !window.firebaseLib) return;
+  try{
+    const {doc, getDoc, setDoc} = window.firebaseLib;
+    const invSnap = await getDoc(doc(window.firebaseDB, 'invitations', token));
+    if(!invSnap.exists()){ console.warn('[_processInviteTokenDirect] invitation introuvable'); return; }
+    const inv = invSnap.data();
+    console.log('[_processInviteTokenDirect] invitation trouvée:', inv);
+    if(!inv.ownerDocId){ console.warn('[_processInviteTokenDirect] ownerDocId manquant'); return; }
+    // Lier le compte partenaire
+    await setDoc(doc(window.firebaseDB, 'userData', uid), {
+      _sharedOwnerEmail: inv.ownerEmail,
+      _sharedOwnerDocId: inv.ownerDocId
+    }, {merge: true});
+    // Mettre à jour le compte owner
+    await setDoc(doc(window.firebaseDB, 'userData', inv.ownerDocId), {
+      _partnerEmail: email,
+      _pendingPartnerEmail: null,
+      _inviteToken: token
+    }, {merge: true});
+    // Marquer comme acceptée
+    await setDoc(doc(window.firebaseDB, 'invitations', token), {status:'accepted'}, {merge:true});
+    // Définir _activeDataDocId pour charger les données du propriétaire
+    window._activeDataDocId = inv.ownerDocId;
+    console.log('[_processInviteTokenDirect] lié avec succès, ownerDocId:', inv.ownerDocId);
+  } catch(e){ console.error('[_processInviteTokenDirect] erreur:', e); }
+}
+
 // Traite un token d'invitation en attente après login
 async function _processInviteToken(email){
   let token = null;
@@ -1148,12 +1177,15 @@ async function _processInviteToken(email){
     localStorage.removeItem('_pendingInviteToken');
     const {doc, getDoc, setDoc} = window.firebaseLib;
     const invSnap = await getDoc(doc(window.firebaseDB, 'invitations', token));
-    if(!invSnap.exists()){ return; }
+    if(!invSnap.exists()){ console.warn('[_processInviteToken] invitation introuvable:', token); return; }
     const inv = invSnap.data();
-    // Vérifier que l'invitation est valide et destinée à cet email
-    if(inv.status !== 'pending') return;
-    if(Date.now() - inv.createdAt > 7*24*60*60*1000) return; // expiré
-    if(inv.partnerEmail && inv.partnerEmail !== email.toLowerCase()) return;
+    console.log('[_processInviteToken] invitation:', inv);
+    // Vérifier que l'invitation est destinée à cet email (pas de vérification de statut)
+    if(inv.partnerEmail && inv.partnerEmail !== email.toLowerCase()){
+      console.warn('[_processInviteToken] email ne correspond pas:', email, '!=', inv.partnerEmail);
+      return;
+    }
+    if(!inv.ownerDocId){ console.warn('[_processInviteToken] ownerDocId manquant'); return; }
     // Utiliser l'UID du partenaire (pas l'email transformé)
     const myDocId = (window.firebaseAuth && window.firebaseAuth.currentUser) 
       ? window.firebaseAuth.currentUser.uid 
@@ -1348,9 +1380,9 @@ async function doRegisterInvite(token){
     const cred = await createUserWithEmailAndPassword(window.firebaseAuth, email, pass);
     window._currentUID = cred.user.uid;
     try{ localStorage.setItem('_uid', window._currentUID); }catch{}
-    // Stocker le token et traiter le lien
-    try{ localStorage.setItem('_pendingInviteToken', token); }catch{}
-    await _processInviteToken(email);
+    // Traiter l'invitation directement avec le token (sans passer par localStorage)
+    console.log('[doRegisterInvite] appel _processInviteTokenDirect avec token:', token);
+    await _processInviteTokenDirect(token, email, cred.user.uid);
     console.log('[doRegisterInvite] _activeDataDocId:', window._activeDataDocId);
     // Charger directement depuis le document du propriétaire
     let u = {email, pass, p1:'', p2:'', wDate:'', albumCode: Math.random().toString(36).substring(2,8).toUpperCase()};
@@ -1362,11 +1394,18 @@ async function doRegisterInvite(token){
         if(snap.exists()){
           const d = snap.data();
           u = {...u, p1: d.p1||'', p2: d.p2||'', wDate: d.wDate||''};
-          // Charger aussi toutes les autres données du propriétaire en localStorage
-          const keys = ['tasks','budget','guests','tables','notes','menu','vendorsFav','vendorsCho'];
-          keys.forEach(k => {
-            if(d[k+'_'+d.email] !== undefined) sv(k+'_'+email, d[k+'_'+d.email]);
-            else if(d[k] !== undefined) sv(k+'_'+email, d[k]);
+          const ownerEmail = d._email || d.email || '';
+          // Copier toutes les données du propriétaire pour l'invité
+          // Les clés Firestore sont du type 'tasks_owner@email.fr'
+          const prefixes = ['tasks_','budget_','guests_','tables_','vfav_','vcho_','notes_','menu_','album_','cake_'];
+          Object.keys(d).forEach(k => {
+            const matchedPrefix = prefixes.find(p => k.startsWith(p));
+            if(matchedPrefix){
+              // Recopier sous la clé de l'invité
+              const newKey = matchedPrefix + email;
+              sv(newKey, d[k]);
+              console.log('[doRegisterInvite] copié', k, '->', newKey);
+            }
           });
         }
       } catch(e){ console.warn('[doRegisterInvite] load owner data:', e); }
