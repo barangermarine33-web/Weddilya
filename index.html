@@ -915,10 +915,10 @@ async function doLogin(){
     await new Promise(r=>setTimeout(r,1000));
     try{
       const {signInWithEmailAndPassword}=window.firebaseAuthLib;
-      await signInWithEmailAndPassword(window.firebaseAuth, email, pass);
-      // Stocker l'UID globalement pour usage ultérieur
-      window._currentUID = window.firebaseAuth.currentUser ? window.firebaseAuth.currentUser.uid : null;
-      if(window._currentUID) try{ localStorage.setItem('_uid', window._currentUID); }catch{}
+      const userCredential = await signInWithEmailAndPassword(window.firebaseAuth, email, pass);
+      // Stocker l'UID depuis le résultat direct — pas besoin de currentUser
+      window._currentUID = userCredential.user.uid;
+      try{ localStorage.setItem('_uid', window._currentUID); }catch{}
       // Login réussi — Firestore en arrière-plan (non-bloquant)
       u={email,pass,p1:'',p2:'',wDate:'',albumCode:Math.random().toString(36).substring(2,8).toUpperCase()};
       // Charger les données depuis userData (nouvelle structure)
@@ -1197,6 +1197,7 @@ async function loadPartnerStatus(){
 
 // Envoie une invitation par email via EmailJS (ou lien direct)
 async function sendPartnerInvite(){
+  console.log('[sendPartnerInvite] called, currentUser:', window.firebaseAuth?.currentUser?.uid, '_currentUID:', window._currentUID, 'localStorage:', localStorage.getItem('_uid'));
   const emailInput = document.getElementById('partner-email');
   const errEl = document.getElementById('partner-err');
   const email = (emailInput ? emailInput.value.trim() : '').toLowerCase();
