@@ -329,7 +329,7 @@ button,label,.tab-btn,.card{-webkit-user-select:none;user-select:none;}
   };
 
   const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  const db = getFirestore(app, 'wedding-dream');
   // Forcer Firestore à se connecter au réseau
   enableNetwork(db).catch(e=>console.warn('enableNetwork:', e));
   const auth = getAuth(app);
