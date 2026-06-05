@@ -1570,6 +1570,18 @@ function startApp(u){
   el('auth-screen').style.display='none';
   el('app').style.display='block';
   updateHeader();
+
+  // ── TEST FIRESTORE ──
+  if(window.firebaseDB && window.firebaseLib && window.firebaseAuth && window.firebaseAuth.currentUser){
+    const {doc, setDoc} = window.firebaseLib;
+    const uid = window.firebaseAuth.currentUser.uid;
+    setDoc(doc(window.firebaseDB, 'userData', uid), {
+      _test: 'connexion_ok_' + Date.now(),
+      email: u.email
+    }, {merge:true})
+    .then(()=>{ appAlert('✅ Firestore connecté !'); })
+    .catch(e=>{ appAlert('❌ Firestore erreur: ' + e.code + ' | ' + e.message); });
+  }
   startCountdown();
   buildTabs();
   renderTab(0);
