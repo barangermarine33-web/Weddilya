@@ -978,7 +978,7 @@ async function doLogin(){
       else if(rawMsg.indexOf('referer')>=0 || rawMsg.indexOf('referrer')>=0 || code==='auth/api-key-not-valid'){
         msg='Ouverture impossible depuis un fichier local. L\'app doit être ouverte depuis une URL https:// (lien partagé, Play Store, ou raccourci écran d\'accueil).';
       }
-      else if(code) msg='Erreur de connexion : '+code;
+      else if(code) msg='Erreur: '+code+' | '+authErr.message.substring(0,80);
       _showErr(msg);
       return;
     }
