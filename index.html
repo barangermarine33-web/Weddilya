@@ -1154,12 +1154,18 @@ async function _processInviteToken(email){
     if(inv.status !== 'pending') return;
     if(Date.now() - inv.createdAt > 7*24*60*60*1000) return; // expiré
     if(inv.partnerEmail && inv.partnerEmail !== email.toLowerCase()) return;
-    const myDocId = _emailToDocId(email);
+    // Utiliser l'UID du partenaire (pas l'email transformé)
+    const myDocId = (window.firebaseAuth && window.firebaseAuth.currentUser) 
+      ? window.firebaseAuth.currentUser.uid 
+      : (window._currentUID || _emailToDocId(email));
     // Lier le compte partenaire au compte owner
     await setDoc(doc(window.firebaseDB, 'userData', myDocId), {
       _sharedOwnerEmail: inv.ownerEmail,
       _sharedOwnerDocId: inv.ownerDocId
     }, {merge: true});
+    // Mettre à jour _activeDataDocId pour pointer vers les données du propriétaire
+    window._activeDataDocId = inv.ownerDocId;
+    console.log('[_processInviteToken] Lié:', myDocId, '->', inv.ownerDocId);
     // Mettre à jour le compte owner
     await setDoc(doc(window.firebaseDB, 'userData', inv.ownerDocId), {
       _partnerEmail: email,
@@ -7937,34 +7943,34 @@ function renderNotes(){
 // ── INIT ──────────────────────────────────────────────────────────────────────
 window.addEventListener('load', async function(){
 
-  // ── GESTION LIEN DE RÉINITIALISATION MOT DE PASSE ──────────────────────────
   const urlParams = new URLSearchParams(window.location.search);
 
-  // ── GESTION LIEN D'INVITATION PARTENAIRE ──────────────────────────────────
-  const inviteToken = urlParams.get('invite');
-  if(inviteToken){
-    // Stocker le token pour l'utiliser après inscription/connexion
-    try{ localStorage.setItem('_pendingInviteToken', inviteToken); }catch{}
-    // Déconnecter l'utilisateur actuel pour afficher le formulaire d'invitation
+  // ── GESTION LIEN D'INVITATION — vérifier EN PREMIER avant tout chargement ──
+  const _earlyInviteToken = urlParams.get('invite');
+  if(_earlyInviteToken){
+    // Masquer l'écran immédiatement et empêcher le chargement de session
+    document.getElementById('auth-screen').style.visibility = 'hidden';
+    try{ localStorage.setItem('_pendingInviteToken', _earlyInviteToken); }catch{}
     try{ localStorage.removeItem('sess'); localStorage.removeItem('_uid'); }catch{}
     if(window.firebaseAuth && window.firebaseAuthLib){
       try{ await window.firebaseAuthLib.signOut(window.firebaseAuth); }catch{}
     }
+  }
+
+  // ── GESTION LIEN DE RÉINITIALISATION MOT DE PASSE ──────────────────────────
+
+  // ── GESTION LIEN D'INVITATION PARTENAIRE ──────────────────────────────────
+  const inviteToken = urlParams.get('invite');
+  if(inviteToken){
     // Basculer sur "Créer un compte" et afficher le message
     setTimeout(async ()=>{
       // Remplacer le formulaire d'inscription par un formulaire simplifié pour invités
       const authScreen = document.getElementById('auth-screen');
       let partnerEmail = '';
-      if(window.firebaseDB && window.firebaseLib){
-        try{
-          // Attendre que Firebase Auth soit prêt avant de lire
-          await new Promise(r => setTimeout(r, 1500));
-          const {doc, getDoc} = window.firebaseLib;
-          const snap = await getDoc(doc(window.firebaseDB, 'invitations', inviteToken));
-          if(snap.exists()) partnerEmail = snap.data().partnerEmail || '';
-        } catch(e){ console.warn('invite fetch:', e.code); }
-      }
+      // Ne pas lire Firestore ici — l'utilisateur n'est pas encore connecté
+      // L'email sera récupéré après création du compte dans _processInviteToken
       if(authScreen){
+        authScreen.style.visibility = 'visible';
         authScreen.innerHTML = `
           <div style="font-family:'Josefin Sans',sans-serif;font-size:32px;font-weight:300;letter-spacing:6px;text-transform:uppercase;text-align:center;color:#d4607a;">WEDDILYA</div>
           <div style="margin:12px 0 4px;display:flex;justify-content:center;">
