@@ -1154,8 +1154,8 @@ async function loadPartnerStatus(){
   }
   try{
     const {doc, getDoc} = window.firebaseLib;
-    const docId = _emailToDocId(USER.email);
-    const snap = await getDoc(doc(window.firebaseDB, 'userData', docId));
+    const uid = window.firebaseAuth && window.firebaseAuth.currentUser ? window.firebaseAuth.currentUser.uid : _emailToDocId(USER.email);
+    const snap = await getDoc(doc(window.firebaseDB, 'userData', uid));
     const data = snap.exists() ? snap.data() : {};
     const partnerEmail = data._partnerEmail || null;
     const pendingEmail = data._pendingPartnerEmail || null;
@@ -1191,23 +1191,23 @@ async function sendPartnerInvite(){
   try{
     const {doc, setDoc, getDoc} = window.firebaseLib;
     const token = _genToken();
-    const docId = _emailToDocId(USER.email);
+    const uid = window.firebaseAuth && window.firebaseAuth.currentUser ? window.firebaseAuth.currentUser.uid : _emailToDocId(USER.email);
     // Stocker l'invitation dans Firestore
     await setDoc(doc(window.firebaseDB, 'invitations', token), {
       ownerEmail: USER.email,
-      ownerDocId: docId,
+      ownerDocId: uid,
       partnerEmail: email,
       createdAt: Date.now(),
       status: 'pending'
     });
     // Mettre à jour userData de l'owner avec l'email en attente
-    await setDoc(doc(window.firebaseDB, 'userData', docId), {
+    await setDoc(doc(window.firebaseDB, 'userData', uid), {
       _pendingPartnerEmail: email,
       _inviteToken: token
     }, {merge: true});
     // Construire le lien d'invitation
     const inviteUrl = 'https://weddilya.fr/?invite='+token;
-    // Ouvrir le client email avec le lien
+    // Ouvrir le client email dans un nouvel onglet sans quitter l'app
     const subject = encodeURIComponent(USER.p1 ? USER.p1+' vous invite sur Weddilya' : 'Invitation sur Weddilya');
     const body = encodeURIComponent(
       'Bonjour,\n\n'+
@@ -1216,7 +1216,13 @@ async function sendPartnerInvite(){
       inviteUrl+'\n\n'+
       'Ce lien est valable 7 jours.\n\nÀ bientôt sur Weddilya !'
     );
-    window.location.href = 'mailto:'+email+'?subject='+subject+'&body='+body;
+    const a = document.createElement('a');
+    a.href = 'mailto:'+email+'?subject='+subject+'&body='+body;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
     showOk('✓ Email préparé ! Envoyez-le depuis votre messagerie.');
     setTimeout(()=>loadPartnerStatus(), 1500);
   } catch(e){
@@ -1231,7 +1237,7 @@ async function revokePartnerAccess(){
   if(!window.firebaseDB || !window.firebaseLib) return;
   try{
     const {doc, setDoc, getDoc, deleteDoc} = window.firebaseLib;
-    const docId = _emailToDocId(USER.email);
+    const docId = window.firebaseAuth && window.firebaseAuth.currentUser ? window.firebaseAuth.currentUser.uid : _emailToDocId(USER.email);
     const snap = await getDoc(doc(window.firebaseDB, 'userData', docId));
     const data = snap.exists() ? snap.data() : {};
     const partnerEmail = data._partnerEmail;
