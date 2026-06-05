@@ -460,6 +460,7 @@ async function loadUserDataFromFirestore(email){
   if(!window.firebaseDB || !window.firebaseLib || !email) return false;
   try{
     const {doc, getDoc, setDoc} = window.firebaseLib;
+    if(!window.firebaseAuth || !window.firebaseAuth.currentUser) return false;
     const uid = window.firebaseAuth.currentUser.uid;
     const oldDocId = (email||'').toLowerCase().replace(/[^a-z0-9]/gi,'_');
 
