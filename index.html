@@ -1338,12 +1338,23 @@ async function doRegisterInvite(token){
     // Stocker le token et traiter le lien
     try{ localStorage.setItem('_pendingInviteToken', token); }catch{}
     await _processInviteToken(email);
-    // Créer le profil utilisateur minimal
-    const u = {email, pass, p1:'', p2:'', wDate:'', albumCode: Math.random().toString(36).substring(2,8).toUpperCase()};
+    // Charger les données depuis le compte propriétaire (via _activeDataDocId défini par _processInviteToken)
+    await loadUserDataFromFirestore(email);
+    // Récupérer les infos du propriétaire depuis Firestore
+    let u = {email, pass, p1:'', p2:'', wDate:'', albumCode: Math.random().toString(36).substring(2,8).toUpperCase()};
+    if(window.firebaseDB && window.firebaseLib && window._activeDataDocId){
+      try{
+        const {doc, getDoc} = window.firebaseLib;
+        const snap = await getDoc(doc(window.firebaseDB, 'userData', window._activeDataDocId));
+        if(snap.exists()){
+          const d = snap.data();
+          u = {...u, p1: d.p1||'', p2: d.p2||'', wDate: d.wDate||''};
+        }
+      } catch(e){ console.warn('load owner data:', e); }
+    }
     sv('u_'+email, u);
     sv('sess', email);
     try{ localStorage.setItem('rem_e', JSON.stringify(email)); }catch{}
-    await loadUserDataFromFirestore(email);
     startApp(u);
   } catch(e){
     if(e.code==='auth/email-already-in-use') showErr('Cet email a déjà un compte. Connecte-toi plutôt.');
