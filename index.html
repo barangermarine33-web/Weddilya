@@ -364,6 +364,9 @@ function _onFirebaseReady(fn){
   else document.addEventListener('firebase-ready', fn, {once:true});
 }
 
+// Restaurer l'UID depuis localStorage
+try{ window._currentUID = localStorage.getItem('_uid') || null; }catch{}
+
 // ── STORAGE (localStorage + sync Firestore) ─────────────────────────────────
 //
 // Stratégie de synchronisation :
@@ -913,6 +916,9 @@ async function doLogin(){
     try{
       const {signInWithEmailAndPassword}=window.firebaseAuthLib;
       await signInWithEmailAndPassword(window.firebaseAuth, email, pass);
+      // Stocker l'UID globalement pour usage ultérieur
+      window._currentUID = window.firebaseAuth.currentUser ? window.firebaseAuth.currentUser.uid : null;
+      if(window._currentUID) try{ localStorage.setItem('_uid', window._currentUID); }catch{}
       // Login réussi — Firestore en arrière-plan (non-bloquant)
       u={email,pass,p1:'',p2:'',wDate:'',albumCode:Math.random().toString(36).substring(2,8).toUpperCase()};
       // Charger les données depuis userData (nouvelle structure)
@@ -1163,14 +1169,10 @@ async function loadPartnerStatus(){
   }
   try{
     const {doc, getDoc} = window.firebaseLib;
-    const _user = await new Promise(resolve => {
-      if(window.firebaseAuth && window.firebaseAuth.currentUser) return resolve(window.firebaseAuth.currentUser);
-      if(!window.firebaseAuthLib) return resolve(null);
-      const unsub = window.firebaseAuthLib.onAuthStateChanged(window.firebaseAuth, u => { unsub(); resolve(u); });
-      setTimeout(()=>resolve(null), 5000);
-    });
-    if(!_user){ statusEl.textContent = 'Session expirée. Reconnecte-toi.'; return; }
-    const uid = _user.uid;
+    const uid = (window.firebaseAuth && window.firebaseAuth.currentUser) 
+      ? window.firebaseAuth.currentUser.uid 
+      : (window._currentUID || (()=>{ try{ return localStorage.getItem('_uid'); }catch{ return null; } })());
+    if(!uid){ statusEl.textContent = 'Session expirée. Reconnecte-toi.'; return; }
     const snap = await getDoc(doc(window.firebaseDB, 'userData', uid));
     const data = snap.exists() ? snap.data() : {};
     const partnerEmail = data._partnerEmail || null;
@@ -1204,18 +1206,13 @@ async function sendPartnerInvite(){
   if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showErr('Adresse email invalide.'); return; }
   if(email === USER.email){ showErr('Vous ne pouvez pas vous inviter vous-même.'); return; }
   if(!window.firebaseDB || !window.firebaseLib){ showErr('Service indisponible.'); return; }
-  // Attendre que Firebase Auth soit prêt
-  const _currentUser = await new Promise(resolve => {
-    if(window.firebaseAuth && window.firebaseAuth.currentUser) return resolve(window.firebaseAuth.currentUser);
-    if(!window.firebaseAuthLib) return resolve(null);
-    const unsub = window.firebaseAuthLib.onAuthStateChanged(window.firebaseAuth, user => { unsub(); resolve(user); });
-    setTimeout(()=>resolve(null), 5000);
-  });
-  if(!_currentUser){ showErr('Session expirée. Reconnecte-toi.'); return; }
+  const uid = (window.firebaseAuth && window.firebaseAuth.currentUser) 
+    ? window.firebaseAuth.currentUser.uid 
+    : (window._currentUID || (()=>{ try{ return localStorage.getItem('_uid'); }catch{ return null; } })());
+  if(!uid){ showErr('Session expirée. Reconnecte-toi.'); return; }
   try{
     const {doc, setDoc, getDoc} = window.firebaseLib;
     const token = _genToken();
-    const uid = _currentUser.uid;
     // Stocker l'invitation dans Firestore
     await setDoc(doc(window.firebaseDB, 'invitations', token), {
       ownerEmail: USER.email,
