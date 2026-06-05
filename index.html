@@ -924,10 +924,8 @@ async function doLogin(){
       if(btn){btn.textContent='Se connecter';btn.disabled=false;}
       sv('rem_e',email);sv('rem_p',pass);
       sv('sess',email);
-      // ─── CHARGEMENT DES DONNÉES UTILISATEUR DEPUIS FIRESTORE ───
-      // Avant de démarrer l'app, on récupère les données déjà synchronisées
-      // depuis Firestore. Sans ça, le device verrait des données vides ou périmées.
-      await loadUserDataFromFirestore(email);
+      // Charger depuis Firestore sans bloquer si offline
+      try { await loadUserDataFromFirestore(email); } catch(e){ console.warn('Firestore offline, démarrage sans sync:', e); }
       startApp(u);
       return;
     } catch(authErr){
