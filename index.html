@@ -304,7 +304,7 @@ button,label,.tab-btn,.card{-webkit-user-select:none;user-select:none;}
 <script type="module">
 
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, onSnapshot, addDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, getDoc, getDocs, query, where, onSnapshot, addDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
   import {
     getAuth,
     createUserWithEmailAndPassword,
@@ -329,7 +329,10 @@ button,label,.tab-btn,.card{-webkit-user-select:none;user-select:none;}
   };
 
   const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  // Activer la persistance offline Firestore
+  const db = initializeFirestore(app, {
+    localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()})
+  });
   const auth = getAuth(app);
   // Garder la session entre les ouvertures du navigateur — AWAIT obligatoire
   try { await setPersistence(auth, browserLocalPersistence); } catch(e){ console.warn('Auth persistence:', e); }
@@ -902,23 +905,25 @@ async function doLogin(){
     try{
       const {signInWithEmailAndPassword}=window.firebaseAuthLib;
       await signInWithEmailAndPassword(window.firebaseAuth, email, pass);
-      // Login réussi : récupérer les infos du mariage depuis Firestore
+      // Login réussi — Firestore en arrière-plan (non-bloquant)
+      u={email,pass,p1:'',p2:'',wDate:'',albumCode:Math.random().toString(36).substring(2,8).toUpperCase()};
       if(window.firebaseDB && window.firebaseLib){
-        const {doc,getDoc}=window.firebaseLib;
-        const uid = window.firebaseAuth.currentUser.uid;
-        // Chercher d'abord sous l'UID, puis sous l'email (legacy)
-        let snap = await getDoc(doc(window.firebaseDB,'mariages',uid));
-        if(!snap.exists()) snap = await getDoc(doc(window.firebaseDB,'mariages',email));
-        if(snap.exists()){
-          const data=snap.data();
-          u={email,pass,p1:data.p1,p2:data.p2,wDate:data.wDate,albumCode:data.albumCode};
-          // Migrer sous l'UID si nécessaire
-          if(snap.id !== uid){
-            setDoc(doc(window.firebaseDB,'mariages',uid),{...data}).catch(()=>{});
+        try{
+          const {doc,getDoc}=window.firebaseLib;
+          const uid = window.firebaseAuth.currentUser.uid;
+          let snap = await Promise.race([
+            getDoc(doc(window.firebaseDB,'mariages',uid)),
+            new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),5000))
+          ]);
+          if(!snap.exists()) snap = await Promise.race([
+            getDoc(doc(window.firebaseDB,'mariages',email)),
+            new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),3000))
+          ]);
+          if(snap.exists()){
+            const data=snap.data();
+            u={email,pass,p1:data.p1||'',p2:data.p2||'',wDate:data.wDate||'',albumCode:data.albumCode||u.albumCode};
           }
-        } else {
-          u={email,pass,p1:'',p2:'',wDate:'',albumCode:Math.random().toString(36).substring(2,8).toUpperCase()};
-        }
+        } catch(fsErr){ console.warn('Firestore indisponible au login, démarrage sans données cloud:', fsErr.message); }
         sv('u_'+email,u);
       }
       if(btn){btn.textContent='Se connecter';btn.disabled=false;}
