@@ -8042,13 +8042,24 @@ async function confirmDeleteAccount(){
   if(!await appConfirm('Êtes-vous sûr de vouloir supprimer définitivement votre compte et toutes vos données ? Cette action est irréversible.'))return;
   const confirmText=await appPrompt('Tapez SUPPRIMER pour confirmer :');
   if(confirmText!=='SUPPRIMER')return;
-  // Delete all user data from localStorage
+  try{
+    // 1. Supprimer les données Firestore
+    if(window.firebaseDB && window.firebaseLib && window.firebaseAuth && window.firebaseAuth.currentUser){
+      const {doc, deleteDoc} = window.firebaseLib;
+      const uid = window.firebaseAuth.currentUser.uid;
+      await deleteDoc(doc(window.firebaseDB, 'userData', uid)).catch(()=>{});
+      // 2. Supprimer le compte Firebase Auth
+      await window.firebaseAuth.currentUser.delete();
+    }
+  } catch(e){ console.warn('deleteAccount:', e); }
+  // 3. Nettoyer localStorage
   if(USER&&USER.email){
     const keys=Object.keys(localStorage).filter(k=>k.includes(USER.email));
     keys.forEach(k=>localStorage.removeItem(k));
-    localStorage.removeItem('sess');
-    localStorage.removeItem('u_'+ld('sess',''));
   }
+  localStorage.removeItem('sess');
+  localStorage.removeItem('_uid');
+  try{ localStorage.removeItem('_pendingInviteToken'); }catch{}
   await appAlert('Compte supprimé. À bientôt.');
   location.reload();
 }
