@@ -1571,17 +1571,23 @@ function startApp(u){
   el('app').style.display='block';
   updateHeader();
 
-  // ── TEST FIRESTORE ──
-  if(window.firebaseDB && window.firebaseLib && window.firebaseAuth && window.firebaseAuth.currentUser){
+  // ── TEST FIRESTORE — attendre que currentUser soit prêt ──
+  const _waitForUser = () => new Promise(resolve => {
+    if(window.firebaseAuth && window.firebaseAuth.currentUser) return resolve(window.firebaseAuth.currentUser);
+    const {onAuthStateChanged} = window.firebaseAuthLib;
+    const unsub = onAuthStateChanged(window.firebaseAuth, user => { unsub(); resolve(user); });
+  });
+  _waitForUser().then(user => {
+    if(!user || !window.firebaseDB || !window.firebaseLib) return;
+    window._activeDataDocId = user.uid;
     const {doc, setDoc} = window.firebaseLib;
-    const uid = window.firebaseAuth.currentUser.uid;
-    setDoc(doc(window.firebaseDB, 'userData', uid), {
+    setDoc(doc(window.firebaseDB, 'userData', user.uid), {
       _test: 'connexion_ok_' + Date.now(),
       email: u.email
     }, {merge:true})
-    .then(()=>{ appAlert('✅ Firestore connecté !'); })
-    .catch(e=>{ appAlert('❌ Firestore erreur: ' + e.code + ' | ' + e.message); });
-  }
+    .then(()=>console.log('✅ Firestore connecté, UID:', user.uid))
+    .catch(e=>console.error('❌ Firestore erreur:', e.code, e.message));
+  });
   startCountdown();
   buildTabs();
   renderTab(0);
