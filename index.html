@@ -901,8 +901,16 @@ async function doLogin(){
     } else {
       sv('rem_e',null);sv('rem_p',null);
     }
+    // Connecter aussi Firebase Auth pour avoir currentUser
+    if(window.firebaseAuth && window.firebaseAuthLib){
+      try{
+        const {signInWithEmailAndPassword} = window.firebaseAuthLib;
+        const cred = await signInWithEmailAndPassword(window.firebaseAuth, email, pass);
+        window._currentUID = cred.user.uid;
+        try{ localStorage.setItem('_uid', window._currentUID); }catch{}
+      } catch(_){}
+    }
     // Charge les données Firestore pour avoir la version la plus récente
-    // (si l'utilisateur a modifié sur un autre appareil)
     try { await loadUserDataFromFirestore(email); } catch(_){}
     startApp(u);
     return;
