@@ -331,9 +331,8 @@ button,label,.tab-btn,.card{-webkit-user-select:none;user-select:none;}
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const auth = getAuth(app);
-  // Garder la session entre les ouvertures du navigateur
-  setPersistence(auth, browserLocalPersistence).catch(e=>console.warn('Auth persistence:',e));
-
+  // Garder la session entre les ouvertures du navigateur — AWAIT obligatoire
+  try { await setPersistence(auth, browserLocalPersistence); } catch(e){ console.warn('Auth persistence:', e); }
 
   // Expose Firebase globally for use in main script
   window.firebaseDB = db;
@@ -898,6 +897,8 @@ async function doLogin(){
   // 2) Firebase Auth (compte créé avec la nouvelle version)
   if(window.firebaseAuth && window.firebaseAuthLib){
     if(btn){btn.textContent='Connexion...';btn.disabled=true;}
+    // Attendre que Firebase Auth soit prêt
+    await new Promise(r=>setTimeout(r,1000));
     try{
       const {signInWithEmailAndPassword}=window.firebaseAuthLib;
       await signInWithEmailAndPassword(window.firebaseAuth, email, pass);
