@@ -1570,6 +1570,30 @@ function startApp(u){
   startCountdown();
   buildTabs();
   renderTab(0);
+
+  // ── Forcer la sync Firestore au démarrage ──────────────────────────────────
+  // Écrire toutes les données localStorage dans Firestore sous l'UID
+  if(window.firebaseDB && window.firebaseLib && window.firebaseAuth && window.firebaseAuth.currentUser){
+    const uid = window.firebaseAuth.currentUser.uid;
+    window._activeDataDocId = uid;
+    const {doc, setDoc} = window.firebaseLib;
+    const dataToSync = {
+      email: u.email,
+      p1: u.p1||'', p2: u.p2||'', wDate: u.wDate||'',
+      albumCode: u.albumCode||'',
+      tasks: ld(`tasks_${u.email}`, []),
+      budget: ld(`budget_${u.email}`, []),
+      guests: ld(`guests_${u.email}`, []),
+      tables: ld(`tables_${u.email}`, []),
+      notes: ld(`notes_${u.email}`, ''),
+      menu: ld(`menu_${u.email}`, []),
+      vendorsFav: ld(`vfav_${u.email}`, []),
+      vendorsCho: ld(`vcho_${u.email}`, []),
+    };
+    setDoc(doc(window.firebaseDB, 'userData', uid), dataToSync, {merge:true})
+      .then(()=>console.log('[startApp] Données synchronisées dans Firestore sous UID:', uid))
+      .catch(e=>console.error('[startApp] Erreur sync:', e));
+  }
 }
 
 function updateHeader(){
@@ -1657,8 +1681,8 @@ function closeMenuOutside(e){
 
 function openSettings(){history.pushState({settings:true},'',location.href);window._settingsOpen=true;
   loadPartnerStatus();
-  _dpInitLabel();
   el('set-p1').value=USER.p1; el('set-p2').value=USER.p2; el('set-date').value=USER.wDate||'';
+  _dpInitLabel();
   el('set-pass').value=''; el('set-pass2').value=''; el('set-pass2-wrap').style.display='none';
   el('set-err').style.display='none'; el('settings-modal').style.display='block';
   el('power-menu').style.display='none';
