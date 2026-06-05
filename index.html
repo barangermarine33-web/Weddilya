@@ -1167,6 +1167,8 @@ async function _processInviteToken(email){
 }
 
 // Charge le statut partenaire dans la modale settings
+let _partnerStatusUnsub = null;
+
 async function loadPartnerStatus(){
   const statusEl = document.getElementById('partner-status');
   const inviteWrap = document.getElementById('partner-invite-wrap');
@@ -1175,14 +1177,12 @@ async function loadPartnerStatus(){
   if(!window.firebaseDB || !window.firebaseLib || !USER){
     statusEl.textContent = 'Non disponible hors connexion.'; return;
   }
-  try{
-    const {doc, getDoc} = window.firebaseLib;
-    const uid = (window.firebaseAuth && window.firebaseAuth.currentUser) 
-      ? window.firebaseAuth.currentUser.uid 
-      : (window._currentUID || (()=>{ try{ return localStorage.getItem('_uid'); }catch{ return null; } })());
-    if(!uid){ statusEl.textContent = 'Session expirée. Reconnecte-toi.'; return; }
-    const snap = await getDoc(doc(window.firebaseDB, 'userData', uid));
-    const data = snap.exists() ? snap.data() : {};
+  const uid = (window.firebaseAuth && window.firebaseAuth.currentUser)
+    ? window.firebaseAuth.currentUser.uid
+    : (window._currentUID || (()=>{ try{ return localStorage.getItem('_uid'); }catch{ return null; } })());
+  if(!uid){ statusEl.textContent = 'Session expirée. Reconnecte-toi.'; return; }
+
+  function _updateStatus(data){
     const partnerEmail = data._partnerEmail || null;
     const pendingEmail = data._pendingPartnerEmail || null;
     if(partnerEmail){
@@ -1198,6 +1198,19 @@ async function loadPartnerStatus(){
       inviteWrap.style.display = 'block';
       revokeWrap.style.display = 'none';
     }
+  }
+
+  // Annuler le listener précédent
+  if(_partnerStatusUnsub) { _partnerStatusUnsub(); _partnerStatusUnsub = null; }
+
+  try{
+    const {doc, onSnapshot} = window.firebaseLib;
+    // Listener temps réel — se met à jour automatiquement quand Julian accepte
+    _partnerStatusUnsub = onSnapshot(doc(window.firebaseDB, 'userData', uid), snap => {
+      _updateStatus(snap.exists() ? snap.data() : {});
+    }, e => {
+      statusEl.textContent = 'Impossible de charger le statut.';
+    });
   } catch(e){
     statusEl.textContent = 'Impossible de charger le statut.';
   }
@@ -1307,6 +1320,36 @@ async function checkPartnerLink(email){
     if(data._sharedOwnerDocId) return data._sharedOwnerDocId;
     return null;
   } catch(e){ return null; }
+}
+
+async function doRegisterInvite(token){
+  const email = (document.getElementById('inv-email')?.value||'').trim().toLowerCase();
+  const pass = document.getElementById('inv-pass')?.value||'';
+  const errEl = document.getElementById('inv-err');
+  function showErr(msg){ errEl.style.background='#fff0f0';errEl.style.borderColor='#ffccd0';errEl.style.color='#c43a3a';errEl.textContent=msg;errEl.style.display='block'; }
+  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showErr('Email invalide.'); return; }
+  if(!pass||pass.length<6){ showErr('Mot de passe minimum 6 caractères.'); return; }
+  if(!window.firebaseAuth||!window.firebaseAuthLib){ showErr('Service indisponible.'); return; }
+  try{
+    const {createUserWithEmailAndPassword} = window.firebaseAuthLib;
+    const cred = await createUserWithEmailAndPassword(window.firebaseAuth, email, pass);
+    window._currentUID = cred.user.uid;
+    try{ localStorage.setItem('_uid', window._currentUID); }catch{}
+    // Stocker le token et traiter le lien
+    try{ localStorage.setItem('_pendingInviteToken', token); }catch{}
+    await _processInviteToken(email);
+    // Créer le profil utilisateur minimal
+    const u = {email, pass, p1:'', p2:'', wDate:'', albumCode: Math.random().toString(36).substring(2,8).toUpperCase()};
+    sv('u_'+email, u);
+    sv('sess', email);
+    try{ localStorage.setItem('rem_e', JSON.stringify(email)); }catch{}
+    await loadUserDataFromFirestore(email);
+    startApp(u);
+  } catch(e){
+    if(e.code==='auth/email-already-in-use') showErr('Cet email a déjà un compte. Connecte-toi plutôt.');
+    else if(e.code==='auth/weak-password') showErr('Mot de passe trop faible.');
+    else showErr('Erreur : '+e.message);
+  }
 }
 
 async function doConfirmReset(oobCode){
@@ -7879,36 +7922,36 @@ window.addEventListener('load', async function(){
     try{ localStorage.setItem('_pendingInviteToken', inviteToken); }catch{}
     // Basculer sur "Créer un compte" et afficher le message
     setTimeout(async ()=>{
-      // Récupérer l'email destinataire depuis Firestore pour pré-remplir
+      // Remplacer le formulaire d'inscription par un formulaire simplifié pour invités
+      const authScreen = document.getElementById('auth-screen');
+      let partnerEmail = '';
       if(window.firebaseDB && window.firebaseLib){
         try{
           const {doc, getDoc} = window.firebaseLib;
           const snap = await getDoc(doc(window.firebaseDB, 'invitations', inviteToken));
-          if(snap.exists()){
-            const partnerEmail = snap.data().partnerEmail;
-            // Basculer sur "Créer un compte"
-            if(typeof showRegister === 'function') showRegister();
-            // Pré-remplir l'email
-            const emailField = document.getElementById('a-email-r');
-            if(emailField && partnerEmail) emailField.value = partnerEmail;
-            // Message d'invitation
-            const errEl = document.getElementById('err-register') || document.getElementById('err-login');
-            if(errEl){
-              errEl.style.background='#f0f8ff';errEl.style.borderColor='#b0d4f0';errEl.style.color='#1a5a8a';
-              errEl.textContent='💌 Invitation reçue ! Crée ton compte pour rejoindre l\'espace partagé.';
-              errEl.style.display='block';
-            }
-            return;
-          }
+          if(snap.exists()) partnerEmail = snap.data().partnerEmail || '';
         } catch(e){ console.warn('invite fetch:', e); }
       }
-      // Fallback sans Firestore
-      if(typeof showRegister === 'function') showRegister();
-      const errEl = document.getElementById('err-login');
-      if(errEl){
-        errEl.style.background='#f0f8ff';errEl.style.borderColor='#b0d4f0';errEl.style.color='#1a5a8a';
-        errEl.textContent='💌 Invitation reçue ! Créez un compte ou connectez-vous pour rejoindre l\'espace partagé.';
-        errEl.style.display='block';
+      if(authScreen){
+        authScreen.innerHTML = `
+          <div style="font-family:'Josefin Sans',sans-serif;font-size:32px;font-weight:300;letter-spacing:6px;text-transform:uppercase;text-align:center;color:#d4607a;">WEDDILYA</div>
+          <div style="margin:12px 0 4px;display:flex;justify-content:center;">
+            <svg width="90" height="62" viewBox="0 0 52 36" fill="none"><circle cx="19" cy="18" r="13" stroke="#d4607a" stroke-width="2.5" fill="none"/><circle cx="33" cy="18" r="13" stroke="#d4607a" stroke-width="2.5" fill="none"/></svg>
+          </div>
+          <div style="background:#fff;border-radius:18px;padding:24px;width:100%;max-width:380px;box-shadow:0 4px 24px rgba(154,40,72,0.12);margin-top:8px;">
+            <div style="background:#f0f8ff;border:1px solid #b0d4f0;border-radius:8px;padding:10px 14px;font-family:Lora,serif;font-size:13px;color:#1a5a8a;margin-bottom:16px;text-align:center;">
+              💌 Tu as été invité(e) à rejoindre un espace Weddilya
+            </div>
+            <label class="lbl">EMAIL</label>
+            <input class="inp" id="inv-email" type="email" placeholder="votre@email.com" value="${partnerEmail}" style="margin-bottom:10px;">
+            <label class="lbl">MOT DE PASSE</label>
+            <input class="inp" id="inv-pass" type="password" placeholder="Minimum 6 caractères" style="margin-bottom:10px;">
+            <div id="inv-err" style="display:none;padding:8px 12px;border-radius:8px;font-size:12px;font-family:Lora,serif;margin-bottom:10px;border:1px solid;"></div>
+            <button class="btn" onclick="doRegisterInvite('${inviteToken}')" style="width:100%;">Rejoindre l'espace partagé</button>
+            <div style="text-align:center;margin-top:12px;font-family:Lora,serif;font-size:12px;color:#8a4a60;">
+              Déjà un compte ? <a href="#" onclick="location.reload()" style="color:#d4607a;">Se connecter</a>
+            </div>
+          </div>`;
       }
     }, 800);
   }
