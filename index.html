@@ -1938,11 +1938,11 @@ async function _loadWebUser(firebaseUser){
 }
 
 function switchWebTab(idx, btn){
-  document.querySelectorAll('.app-tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   if(btn) btn.classList.add('active');
   for(let i=0;i<10;i++){
-    const el=document.getElementById('web-tab-'+i);
-    if(el) el.style.display=i===idx?'block':'none';
+    const p=document.getElementById('page-'+i);
+    if(p) p.style.display=i===idx?'block':'none';
   }
   if(typeof renderTab==='function') renderTab(idx);
 }
