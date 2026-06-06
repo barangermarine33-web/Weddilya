@@ -1132,6 +1132,51 @@
     .chk-inp, .chk-select { min-width: 100%; }
   }
 
+
+  /* ── ONGLETS CONTENU ── */
+  .tab-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px; }
+  .tab-grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:14px; }
+  .stat-card { background:var(--bg); border:1px solid var(--border); border-radius:14px; padding:16px; text-align:center; }
+  .stat-card .val { font-family:'Playfair Display',serif; font-size:28px; font-weight:700; }
+  .stat-card .lbl { font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:var(--mid); margin-top:4px; }
+  .web-inp { width:100%; border:1.5px solid var(--border); border-radius:10px; padding:10px 14px; font-family:'Lora',serif; font-size:14px; color:var(--dark); background:var(--bg); outline:none; box-sizing:border-box; transition:border-color .2s; }
+  .web-inp:focus { border-color:var(--pink); }
+  .web-btn { background:linear-gradient(135deg,var(--pink-dark),var(--pink)); color:white; border:none; border-radius:10px; padding:10px 20px; font-family:'Lora',serif; font-size:14px; font-weight:700; cursor:pointer; transition:opacity .2s; }
+  .web-btn:hover { opacity:.88; }
+  .web-btn-sec { background:none; border:1.5px solid var(--border); border-radius:10px; padding:9px 18px; font-family:'Lora',serif; font-size:13px; color:var(--mid); cursor:pointer; transition:border-color .2s,color .2s; }
+  .web-btn-sec:hover { border-color:var(--pink); color:var(--pink); }
+  .web-row { display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+  .bgt-card { background:white; border:1px solid var(--border); border-radius:14px; padding:16px; margin-bottom:12px; }
+  .bgt-bar { height:6px; background:var(--pink-pale); border-radius:3px; margin:10px 0; overflow:hidden; }
+  .bgt-bar-fill { height:100%; border-radius:3px; background:linear-gradient(90deg,var(--pink-light),var(--pink)); }
+  .guest-table { width:100%; border-collapse:separate; border-spacing:0 6px; }
+  .guest-table th { text-align:left; font-family:'Josefin Sans',sans-serif; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--mid); padding:4px 10px; }
+  .guest-table td { padding:10px 12px; background:white; border-top:1px solid var(--border); border-bottom:1px solid var(--border); font-family:'Lora',serif; font-size:13px; }
+  .guest-table td:first-child { border-left:1px solid var(--border); border-radius:10px 0 0 10px; }
+  .guest-table td:last-child { border-right:1px solid var(--border); border-radius:0 10px 10px 0; }
+  .badge { display:inline-block; border-radius:20px; padding:3px 10px; font-size:11px; font-weight:700; }
+  .badge-green { background:#f0f8f0; color:#5a8a6a; border:1px solid #5a8a6a30; }
+  .badge-orange { background:#fff8f0; color:#c47a2a; border:1px solid #c47a2a30; }
+  .badge-red { background:#fff0f0; color:#c43a3a; border:1px solid #c43a3a30; }
+  .badge-pink { background:var(--pink-pale); color:var(--pink); border:1px solid var(--border); }
+  .menu-section { background:white; border:1px solid var(--border); border-radius:14px; margin-bottom:12px; overflow:hidden; }
+  .menu-section-header { background:linear-gradient(135deg,var(--pink-pale),white); padding:14px 18px; font-family:'Playfair Display',serif; font-size:17px; color:var(--dark); font-weight:700; border-bottom:1px solid var(--border); }
+  .menu-item-row { display:flex; align-items:center; gap:10px; padding:10px 18px; border-bottom:1px solid var(--pink-pale); }
+  .menu-item-row:last-child { border-bottom:none; }
+  .deco-card { background:white; border:1px solid var(--border); border-radius:14px; margin-bottom:12px; overflow:hidden; }
+  .deco-header { background:linear-gradient(135deg,var(--pink-pale),white); padding:13px 18px; display:flex; align-items:center; justify-content:space-between; }
+  .deco-item { display:flex; align-items:center; gap:10px; padding:9px 18px; border-bottom:1px solid var(--pink-pale); }
+  .deco-item:last-child { border-bottom:none; }
+  .vnd-cat-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:8px; margin-bottom:16px; }
+  .vnd-cat-btn { background:white; border:1.5px solid var(--border); border-radius:10px; padding:10px 12px; cursor:pointer; font-family:'Lora',serif; font-size:12px; font-weight:700; color:var(--dark); display:flex; align-items:center; gap:7px; transition:all .15s; }
+  .vnd-cat-btn:hover { border-color:var(--pink); background:var(--pink-pale); }
+  .vnd-card { background:white; border:1px solid var(--border); border-radius:12px; padding:14px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+  .notes-area { width:100%; min-height:400px; border:none; outline:none; font-family:'Lora',serif; font-size:15px; color:var(--dark); background:transparent; resize:vertical; line-height:1.9; box-sizing:border-box; }
+  @media (max-width:768px) {
+    .tab-grid-2,.tab-grid-3 { grid-template-columns:1fr; }
+    .vnd-cat-grid { grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); }
+  }
+
   /* ── ANIMATIONS ── */
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(20px); }
@@ -1248,6 +1293,7 @@
 </head>
 <body>
 
+<div id="landing-page">
 <!-- NAV -->
 <nav id="navbar">
   <a href="#" class="nav-logo">
@@ -1496,8 +1542,9 @@
 </section>
 
 
+</div>
 <!-- APP SECTION -->
-<section id="app-section" style="display:none;">
+<section id="app-section" style="display:none;min-height:100vh;">
   <div class="app-wrapper">
 
     <!-- AUTH -->
@@ -1549,6 +1596,10 @@
     <div id="app-connected" style="display:none;">
       <!-- Header -->
       <div class="app-header">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <button onclick="doWebLogout()" style="background:none;border:none;font-family:'Lora',serif;font-size:13px;color:var(--mid);cursor:pointer;display:flex;align-items:center;gap:6px;">← Retour</button>
+          <button onclick="doWebLogout()" style="background:none;border:1.5px solid var(--border);border-radius:8px;padding:6px 14px;font-family:'Lora',serif;font-size:12px;color:var(--mid);cursor:pointer;">Se déconnecter</button>
+        </div>
         <div class="app-header-title">WEDDILYA</div>
         <div class="app-header-subtitle" id="web-subtitle">Mariage de — —</div>
         <div class="app-countdown">
@@ -1557,9 +1608,7 @@
           <div class="app-cd-box"><div class="app-cd-num" id="wcd-m">—</div><div class="app-cd-label">Min</div></div>
           <div class="app-cd-box"><div class="app-cd-num" id="wcd-s">—</div><div class="app-cd-label">Sec</div></div>
         </div>
-        <div style="margin-top:16px;text-align:right;">
-          <button onclick="doWebLogout()" style="background:none;border:1.5px solid var(--border);border-radius:8px;padding:6px 14px;font-family:'Lora',serif;font-size:12px;color:var(--mid);cursor:pointer;">Se déconnecter</button>
-        </div>
+
       </div>
 
       <!-- Onglets -->
@@ -1579,15 +1628,15 @@
       <!-- Contenu onglets -->
       <div class="app-content" id="web-tab-content">
         <div id="web-tab-0"><!-- Checklist injectée par JS --></div>
-        <div id="web-tab-1" style="display:none;"><div class="coming-soon">Onglet Budget — bientôt disponible sur le site.</div></div>
-        <div id="web-tab-2" style="display:none;"><div class="coming-soon">Onglet Invités — bientôt disponible sur le site.</div></div>
-        <div id="web-tab-3" style="display:none;"><div class="coming-soon">Onglet Plan de table — bientôt disponible sur le site.</div></div>
-        <div id="web-tab-4" style="display:none;"><div class="coming-soon">Onglet Prestataires — bientôt disponible sur le site.</div></div>
-        <div id="web-tab-5" style="display:none;"><div class="coming-soon">Onglet Menu & quantités — bientôt disponible sur le site.</div></div>
-        <div id="web-tab-6" style="display:none;"><div class="coming-soon">Onglet Décorations — bientôt disponible sur le site.</div></div>
-        <div id="web-tab-7" style="display:none;"><div class="coming-soon">Onglet Assistant — bientôt disponible sur le site.</div></div>
-        <div id="web-tab-8" style="display:none;"><div class="coming-soon">Onglet Album — bientôt disponible sur le site.</div></div>
-        <div id="web-tab-9" style="display:none;"><div class="coming-soon">Onglet Notes — bientôt disponible sur le site.</div></div>
+        <div id="web-tab-1" style="display:none;"></div>
+        <div id="web-tab-2" style="display:none;"></div>
+        <div id="web-tab-3" style="display:none;"><div class="coming-soon">Plan de table — disponible prochainement.</div></div>
+        <div id="web-tab-4" style="display:none;"></div>
+        <div id="web-tab-5" style="display:none;"></div>
+        <div id="web-tab-6" style="display:none;"></div>
+        <div id="web-tab-7" style="display:none;"></div>
+        <div id="web-tab-8" style="display:none;"></div>
+        <div id="web-tab-9" style="display:none;"></div>
       </div>
     </div>
 
@@ -1672,8 +1721,9 @@ const DEF_TASKS = [
 
 // ── AFFICHAGE ──
 function showAppSection(){
+  _eld('landing-page').style.display='none';
   _eld('app-section').style.display='block';
-  setTimeout(()=>_eld('app-section').scrollIntoView({behavior:'smooth'}),50);
+  window.scrollTo({top:0,behavior:'smooth'});
   _onFirebaseReady(()=>{
     const {onAuthStateChanged}=window.firebaseAuthLib;
     onAuthStateChanged(window.firebaseAuth, user=>{
@@ -1741,6 +1791,9 @@ async function doWebLogout(){
   WEB_USER=null;
   _eld('app-connected').style.display='none';
   _eld('app-auth').style.display='block';
+  _eld('app-section').style.display='none';
+  _eld('landing-page').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 async function _loadWebUser(firebaseUser){
@@ -1761,6 +1814,7 @@ async function _loadWebUser(firebaseUser){
   // Charger tasks
   WEB_TASKS=ld(`tasks_${firebaseUser.email}`,[]);
   if(WEB_TASKS.length<50) WEB_TASKS=DEF_TASKS.map(t=>({...t,done:false}));
+  _loadAllWebData(firebaseUser.email);
 
   _eld('app-auth').style.display='none';
   _eld('app-connected').style.display='block';
@@ -1807,7 +1861,8 @@ function switchWebTab(idx, btn){
     const el=_eld('web-tab-'+i);
     if(el) el.style.display=i===idx?'block':'none';
   }
-  if(idx===0) _renderChecklist();
+  const renders = [_renderChecklist, _renderBudget, _renderGuests, null, _renderVendors, _renderMenu, _renderDecorations, _renderAssistant, _renderAlbum, _renderNotes];
+  if(renders[idx]) renders[idx]();
 }
 
 // ── CHECKLIST ──
@@ -1892,5 +1947,406 @@ function _resetWebTasks(){
 }
 </script>
 
+<script>
+// ── DONNÉES COMMUNES ──
+const ROLES = ["Invité·e","Demoiselle d'honneur","Garçon d'honneur","Témoin"];
+const REGIMES = ["Aucun","Végétarien","Vegan","Sans gluten","Sans lactose","Halal","Sans porc","Sans fruits à coque et arachides","Sans poisson","Sans alcool"];
+const DEF_BUDGET = [
+  {id:1,cat:"Lieu de réception",est:2000,reel:0,paye:0},
+  {id:2,cat:"Traiteur",est:2000,reel:0,paye:0},
+  {id:3,cat:"Photographe",est:500,reel:0,paye:0},
+  {id:4,cat:"Vidéaste",est:500,reel:0,paye:0},
+  {id:5,cat:"DJ ou groupe de musique",est:1000,reel:0,paye:0},
+  {id:6,cat:"Officiant de cérémonie",est:100,reel:0,paye:0},
+  {id:7,cat:"Fleuriste",est:600,reel:0,paye:0},
+  {id:8,cat:"Boutique de robe de mariée",est:2000,reel:0,paye:0},
+  {id:9,cat:"Costumier / tailleur",est:1000,reel:0,paye:0},
+  {id:10,cat:"Coiffeur(se)",est:200,reel:0,paye:0},
+  {id:11,cat:"Maquilleur(se)",est:100,reel:0,paye:0},
+  {id:12,cat:"Accessoiriste",est:100,reel:0,paye:0},
+  {id:13,cat:"Location de matériel",est:1000,reel:0,paye:0},
+  {id:14,cat:"Animateurs",est:800,reel:0,paye:0},
+  {id:15,cat:"Faire-parts / Imprimeur",est:100,reel:0,paye:0},
+  {id:16,cat:"Location de véhicule",est:500,reel:0,paye:0},
+  {id:17,cat:"Navettes / transport invités",est:500,reel:0,paye:0},
+  {id:18,cat:"Hébergement des invités",est:2000,reel:0,paye:0}
+];
+const DEF_GUESTS = [
+  {id:1,nom:"Marie Dupont",email:"marie@email.com",invitation:"envoyée",presence:"confirmée",cote:"p1",role:"Invité·e",regime:"Aucun",vinHonneur:false,age:"Adulte",seatTableId:null,seatIdx:null},
+  {id:2,nom:"Pierre Martin",email:"pierre@email.com",invitation:"envoyée",presence:"confirmée",cote:"p2",role:"Témoin",regime:"Aucun",vinHonneur:false,age:"Adulte",seatTableId:null,seatIdx:null},
+  {id:3,nom:"Sophie Bernard",email:"sophie@email.com",invitation:"envoyée",presence:"en attente",cote:"p1",role:"Demoiselle d'honneur",regime:"Végétarien",vinHonneur:true,age:"Adulte",seatTableId:null,seatIdx:null}
+];
+const DEF_MENU = [
+  {id:1,section:"Vin d'honneur / Cocktail",items:[{id:11,text:"Champagne & vins"},{id:12,text:"Cocktails & softs"},{id:13,text:"Amuse-bouches (canapés, verrines, petits fours)"}]},
+  {id:2,section:"Entrée",items:[{id:21,text:"Froide ou chaude (foie gras, tartare de poisson, salade raffinée...)"}]},
+  {id:3,section:"Plat principal",items:[{id:31,text:"Viande, poisson ou option végétarienne"},{id:32,text:"Accompagnements (légumes, féculents)"}]},
+  {id:4,section:"Fromage",items:[{id:41,text:"Plateau de fromages variés"},{id:42,text:"Salade"}]},
+  {id:5,section:"Dessert",items:[{id:51,text:"Pièce montée, Wedding cake ou dessert à l'assiette"}]}
+];
+const DEF_DECO = {
+  "Cérémonie": ["Arche florale","Allée avec bougies","Décoration des chaises","Panneau de bienvenue"],
+  "Tables": ["Centres de table","Bougies & photophores","Chemin de table","Marque-places"],
+  "Salle": ["Guirlandes lumineuses","Ballons","Fond photo","Livre d'or"],
+  "Extérieur": ["Lanternes","Pétales de fleurs","Mobilier lounge"]
+};
+let WEB_BUDGET = [], WEB_GUESTS = [], WEB_MENU = [], WEB_NOTES = '', WEB_DECO = {}, WEB_VENDORS_FAV = [], WEB_VENDORS_CHO = [], WEB_ALBUM_URL = '';
+const fmt = n => Number(n||0).toLocaleString('fr-FR');
+const hesc = s => (s===undefined||s===null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+function _loadAllWebData(email) {
+  WEB_BUDGET = ld('budget_'+email, null);
+  if(!WEB_BUDGET || !WEB_BUDGET.length) WEB_BUDGET = DEF_BUDGET.map(b=>({...b,reel:0,paye:0}));
+  WEB_GUESTS = ld('guests_'+email, DEF_GUESTS);
+  WEB_MENU = ld('menu_'+email, DEF_MENU.map(s=>({...s,items:s.items.map(i=>({...i}))})));
+  WEB_NOTES = ld('notes_'+email, '');
+  WEB_DECO = ld('deco_'+email, {});
+  WEB_VENDORS_FAV = ld('vfav_'+email, []);
+  WEB_VENDORS_CHO = ld('vcho_'+email, []);
+  WEB_ALBUM_URL = ld('drive_url_'+email, '');
+}
+
+// ── BUDGET ──
+function _saveBudget() { sv('budget_'+WEB_USER.email, WEB_BUDGET); }
+function _renderBudget() {
+  const cont = _eld('web-tab-1'); if(!cont) return;
+  const tE=WEB_BUDGET.reduce((s,i)=>s+(i.est||0),0);
+  const tR=WEB_BUDGET.reduce((s,i)=>s+(i.reel||0),0);
+  const tP=WEB_BUDGET.reduce((s,i)=>s+(i.paye||0),0);
+  const reste=tR-tP;
+  let html='';
+  html+='<div class="tab-grid-2">';
+  html+='<div class="stat-card"><div class="val">'+fmt(tE)+' €</div><div class="lbl">Budget estimé total</div></div>';
+  html+='<div class="stat-card"><div class="val" style="color:var(--pink)">'+fmt(tR)+' €</div><div class="lbl">Budget réel total</div></div>';
+  html+='<div class="stat-card"><div class="val" style="color:#5a8a6a">'+fmt(tP)+' €</div><div class="lbl">Déjà payé</div></div>';
+  html+='<div class="stat-card"><div class="val" style="color:'+(reste>0?'#c47a2a':'#5a8a6a')+'">'+fmt(reste)+' €</div><div class="lbl">Reste à payer</div></div>';
+  html+='</div>';
+  html+='<div class="web-row">';
+  html+='<input class="web-inp" id="wbgt-cat" placeholder="Nouvelle catégorie" style="flex:2;">';
+  html+='<input class="web-inp" id="wbgt-est" type="number" placeholder="Budget estimé €" style="flex:1;">';
+  html+='<button class="web-btn" onclick="_addBudget()">+</button>';
+  html+='</div>';
+  html+='<div style="display:flex;justify-content:flex-end;margin-bottom:14px;">';
+  html+='<button class="web-btn-sec" onclick="_resetBudget()">&#8635; Restaurer par défaut</button></div>';
+  WEB_BUDGET.forEach(function(item){
+    const pct=item.est>0?Math.min((item.reel||0)/item.est*100,100):0;
+    const over=(item.reel||0)>(item.est||0);
+    const r=(item.reel||0)-(item.paye||0);
+    html+='<div class="bgt-card">';
+    html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">';
+    html+='<span style="font-family:\'Playfair Display\',serif;font-size:15px;font-weight:700;color:var(--dark);">'+hesc(item.cat)+'</span>';
+    html+='<div style="display:flex;gap:8px;align-items:center;">';
+    html+='<span class="badge '+(over?'badge-red':'badge-green')+'">'+(over?'Dépassé':Math.round(pct)+'%')+'</span>';
+    html+='<button onclick="_removeBudget('+item.id+')" style="background:none;border:none;cursor:pointer;color:var(--border);font-size:16px;">&#215;</button>';
+    html+='</div></div>';
+    html+='<div class="bgt-bar"><div class="bgt-bar-fill" style="width:'+pct+'%;background:'+(over?'#c43a3a':'')+'"></div></div>';
+    html+='<div class="tab-grid-3">';
+    html+='<div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--mid);margin-bottom:4px;">Budget estimé</div>';
+    html+='<input type="number" value="'+(item.est||'')+'" placeholder="0" class="web-inp" style="font-weight:700;" onchange="_updBudget('+item.id+',\'est\',this.value)"></div>';
+    html+='<div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--mid);margin-bottom:4px;">Budget réel</div>';
+    html+='<input type="number" value="'+(item.reel||'')+'" placeholder="0" class="web-inp" style="color:var(--pink);font-weight:700;" onchange="_updBudget('+item.id+',\'reel\',this.value)"></div>';
+    html+='<div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--mid);margin-bottom:4px;">Déjà payé</div>';
+    html+='<input type="number" value="'+(item.paye||'')+'" placeholder="0" class="web-inp" style="color:#5a8a6a;font-weight:700;" onchange="_updBudget('+item.id+',\'paye\',this.value)"></div>';
+    html+='</div>';
+    html+='<div style="text-align:right;font-size:12px;color:var(--mid);margin-top:6px;">Reste à payer : <strong style="color:'+(r>0?'#c47a2a':'#5a8a6a')+'">'+fmt(r)+' €</strong></div>';
+    html+='</div>';
+  });
+  cont.innerHTML = html;
+}
+function _addBudget(){const cat=_eld('wbgt-cat')?.value.trim();if(!cat)return;WEB_BUDGET.push({id:Date.now(),cat,est:Number(_eld('wbgt-est')?.value)||0,reel:0,paye:0});_saveBudget();_renderBudget();}
+function _removeBudget(id){WEB_BUDGET=WEB_BUDGET.filter(i=>i.id!==id);_saveBudget();_renderBudget();}
+function _updBudget(id,f,v){WEB_BUDGET=WEB_BUDGET.map(i=>i.id===id?{...i,[f]:v===''?0:Number(v)}:i);_saveBudget();}
+function _resetBudget(){if(!confirm('Restaurer les catégories par défaut ?'))return;WEB_BUDGET=DEF_BUDGET.map(b=>({...b,reel:0,paye:0}));_saveBudget();_renderBudget();}
+
+// ── INVITÉS ──
+function _saveGuests(){sv('guests_'+WEB_USER.email,WEB_GUESTS);}
+function _renderGuests(){
+  const cont=_eld('web-tab-2');if(!cont)return;
+  const conf=WEB_GUESTS.filter(g=>g.presence==='confirmée').length;
+  const pend=WEB_GUESTS.filter(g=>g.presence==='en attente').length;
+  const decl=WEB_GUESTS.filter(g=>g.presence==='déclinée').length;
+  let html='';
+  html+='<div class="tab-grid-3">';
+  html+='<div class="stat-card"><div class="val" style="color:#5a8a6a">'+conf+'</div><div class="lbl">Confirmés</div></div>';
+  html+='<div class="stat-card"><div class="val" style="color:#c47a2a">'+pend+'</div><div class="lbl">En attente</div></div>';
+  html+='<div class="stat-card"><div class="val" style="color:#c43a3a">'+decl+'</div><div class="lbl">Déclinés</div></div>';
+  html+='</div>';
+  html+='<div class="web-row" style="margin-bottom:16px;">';
+  html+='<button class="web-btn" onclick="_toggleAddGuest()">+ Ajouter un invité</button>';
+  html+='<button class="web-btn-sec" onclick="_exportGuests()">&#128228; Exporter CSV</button>';
+  html+='</div>';
+  html+='<div id="web-guest-form" style="display:none;background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px;">';
+  html+='<div class="tab-grid-2" style="margin-bottom:10px;">';
+  html+='<div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--mid);margin-bottom:4px;">Nom complet</div><input class="web-inp" id="wgf-nom" placeholder="Prénom Nom"></div>';
+  html+='<div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--mid);margin-bottom:4px;">Email</div><input class="web-inp" id="wgf-email" placeholder="email@..."></div>';
+  html+='<div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--mid);margin-bottom:4px;">Côté</div>';
+  html+='<select class="web-inp" id="wgf-cote"><option value="p1">Côté '+(WEB_USER.p1||'Marié·e 1')+'</option><option value="p2">Côté '+(WEB_USER.p2||'Marié·e 2')+'</option></select></div>';
+  html+='<div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--mid);margin-bottom:4px;">Rôle</div>';
+  html+='<select class="web-inp" id="wgf-role">'+ROLES.map(r=>'<option>'+r+'</option>').join('')+'</select></div>';
+  html+='<div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--mid);margin-bottom:4px;">Régime</div>';
+  html+='<select class="web-inp" id="wgf-regime">'+REGIMES.map(r=>'<option>'+r+'</option>').join('')+'</select></div>';
+  html+='<div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--mid);margin-bottom:4px;">Catégorie</div>';
+  html+='<select class="web-inp" id="wgf-age"><option value="Adulte">Adulte</option><option value="Enfant">Enfant</option></select></div>';
+  html+='</div>';
+  html+='<button class="web-btn" onclick="_addGuest()">Ajouter</button>';
+  html+='</div>';
+  html+='<div style="overflow-x:auto;">';
+  html+='<table class="guest-table">';
+  html+='<thead><tr><th>Nom</th><th>Côté</th><th>Rôle</th><th>Régime</th><th>Catégorie</th><th>Invitation</th><th>Présence</th><th></th></tr></thead><tbody>';
+  WEB_GUESTS.forEach(function(g){
+    const cn=g.cote==='p1'?(WEB_USER.p1||'P1'):(WEB_USER.p2||'P2');
+    html+='<tr>';
+    html+='<td style="font-weight:700;">'+hesc(g.nom)+'</td>';
+    html+='<td><span class="badge badge-pink">'+hesc(cn)+'</span></td>';
+    html+='<td><span style="font-size:12px;color:var(--mid);">'+hesc(g.role)+'</span></td>';
+    html+='<td><span style="font-size:12px;color:'+(g.regime&&g.regime!=='Aucun'?'#c47a2a':'var(--mid)')+';">'+hesc(g.regime||'Aucun')+'</span></td>';
+    html+='<td><span class="badge '+(g.age==='Enfant'?'badge-orange':'badge-pink')+'">'+hesc(g.age||'Adulte')+'</span></td>';
+    html+='<td><span class="badge '+(g.invitation==='envoyée'?'badge-green':'badge-red')+'" onclick="_toggleInvitation('+g.id+')" style="cursor:pointer;">'+(g.invitation==='envoyée'?'&#10003; Envoyée':'&#10007; Non envoyée')+'</span></td>';
+    html+='<td><select onchange="_updGuestPresence('+g.id+',this.value)" class="web-inp" style="padding:4px 8px;font-size:12px;width:auto;">';
+    ['confirmée','en attente','déclinée'].forEach(function(p){html+='<option value="'+p+'"'+(g.presence===p?' selected':'')+'>'+p+'</option>';});
+    html+='</select></td>';
+    html+='<td><button onclick="_removeGuest('+g.id+')" style="background:none;border:none;cursor:pointer;color:var(--border);font-size:16px;">&#215;</button></td>';
+    html+='</tr>';
+  });
+  html+='</tbody></table></div>';
+  cont.innerHTML=html;
+}
+let _showingAddGuest=false;
+function _toggleAddGuest(){_showingAddGuest=!_showingAddGuest;const f=_eld('web-guest-form');if(f)f.style.display=_showingAddGuest?'block':'none';}
+function _addGuest(){const nom=_eld('wgf-nom')?.value.trim();if(!nom)return;WEB_GUESTS.push({id:Date.now(),nom,email:_eld('wgf-email')?.value.trim()||'',cote:_eld('wgf-cote')?.value||'p1',invitation:'non envoyée',presence:'en attente',role:_eld('wgf-role')?.value||'Invité·e',regime:_eld('wgf-regime')?.value||'Aucun',vinHonneur:false,age:_eld('wgf-age')?.value||'Adulte',seatTableId:null,seatIdx:null});_showingAddGuest=false;_saveGuests();_renderGuests();}
+function _removeGuest(id){WEB_GUESTS=WEB_GUESTS.filter(g=>g.id!==id);_saveGuests();_renderGuests();}
+function _updGuestPresence(id,v){WEB_GUESTS=WEB_GUESTS.map(g=>g.id===id?{...g,presence:v}:g);_saveGuests();}
+function _toggleInvitation(id){WEB_GUESTS=WEB_GUESTS.map(g=>g.id===id?{...g,invitation:g.invitation==='envoyée'?'non envoyée':'envoyée'}:g);_saveGuests();_renderGuests();}
+function _exportGuests(){let csv='\uFEFFNom,Email,Côté,Rôle,Régime,Invitation,Présence\n';WEB_GUESTS.forEach(g=>{csv+='"'+g.nom+'","'+(g.email||'')+'","'+(g.cote==='p1'?(WEB_USER.p1||'P1'):(WEB_USER.p2||'P2'))+'","'+(g.role||'')+'","'+(g.regime||'')+'","'+g.invitation+'","'+g.presence+'"\n';});const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='invites.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+
+// ── PRESTATAIRES ──
+function _saveVendors(){sv('vfav_'+WEB_USER.email,WEB_VENDORS_FAV);sv('vcho_'+WEB_USER.email,WEB_VENDORS_CHO);}
+function _renderVendors(){
+  const cont=_eld('web-tab-4');if(!cont)return;
+  const cats=[{key:'salle',label:'Salle / Domaine',icon:'🏛️'},{key:'traiteur',label:'Traiteur',icon:'🍽️'},{key:'photographe',label:'Photographe',icon:'📷'},{key:'videaste',label:'Vidéaste',icon:'🎥'},{key:'dj',label:'DJ / Musique',icon:'🎵'},{key:'fleuriste',label:'Fleuriste',icon:'💐'},{key:'patisserie',label:'Pâtisserie',icon:'🎂'},{key:'robe',label:'Robe mariée',icon:'👰'},{key:'costume',label:'Costume',icon:'🤵'},{key:'coiffeur',label:'Coiffeur',icon:'💇'},{key:'beaute',label:'Maquillage',icon:'💄'},{key:'bijou',label:'Bijouterie',icon:'💍'},{key:'imprimeur',label:'Imprimeur',icon:'📜'},{key:'voiture',label:'Voiture',icon:'🚗'},{key:'hotel',label:'Hébergement',icon:'🏨'},{key:'decor',label:'Décoration',icon:'🎀'}];
+  let html='';
+  html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px;">';
+  html+='<div style="font-family:\'Playfair Display\',serif;font-size:17px;color:var(--dark);margin-bottom:14px;">Rechercher un prestataire</div>';
+  html+='<div class="vnd-cat-grid">';
+  cats.forEach(function(c){html+='<button class="vnd-cat-btn" onclick="_searchVendor(\''+c.key+'\',\''+c.label+'\')"><span>'+c.icon+'</span><span>'+c.label+'</span></button>';});
+  html+='</div>';
+  html+='<div class="web-row" style="margin-top:8px;">';
+  html+='<input class="web-inp" id="wvnd-q" placeholder="Recherche libre..." style="flex:2;">';
+  html+='<button class="web-btn" onclick="_searchVendorFree()">Rechercher</button>';
+  html+='</div>';
+  html+='<div id="wvnd-results" style="margin-top:12px;"></div>';
+  html+='</div>';
+  html+='<div style="margin-bottom:20px;">';
+  html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">';
+  html+='<div style="font-family:\'Playfair Display\',serif;font-size:17px;color:var(--dark);">Favoris <span class="badge badge-pink">'+WEB_VENDORS_FAV.length+'</span></div>';
+  html+='<button class="web-btn-sec" onclick="_addManualVendor(\'fav\')">+ Ajouter</button></div>';
+  html+='<div id="wvnd-favs">';
+  if(!WEB_VENDORS_FAV.length){html+='<div style="color:var(--mid);font-size:13px;font-style:italic;padding:12px 0;">Aucun favori pour le moment.</div>';}
+  WEB_VENDORS_FAV.forEach(function(v){html+=_vndCard(v,'fav');});
+  html+='</div></div>';
+  html+='<div>';
+  html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">';
+  html+='<div style="font-family:\'Playfair Display\',serif;font-size:17px;color:var(--dark);">Choisis <span class="badge badge-green">'+WEB_VENDORS_CHO.length+'</span></div>';
+  html+='<button class="web-btn-sec" onclick="_addManualVendor(\'cho\')">+ Ajouter</button></div>';
+  html+='<div id="wvnd-chosen">';
+  if(!WEB_VENDORS_CHO.length){html+='<div style="color:var(--mid);font-size:13px;font-style:italic;padding:12px 0;">Aucun prestataire choisi pour le moment.</div>';}
+  WEB_VENDORS_CHO.forEach(function(v){html+=_vndCard(v,'cho');});
+  html+='</div></div>';
+  cont.innerHTML=html;
+}
+function _vndCard(v,list){
+  return '<div class="vnd-card">'+
+    '<div style="flex:1;">'+
+    '<div style="font-family:\'Lora\',serif;font-size:14px;font-weight:700;color:var(--dark);margin-bottom:4px;">'+hesc(v.nom)+'</div>'+
+    (v.adresse?'<div style="font-size:12px;color:var(--mid);">'+hesc(v.adresse)+'</div>':'')+'</div>'+
+    '<div style="display:flex;gap:8px;flex-shrink:0;">'+
+    (list==='fav'?'<button class="web-btn-sec" style="padding:6px 12px;font-size:12px;" onclick="_moveToCho('+v.id+')">&#10003; Choisir</button>':'')+
+    '<button onclick="_removeVendor('+v.id+',\''+list+'\')" style="background:none;border:none;cursor:pointer;color:var(--border);font-size:16px;">&#215;</button>'+
+    '</div></div>';
+}
+function _searchVendor(key,label){
+  const res=_eld('wvnd-results');if(!res)return;
+  res.innerHTML='<div style="font-size:13px;color:var(--mid);font-style:italic;">Recherche "'+label+'" via OpenStreetMap — géolocalisation requise...</div>';
+  if(!navigator.geolocation){res.innerHTML='<div style="color:#c43a3a;font-size:13px;">Géolocalisation non disponible.</div>';return;}
+  navigator.geolocation.getCurrentPosition(function(pos){
+    const lat=pos.coords.latitude,lng=pos.coords.longitude;
+    const tagMap={salle:'amenity=events_venue',traiteur:'shop=deli',photographe:'shop=photo',videaste:'shop=video',dj:'amenity=nightclub',fleuriste:'shop=florist',patisserie:'shop=pastry',robe:'shop=wedding',costume:'shop=clothes',coiffeur:'shop=hairdresser',beaute:'shop=beauty',bijou:'shop=jewelry',imprimeur:'shop=printing',voiture:'shop=car_rental',hotel:'tourism=hotel',decor:'shop=interior_decoration'};
+    const tag=tagMap[key]||'shop';
+    const [tk,tv]=tag.split('=');
+    const q='[out:json][timeout:10];node["'+tk+'"="'+tv+'"](around:20000,'+lat+','+lng+');out 8;';
+    fetch('https://overpass-api.de/api/interpreter?data='+encodeURIComponent(q))
+      .then(r=>r.json()).then(data=>{
+        if(!data.elements||!data.elements.length){res.innerHTML='<div style="font-size:13px;color:var(--mid);font-style:italic;">Aucun résultat trouvé à proximité.</div>';return;}
+        let h2='<div style="display:flex;flex-direction:column;gap:8px;">';
+        data.elements.slice(0,6).forEach(function(e){
+          const nom=e.tags&&(e.tags.name||e.tags['name:fr']||e.tags.brand)||'Sans nom';
+          const adr=(e.tags&&e.tags['addr:housenumber']?' '+e.tags['addr:housenumber']:'')+(e.tags&&e.tags['addr:street']?' '+e.tags['addr:street']:'');
+          h2+='<div style="background:white;border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;justify-content:space-between;align-items:center;">'+
+            '<div><div style="font-weight:700;font-size:13px;">'+hesc(nom)+'</div>'+(adr?'<div style="font-size:11px;color:var(--mid);">'+hesc(adr)+'</div>':'')+'</div>'+
+            '<button class="web-btn-sec" style="padding:5px 10px;font-size:11px;" onclick="_addToFav({id:Date.now(),nom:\''+hesc(nom).replace(/'/g,"\\'")+'\',adresse:\''+hesc(adr).replace(/'/g,"\\'")+'\',cat:\''+key+'\'})">+ Favori</button>'+
+            '</div>';
+        });
+        h2+='</div>';
+        res.innerHTML=h2;
+      }).catch(function(){res.innerHTML='<div style="color:#c43a3a;font-size:13px;">Erreur de recherche. Vérifiez votre connexion.</div>';});
+  },function(){res.innerHTML='<div style="color:#c43a3a;font-size:13px;">Permission de géolocalisation refusée.</div>';});
+}
+function _searchVendorFree(){const q=_eld('wvnd-q')?.value.trim();if(q)window.open('https://www.google.com/search?q='+encodeURIComponent(q+' mariage'),'_blank');}
+function _addToFav(v){WEB_VENDORS_FAV.push(v);_saveVendors();_renderVendors();}
+function _moveToCho(id){const v=WEB_VENDORS_FAV.find(x=>x.id===id);if(!v)return;WEB_VENDORS_FAV=WEB_VENDORS_FAV.filter(x=>x.id!==id);WEB_VENDORS_CHO.push(v);_saveVendors();_renderVendors();}
+function _removeVendor(id,list){if(list==='fav')WEB_VENDORS_FAV=WEB_VENDORS_FAV.filter(x=>x.id!==id);else WEB_VENDORS_CHO=WEB_VENDORS_CHO.filter(x=>x.id!==id);_saveVendors();_renderVendors();}
+function _addManualVendor(list){const nom=prompt('Nom du prestataire :');if(!nom)return;const v={id:Date.now(),nom,adresse:'',cat:'autre'};if(list==='fav')WEB_VENDORS_FAV.push(v);else WEB_VENDORS_CHO.push(v);_saveVendors();_renderVendors();}
+
+// ── MENU & QUANTITÉS ──
+function _saveMenu(){sv('menu_'+WEB_USER.email,WEB_MENU);}
+function _renderMenu(){
+  const cont=_eld('web-tab-5');if(!cont)return;
+  const conf=WEB_GUESTS.filter(g=>g.presence==='confirmée'||g.presence==='en attente');
+  const enfants=conf.filter(g=>g.age==='Enfant').length;
+  const noAlc=conf.filter(g=>g.regime&&g.regime.includes('Sans alcool')).length;
+  const spec=conf.filter(g=>g.regime&&g.regime!=='Aucun'&&!g.regime.includes('Sans alcool')).length;
+  let html='';
+  html+='<div class="tab-grid-2" style="margin-bottom:20px;">';
+  html+='<div class="stat-card"><div class="val" style="color:#5a8a6a">'+conf.length+'</div><div class="lbl">Invités confirmés + en attente</div></div>';
+  html+='<div class="stat-card"><div class="val" style="color:#c47a2a">'+spec+'</div><div class="lbl">Régimes spéciaux</div></div>';
+  html+='<div class="stat-card"><div class="val" style="color:#4a7ab0">'+enfants+'</div><div class="lbl">Enfants</div></div>';
+  html+='<div class="stat-card"><div class="val" style="color:var(--mid)">'+noAlc+'</div><div class="lbl">Sans alcool</div></div>';
+  html+='</div>';
+  WEB_MENU.forEach(function(section,si){
+    html+='<div class="menu-section">';
+    html+='<div class="menu-section-header">'+hesc(section.section)+'</div>';
+    section.items.forEach(function(item,ii){
+      html+='<div class="menu-item-row">';
+      html+='<input type="checkbox" '+(item.done?'checked':'')+' onchange="_toggleMenuItem('+si+','+ii+',this.checked)" style="accent-color:var(--pink);width:16px;height:16px;flex-shrink:0;cursor:pointer;">';
+      html+='<span style="flex:1;font-size:14px;color:'+(item.done?'var(--mid)':'var(--dark)')+';text-decoration:'+(item.done?'line-through':'none')+';">'+hesc(item.text)+'</span>';
+      html+='<button onclick="_removeMenuItem('+si+','+ii+')" style="background:none;border:none;cursor:pointer;color:var(--border);font-size:16px;">&#215;</button>';
+      html+='</div>';
+    });
+    html+='<div style="padding:10px 18px;display:flex;gap:8px;">';
+    html+='<input class="web-inp" id="wmenu-add-'+si+'" placeholder="Ajouter un élément..." style="flex:1;font-size:13px;">';
+    html+='<button class="web-btn" style="padding:8px 14px;" onclick="_addMenuItem('+si+')">+</button>';
+    html+='</div></div>';
+  });
+  html+='<div class="web-row" style="margin-top:16px;">';
+  html+='<input class="web-inp" id="wmenu-newsec" placeholder="Nouvelle section..." style="flex:2;">';
+  html+='<button class="web-btn-sec" onclick="_addMenuSection()">+ Section</button>';
+  html+='</div>';
+  cont.innerHTML=html;
+}
+function _toggleMenuItem(si,ii,v){WEB_MENU[si].items[ii].done=v;_saveMenu();}
+function _removeMenuItem(si,ii){WEB_MENU[si].items.splice(ii,1);_saveMenu();_renderMenu();}
+function _addMenuItem(si){const inp=_eld('wmenu-add-'+si);const t=inp?.value.trim();if(!t)return;WEB_MENU[si].items.push({id:Date.now(),text:t,done:false});inp.value='';_saveMenu();_renderMenu();}
+function _addMenuSection(){const t=_eld('wmenu-newsec')?.value.trim();if(!t)return;WEB_MENU.push({id:Date.now(),section:t,items:[]});_saveMenu();_renderMenu();}
+
+// ── DÉCORATIONS ──
+function _saveDeco(){sv('deco_'+WEB_USER.email,WEB_DECO);}
+function _renderDecorations(){
+  const cont=_eld('web-tab-6');if(!cont)return;
+  // Initialiser avec données par défaut si vide
+  const decoItems=ld('deco_items_'+WEB_USER.email,DEF_DECO);
+  let html='';
+  html+='<div class="web-row" style="margin-bottom:16px;">';
+  html+='<input class="web-inp" id="wdeco-newcat" placeholder="Nouvelle catégorie..." style="flex:2;">';
+  html+='<button class="web-btn" onclick="_addDecoCategory()">+ Catégorie</button>';
+  html+='</div>';
+  for(const [cat,items] of Object.entries(decoItems)){
+    const savedCat=WEB_DECO[cat]||{};
+    const doneCount=items.filter((_,i)=>savedCat[i]).length;
+    html+='<div class="deco-card">';
+    html+='<div class="deco-header">';
+    html+='<div><div style="font-family:\'Playfair Display\',serif;font-size:15px;font-weight:700;color:var(--dark);">'+hesc(cat)+'</div>';
+    html+='<div style="font-size:11px;color:var(--mid);margin-top:2px;">'+doneCount+'/'+items.length+' éléments</div></div>';
+    html+='<button data-dcat="'+hesc(cat)+'" onclick="_removeDecoCat(this.dataset.dcat)" style="background:none;border:none;cursor:pointer;color:var(--border);font-size:18px;">&#215;</button>';
+    html+='</div>';
+    items.forEach(function(item,i){
+      html+='<div class="deco-item">';
+      html+='<input type="checkbox" '+(savedCat[i]?'checked':'')+' onchange="_toggleDecoItem(\''+cat+'\','+i+',this.checked)" style="accent-color:var(--pink);width:16px;height:16px;cursor:pointer;flex-shrink:0;">';
+      html+='<span style="flex:1;font-size:13px;color:'+(savedCat[i]?'var(--mid)':'var(--dark)')+';text-decoration:'+(savedCat[i]?'line-through':'none')+';">'+hesc(item)+'</span>';
+      html+='<button onclick="_removeDecoItem(\''+cat+'\','+i+')" style="background:none;border:none;cursor:pointer;color:var(--border);font-size:16px;">&#215;</button>';
+      html+='</div>';
+    });
+    html+='<div style="padding:10px 18px;display:flex;gap:8px;">';
+    html+='<input class="web-inp" id="wdeco-add-'+btoa(unescape(encodeURIComponent(cat))).replace(/[=+/]/g,'_')+'" placeholder="Ajouter un élément..." style="flex:1;font-size:13px;">';
+    html+='<button class="web-btn" style="padding:8px 14px;" onclick="_addDecoItem(\''+cat.replace(/'/g,"\\'")+'\')">+</button>';
+    html+='</div></div>';
+  }
+  cont.innerHTML=html;
+}
+function _toggleDecoItem(cat,i,v){const d=ld('deco_'+WEB_USER.email,{});d[cat+i]=v;WEB_DECO=d;_saveDeco();}
+function _removeDecoItem(cat,i){const items=ld('deco_items_'+WEB_USER.email,DEF_DECO);if(items[cat])items[cat].splice(i,1);sv('deco_items_'+WEB_USER.email,items);_renderDecorations();}
+function _addDecoItem(cat){const safeId=btoa(unescape(encodeURIComponent(cat))).replace(/[=+/]/g,'_');const inp=_eld('wdeco-add-'+safeId);const t=inp?.value.trim();if(!t)return;const items=ld('deco_items_'+WEB_USER.email,DEF_DECO);if(!items[cat])items[cat]=[];items[cat].push(t);sv('deco_items_'+WEB_USER.email,items);inp.value='';_renderDecorations();}
+function _addDecoCategory(){const t=_eld('wdeco-newcat')?.value.trim();if(!t)return;const items=ld('deco_items_'+WEB_USER.email,DEF_DECO);if(!items[t])items[t]=[];sv('deco_items_'+WEB_USER.email,items);_eld('wdeco-newcat').value='';_renderDecorations();}
+function _removeDecoCat(cat){const items=ld('deco_items_'+WEB_USER.email,DEF_DECO);delete items[cat];sv('deco_items_'+WEB_USER.email,items);_renderDecorations();}
+
+// ── ASSISTANT ──
+function _renderAssistant(){
+  const cont=_eld('web-tab-7');if(!cont)return;
+  cont.innerHTML='<div style="max-width:700px;margin:0 auto;">'+
+    '<div style="font-family:\'Playfair Display\',serif;font-size:22px;color:var(--dark);margin-bottom:8px;">Assistant mariage</div>'+
+    '<div style="font-size:13px;color:var(--mid);margin-bottom:20px;font-style:italic;">Posez vos questions sur l\'organisation de votre mariage.</div>'+
+    '<div id="wasst-msgs" style="min-height:200px;max-height:400px;overflow-y:auto;background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px;display:flex;flex-direction:column;gap:10px;"></div>'+
+    '<div class="web-row">';
+  cont.innerHTML+='<input class="web-inp" id="wasst-inp" placeholder="Votre question..." style="flex:1;" onkeydown="if(event.key===\'Enter\')_sendAssistant()">'+
+    '<button class="web-btn" onclick="_sendAssistant()">Envoyer</button>'+
+    '</div></div>';
+}
+async function _sendAssistant(){
+  const inp=_eld('wasst-inp');const q=inp?.value.trim();if(!q)return;
+  const msgs=_eld('wasst-msgs');if(!msgs)return;
+  inp.value='';
+  msgs.innerHTML+='<div style="align-self:flex-end;background:var(--pink);color:white;border-radius:14px 14px 4px 14px;padding:10px 14px;max-width:80%;font-family:\'Lora\',serif;font-size:13px;">'+hesc(q)+'</div>';
+  msgs.innerHTML+='<div id="wasst-typing" style="align-self:flex-start;background:white;border:1px solid var(--border);border-radius:14px 14px 14px 4px;padding:10px 14px;color:var(--mid);font-size:13px;font-style:italic;">En train d\'écrire...</div>';
+  msgs.scrollTop=msgs.scrollHeight;
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,system:'Tu es un assistant spécialisé dans l\'organisation de mariages. Réponds en français, de façon concise et pratique.',messages:[{role:'user',content:q}]})});
+    const data=await resp.json();
+    const answer=data.content?.[0]?.text||'Désolé, je n\'ai pas pu répondre.';
+    const typing=_eld('wasst-typing');
+    if(typing)typing.outerHTML='<div style="align-self:flex-start;background:white;border:1px solid var(--border);border-radius:14px 14px 14px 4px;padding:10px 14px;max-width:80%;font-family:\'Lora\',serif;font-size:13px;color:var(--dark);">'+answer.replace(/\n/g,'<br>')+'</div>';
+  }catch(e){const typing=_eld('wasst-typing');if(typing)typing.outerHTML='<div style="align-self:flex-start;background:white;border:1px solid var(--border);border-radius:14px 14px 14px 4px;padding:10px 14px;color:#c43a3a;font-size:13px;">Erreur de connexion.</div>';}
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+// ── ALBUM ──
+function _renderAlbum(){
+  const cont=_eld('web-tab-8');if(!cont)return;
+  const url=WEB_ALBUM_URL||'';
+  const qr=url?'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='+encodeURIComponent(url)+'&color=d4607a&bgcolor=fff9fb&margin=6':'';
+  let html='<div style="max-width:600px;">';
+  html+='<div style="font-family:\'Playfair Display\',serif;font-size:22px;color:var(--dark);margin-bottom:16px;">Album partagé</div>';
+  html+='<p style="font-size:13px;color:var(--mid);margin-bottom:16px;">Partagez votre album <strong>Google Photos</strong> avec vos invités.</p>';
+  html+='<div style="margin-bottom:16px;">';
+  html+='<div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--mid);margin-bottom:6px;">Lien Google Photos</div>';
+  html+='<div class="web-row">';
+  html+='<input class="web-inp" id="walb-url" value="'+hesc(url)+'" placeholder="https://photos.google.com/share/..." style="flex:1;">';
+  html+='<button class="web-btn" onclick="_saveAlbumUrl()">Enregistrer</button>';
+  html+='</div></div>';
+  if(url){
+    html+='<div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:20px;">';
+    html+='<img src="'+qr+'" style="border-radius:12px;box-shadow:0 2px 12px rgba(180,100,130,.2);" alt="QR Code">';
+    html+='<a href="'+hesc(url)+'" target="_blank" class="web-btn" style="text-decoration:none;">Ouvrir l\'album</a>';
+    html+='</div>';
+  }
+  html+='<div style="margin-top:24px;background:var(--bg);border-radius:14px;padding:16px;">';
+  html+='<div style="font-family:\'Playfair Display\',serif;font-size:16px;color:var(--dark);margin-bottom:10px;">Comment créer votre album ?</div>';
+  html+='<div style="font-size:13px;color:var(--mid);line-height:2.2;">';
+  html+='<div>1️⃣ Ouvrez <strong>Google Photos</strong></div>';
+  html+='<div>2️⃣ Bibliothèque → Albums → <strong>+</strong></div>';
+  html+='<div>3️⃣ Nommez l\'album</div>';
+  html+='<div>4️⃣ ⋮ → Options de partage → Copier le lien</div>';
+  html+='</div></div></div>';
+  cont.innerHTML=html;
+}
+function _saveAlbumUrl(){const u=_eld('walb-url')?.value.trim()||'';WEB_ALBUM_URL=u;sv('drive_url_'+WEB_USER.email,u);_renderAlbum();}
+
+// ── NOTES ──
+function _renderNotes(){
+  const cont=_eld('web-tab-9');if(!cont)return;
+  cont.innerHTML='<div style="background:white;border:1px solid var(--border);border-radius:14px;padding:24px;">'+
+    '<div style="font-family:\'Playfair Display\',serif;font-style:italic;font-size:22px;color:var(--dark);margin-bottom:16px;text-align:center;">MES NOTES</div>'+
+    '<textarea id="wnotes-area" class="notes-area" placeholder="Écrivez vos notes ici...">'+hesc(WEB_NOTES)+'</textarea></div>';
+  _eld('wnotes-area').addEventListener('input',function(){WEB_NOTES=this.value;sv('notes_'+WEB_USER.email,WEB_NOTES);});
+}
+
+</script>
 </body>
 </html>
