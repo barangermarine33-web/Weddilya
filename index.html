@@ -1382,6 +1382,14 @@ button,label,.tab-btn,.card{-webkit-user-select:none;user-select:none;}
   #tabs-bar { position: relative !important; top: auto !important; }
 }
 </style>
+
+<style>
+/* Override scroll pour desktop */
+html { overscroll-behavior-y: auto !important; height: auto !important; }
+body { height: auto !important; min-height: 100vh; overflow-x: hidden !important; overflow-y: auto !important; }
+#landing-page { display: block; }
+#footer-page { display: block; }
+</style>
 </head>
 <body>
 
@@ -1400,7 +1408,7 @@ button,label,.tab-btn,.card{-webkit-user-select:none;user-select:none;}
     <li><a href="#features">Fonctionnalités</a></li>
     <li><a href="#how">Comment ça marche</a></li>
     <li><a href="#contact">Contact</a></li>
-    <li><a href="#app-section" onclick="showAppSection()" class="nav-cta" style="cursor:pointer;">Commencer</a></li>
+    <li><a href="javascript:void(0)" onclick="showAppSection()" class="nav-cta" style="cursor:pointer;">Commencer</a></li>
   </ul>
 </nav>
 
@@ -1410,7 +1418,7 @@ button,label,.tab-btn,.card{-webkit-user-select:none;user-select:none;}
     <h1>Créez le mariage<br>dont vous <em>rêvez</em></h1>
     <p class="hero-sub">Weddilya réunit tous les outils dont vous avez besoin pour organiser votre grand jour — checklist, budget, invités, plan de table et bien plus. Entièrement gratuit.</p>
     <div class="hero-actions">
-      <a href="#app-section" onclick="showAppSection()" class="btn-primary" style="cursor:pointer;">Commencer</a>
+      <a href="javascript:void(0)" onclick="showAppSection()" class="btn-primary" style="cursor:pointer;">Commencer</a>
       <a href="#features" class="btn-secondary">Découvrir l'app</a>
     </div>
   </div>
@@ -3202,17 +3210,18 @@ function togglePass(id, btn){
 }
 
 function doLogout(){
-  // Déconnecter Firebase Auth aussi
   if(window.firebaseAuth && window.firebaseAuthLib){
-    try{
-      window.firebaseAuthLib.signOut(window.firebaseAuth);
-    } catch(e){console.warn('signOut error:',e);}
+    try{ window.firebaseAuthLib.signOut(window.firebaseAuth); } catch(e){}
   }
   localStorage.removeItem('sess');
-  // Verify session is cleared before reloading
-  if(!localStorage.getItem('sess')){
-    window.location.reload(true);
-  }
+  const lp=document.getElementById('landing-page');
+  const fp=document.getElementById('footer-page');
+  if(lp) lp.style.display='block';
+  if(fp) fp.style.display='block';
+  document.documentElement.style.overflow='';
+  document.body.style.overflow='';
+  document.getElementById('auth-screen').style.display='flex';
+  document.getElementById('app').style.display='none';
 }
 
 async function deleteAccount(){
@@ -3286,6 +3295,14 @@ function startApp(u){
   ALBUM = ld(`album_${u.email}`, []);
   el('auth-screen').style.display='none';
   el('app').style.display='block';
+  // Cacher landing quand connecté
+  const lp=document.getElementById('landing-page');
+  const fp=document.getElementById('footer-page');
+  if(lp) lp.style.display='none';
+  if(fp) fp.style.display='none';
+  // Scroll desktop
+  document.documentElement.style.overflow='auto';
+  document.body.style.overflow='auto';
   updateHeader();
 
   // ── SYNC FIRESTORE — attendre que Firebase soit prêt ──
