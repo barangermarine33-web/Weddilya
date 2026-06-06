@@ -1814,7 +1814,15 @@ async function _loadWebUser(firebaseUser){
   // Charger tasks
   WEB_TASKS=ld(`tasks_${firebaseUser.email}`,[]);
   if(WEB_TASKS.length<50) WEB_TASKS=DEF_TASKS.map(t=>({...t,done:false}));
-  _loadAllWebData(firebaseUser.email);
+  // Charger toutes les données
+  WEB_BUDGET = ld('budget_'+firebaseUser.email, null);
+  if(!WEB_BUDGET||!WEB_BUDGET.length) WEB_BUDGET = DEF_BUDGET.map(b=>({...b,reel:0,paye:0}));
+  WEB_GUESTS = ld('guests_'+firebaseUser.email, DEF_GUESTS);
+  WEB_TABLES = ld('tables_'+firebaseUser.email, DEF_TABLES);
+  WEB_VENDORS_FAV = ld('vfav_'+firebaseUser.email, []);
+  WEB_VENDORS_CHO = ld('vcho_'+firebaseUser.email, []);
+  WEB_NOTES = ld('notes_'+firebaseUser.email, '');
+  WEB_MENU = ld('menu_'+firebaseUser.email, DEF_MENU.map(s=>({...s,items:s.items.map(i=>({...i}))})));
 
   _eld('app-auth').style.display='none';
   _eld('app-connected').style.display='block';
