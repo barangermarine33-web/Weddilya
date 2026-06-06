@@ -1672,291 +1672,6 @@
 </script>
 
 <script>
-// ── HELPERS ──
-const _eld = id => document.getElementById(id);
-const sv = (k,v) => { try{localStorage.setItem(k,JSON.stringify(v));}catch{} if(_isSyncKey(k)){_syncQueue[k]=v;_scheduleSync();} };
-const ld = (k,d) => { try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch{return d;} };
-
-const SYNC_PREFIXES = ['tasks_','budget_','guests_','tables_','notes_','menu_'];
-const _isSyncKey = k => SYNC_PREFIXES.some(p=>k.startsWith(p));
-const _syncQueue = {};
-let _syncTimer = null;
-function _scheduleSync(){ if(_syncTimer)clearTimeout(_syncTimer); _syncTimer=setTimeout(_flushSync,1500); }
-async function _flushSync(){
-  _syncTimer=null;
-  if(!window.firebaseDB||!window.firebaseLib) return;
-  const {doc,setDoc}=window.firebaseLib;
-  const queue={..._syncQueue};
-  for(const k in _syncQueue) delete _syncQueue[k];
-  for(const [key,value] of Object.entries(queue)){
-    try{
-      const docId=window._activeDataDocId||null;
-      if(!docId) continue;
-      await setDoc(doc(window.firebaseDB,'userData',docId),{[key]:value,_updatedAt:Date.now()},{merge:true});
-    }catch(e){ _syncQueue[key]=value; }
-  }
-}
-function _onFirebaseReady(fn){ if(window._firebaseReady)fn(); else document.addEventListener('firebase-ready',fn,{once:true}); }
-
-// ── DONNÉES ──
-let WEB_USER = null;
-let WEB_TASKS = [];
-let WEB_CURRENT_TAB = 0;
-let _collapsedMonths = {};
-
-const MONTHS = ['12 à 18 mois avant','9 à 12 mois avant','6 à 9 mois avant','3 à 6 mois avant','2 à 3 mois avant','1 mois avant','2 semaines avant','1 semaine avant','La veille','Jour J'];
-
-const DEF_TASKS = [
-  {id:1,text:"Choisir la date du mariage",done:false,month:"12 à 18 mois avant"},{id:2,text:"Définir le budget total",done:false,month:"12 à 18 mois avant"},{id:3,text:"Déterminer le nombre d'invités",done:false,month:"12 à 18 mois avant"},{id:4,text:"Établir une liste d'invités provisoire",done:false,month:"12 à 18 mois avant"},{id:5,text:"Rechercher des lieux de réception",done:false,month:"12 à 18 mois avant"},{id:6,text:"Visiter plusieurs lieux",done:false,month:"12 à 18 mois avant"},{id:7,text:"Signer le contrat du lieu",done:false,month:"12 à 18 mois avant"},{id:8,text:"Réserver la mairie",done:false,month:"12 à 18 mois avant"},{id:9,text:"Définir le thème et les couleurs",done:false,month:"12 à 18 mois avant"},{id:10,text:"Rechercher un traiteur",done:false,month:"12 à 18 mois avant"},{id:11,text:"Rechercher un photographe",done:false,month:"12 à 18 mois avant"},{id:12,text:"Rechercher un DJ ou groupe",done:false,month:"12 à 18 mois avant"},
-  {id:13,text:"Envoyer les Save the Date",done:false,month:"9 à 12 mois avant"},{id:14,text:"Choisir les témoins",done:false,month:"9 à 12 mois avant"},{id:15,text:"Choisir les demoiselles d'honneur / garçons d'honneur",done:false,month:"9 à 12 mois avant"},{id:16,text:"Leur proposer officiellement leur rôle",done:false,month:"9 à 12 mois avant"},{id:17,text:"Commencer les essayages",done:false,month:"9 à 12 mois avant"},{id:18,text:"Choisir la robe de mariée",done:false,month:"9 à 12 mois avant"},{id:19,text:"Choisir le costume",done:false,month:"9 à 12 mois avant"},{id:20,text:"Réserver le traiteur",done:false,month:"9 à 12 mois avant"},{id:21,text:"Réserver le photographe",done:false,month:"9 à 12 mois avant"},{id:22,text:"Réserver le DJ / groupe",done:false,month:"9 à 12 mois avant"},{id:23,text:"Réserver un vidéaste",done:false,month:"9 à 12 mois avant"},{id:24,text:"Contacter un fleuriste",done:false,month:"9 à 12 mois avant"},{id:25,text:"Réserver le coiffeur",done:false,month:"9 à 12 mois avant"},{id:26,text:"Réserver le maquilleur",done:false,month:"9 à 12 mois avant"},
-  {id:27,text:"Rechercher des hébergements invités",done:false,month:"6 à 9 mois avant"},{id:28,text:"Réserver des logements",done:false,month:"6 à 9 mois avant"},{id:29,text:"Choisir les alliances",done:false,month:"6 à 9 mois avant"},{id:30,text:"Lancer la création des faire-part",done:false,month:"6 à 9 mois avant"},{id:31,text:"Définir le menu avec le traiteur",done:false,month:"6 à 9 mois avant"},{id:32,text:"Prévoir les régimes alimentaires",done:false,month:"6 à 9 mois avant"},{id:33,text:"Choisir les boissons",done:false,month:"6 à 9 mois avant"},{id:34,text:"Réserver le gâteau",done:false,month:"6 à 9 mois avant"},{id:35,text:"Réserver les transports",done:false,month:"6 à 9 mois avant"},{id:36,text:"Réserver les animations",done:false,month:"6 à 9 mois avant"},{id:37,text:"Choisir la décoration principale",done:false,month:"6 à 9 mois avant"},{id:38,text:"Prévenir les témoins concernant l'organisation des EVJF / EVG",done:false,month:"6 à 9 mois avant"},
-  {id:39,text:"Envoyer les faire-part",done:false,month:"3 à 6 mois avant"},{id:40,text:"Acheter les accessoires (chaussures, bijoux…)",done:false,month:"3 à 6 mois avant"},{id:41,text:"Finaliser la décoration",done:false,month:"3 à 6 mois avant"},{id:42,text:"Commander les éléments de papeterie",done:false,month:"3 à 6 mois avant"},{id:43,text:"Prévoir les centres de table",done:false,month:"3 à 6 mois avant"},{id:44,text:"Organiser les animations",done:false,month:"3 à 6 mois avant"},{id:45,text:"Réaliser un essai coiffure",done:false,month:"3 à 6 mois avant"},{id:46,text:"Réaliser un essai maquillage",done:false,month:"3 à 6 mois avant"},{id:47,text:"Commencer le plan de table",done:false,month:"3 à 6 mois avant"},{id:48,text:"Préparer les discours",done:false,month:"3 à 6 mois avant"},
-  {id:49,text:"Relancer les invités sans réponse",done:false,month:"2 à 3 mois avant"},{id:50,text:"Finaliser la liste des invités",done:false,month:"2 à 3 mois avant"},{id:51,text:"Ajuster le plan de table",done:false,month:"2 à 3 mois avant"},{id:52,text:"Confirmer les prestataires",done:false,month:"2 à 3 mois avant"},{id:53,text:"Commander les cadeaux invités",done:false,month:"2 à 3 mois avant"},{id:54,text:"Préparer les livrets de cérémonie",done:false,month:"2 à 3 mois avant"},{id:55,text:"Planifier le déroulé précis du jour J",done:false,month:"2 à 3 mois avant"},{id:56,text:"Prévoir les musiques clés",done:false,month:"2 à 3 mois avant"},
-  {id:57,text:"Donner le nombre d'invités final au traiteur",done:false,month:"1 mois avant"},{id:58,text:"Finaliser le plan de table",done:false,month:"1 mois avant"},{id:59,text:"Finaliser le planning du jour J",done:false,month:"1 mois avant"},{id:60,text:"Préparer les paiements prestataires",done:false,month:"1 mois avant"},{id:61,text:"Vérifier les tenues complètes",done:false,month:"1 mois avant"},{id:62,text:"Faire les derniers essayages",done:false,month:"1 mois avant"},{id:63,text:"Vérifier tous les contrats",done:false,month:"1 mois avant"},{id:64,text:"S'amuser à l'EVJF / EVG",done:false,month:"1 mois avant"},
-  {id:65,text:"Récupérer la robe et le costume",done:false,month:"2 semaines avant"},{id:66,text:"Récupérer les alliances",done:false,month:"2 semaines avant"},{id:67,text:"Vérifier que tout est en ordre avec les prestataires",done:false,month:"2 semaines avant"},{id:68,text:"Préparer les éléments de décoration",done:false,month:"2 semaines avant"},{id:69,text:"Organiser la logistique finale",done:false,month:"2 semaines avant"},
-  {id:70,text:"Tester les chaussures",done:false,month:"1 semaine avant"},{id:71,text:"Vérifier la météo",done:false,month:"1 semaine avant"},{id:72,text:"Finaliser le plan de table imprimé",done:false,month:"1 semaine avant"},{id:73,text:"Préparer tous les éléments à transporter",done:false,month:"1 semaine avant"},{id:74,text:"Briefer les proches (rôles, timing)",done:false,month:"1 semaine avant"},{id:75,text:"Se reposer",done:false,month:"1 semaine avant"},
-  {id:76,text:"Installer la décoration",done:false,month:"La veille"},{id:77,text:"Vérifier les tenues",done:false,month:"La veille"},{id:78,text:"Préparer les alliances",done:false,month:"La veille"},{id:79,text:"Préparer les affaires du lendemain",done:false,month:"La veille"},{id:80,text:"Relire le planning",done:false,month:"La veille"},{id:81,text:"Se coucher tôt",done:false,month:"La veille"},
-  {id:82,text:"Se préparer calmement",done:false,month:"Jour J"},{id:83,text:"Accueillir les prestataires",done:false,month:"Jour J"},{id:84,text:"Suivre le planning",done:false,month:"Jour J"},{id:85,text:"Déléguer la gestion",done:false,month:"Jour J"},{id:86,text:"Profiter pleinement de la journée",done:false,month:"Jour J"}
-];
-
-// ── AFFICHAGE ──
-function showAppSection(){
-  _eld('landing-page').style.display='none';
-  _eld('app-section').style.display='block';
-  window.scrollTo({top:0,behavior:'smooth'});
-  _onFirebaseReady(()=>{
-    const {onAuthStateChanged}=window.firebaseAuthLib;
-    onAuthStateChanged(window.firebaseAuth, user=>{
-      if(user){
-        _loadWebUser(user);
-      }
-    });
-  });
-}
-
-function showAuthTab(tab){
-  _eld('aform-login').style.display = tab==='login'?'block':'none';
-  _eld('aform-register').style.display = tab==='register'?'block':'none';
-  _eld('atab-login').classList.toggle('active', tab==='login');
-  _eld('atab-register').classList.toggle('active', tab==='register');
-}
-
-// ── AUTH ──
-async function doWebLogin(){
-  const email = _eld('al-email').value.trim();
-  const pass = _eld('al-pass').value;
-  const err = _eld('aerr-login');
-  err.style.display='none';
-  try{
-    const {signInWithEmailAndPassword} = window.firebaseAuthLib;
-    const cred = await signInWithEmailAndPassword(window.firebaseAuth, email, pass);
-    await _loadWebUser(cred.user);
-  }catch(e){
-    err.textContent = e.code==='auth/wrong-password'||e.code==='auth/invalid-credential' ? 'Email ou mot de passe incorrect.' : 'Erreur : ' + (e.message||e.code);
-    err.style.display='block';
-  }
-}
-
-async function doWebRegister(){
-  const p1=_eld('ar-p1').value.trim(), p2=_eld('ar-p2').value.trim();
-  const wDate=_eld('ar-date').value, email=_eld('ar-email').value.trim(), pass=_eld('ar-pass').value;
-  const err=_eld('aerr-register');
-  err.style.display='none';
-  if(!email||!pass||!p1||!p2||!wDate){ err.textContent='Veuillez remplir tous les champs.'; err.style.display='block'; return; }
-  try{
-    const {createUserWithEmailAndPassword}=window.firebaseAuthLib;
-    const cred=await createUserWithEmailAndPassword(window.firebaseAuth,email,pass);
-    const {doc,setDoc}=window.firebaseLib;
-    await setDoc(doc(window.firebaseDB,'userData',cred.user.uid),{email,p1,p2,wDate,_createdAt:Date.now()},{merge:true});
-    localStorage.setItem('sess',JSON.stringify(email));
-    localStorage.setItem(`tasks_${email}`,JSON.stringify(DEF_TASKS.map(t=>({...t,done:false}))));
-    await _loadWebUser(cred.user);
-  }catch(e){
-    err.textContent = e.code==='auth/email-already-in-use' ? 'Cet email est déjà utilisé.' : 'Erreur : '+(e.message||e.code);
-    err.style.display='block';
-  }
-}
-
-async function doWebForgot(){
-  const email=_eld('al-email').value.trim();
-  if(!email){ alert('Entrez votre email d\'abord.'); return; }
-  try{
-    await window.firebaseAuthLib.sendPasswordResetEmail(window.firebaseAuth,email);
-    alert('Email de réinitialisation envoyé !');
-  }catch(e){ alert('Erreur : '+(e.message||e.code)); }
-}
-
-async function doWebLogout(){
-  await window.firebaseAuthLib.signOut(window.firebaseAuth);
-  WEB_USER=null;
-  _eld('app-connected').style.display='none';
-  _eld('app-auth').style.display='block';
-  _eld('app-section').style.display='none';
-  _eld('landing-page').style.display='block';
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-async function _loadWebUser(firebaseUser){
-  // Charger données Firestore
-  const {doc,getDoc}=window.firebaseLib;
-  const snap=await getDoc(doc(window.firebaseDB,'userData',firebaseUser.uid));
-  const data=snap.exists()?snap.data():{};
-  WEB_USER={email:firebaseUser.email, p1:data.p1||'', p2:data.p2||'', wDate:data.wDate||'', uid:firebaseUser.uid};
-  window._activeDataDocId=firebaseUser.uid;
-  // Écrire en localStorage
-  if(data){
-    for(const [k,v] of Object.entries(data)){
-      if(typeof v !== 'object' || Array.isArray(v)) try{localStorage.setItem(k,JSON.stringify(v));}catch{}
-    }
-    // Clés avec email
-    if(data.tasks) try{localStorage.setItem(`tasks_${firebaseUser.email}`,JSON.stringify(data.tasks));}catch{}
-  }
-  // Charger tasks
-  WEB_TASKS=ld(`tasks_${firebaseUser.email}`,[]);
-  if(WEB_TASKS.length<50) WEB_TASKS=DEF_TASKS.map(t=>({...t,done:false}));
-  // Charger toutes les données
-  WEB_BUDGET = ld('budget_'+firebaseUser.email, null);
-  if(!WEB_BUDGET||!WEB_BUDGET.length) WEB_BUDGET = DEF_BUDGET.map(b=>({...b,reel:0,paye:0}));
-  WEB_GUESTS = ld('guests_'+firebaseUser.email, DEF_GUESTS);
-  WEB_TABLES = ld('tables_'+firebaseUser.email, DEF_TABLES);
-  WEB_VENDORS_FAV = ld('vfav_'+firebaseUser.email, []);
-  WEB_VENDORS_CHO = ld('vcho_'+firebaseUser.email, []);
-  WEB_NOTES = ld('notes_'+firebaseUser.email, '');
-  WEB_MENU = ld('menu_'+firebaseUser.email, DEF_MENU.map(s=>({...s,items:s.items.map(i=>({...i}))})));
-
-  _eld('app-auth').style.display='none';
-  _eld('app-connected').style.display='block';
-  _updateWebHeader();
-  _startWebCountdown();
-  _renderChecklist();
-}
-
-// ── HEADER & COUNTDOWN ──
-function _updateWebHeader(){
-  if(!WEB_USER) return;
-  const p1=WEB_USER.p1||'—', p2=WEB_USER.p2||'—';
-  const dateStr=WEB_USER.wDate ? new Date(WEB_USER.wDate).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}) : '—';
-  _eld('web-subtitle').innerHTML = `<em>Mariage de</em> <strong>${p1}</strong> &amp; <strong>${p2}</strong> — ${dateStr}`;
-}
-
-let _cdInterval=null;
-function _startWebCountdown(){
-  if(_cdInterval) clearInterval(_cdInterval);
-  function update(){
-    if(!WEB_USER||!WEB_USER.wDate){return;}
-    const now=new Date(), target=new Date(WEB_USER.wDate);
-    target.setHours(11,0,0,0);
-    const diff=target-now;
-    if(diff<=0){
-      _eld('wcd-j').textContent=_eld('wcd-h').textContent=_eld('wcd-m').textContent=_eld('wcd-s').textContent='0';
-      return;
-    }
-    _eld('wcd-j').textContent=Math.floor(diff/86400000);
-    _eld('wcd-h').textContent=Math.floor((diff%86400000)/3600000);
-    _eld('wcd-m').textContent=Math.floor((diff%3600000)/60000);
-    _eld('wcd-s').textContent=Math.floor((diff%60000)/1000);
-  }
-  update();
-  _cdInterval=setInterval(update,1000);
-}
-
-// ── ONGLETS ──
-function switchWebTab(idx, btn){
-  WEB_CURRENT_TAB=idx;
-  document.querySelectorAll('.app-tab-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  for(let i=0;i<10;i++){
-    const el=_eld('web-tab-'+i);
-    if(el) el.style.display=i===idx?'block':'none';
-  }
-  const renders = [_renderChecklist, _renderBudget, _renderGuests, _renderTablePlan, _renderVendors, _renderMenu, _renderDecorations, _renderAssistant, _renderAlbum, _renderNotes];
-  if(renders[idx]) renders[idx]();
-}
-
-// ── CHECKLIST ──
-function _saveTasks(){ sv(`tasks_${WEB_USER.email}`,WEB_TASKS); }
-
-function _renderChecklist(){
-  const cont=_eld('web-tab-0');
-  if(!cont) return;
-  const done=WEB_TASKS.filter(t=>t.done).length;
-  const tot=WEB_TASKS.length;
-  const pct=tot?Math.round(done/tot*100):0;
-  const grouped=WEB_TASKS.reduce((a,t)=>{(a[t.month]=a[t.month]||[]).push(t);return a;},{});
-  const allMonths=[...MONTHS,...Object.keys(grouped).filter(m=>!MONTHS.includes(m))];
-  const monthsWithTasks=allMonths.filter(m=>grouped[m]&&grouped[m].length);
-  const cats=[...new Set(WEB_TASKS.map(t=>t.month)),'Personnalisé'];
-
-  let html='';
-
-  // Header progression
-  html+='<div class="chk-header">';
-  html+='<div><div style="font-family:Josefin Sans,sans-serif;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--mid);margin-bottom:6px;">Progression</div>';
-  html+='<div class="chk-progress-text">'+done+'<span> / '+tot+'</span></div></div>';
-  html+='<svg viewBox="0 0 36 36" width="72" height="72">';
-  html+='<circle cx="18" cy="18" r="15.9" fill="none" stroke="#fce4ec" stroke-width="3"/>';
-  html+='<circle cx="18" cy="18" r="15.9" fill="none" stroke="#d4607a" stroke-width="3" stroke-dasharray="'+pct+' 100" stroke-linecap="round" transform="rotate(-90 18 18)"/>';
-  html+='<text x="18" y="22" text-anchor="middle" font-size="7" fill="#3e1828" font-family="serif" font-weight="bold">'+pct+'%</text>';
-  html+='</svg></div>';
-
-  // Barre d'ajout
-  html+='<div class="chk-add-row">';
-  html+='<input class="chk-inp" id="wchk-text" placeholder="Ajouter une t\u00e2che..." onkeydown="if(event.key===\'Enter\')_addWebTask()">';
-  html+='<select class="chk-select" id="wchk-cat">';
-  cats.forEach(c=>{ html+='<option value="'+c+'">'+c+'</option>'; });
-  html+='</select>';
-  html+='<button class="chk-btn-add" onclick="_addWebTask()">+</button>';
-  html+='</div>';
-  html+='<div style="margin-bottom:16px;"><button class="chk-btn-reset" onclick="_resetWebTasks()">&#8635; Restaurer les tâches par défaut</button></div>';
-
-  // Mois
-  monthsWithTasks.forEach(function(month){
-    const safeId=btoa(unescape(encodeURIComponent(month))).replace(/[=+/]/g,'_');
-    const collapsed=!!_collapsedMonths[month];
-    const doneM=grouped[month].filter(t=>t.done).length;
-    html+='<div style="margin-bottom:10px;">';
-    html+='<div class="chk-month-header" data-month="'+month.replace(/"/g,'&quot;')+'" onclick="_toggleWebMonth(this.dataset.month)">';
-    html+='<span id="warr-'+safeId+'" style="color:var(--pink);transition:transform .2s;display:inline-block;transform:'+(collapsed?'rotate(-90deg)':'rotate(0deg)')+'">&#9660;</span>';
-    html+='<span class="chk-month-name">'+month+'</span>';
-    html+='<span class="chk-month-count">('+doneM+'/'+grouped[month].length+')</span>';
-    html+='</div>';
-    html+='<div id="wchk-'+safeId+'" style="display:'+(collapsed?'none':'block')+'">';
-    grouped[month].forEach(function(t){
-      html+='<div class="chk-task-row'+(t.done?' done-row':'')+'" onclick="_toggleWebTask('+t.id+')">';
-      html+='<div class="chk-circle'+(t.done?' done':'')+'">'+(t.done?'<span style="color:#fff;font-size:11px;font-weight:bold;">&#10003;</span>':'')+'</div>';
-      html+='<span class="chk-task-text'+(t.done?' done':'')+'">'+t.text+'</span>';
-      html+='<button class="chk-task-del" onclick="event.stopPropagation();_removeWebTask('+t.id+')">&#215;</button>';
-      html+='</div>';
-    });
-    html+='</div></div>';
-  });
-
-  cont.innerHTML=html;
-}
-
-function _toggleWebMonth(month){
-  _collapsedMonths[month]=!_collapsedMonths[month];
-  _renderChecklist();
-}
-function _toggleWebTask(id){ WEB_TASKS=WEB_TASKS.map(t=>t.id===id?{...t,done:!t.done}:t); _saveTasks(); _renderChecklist(); }
-function _removeWebTask(id){ WEB_TASKS=WEB_TASKS.filter(t=>t.id!==id); _saveTasks(); _renderChecklist(); }
-function _addWebTask(){
-  const inp=_eld('wchk-text'), cat=_eld('wchk-cat')?.value||'Personnalisé';
-  const t=inp.value.trim(); if(!t) return;
-  WEB_TASKS.push({id:Date.now(),text:t,done:false,month:cat});
-  inp.value=''; _saveTasks(); _renderChecklist();
-}
-function _resetWebTasks(){
-  if(!confirm('Restaurer toutes les tâches par défaut ? Vos tâches personnalisées seront conservées.')) return;
-  const custom=WEB_TASKS.filter(t=>t.month==='Personnalisé');
-  const restored=DEF_TASKS.map(def=>{ const ex=WEB_TASKS.find(t=>t.text===def.text); return ex?ex:{...def,done:false}; });
-  WEB_TASKS=[...restored,...custom];
-  _saveTasks(); _renderChecklist();
-}
-</script>
-
-
-<script>
 const pk="#b84060",pm="#e89aac",sf="#f5d4e0",br="#d8a0b8",tx="#2d0a18",tm="#5a1a30",tl="#8a4a60",gn="#5a8a6a",rd="#c43a3a",am="#c47a2a",gd="#c9a84c",gl="#e8d48a",bg2="#deb96a";
 
 // ── MODALES CUSTOM (remplacent confirm/alert/prompt natifs) ──────────────────
@@ -2188,10 +1903,370 @@ window.appModal = appModal;
 
 // ── STATE ────────────────────────────────────────────────────────────────────
 let USER=null, cdInt=null, currentTab=0;
-let seatPicker=null, lbPhotoId=null;
-const TABS=["Checklist","Budget","Invités","Plan de table","Prestataires","Menu & quantités","Décorations","Assistant","Album","Notes"];
-const ROLES=["Invité·e","Demoiselle d'honneur","Garçon d'honneur","Témoin"];
-const REGIMES=["Aucun","Végétarien","Vegan","Sans gluten","Sans lactose","Halal","Sans porc","Sans fruits à coque et arachides","Sans poisson","Sans alcool"];
+let WEB_TASKS=[], WEB_BUDGET=[], WEB_GUESTS=[], WEB_TABLES=[], WEB_VENDORS_FAV=[], WEB_VENDORS_CHO=[], ALBUM=[], WEB_NOTES='', WEB_MENU=[];
+
+// ── HELPERS ──
+const _eld = id => document.getElementById(id);
+const sv = (k,v) => { try{localStorage.setItem(k,JSON.stringify(v));}catch{} if(_isSyncKey(k)){_syncQueue[k]=v;_scheduleSync();} };
+const ld = (k,d) => { try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch{return d;} };
+
+const SYNC_PREFIXES = ['tasks_','budget_','guests_','tables_','notes_','menu_'];
+const _isSyncKey = k => SYNC_PREFIXES.some(p=>k.startsWith(p));
+const _syncQueue = {};
+let _syncTimer = null;
+function _scheduleSync(){ if(_syncTimer)clearTimeout(_syncTimer); _syncTimer=setTimeout(_flushSync,1500); }
+async function _flushSync(){
+  _syncTimer=null;
+  if(!window.firebaseDB||!window.firebaseLib) return;
+  const {doc,setDoc}=window.firebaseLib;
+  const queue={..._syncQueue};
+  for(const k in _syncQueue) delete _syncQueue[k];
+  for(const [key,value] of Object.entries(queue)){
+    try{
+      const docId=window._activeDataDocId||null;
+      if(!docId) continue;
+      await setDoc(doc(window.firebaseDB,'userData',docId),{[key]:value,_updatedAt:Date.now()},{merge:true});
+    }catch(e){ _syncQueue[key]=value; }
+  }
+}
+function _onFirebaseReady(fn){ if(window._firebaseReady)fn(); else document.addEventListener('firebase-ready',fn,{once:true}); }
+
+// ── DONNÉES ──
+let WEB_USER = null;
+let WEB_CURRENT_TAB = 0;
+let _webCollapsedMonths = {};
+
+const MONTHS = ['12 à 18 mois avant','9 à 12 mois avant','6 à 9 mois avant','3 à 6 mois avant','2 à 3 mois avant','1 mois avant','2 semaines avant','1 semaine avant','La veille','Jour J'];
+
+const DEF_TASKS = [
+  {id:1,text:"Choisir la date du mariage",done:false,month:"12 à 18 mois avant"},{id:2,text:"Définir le budget total",done:false,month:"12 à 18 mois avant"},{id:3,text:"Déterminer le nombre d'invités",done:false,month:"12 à 18 mois avant"},{id:4,text:"Établir une liste d'invités provisoire",done:false,month:"12 à 18 mois avant"},{id:5,text:"Rechercher des lieux de réception",done:false,month:"12 à 18 mois avant"},{id:6,text:"Visiter plusieurs lieux",done:false,month:"12 à 18 mois avant"},{id:7,text:"Signer le contrat du lieu",done:false,month:"12 à 18 mois avant"},{id:8,text:"Réserver la mairie",done:false,month:"12 à 18 mois avant"},{id:9,text:"Définir le thème et les couleurs",done:false,month:"12 à 18 mois avant"},{id:10,text:"Rechercher un traiteur",done:false,month:"12 à 18 mois avant"},{id:11,text:"Rechercher un photographe",done:false,month:"12 à 18 mois avant"},{id:12,text:"Rechercher un DJ ou groupe",done:false,month:"12 à 18 mois avant"},
+  {id:13,text:"Envoyer les Save the Date",done:false,month:"9 à 12 mois avant"},{id:14,text:"Choisir les témoins",done:false,month:"9 à 12 mois avant"},{id:15,text:"Choisir les demoiselles d'honneur / garçons d'honneur",done:false,month:"9 à 12 mois avant"},{id:16,text:"Leur proposer officiellement leur rôle",done:false,month:"9 à 12 mois avant"},{id:17,text:"Commencer les essayages",done:false,month:"9 à 12 mois avant"},{id:18,text:"Choisir la robe de mariée",done:false,month:"9 à 12 mois avant"},{id:19,text:"Choisir le costume",done:false,month:"9 à 12 mois avant"},{id:20,text:"Réserver le traiteur",done:false,month:"9 à 12 mois avant"},{id:21,text:"Réserver le photographe",done:false,month:"9 à 12 mois avant"},{id:22,text:"Réserver le DJ / groupe",done:false,month:"9 à 12 mois avant"},{id:23,text:"Réserver un vidéaste",done:false,month:"9 à 12 mois avant"},{id:24,text:"Contacter un fleuriste",done:false,month:"9 à 12 mois avant"},{id:25,text:"Réserver le coiffeur",done:false,month:"9 à 12 mois avant"},{id:26,text:"Réserver le maquilleur",done:false,month:"9 à 12 mois avant"},
+  {id:27,text:"Rechercher des hébergements invités",done:false,month:"6 à 9 mois avant"},{id:28,text:"Réserver des logements",done:false,month:"6 à 9 mois avant"},{id:29,text:"Choisir les alliances",done:false,month:"6 à 9 mois avant"},{id:30,text:"Lancer la création des faire-part",done:false,month:"6 à 9 mois avant"},{id:31,text:"Définir le menu avec le traiteur",done:false,month:"6 à 9 mois avant"},{id:32,text:"Prévoir les régimes alimentaires",done:false,month:"6 à 9 mois avant"},{id:33,text:"Choisir les boissons",done:false,month:"6 à 9 mois avant"},{id:34,text:"Réserver le gâteau",done:false,month:"6 à 9 mois avant"},{id:35,text:"Réserver les transports",done:false,month:"6 à 9 mois avant"},{id:36,text:"Réserver les animations",done:false,month:"6 à 9 mois avant"},{id:37,text:"Choisir la décoration principale",done:false,month:"6 à 9 mois avant"},{id:38,text:"Prévenir les témoins concernant l'organisation des EVJF / EVG",done:false,month:"6 à 9 mois avant"},
+  {id:39,text:"Envoyer les faire-part",done:false,month:"3 à 6 mois avant"},{id:40,text:"Acheter les accessoires (chaussures, bijoux…)",done:false,month:"3 à 6 mois avant"},{id:41,text:"Finaliser la décoration",done:false,month:"3 à 6 mois avant"},{id:42,text:"Commander les éléments de papeterie",done:false,month:"3 à 6 mois avant"},{id:43,text:"Prévoir les centres de table",done:false,month:"3 à 6 mois avant"},{id:44,text:"Organiser les animations",done:false,month:"3 à 6 mois avant"},{id:45,text:"Réaliser un essai coiffure",done:false,month:"3 à 6 mois avant"},{id:46,text:"Réaliser un essai maquillage",done:false,month:"3 à 6 mois avant"},{id:47,text:"Commencer le plan de table",done:false,month:"3 à 6 mois avant"},{id:48,text:"Préparer les discours",done:false,month:"3 à 6 mois avant"},
+  {id:49,text:"Relancer les invités sans réponse",done:false,month:"2 à 3 mois avant"},{id:50,text:"Finaliser la liste des invités",done:false,month:"2 à 3 mois avant"},{id:51,text:"Ajuster le plan de table",done:false,month:"2 à 3 mois avant"},{id:52,text:"Confirmer les prestataires",done:false,month:"2 à 3 mois avant"},{id:53,text:"Commander les cadeaux invités",done:false,month:"2 à 3 mois avant"},{id:54,text:"Préparer les livrets de cérémonie",done:false,month:"2 à 3 mois avant"},{id:55,text:"Planifier le déroulé précis du jour J",done:false,month:"2 à 3 mois avant"},{id:56,text:"Prévoir les musiques clés",done:false,month:"2 à 3 mois avant"},
+  {id:57,text:"Donner le nombre d'invités final au traiteur",done:false,month:"1 mois avant"},{id:58,text:"Finaliser le plan de table",done:false,month:"1 mois avant"},{id:59,text:"Finaliser le planning du jour J",done:false,month:"1 mois avant"},{id:60,text:"Préparer les paiements prestataires",done:false,month:"1 mois avant"},{id:61,text:"Vérifier les tenues complètes",done:false,month:"1 mois avant"},{id:62,text:"Faire les derniers essayages",done:false,month:"1 mois avant"},{id:63,text:"Vérifier tous les contrats",done:false,month:"1 mois avant"},{id:64,text:"S'amuser à l'EVJF / EVG",done:false,month:"1 mois avant"},
+  {id:65,text:"Récupérer la robe et le costume",done:false,month:"2 semaines avant"},{id:66,text:"Récupérer les alliances",done:false,month:"2 semaines avant"},{id:67,text:"Vérifier que tout est en ordre avec les prestataires",done:false,month:"2 semaines avant"},{id:68,text:"Préparer les éléments de décoration",done:false,month:"2 semaines avant"},{id:69,text:"Organiser la logistique finale",done:false,month:"2 semaines avant"},
+  {id:70,text:"Tester les chaussures",done:false,month:"1 semaine avant"},{id:71,text:"Vérifier la météo",done:false,month:"1 semaine avant"},{id:72,text:"Finaliser le plan de table imprimé",done:false,month:"1 semaine avant"},{id:73,text:"Préparer tous les éléments à transporter",done:false,month:"1 semaine avant"},{id:74,text:"Briefer les proches (rôles, timing)",done:false,month:"1 semaine avant"},{id:75,text:"Se reposer",done:false,month:"1 semaine avant"},
+  {id:76,text:"Installer la décoration",done:false,month:"La veille"},{id:77,text:"Vérifier les tenues",done:false,month:"La veille"},{id:78,text:"Préparer les alliances",done:false,month:"La veille"},{id:79,text:"Préparer les affaires du lendemain",done:false,month:"La veille"},{id:80,text:"Relire le planning",done:false,month:"La veille"},{id:81,text:"Se coucher tôt",done:false,month:"La veille"},
+  {id:82,text:"Se préparer calmement",done:false,month:"Jour J"},{id:83,text:"Accueillir les prestataires",done:false,month:"Jour J"},{id:84,text:"Suivre le planning",done:false,month:"Jour J"},{id:85,text:"Déléguer la gestion",done:false,month:"Jour J"},{id:86,text:"Profiter pleinement de la journée",done:false,month:"Jour J"}
+];
+
+// ── AFFICHAGE ──
+function showAppSection(){
+  _eld('landing-page').style.display='none';
+  _eld('app-section').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+  _onFirebaseReady(()=>{
+    const {onAuthStateChanged}=window.firebaseAuthLib;
+    onAuthStateChanged(window.firebaseAuth, user=>{
+      if(user){
+        _loadWebUser(user);
+      }
+    });
+  });
+}
+
+function showAuthTab(tab){
+  _eld('aform-login').style.display = tab==='login'?'block':'none';
+  _eld('aform-register').style.display = tab==='register'?'block':'none';
+  _eld('atab-login').classList.toggle('active', tab==='login');
+  _eld('atab-register').classList.toggle('active', tab==='register');
+}
+
+// ── AUTH ──
+async function doWebLogin(){
+  const email = _eld('al-email').value.trim();
+  const pass = _eld('al-pass').value;
+  const err = _eld('aerr-login');
+  err.style.display='none';
+  try{
+    const {signInWithEmailAndPassword} = window.firebaseAuthLib;
+    const cred = await signInWithEmailAndPassword(window.firebaseAuth, email, pass);
+    await _loadWebUser(cred.user);
+  }catch(e){
+    err.textContent = e.code==='auth/wrong-password'||e.code==='auth/invalid-credential' ? 'Email ou mot de passe incorrect.' : 'Erreur : ' + (e.message||e.code);
+    err.style.display='block';
+  }
+}
+
+async function doWebRegister(){
+  const p1=_eld('ar-p1').value.trim(), p2=_eld('ar-p2').value.trim();
+  const wDate=_eld('ar-date').value, email=_eld('ar-email').value.trim(), pass=_eld('ar-pass').value;
+  const err=_eld('aerr-register');
+  err.style.display='none';
+  if(!email||!pass||!p1||!p2||!wDate){ err.textContent='Veuillez remplir tous les champs.'; err.style.display='block'; return; }
+  try{
+    const {createUserWithEmailAndPassword}=window.firebaseAuthLib;
+    const cred=await createUserWithEmailAndPassword(window.firebaseAuth,email,pass);
+    const {doc,setDoc}=window.firebaseLib;
+    await setDoc(doc(window.firebaseDB,'userData',cred.user.uid),{email,p1,p2,wDate,_createdAt:Date.now()},{merge:true});
+    localStorage.setItem('sess',JSON.stringify(email));
+    localStorage.setItem(`tasks_${email}`,JSON.stringify(DEF_TASKS.map(t=>({...t,done:false}))));
+    await _loadWebUser(cred.user);
+  }catch(e){
+    err.textContent = e.code==='auth/email-already-in-use' ? 'Cet email est déjà utilisé.' : 'Erreur : '+(e.message||e.code);
+    err.style.display='block';
+  }
+}
+
+async function doWebForgot(){
+  const email=_eld('al-email').value.trim();
+  if(!email){ alert('Entrez votre email d\'abord.'); return; }
+  try{
+    await window.firebaseAuthLib.sendPasswordResetEmail(window.firebaseAuth,email);
+    alert('Email de réinitialisation envoyé !');
+  }catch(e){ alert('Erreur : '+(e.message||e.code)); }
+}
+
+async function doWebLogout(){
+  await window.firebaseAuthLib.signOut(window.firebaseAuth);
+  WEB_USER=null;
+  _eld('app-connected').style.display='none';
+  _eld('app-auth').style.display='block';
+  _eld('app-section').style.display='none';
+  _eld('landing-page').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+async function _loadWebUser(firebaseUser){
+  // Charger données Firestore
+  const {doc,getDoc}=window.firebaseLib;
+  const snap=await getDoc(doc(window.firebaseDB,'userData',firebaseUser.uid));
+  const data=snap.exists()?snap.data():{};
+  WEB_USER={email:firebaseUser.email, p1:data.p1||'', p2:data.p2||'', wDate:data.wDate||'', uid:firebaseUser.uid};
+  window._activeDataDocId=firebaseUser.uid;
+  // Écrire en localStorage
+  if(data){
+    for(const [k,v] of Object.entries(data)){
+      if(typeof v !== 'object' || Array.isArray(v)) try{localStorage.setItem(k,JSON.stringify(v));}catch{}
+    }
+    // Clés avec email
+    if(data.tasks) try{localStorage.setItem(`tasks_${firebaseUser.email}`,JSON.stringify(data.tasks));}catch{}
+  }
+  // Charger tasks
+  WEB_TASKS=ld(`tasks_${firebaseUser.email}`,[]);
+  if(WEB_TASKS.length<50) WEB_TASKS=DEF_TASKS.map(t=>({...t,done:false}));
+  // Charger toutes les données
+  WEB_BUDGET = ld('budget_'+firebaseUser.email, null);
+  if(!WEB_BUDGET||!WEB_BUDGET.length) WEB_BUDGET = DEF_BUDGET.map(b=>({...b,reel:0,paye:0}));
+  WEB_GUESTS = ld('guests_'+firebaseUser.email, DEF_GUESTS);
+  WEB_TABLES = ld('tables_'+firebaseUser.email, DEF_TABLES);
+  WEB_VENDORS_FAV = ld('vfav_'+firebaseUser.email, []);
+  WEB_VENDORS_CHO = ld('vcho_'+firebaseUser.email, []);
+  WEB_NOTES = ld('notes_'+firebaseUser.email, '');
+  WEB_MENU = ld('menu_'+firebaseUser.email, DEF_MENU.map(s=>({...s,items:s.items.map(i=>({...i}))})));
+
+  _eld('app-auth').style.display='none';
+  _eld('app-connected').style.display='block';
+  _updateWebHeader();
+  _startWebCountdown();
+  _renderChecklist();
+}
+
+// ── HEADER & COUNTDOWN ──
+function _updateWebHeader(){
+  if(!WEB_USER) return;
+  const p1=WEB_USER.p1||'—', p2=WEB_USER.p2||'—';
+  const dateStr=WEB_USER.wDate ? new Date(WEB_USER.wDate).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}) : '—';
+  _eld('web-subtitle').innerHTML = `<em>Mariage de</em> <strong>${p1}</strong> &amp; <strong>${p2}</strong> — ${dateStr}`;
+}
+
+let _cdInterval=null;
+function _startWebCountdown(){
+  if(_cdInterval) clearInterval(_cdInterval);
+  function update(){
+    if(!WEB_USER||!WEB_USER.wDate){return;}
+    const now=new Date(), target=new Date(WEB_USER.wDate);
+    target.setHours(11,0,0,0);
+    const diff=target-now;
+    if(diff<=0){
+      _eld('wcd-j').textContent=_eld('wcd-h').textContent=_eld('wcd-m').textContent=_eld('wcd-s').textContent='0';
+      return;
+    }
+    _eld('wcd-j').textContent=Math.floor(diff/86400000);
+    _eld('wcd-h').textContent=Math.floor((diff%86400000)/3600000);
+    _eld('wcd-m').textContent=Math.floor((diff%3600000)/60000);
+    _eld('wcd-s').textContent=Math.floor((diff%60000)/1000);
+  }
+  update();
+  _cdInterval=setInterval(update,1000);
+}
+
+// ── ONGLETS ──
+function switchWebTab(idx, btn){
+  WEB_CURRENT_TAB=idx;
+  document.querySelectorAll('.app-tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  for(let i=0;i<10;i++){
+    const el=_eld('web-tab-'+i);
+    if(el) el.style.display=i===idx?'block':'none';
+  }
+  const renders = [_renderChecklist, _renderBudget, _renderGuests, _renderTablePlan, _renderVendors, _renderMenu, _renderDecorations, _renderAssistant, _renderAlbum, _renderNotes];
+  if(renders[idx]) renders[idx]();
+}
+
+// ── CHECKLIST ──
+async function resetTasks(){
+  if(await appConfirm('Restaurer toutes les tâches par défaut ? Vos tâches personnalisées seront conservées.')){
+    const custom = WEB_TASKS.filter(t=>t.month==='Personnalisé');
+    const existingTexts = new Set(WEB_TASKS.map(t=>t.text));
+    // Add all missing default tasks (keeping done state of existing ones)
+    const restoredDef = DEF_TASKS.map(def => {
+      const existing = WEB_TASKS.find(t=>t.text===def.text);
+      return existing ? existing : {...def, done:false};
+    });
+    WEB_TASKS = [...restoredDef, ...custom];
+    _saveTasks();
+    _renderChecklist();
+  }
+}
+
+function _saveTasks(){sv('tasks_'+WEB_USER.email,WEB_TASKS);}
+function _webToggleMonth(month){
+  _webCollapsedMonths[month]=!_webCollapsedMonths[month];
+  const tasks=el('chk-tasks-'+btoa(unescape(encodeURIComponent(month))).replace(/=/g,''));
+  const arrow=el('chk-arrow-'+btoa(unescape(encodeURIComponent(month))).replace(/=/g,''));
+  if(tasks){tasks.style.display=_webCollapsedMonths[month]?'none':'block';}
+  if(arrow){arrow.style.transform=_webCollapsedMonths[month]?'rotate(-90deg)':'rotate(0deg)';}
+}
+function _renderChecklist(){
+  const done=WEB_TASKS.filter(t=>t.done).length, tot=WEB_TASKS.length, pct=tot?Math.round(done/tot*100):0;
+  const grouped=WEB_TASKS.reduce((a,t)=>{(a[t.month]=a[t.month]||[]).push(t);return a;},{});
+  const allMonths=[...MONTHS,...Object.keys(grouped).filter(m=>!MONTHS.includes(m))];
+  const monthsWithTasks=allMonths.filter(m=>grouped[m]&&grouped[m].length);
+  _eld('web-tab-0').innerHTML=`
+  <div class="card" style="padding:16px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,${sf},#fff)">
+    <div><div class="lbl">Progression</div><div style="font-family:Playfair Display,serif;font-size:28px;color:${tx}">${done}<span style="font-size:14px;color:${tl}"> / ${tot}</span></div></div>
+    <svg viewBox="0 0 36 36" width="60" height="60"><circle cx="18" cy="18" r="15.9" fill="none" stroke="${br}" stroke-width="3"/><circle cx="18" cy="18" r="15.9" fill="none" stroke="${pk}" stroke-width="3" stroke-dasharray="${pct} 100" stroke-linecap="round" transform="rotate(-90 18 18)"/><text x="18" y="22" text-anchor="middle" font-size="7" fill="${tx}" font-family="serif" font-weight="bold">${pct}%</text></svg>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+    <input class="inp" id="chk-text" placeholder="Ajouter une tâche..." style="flex:2;min-width:140px;" onkeydown="if(event.key==='Enter')addTask()">
+    <select class="inp" id="chk-cat" style="flex:1;min-width:120px;">
+      ${[...new Set(WEB_TASKS.map(t=>t.month)),'Personnalisé'].map(m=>`<option value="${h(m)}">${h(m)}</option>`).join('')}
+    </select>
+    <button class="btn" onclick="addTask()" style="padding:9px 14px;font-size:18px;">+</button>
+  </div>
+  <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
+    <button onclick="resetTasks()" class="btn-sec" style="font-size:11px;padding:5px 12px;color:${tl};border-color:${br};">↺ Restaurer les tâches par défaut</button>
+  </div>
+  ${monthsWithTasks.map(month=>{
+    const safeId=btoa(unescape(encodeURIComponent(month))).replace(/=/g,'');
+    const collapsed=!!_webCollapsedMonths[month];
+    const doneInMonth=grouped[month].filter(t=>t.done).length;
+    return `<div style="margin-bottom:10px;">
+      <div onclick="_webToggleMonth('${month.replace(/'/g,"\\'")}') " style="display:flex;align-items:center;justify-content:center;gap:8px;background:${sf};border:1.5px solid ${br};border-radius:11px;padding:11px 16px;cursor:pointer;margin-bottom:6px;">
+        <span id="chk-arrow-${safeId}" style="font-size:13px;color:${pk};transition:transform .25s;transform:${collapsed?'rotate(-90deg)':'rotate(0deg)'};display:inline-block;">▼</span>
+        <span style="font-family:Playfair Display,serif;font-size:15px;font-weight:700;color:${tm};letter-spacing:1px;">${h(month)}</span>
+        <span style="font-size:11px;color:${tl};margin-left:4px;">(${doneInMonth}/${grouped[month].length})</span>
+      </div>
+      <div id="chk-tasks-${safeId}" style="display:${collapsed?'none':'block'};">
+        ${grouped[month].map(t=>`
+          <div onclick="toggleTask(${t.id})" style="display:flex;align-items:center;gap:11px;background:${t.done?sf:'#fff'};border:none;border-bottom:1px solid ${sf};border-radius:0;padding:10px 4px;margin-bottom:2px;cursor:pointer;">
+            <div style="width:20px;height:20px;border-radius:50%;border:2px solid ${t.done?pk:br};background:${t.done?pk:'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">${t.done?'<span style="color:#fff;font-size:11px;font-weight:bold;">✓</span>':''}</div>
+            <span style="flex:1;font-size:13px;color:${t.done?tl:tx};text-decoration:${t.done?'line-through':'none'}">${h(t.text)}</span>
+            <button onclick="event.stopPropagation();removeTask(${t.id})" style="background:none;border:none;cursor:pointer;color:${br};font-size:16px;">×</button>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('')}`;
+}
+function addTask(){
+  const t=el('chk-text').value.trim();
+  if(!t)return;
+  const cat=el('chk-cat')?.value||'Personnalisé';
+  WEB_TASKS.push({id:Date.now(),text:t,done:false,month:cat});
+  el('chk-text').value='';
+  _saveTasks();_renderChecklist();
+}
+function toggleTask(id){WEB_TASKS=WEB_TASKS.map(t=>t.id===id?{...t,done:!t.done}:t);_saveTasks();_renderChecklist();}
+function removeTask(id){WEB_TASKS=WEB_TASKS.filter(t=>t.id!==id);_saveTasks();_renderChecklist();}
+async function resetTasks(){
+  if(await appConfirm('Restaurer toutes les tâches par défaut ? Vos tâches personnalisées seront conservées.')){
+    const custom = WEB_TASKS.filter(t=>t.month==='Personnalisé');
+    const existingTexts = new Set(WEB_TASKS.map(t=>t.text));
+    // Add all missing default tasks (keeping done state of existing ones)
+    const restoredDef = DEF_TASKS.map(def => {
+      const existing = WEB_TASKS.find(t=>t.text===def.text);
+      return existing ? existing : {...def, done:false};
+    });
+    WEB_TASKS = [...restoredDef, ...custom];
+    _saveTasks();
+    _renderChecklist();
+  }
+}
+
+// ── WEB_BUDGET ────────────────────────────────────────────────────────────────────
+
+// ── WEB_BUDGET ────────────────────────────────────────────────────────────────────
+function _saveBudget(){sv('budget_'+WEB_USER.email,WEB_BUDGET);}
+function _renderBudget(){
+  const tE=WEB_BUDGET.reduce((s,i)=>s+(i.est||0),0),tR=WEB_BUDGET.reduce((s,i)=>s+(i.reel||0),0),tP=WEB_BUDGET.reduce((s,i)=>s+(i.paye||0),0),reste=tR-tP;
+  _eld('web-tab-1').innerHTML=`
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+    <div class="card" style="padding:13px;text-align:center;"><div class="lbl">Budget estimé total</div><div style="font-family:Playfair Display,serif;font-size:19px;font-weight:700;color:${tx}">${fmt(tE)} €</div></div>
+    <div class="card" style="padding:13px;text-align:center;"><div class="lbl">Budget réel total</div><div style="font-family:Playfair Display,serif;font-size:19px;font-weight:700;color:${pk}">${fmt(tR)} €</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+    <div style="background:#f0f8f2;border:1.5px solid ${br};border-radius:14px;padding:13px;text-align:center;"><div class="lbl">Déjà payé</div><div style="font-family:Playfair Display,serif;font-size:19px;font-weight:700;color:${gn}">${fmt(tP)} €</div></div>
+    <div style="background:${reste>0?'#fff8f0':'#f0f8f2'};border:1.5px solid ${br};border-radius:14px;padding:13px;text-align:center;"><div class="lbl">Reste à payer</div><div style="font-family:Playfair Display,serif;font-size:19px;font-weight:700;color:${reste>0?am:gn}">${fmt(reste)} €</div></div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px;">
+    <input class="inp" id="bgt-cat" placeholder="Nouvelle catégorie" style="flex:2;background:#fff;">
+    <input class="inp" id="bgt-est" placeholder="Budget estimé €" type="number" style="flex:1;background:#fff;">
+    <button class="btn" onclick="addBudget()" style="padding:9px 14px;font-size:18px;">+</button>
+  </div>
+  <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+    <button onclick="resetBudget()" class="btn-sec" style="font-size:11px;padding:5px 12px;color:${tl};border-color:${br};">↺ Restaurer les catégories par défaut</button>
+  </div>
+  ${WEB_BUDGET.map(item=>{
+    const pct=item.est>0?Math.min((item.reel||0)/item.est*100,100):0;
+    const over=(item.reel||0)>(item.est||0);
+    const r=(item.reel||0)-(item.paye||0);
+    return `<div class="card" style="padding:13px;margin-bottom:9px;">
+      <div style="margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;">
+        <span data-budget-cat="${item.id}" onclick="renameBudget(${item.id})" style="font-family:Playfair Display,serif;font-size:14px;font-weight:700;color:${tm};cursor:text;border-bottom:1px dashed ${br};padding-bottom:1px;" title="Toucher pour renommer">${h(item.cat)}</span>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <span style="font-size:10px;color:${over?rd:gn};font-weight:700;background:${over?'#fff0f0':'#f0f8f2'};border-radius:20px;padding:2px 8px;">${over?'Dépassé':Math.round(pct)+'%'}</span>
+          <button onclick="removeBudget(${item.id})" style="background:none;border:none;cursor:pointer;color:${br};font-size:15px;">×</button>
+        </div>
+      </div>
+      <div style="height:5px;background:${sf};border-radius:3px;margin-bottom:10px;overflow:hidden;"><div style="height:100%;width:${pct}%;background:${over?rd:`linear-gradient(90deg,${pk},${pm})`};border-radius:3px;"></div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+        <div><div class="lbl">Budget estimé</div><input type="number" value="${item.est||''}" placeholder="0" onfocus="if(this.value=='0')this.value=''" onchange="updBudget(${item.id},'est',this.value)" style="width:100%;border:1.5px solid ${br};border-radius:8px;padding:6px 8px;font-size:13px;color:#7a4a60;font-weight:700;outline:none;background:#fffafc;"></div>
+        <div><div class="lbl">Budget réel</div><input type="number" value="${item.reel||''}" placeholder="0" onfocus="if(this.value=='0')this.value=''" onchange="updBudget(${item.id},'reel',this.value)" style="width:100%;border:1.5px solid ${br};border-radius:8px;padding:6px 8px;font-size:13px;color:${pk};font-weight:700;outline:none;background:#fffafc;"></div>
+        <div><div class="lbl">Déjà payé</div><input type="number" value="${item.paye||''}" placeholder="0" onfocus="if(this.value=='0')this.value=''" onchange="updBudget(${item.id},'paye',this.value)" style="width:100%;border:1.5px solid ${br};border-radius:8px;padding:6px 8px;font-size:13px;color:${gn};font-weight:700;outline:none;background:#fffafc;"></div>
+      </div>
+      <div style="margin-top:6px;text-align:right;font-size:11px;color:${tl}">Reste à payer : <strong style="color:${r>0?am:gn}">${fmt(r)} €</strong></div>
+    </div>`;
+  }).join('')}`;
+}
+function addBudget(){const cat=el('bgt-cat').value.trim();if(!cat)return;WEB_BUDGET.push({id:Date.now(),cat,est:Number(el('bgt-est').value)||0,reel:0,paye:0});el('bgt-cat').value='';el('bgt-est').value='';_saveBudget();_renderBudget();}
+async function resetBudget(){
+  if(await appConfirm('Restaurer toutes les catégories par défaut ? Les doublons et catégories ajoutées seront supprimés.')){
+    WEB_BUDGET = DEF_BUDGET.map(def=>({...def,reel:0,paye:0}));
+    _saveBudget();_renderBudget();
+  }
+}
+function updBudget(id,f,v){WEB_BUDGET=WEB_BUDGET.map(i=>i.id===id?{...i,[f]:v===''?0:Number(v)}:i);_saveBudget();_renderBudget();}
+function removeBudget(id){WEB_BUDGET=WEB_BUDGET.filter(i=>i.id!==id);_saveBudget();_renderBudget();}
+function renameBudget(id){
+  const span=document.querySelector('[data-budget-cat="'+id+'"]');
+  if(!span)return;
+  const item=WEB_BUDGET.find(i=>i.id===id);
+  const inp=document.createElement('input');
+  inp.value=item.cat;
+  inp.style.cssText='font-size:14px;font-weight:700;color:#3e1828;border:none;border-bottom:2px solid #d4607a;outline:none;background:transparent;font-family:Playfair Display,serif;width:100%;';
+  span.replaceWith(inp);
+  inp.focus();inp.select();
+  function save(){
+    if(inp.value.trim()){WEB_BUDGET=WEB_BUDGET.map(i=>i.id===id?{...i,cat:inp.value.trim()}:i);}
+    _saveBudget();_renderBudget();
+  }
+  inp.addEventListener('blur',save);
+  inp.addEventListener('keydown',function(e){if(e.key==='Enter')inp.blur();if(e.key==='Escape'){_renderBudget();}});
+}
+
+// ── WEB_GUESTS ────────────────────────────────────────────────────────────────────
 function editGuestRegimes(id){
   const g=WEB_GUESTS.find(x=>x.id===id);
   if(!g)return;
@@ -2236,1226 +2311,8 @@ function editGuestRegimes(id){
   document.body.appendChild(overlay);
 }
 
-
-
-const VCAT=["Traiteur","Photographe","Salle","Fleuriste","DJ / Musique","Wedding Planner","Autre"];
-const VCOLS={Photographe:"#7a5a9a",Traiteur:"#5a8a5a",Salle:"#9a5a3a",Fleuriste:"#c4697e","DJ / Musique":"#3a6a9a","Wedding Planner":"#8a6a2a",Autre:"#6a6a6a"};
-
-// ── DEFAULT DATA ──────────────────────────────────────────────────────────────
-
-const DEF_BUDGET=[
-  {id:1,cat:"Lieu de réception",est:2000,reel:0},
-  {id:2,cat:"Traiteur",est:2000,reel:0},
-  {id:3,cat:"Photographe",est:500,reel:0},
-  {id:4,cat:"Vidéaste",est:500,reel:0},
-  {id:5,cat:"DJ ou groupe de musique",est:1000,reel:0},
-  {id:6,cat:"Officiant de cérémonie",est:100,reel:0},
-  {id:7,cat:"Fleuriste",est:600,reel:0},
-  {id:8,cat:"Boutique de robe de mariée",est:2000,reel:0},
-  {id:9,cat:"Costumier / tailleur",est:1000,reel:0},
-  {id:10,cat:"Coiffeur(se)",est:200,reel:0},
-  {id:11,cat:"Maquilleur(se)",est:100,reel:0},
-  {id:12,cat:"Accessoiriste",est:100,reel:0},
-  {id:13,cat:"Location de matériel",est:1000,reel:0},
-  {id:14,cat:"Animateurs",est:800,reel:0},
-  {id:15,cat:"Faire-parts / Imprimeur",est:100,reel:0},
-  {id:16,cat:"Location de véhicule",est:500,reel:0},
-  {id:17,cat:"Navettes / transport invités",est:500,reel:0},
-  {id:18,cat:"Hébergement des invités",est:2000,reel:0}
-];
-const DEF_GUESTS=[
-  {id:1,nom:"Marie Dupont",email:"marie@email.com",invitation:"envoyée",presence:"confirmée",cote:"p1",role:"Invité·e",regime:"Aucun",vinHonneur:false,age:"Adulte",seatTableId:null,seatIdx:null},
-  {id:2,nom:"Pierre Martin",email:"pierre@email.com",invitation:"envoyée",presence:"confirmée",cote:"p2",role:"Témoin",regime:"Aucun",vinHonneur:false,age:"Adulte",seatTableId:null,seatIdx:null},
-  {id:3,nom:"Sophie Bernard",email:"sophie@email.com",invitation:"envoyée",presence:"en attente",cote:"p1",role:"Demoiselle d'honneur",regime:"Végétarien",vinHonneur:true,age:"Adulte",seatTableId:null,seatIdx:null}
-];
-const DEF_TABLES=[
-  {id:1,nom:"Table des mariés",shape:"round",seats:6,x:80,y:80,hiddenSeats:[]},
-  {id:2,nom:"Table famille",shape:"round",seats:6,x:300,y:80,hiddenSeats:[]}
-];
-const DEF_MENU=[
-  {id:1,section:"Vin d'honneur / Cocktail",items:[{id:11,text:"Champagne & vins"},{id:12,text:"Cocktails & softs"},{id:13,text:"Amuse-bouches (canapés, verrines, petits fours)"}]},
-  {id:2,section:"Entrée",items:[{id:21,text:"Froide ou chaude (foie gras, tartare de poisson, salade raffinée...)"}]},
-  {id:3,section:"Plat principal",items:[{id:31,text:"Viande, poisson ou option végétarienne"},{id:32,text:"Accompagnements (légumes, féculents)"}]},
-  {id:4,section:"Fromage",items:[{id:41,text:"Plateau de fromages variés"},{id:42,text:"Salade"}]},
-  {id:5,section:"Dessert",items:[{id:51,text:"Pièce montée, Wedding cake ou dessert à l'assiette"}]}
-];
-
-// ── HELPERS ───────────────────────────────────────────────────────────────────
-const h=s=>(s===undefined||s===null?'':String(s)).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-const fmt=n=>Number(n||0).toLocaleString('fr-FR');
-const el=id=>document.getElementById(id);
-
-// ── AUTH ──────────────────────────────────────────────────────────────────────
-let authMode='login';
-
-function showLogin(){
-  authMode='login';
-  document.getElementById('form-login').style.display='block';
-  document.getElementById('form-register').style.display='none';
-  document.getElementById('btn-login').style.background='#fff';
-  document.getElementById('btn-login').style.color='#d4607a';
-  document.getElementById('btn-register').style.background='transparent';
-  document.getElementById('btn-register').style.color='#b07a90';
-}
-
-function showRegister(){
-  authMode='register';
-  document.getElementById('form-login').style.display='none';
-  document.getElementById('form-register').style.display='block';
-  document.getElementById('btn-register').style.background='#fff';
-  document.getElementById('btn-register').style.color='#d4607a';
-  document.getElementById('btn-login').style.background='transparent';
-  document.getElementById('btn-login').style.color='#b07a90';
-}
-
-async function doLogin(){
-  const email=document.getElementById('a-email-l').value.trim();
-  const pass=document.getElementById('a-pass-l').value;
-  const err=document.getElementById('err-login');
-  const btn=document.querySelector('#form-login .btn');
-  // Helper interne : affiche un message d'erreur et fait défiler vers lui
-  // (cette fonction garantit que err.style.display='block' ne sera jamais oublié)
-  function _showErr(msg){
-    err.style.background='#fff0f0';err.style.borderColor='#ffccd0';err.style.color='#c43a3a';
-    err.textContent=msg;
-    err.style.display='block';
-    try{ err.scrollIntoView({behavior:'smooth',block:'center'}); }catch(_){}
-  }
-  // Reset du style (peut avoir été passé en vert par doForgotPassword)
-  err.style.background='#fff0f0';err.style.borderColor='#ffccd0';err.style.color='#c43a3a';
-  err.style.display='none';
-  if(!email||!pass){_showErr('Veuillez remplir tous les champs.');return;}
-
-  let u=ld('u_'+email,null);
-
-  // 1) Local login (fonctionne offline et pour anciens comptes)
-  if(u && u.pass===pass){
-    sv('sess',email);
-    const remember = document.getElementById('remember-me')?.checked;
-    if(remember){
-      sv('rem_e',email);sv('rem_p',pass);
-    } else {
-      sv('rem_e',null);sv('rem_p',null);
-    }
-    // Connecter aussi Firebase Auth pour avoir currentUser
-    if(window.firebaseAuth && window.firebaseAuthLib){
-      try{
-        const {signInWithEmailAndPassword} = window.firebaseAuthLib;
-        const cred = await signInWithEmailAndPassword(window.firebaseAuth, email, pass);
-        window._currentUID = cred.user.uid;
-        try{ localStorage.setItem('_uid', window._currentUID); }catch{}
-      } catch(_){}
-    }
-    // Charge les données Firestore pour avoir la version la plus récente
-    try { await loadUserDataFromFirestore(email); } catch(_){}
-    startApp(u);
-    return;
-  }
-
-  // 2) Firebase Auth (compte créé avec la nouvelle version)
-  if(window.firebaseAuth && window.firebaseAuthLib){
-    if(btn){btn.textContent='Connexion...';btn.disabled=true;}
-    // Attendre que Firebase Auth soit prêt
-    await new Promise(r=>setTimeout(r,1000));
-    try{
-      const {signInWithEmailAndPassword}=window.firebaseAuthLib;
-      const userCredential = await signInWithEmailAndPassword(window.firebaseAuth, email, pass);
-      // Stocker l'UID depuis le résultat direct — pas besoin de currentUser
-      window._currentUID = userCredential.user.uid;
-      try{ localStorage.setItem('_uid', window._currentUID); }catch{}
-      // Login réussi — Firestore en arrière-plan (non-bloquant)
-      u={email,pass,p1:'',p2:'',wDate:'',albumCode:Math.random().toString(36).substring(2,8).toUpperCase()};
-      // Charger les données depuis userData (nouvelle structure)
-      if(window.firebaseDB && window.firebaseLib && window.firebaseAuth && window.firebaseAuth.currentUser){
-        try{
-          const {doc,getDoc}=window.firebaseLib;
-          const uid = window.firebaseAuth.currentUser.uid;
-          const snap = await Promise.race([
-            getDoc(doc(window.firebaseDB,'userData',uid)),
-            new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),5000))
-          ]);
-          if(snap.exists()){
-            const data=snap.data();
-            u={email,pass,p1:data.p1||'',p2:data.p2||'',wDate:data.wDate||'',albumCode:data.albumCode||u.albumCode};
-          }
-        } catch(fsErr){ console.warn('Firestore indisponible au login:', fsErr.message); }
-        sv('u_'+email,u);
-      }
-      if(btn){btn.textContent='Se connecter';btn.disabled=false;}
-      sv('rem_e',email);sv('rem_p',pass);
-      sv('sess',email);
-      // Charger depuis Firestore sans bloquer si offline
-      try { await loadUserDataFromFirestore(email); } catch(e){ console.warn('Firestore offline, démarrage sans sync:', e); }
-      startApp(u);
-      return;
-    } catch(authErr){
-      console.warn('[doLogin] Firebase Auth error:', authErr.code, '|', authErr.message);
-      if(btn){btn.textContent='Se connecter';btn.disabled=false;}
-
-      // 3) Fallback : essayer l'ancien système Firestore (comptes legacy sans Firebase Auth)
-      if(window.firebaseDB && window.firebaseLib){
-        try{
-          const {doc,getDoc}=window.firebaseLib;
-          const snap=await getDoc(doc(window.firebaseDB,'mariages',email));
-          if(snap.exists()){
-            const data=snap.data();
-            if(data.pass===pass){
-              // Ancien compte légitime : migrer vers Firebase Auth
-              try{
-                const {createUserWithEmailAndPassword}=window.firebaseAuthLib;
-                await createUserWithEmailAndPassword(window.firebaseAuth, email, pass);
-                console.log('Compte legacy migré vers Firebase Auth ✓');
-              } catch(migrateErr){
-                console.warn('Migration impossible (compte déjà en Auth ?):', migrateErr.code);
-              }
-              u={email,pass,p1:data.p1,p2:data.p2,wDate:data.wDate,albumCode:data.albumCode};
-              sv('u_'+email,u);
-              sv('rem_e',email);sv('rem_p',pass);
-              sv('sess',email);
-              await loadUserDataFromFirestore(email);
-              startApp(u);
-              return;
-            }
-          }
-        }catch(e){console.warn('Legacy Firestore login error:',e);}
-      }
-
-      // Erreur d'authentification (mot de passe incorrect ou compte inexistant)
-      // Liste élargie de codes — y compris auth/requests-from-referer-null-are-blocked
-      // qui survient quand l'app est ouverte localement (content:// ou file://) au lieu
-      // d'une URL https:// hébergée. Dans ce cas, la clé API Firebase rejette la requête.
-      let msg='Email ou mot de passe incorrect.';
-      const code=authErr.code||'';
-      const rawMsg=(authErr.message||'').toLowerCase();
-      if(code==='auth/user-not-found') msg='Aucun compte trouvé avec cet email.';
-      else if(code==='auth/wrong-password' || code==='auth/invalid-credential') msg='Mot de passe incorrect. Réessaie ou utilise "Mot de passe oublié ?".';
-      else if(code==='auth/invalid-email') msg='Adresse email invalide. Vérifie l\'orthographe.';
-      else if(code==='auth/too-many-requests') msg='Trop de tentatives. Réessaie dans 10-15 min ou utilise "Mot de passe oublié".';
-      else if(code==='auth/network-request-failed' || !navigator.onLine) msg='Pas de connexion internet. Reconnecte-toi et réessaie.';
-      else if(code==='auth/user-disabled') msg='Ce compte a été désactivé.';
-      else if(code==='auth/operation-not-allowed') msg='Connexion Email/Password désactivée dans Firebase.';
-      else if(rawMsg.indexOf('referer')>=0 || rawMsg.indexOf('referrer')>=0 || code==='auth/api-key-not-valid'){
-        msg='Ouverture impossible depuis un fichier local. L\'app doit être ouverte depuis une URL https:// (lien partagé, Play Store, ou raccourci écran d\'accueil).';
-      }
-      else if(code) msg='Erreur: '+code+' | '+authErr.message.substring(0,80);
-      _showErr(msg);
-      return;
-    }
-  }
-
-  _showErr('Email ou mot de passe incorrect.');
-}
-
-async function doRegister(){
-  const email=document.getElementById('a-email-r').value.trim();
-  const pass=document.getElementById('a-pass-r').value;
-  const p1=document.getElementById('a-p1').value.trim();
-  const p2=document.getElementById('a-p2').value.trim();
-  const wDate=document.getElementById('a-date').value;
-  const err=document.getElementById('err-register');
-  const btn=document.querySelector('#form-register .btn');
-  err.style.display='none';
-  if(!email||!pass){err.textContent='Veuillez remplir email et mot de passe.';err.style.display='block';return;}
-  if(pass.length<6){err.textContent='Le mot de passe doit faire au moins 6 caractères.';err.style.display='block';return;}
-  if(!p1||!p2||!wDate){err.textContent='Veuillez remplir tous les champs du mariage.';err.style.display='block';return;}
-  if(ld('u_'+email,null)){err.textContent='Un compte existe déjà avec cet email.';err.style.display='block';return;}
-
-  // Créer le compte dans Firebase Auth
-  if(window.firebaseAuth && window.firebaseAuthLib){
-    if(btn){btn.textContent='Création...';btn.disabled=true;}
-    try{
-      const {createUserWithEmailAndPassword}=window.firebaseAuthLib;
-      await createUserWithEmailAndPassword(window.firebaseAuth, email, pass);
-    } catch(authErr){
-      console.error('Firebase Auth register error code:', authErr.code, '| message:', authErr.message);
-      if(btn){btn.textContent='Créer un compte';btn.disabled=false;}
-      let msg='Erreur : '+(authErr.code||authErr.message||'inconnue');
-      if(authErr.code==='auth/email-already-in-use') msg='Un compte existe déjà avec cet email. Utilisez "Mot de passe oublié" si besoin.';
-      else if(authErr.code==='auth/invalid-email') msg='Adresse email invalide.';
-      else if(authErr.code==='auth/weak-password') msg='Mot de passe trop faible (min. 6 caractères).';
-      else if(authErr.code==='auth/network-request-failed') msg='Pas de connexion internet.';
-      else if(authErr.code==='auth/operation-not-allowed') msg='Email/Password n\'est pas activé dans la console Firebase.';
-      else if(authErr.code==='auth/unauthorized-domain') msg='Ce domaine n\'est pas autorisé. Ajoute-le dans Firebase Auth → Settings → Authorized domains.';
-      else if(authErr.code==='auth/api-key-not-valid') msg='Clé API Firebase invalide.';
-      else if(authErr.code==='auth/admin-restricted-operation') msg='Restriction admin. Vérifie dans Firebase que l\'inscription publique est autorisée.';
-      err.textContent=msg;err.style.display='block';
-      return;
-    }
-    if(btn){btn.textContent='Créer un compte';btn.disabled=false;}
-  }
-
-  const albumCode = Math.random().toString(36).substring(2,8).toUpperCase();
-  const u={email,pass,p1,p2,wDate,albumCode};
-  sv('u_'+email,u);
-  sv('rem_e',email);sv('rem_p',pass);
-  sv('sess',email);
-  // Sauvegarder les infos du mariage dans Firestore
-  if(window.firebaseDB && window.firebaseLib){
-    const {doc,setDoc,serverTimestamp}=window.firebaseLib;
-    const uid = window.firebaseAuth && window.firebaseAuth.currentUser ? window.firebaseAuth.currentUser.uid : email;
-    setDoc(doc(window.firebaseDB,'mariages',uid),{
-      email,p1,p2,wDate,albumCode,createdAt:serverTimestamp()
-    }).catch(e=>console.log('Firebase sync:',e));
-  }
-  startApp(u);
-}
-
-// ── MOT DE PASSE OUBLIÉ ──────────────────────────────────────────────────
-async function doForgotPassword(){
-  const email=document.getElementById('a-email-l').value.trim();
-  const err=document.getElementById('err-login');
-  err.style.display='none';
-  // Validation côté client : format email
-  const emailRe=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if(!email){
-    err.style.background='#fff0f0';err.style.borderColor='#ffccd0';err.style.color='#c43a3a';
-    err.textContent='Saisis d\'abord ton email dans le champ ci-dessus.';err.style.display='block';return;
-  }
-  if(!emailRe.test(email)){
-    err.style.background='#fff0f0';err.style.borderColor='#ffccd0';err.style.color='#c43a3a';
-    err.textContent='Adresse email invalide. Vérifie l\'orthographe.';err.style.display='block';return;
-  }
-
-  if(!window.firebaseAuth || !window.firebaseAuthLib){
-    err.style.background='#fff0f0';err.style.borderColor='#ffccd0';err.style.color='#c43a3a';
-    err.textContent='Service indisponible. Vérifie ta connexion internet et recharge la page.';err.style.display='block';return;
-  }
-  if(!navigator.onLine){
-    err.style.background='#fff0f0';err.style.borderColor='#ffccd0';err.style.color='#c43a3a';
-    err.textContent='Pas de connexion internet. Reconnecte-toi et réessaie.';err.style.display='block';return;
-  }
-
-  const link=document.getElementById('forgot-link');
-  if(link){link.textContent='Envoi en cours...';link.style.pointerEvents='none';link.style.opacity='0.6';}
-  try{
-    const {sendPasswordResetEmail}=window.firebaseAuthLib;
-
-    // NOTE : on n'utilise PLUS fetchSignInMethodsForEmail pour vérifier le compte.
-    // Depuis la protection "Email Enumeration Protection" (activée par défaut
-    // sur Firebase), cette fonction renvoie toujours une liste vide même pour
-    // un compte existant — ce qui bloquait l'envoi à tort. On laisse donc
-    // Firebase gérer l'envoi directement (il ignore en silence les emails
-    // sans compte, ce qui est le comportement sécurisé standard).
-
-    // ─── Envoi de l'email de réinitialisation ───
-    console.log('[doForgotPassword] Sending reset to', email);
-    const actionCodeSettings={url:'https://weddilya.fr/',handleCodeInApp:true};
-    await sendPasswordResetEmail(window.firebaseAuth, email, actionCodeSettings);
-    console.log('[doForgotPassword] sendPasswordResetEmail OK (Firebase accepted)');
-    err.style.background='#f0fff0';err.style.borderColor='#c8e6c9';err.style.color='#2e7d32';
-    err.innerHTML='✓ Email envoyé, vérifie dans tes spams.';
-    err.style.display='block';
-  } catch(e){
-    console.error('[doForgotPassword] code:', e.code, '| message:', e.message);
-    err.style.background='#fff0f0';err.style.borderColor='#ffccd0';err.style.color='#c43a3a';
-    const code=e.code||'';
-    let msg='Une erreur est survenue. Réessaie dans un instant.';
-    if(code==='auth/user-not-found') msg='Aucun compte n\'est associé à cet email. Vérifie l\'orthographe ou crée un compte.';
-    else if(code==='auth/invalid-email') msg='Adresse email invalide.';
-    else if(code==='auth/network-request-failed') msg='Pas de connexion internet. Vérifie ta connexion et réessaie.';
-    else if(code==='auth/too-many-requests') msg='Trop de tentatives. Réessaie dans quelques minutes.';
-    else if(code==='auth/quota-exceeded') msg='Trop de demandes pour aujourd\'hui. Réessaie demain.';
-    err.innerHTML=msg.replace(/\n/g,'<br>');
-    err.style.display='block';
-  }
-  if(link){link.textContent='Mot de passe oublié ?';link.style.pointerEvents='auto';link.style.opacity='1';}
-}
-
-// ── PARTAGE PARTENAIRE ────────────────────────────────────────────────────────
-
-// Génère un token aléatoire
-function _genToken(){
-  return Math.random().toString(36).substring(2,10)+Math.random().toString(36).substring(2,10);
-}
-
-// Traite un token d'invitation directement (sans localStorage)
-async function _processInviteTokenDirect(token, email, uid){
-  if(!token || !window.firebaseDB || !window.firebaseLib) return;
-  try{
-    const {doc, getDoc, setDoc} = window.firebaseLib;
-    const invSnap = await getDoc(doc(window.firebaseDB, 'invitations', token));
-    if(!invSnap.exists()){ console.warn('[_processInviteTokenDirect] invitation introuvable'); return; }
-    const inv = invSnap.data();
-    console.log('[_processInviteTokenDirect] invitation trouvée:', inv);
-    if(!inv.ownerDocId){ console.warn('[_processInviteTokenDirect] ownerDocId manquant'); return; }
-    // Lier le compte partenaire
-    await setDoc(doc(window.firebaseDB, 'userData', uid), {
-      _sharedOwnerEmail: inv.ownerEmail,
-      _sharedOwnerDocId: inv.ownerDocId
-    }, {merge: true});
-    // Mettre à jour le compte owner
-    await setDoc(doc(window.firebaseDB, 'userData', inv.ownerDocId), {
-      _partnerEmail: email,
-      _pendingPartnerEmail: null,
-      _inviteToken: token
-    }, {merge: true});
-    // Marquer comme acceptée
-    await setDoc(doc(window.firebaseDB, 'invitations', token), {status:'accepted'}, {merge:true});
-    // Définir _activeDataDocId pour charger les données du propriétaire
-    window._activeDataDocId = inv.ownerDocId;
-    console.log('[_processInviteTokenDirect] lié avec succès, ownerDocId:', inv.ownerDocId);
-  } catch(e){ console.error('[_processInviteTokenDirect] erreur:', e); }
-}
-
-// Traite un token d'invitation en attente après login
-async function _processInviteToken(email){
-  let token = null;
-  try{ token = localStorage.getItem('_pendingInviteToken'); }catch{}
-  if(!token || !window.firebaseDB || !window.firebaseLib) return;
-  try{
-    localStorage.removeItem('_pendingInviteToken');
-    const {doc, getDoc, setDoc} = window.firebaseLib;
-    const invSnap = await getDoc(doc(window.firebaseDB, 'invitations', token));
-    if(!invSnap.exists()){ console.warn('[_processInviteToken] invitation introuvable:', token); return; }
-    const inv = invSnap.data();
-    console.log('[_processInviteToken] invitation:', inv);
-    // Vérifier que l'invitation est destinée à cet email (pas de vérification de statut)
-    if(inv.partnerEmail && inv.partnerEmail !== email.toLowerCase()){
-      console.warn('[_processInviteToken] email ne correspond pas:', email, '!=', inv.partnerEmail);
-      return;
-    }
-    if(!inv.ownerDocId){ console.warn('[_processInviteToken] ownerDocId manquant'); return; }
-    // Utiliser l'UID du partenaire (pas l'email transformé)
-    const myDocId = (window.firebaseAuth && window.firebaseAuth.currentUser) 
-      ? window.firebaseAuth.currentUser.uid 
-      : (window._currentUID || _emailToDocId(email));
-    // Lier le compte partenaire au compte owner
-    await setDoc(doc(window.firebaseDB, 'userData', myDocId), {
-      _sharedOwnerEmail: inv.ownerEmail,
-      _sharedOwnerDocId: inv.ownerDocId
-    }, {merge: true});
-    // Mettre à jour _activeDataDocId pour pointer vers les données du propriétaire
-    window._activeDataDocId = inv.ownerDocId;
-    console.log('[_processInviteToken] Lié:', myDocId, '->', inv.ownerDocId);
-    // Mettre à jour le compte owner
-    await setDoc(doc(window.firebaseDB, 'userData', inv.ownerDocId), {
-      _partnerEmail: email,
-      _pendingPartnerEmail: null,
-      _inviteToken: token
-    }, {merge: true});
-    // Marquer l'invitation comme acceptée
-    await setDoc(doc(window.firebaseDB, 'invitations', token), {status:'accepted'}, {merge:true});
-    window._activeDataDocId = inv.ownerDocId;
-    await appAlert('✅ Invitation acceptée ! Vous accédez maintenant à l\'espace partagé.');
-  } catch(e){ console.error('_processInviteToken:', e); }
-}
-
-// Charge le statut partenaire dans la modale settings
-let _partnerStatusUnsub = null;
-
-async function loadPartnerStatus(){
-  const statusEl = document.getElementById('partner-status');
-  const inviteWrap = document.getElementById('partner-invite-wrap');
-  const revokeWrap = document.getElementById('partner-revoke-wrap');
-  if(!statusEl) return;
-  if(!window.firebaseDB || !window.firebaseLib || !USER){
-    statusEl.textContent = 'Non disponible hors connexion.'; return;
-  }
-  const uid = (window.firebaseAuth && window.firebaseAuth.currentUser)
-    ? window.firebaseAuth.currentUser.uid
-    : (window._currentUID || (()=>{ try{ return localStorage.getItem('_uid'); }catch{ return null; } })());
-  if(!uid){ statusEl.textContent = 'Session expirée. Reconnecte-toi.'; return; }
-
-  function _updateStatus(data){
-    const partnerEmail = data._partnerEmail || null;
-    const pendingEmail = data._pendingPartnerEmail || null;
-    if(partnerEmail){
-      statusEl.innerHTML = '✅ <b>'+partnerEmail+'</b> a accès à votre espace.';
-      inviteWrap.style.display = 'none';
-      revokeWrap.style.display = 'block';
-    } else if(pendingEmail){
-      statusEl.innerHTML = '⏳ Invitation envoyée à <b>'+pendingEmail+'</b>, en attente d\'acceptation.';
-      inviteWrap.style.display = 'none';
-      revokeWrap.style.display = 'block';
-    } else {
-      statusEl.textContent = 'Aucun partenaire pour l\'instant.';
-      inviteWrap.style.display = 'block';
-      revokeWrap.style.display = 'none';
-    }
-  }
-
-  // Annuler le listener précédent
-  if(_partnerStatusUnsub) { _partnerStatusUnsub(); _partnerStatusUnsub = null; }
-
-  try{
-    const {doc, onSnapshot} = window.firebaseLib;
-    // Listener temps réel — se met à jour automatiquement quand Julian accepte
-    _partnerStatusUnsub = onSnapshot(doc(window.firebaseDB, 'userData', uid), snap => {
-      _updateStatus(snap.exists() ? snap.data() : {});
-    }, e => {
-      statusEl.textContent = 'Impossible de charger le statut.';
-    });
-  } catch(e){
-    statusEl.textContent = 'Impossible de charger le statut.';
-  }
-}
-
-// Envoie une invitation par email via EmailJS (ou lien direct)
-async function sendPartnerInvite(){
-  console.log('[sendPartnerInvite] called, currentUser:', window.firebaseAuth?.currentUser?.uid, '_currentUID:', window._currentUID, 'localStorage:', localStorage.getItem('_uid'));
-  const emailInput = document.getElementById('partner-email');
-  const errEl = document.getElementById('partner-err');
-  const email = (emailInput ? emailInput.value.trim() : '').toLowerCase();
-  function showErr(msg){ errEl.style.background='#fff0f0';errEl.style.borderColor='#ffccd0';errEl.style.color='#c43a3a';errEl.textContent=msg;errEl.style.display='block'; }
-  function showOk(msg){ errEl.style.background='#f0fff0';errEl.style.borderColor='#c8e6c9';errEl.style.color='#2e7d32';errEl.textContent=msg;errEl.style.display='block'; }
-  errEl.style.display='none';
-  if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showErr('Adresse email invalide.'); return; }
-  if(email === WEB_USER.email){ showErr('Vous ne pouvez pas vous inviter vous-même.'); return; }
-  if(!window.firebaseDB || !window.firebaseLib){ showErr('Service indisponible.'); return; }
-  const uid = (window.firebaseAuth && window.firebaseAuth.currentUser) 
-    ? window.firebaseAuth.currentUser.uid 
-    : (window._currentUID || (()=>{ try{ return localStorage.getItem('_uid'); }catch{ return null; } })());
-  if(!uid){ showErr('Session expirée. Reconnecte-toi.'); return; }
-  try{
-    const {doc, setDoc, getDoc} = window.firebaseLib;
-    const token = _genToken();
-    // Stocker l'invitation dans Firestore
-    await setDoc(doc(window.firebaseDB, 'invitations', token), {
-      ownerEmail: WEB_USER.email,
-      ownerDocId: uid,
-      partnerEmail: email,
-      createdAt: Date.now(),
-      status: 'pending'
-    });
-    // Mettre à jour userData de l'owner avec l'email en attente
-    await setDoc(doc(window.firebaseDB, 'userData', uid), {
-      _pendingPartnerEmail: email,
-      _inviteToken: token
-    }, {merge: true});
-    // Construire le lien d'invitation
-    const inviteUrl = 'https://weddilya.fr/?invite='+token;
-    // Ouvrir le client email dans un nouvel onglet sans quitter l'app
-    const subject = encodeURIComponent(WEB_USER.p1 ? WEB_USER.p1+' vous invite sur Weddilya' : 'Invitation sur Weddilya');
-    const body = encodeURIComponent(
-      'Bonjour,\n\n'+
-      (WEB_USER.p1 || 'Votre partenaire')+' vous invite à accéder à l\'application Weddilya pour préparer votre mariage ensemble.\n\n'+
-      'Cliquez sur ce lien pour créer votre compte et rejoindre l\'espace partagé :\n'+
-      inviteUrl+'\n\n'+
-      'Ce lien est valable 7 jours.\n\nÀ bientôt sur Weddilya !'
-    );
-    // Essayer d'ouvrir le client email
-    const mailtoLink = 'mailto:'+email+'?subject='+subject+'&body='+body;
-    const a = document.createElement('a');
-    a.href = mailtoLink;
-    a.target = '_blank';
-    a.rel = 'noopener';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    // Afficher aussi le lien à copier en cas de problème
-    showOk('✓ Invitation créée ! Si l\'email ne s\'est pas ouvert, copie ce lien et envoie-le à '+email+' : '+inviteUrl);
-    setTimeout(()=>loadPartnerStatus(), 1500);
-  } catch(e){
-    console.error('sendPartnerInvite:', e);
-    showErr('Une erreur est survenue. Réessaie.');
-  }
-}
-
-// Révoque l'accès du partenaire
-async function revokePartnerAccess(){
-  if(!await appConfirm('Révoquer l\'accès de votre partenaire ? Il ne pourra plus accéder à votre espace.')) return;
-  if(!window.firebaseDB || !window.firebaseLib) return;
-  try{
-    const {doc, setDoc, getDoc, deleteDoc} = window.firebaseLib;
-    const docId = window.firebaseAuth && window.firebaseAuth.currentUser ? window.firebaseAuth.currentUser.uid : _emailToDocId(WEB_USER.email);
-    const snap = await getDoc(doc(window.firebaseDB, 'userData', docId));
-    const data = snap.exists() ? snap.data() : {};
-    const partnerEmail = data._partnerEmail;
-    const token = data._inviteToken;
-    // Supprimer le lien côté partenaire
-    if(partnerEmail){
-      const partnerDocId = _emailToDocId(partnerEmail);
-      await setDoc(doc(window.firebaseDB, 'userData', partnerDocId), {
-        _sharedOwnerEmail: null, _sharedOwnerDocId: null
-      }, {merge: true});
-    }
-    // Supprimer l'invitation
-    if(token){ try{ await deleteDoc(doc(window.firebaseDB, 'invitations', token)); }catch{} }
-    // Nettoyer userData owner
-    await setDoc(doc(window.firebaseDB, 'userData', docId), {
-      _partnerEmail: null, _pendingPartnerEmail: null, _inviteToken: null
-    }, {merge: true});
-    loadPartnerStatus();
-  } catch(e){
-    console.error('revokePartnerAccess:', e);
-    await appAlert('Erreur lors de la révocation. Réessaie.');
-  }
-}
-
-// Vérifie au login si l'utilisateur est un partenaire invité
-async function checkPartnerLink(email){
-  if(!window.firebaseDB || !window.firebaseLib || !email) return null;
-  try{
-    const {doc, getDoc} = window.firebaseLib;
-    const docId = _emailToDocId(email);
-    const snap = await getDoc(doc(window.firebaseDB, 'userData', docId));
-    if(!snap.exists()) return null;
-    const data = snap.data();
-    if(data._sharedOwnerDocId) return data._sharedOwnerDocId;
-    return null;
-  } catch(e){ return null; }
-}
-
-async function doRegisterInvite(token){
-  const email = (document.getElementById('inv-email')?.value||'').trim().toLowerCase();
-  const pass = document.getElementById('inv-pass')?.value||'';
-  const errEl = document.getElementById('inv-err');
-  function showErr(msg){ errEl.style.background='#fff0f0';errEl.style.borderColor='#ffccd0';errEl.style.color='#c43a3a';errEl.textContent=msg;errEl.style.display='block'; }
-  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showErr('Email invalide.'); return; }
-  if(!pass||pass.length<6){ showErr('Mot de passe minimum 6 caractères.'); return; }
-  if(!window.firebaseAuth||!window.firebaseAuthLib){ showErr('Service indisponible.'); return; }
-  try{
-    const {createUserWithEmailAndPassword} = window.firebaseAuthLib;
-    const cred = await createUserWithEmailAndPassword(window.firebaseAuth, email, pass);
-    window._currentUID = cred.user.uid;
-    try{ localStorage.setItem('_uid', window._currentUID); }catch{}
-    // Traiter l'invitation directement avec le token (sans passer par localStorage)
-    console.log('[doRegisterInvite] appel _processInviteTokenDirect avec token:', token);
-    await _processInviteTokenDirect(token, email, cred.user.uid);
-    console.log('[doRegisterInvite] _activeDataDocId:', window._activeDataDocId);
-    // Charger directement depuis le document du propriétaire
-    let u = {email, pass, p1:'', p2:'', wDate:'', albumCode: Math.random().toString(36).substring(2,8).toUpperCase()};
-    if(window.firebaseDB && window.firebaseLib && window._activeDataDocId){
-      try{
-        const {doc, getDoc} = window.firebaseLib;
-        const snap = await getDoc(doc(window.firebaseDB, 'userData', window._activeDataDocId));
-        console.log('[doRegisterInvite] owner snap exists:', snap.exists(), 'data:', snap.exists() ? snap.data() : null);
-        if(snap.exists()){
-          const d = snap.data();
-          u = {...u, p1: d.p1||'', p2: d.p2||'', wDate: d.wDate||''};
-          const ownerEmail = d._email || d.email || '';
-          // Copier toutes les données du propriétaire pour l'invité
-          // Les clés Firestore sont du type 'tasks_owner@email.fr'
-          const prefixes = ['tasks_','budget_','guests_','tables_','vfav_','vcho_','notes_','menu_','album_','cake_'];
-          Object.keys(d).forEach(k => {
-            const matchedPrefix = prefixes.find(p => k.startsWith(p));
-            if(matchedPrefix){
-              // Recopier sous la clé de l'invité
-              const newKey = matchedPrefix + email;
-              sv(newKey, d[k]);
-              console.log('[doRegisterInvite] copié', k, '->', newKey);
-            }
-          });
-        }
-      } catch(e){ console.warn('[doRegisterInvite] load owner data:', e); }
-    } else {
-      console.warn('[doRegisterInvite] _activeDataDocId manquant !');
-    }
-    sv('u_'+email, u);
-    sv('sess', email);
-    try{ localStorage.setItem('rem_e', JSON.stringify(email)); }catch{}
-    startApp(u);
-  } catch(e){
-    if(e.code==='auth/email-already-in-use') showErr('Cet email a déjà un compte. Connecte-toi plutôt.');
-    else if(e.code==='auth/weak-password') showErr('Mot de passe trop faible.');
-    else showErr('Erreur : '+e.message);
-  }
-}
-
-async function doConfirmReset(oobCode){
-  const p1 = document.getElementById('new-pass-1').value;
-  const p2 = document.getElementById('new-pass-2').value;
-  const msg = document.getElementById('reset-msg');
-  function showErr(txt){
-    msg.style.background='#fff0f0';msg.style.borderColor='#ffccd0';msg.style.color='#c43a3a';
-    msg.textContent=txt;msg.style.display='block';
-  }
-  if(!p1||p1.length<6){showErr('Le mot de passe doit faire au moins 6 caractères.');return;}
-  if(p1!==p2){showErr('Les deux mots de passe ne correspondent pas.');return;}
-  try{
-    const {confirmPasswordReset} = window.firebaseAuthLib;
-    await confirmPasswordReset(window.firebaseAuth, oobCode, p1);
-    msg.style.background='#f0fff0';msg.style.borderColor='#c8e6c9';msg.style.color='#2e7d32';
-    msg.textContent='✓ Mot de passe mis à jour ! Tu peux te connecter.';msg.style.display='block';
-    setTimeout(()=>{ window.location.href='https://weddilya.fr/'; }, 2000);
-  } catch(e){
-    console.error('confirmPasswordReset:', e.code, e.message);
-    if(e.code==='auth/expired-action-code') showErr('Ce lien a expiré. Redemande un email de réinitialisation.');
-    else if(e.code==='auth/invalid-action-code') showErr('Lien invalide ou déjà utilisé. Redemande un email.');
-    else if(e.code==='auth/weak-password') showErr('Mot de passe trop faible. Minimum 6 caractères.');
-    else showErr('Une erreur est survenue. Réessaie.');
-  }
-}
-
-// ── RGPD ─────────────────────────────────────────────────────────────────────
-
-const RGPD_CONTENT = {
-  privacy: {
-    title: 'Politique de confidentialité',
-    html: `
-      <p style="margin-bottom:10px;"><strong>Dernière mise à jour :</strong> juin 2026</p>
-      <p style="margin-bottom:10px;"><strong>Responsable du traitement :</strong> Weddilya — contact@weddilya.fr</p>
-      <hr style="border:none;border-top:1px solid #f0d8e0;margin:12px 0;">
-      <p style="margin-bottom:8px;"><strong>Données collectées</strong></p>
-      <p style="margin-bottom:10px;">Weddilya collecte uniquement les données que vous saisissez : adresse email, mot de passe (chiffré), et données de planification (invités, budget, checklist, etc.).</p>
-      <p style="margin-bottom:8px;"><strong>Finalité</strong></p>
-      <p style="margin-bottom:10px;">Vos données sont utilisées exclusivement pour faire fonctionner votre espace de planification de mariage. Elles ne sont jamais vendues ni partagées à des tiers.</p>
-      <p style="margin-bottom:8px;"><strong>Hébergement</strong></p>
-      <p style="margin-bottom:10px;">Vos données sont stockées sur Firebase (Google LLC), dont les serveurs sont situés en Europe. Firebase est conforme au RGPD.</p>
-      <p style="margin-bottom:8px;"><strong>Durée de conservation</strong></p>
-      <p style="margin-bottom:10px;">Vos données sont conservées tant que votre compte est actif. Vous pouvez supprimer votre compte à tout moment depuis les Paramètres.</p>
-      <p style="margin-bottom:8px;"><strong>Vos droits</strong></p>
-      <p style="margin-bottom:10px;">Conformément au RGPD, vous disposez d\'un droit d\'accès, de rectification, d\'effacement et de portabilité de vos données. Pour exercer ces droits : <strong>contact@weddilya.fr</strong></p>
-    `
-  },
-  cgu: {
-    title: 'Conditions générales d\'utilisation',
-    html: `
-      <p style="margin-bottom:10px;"><strong>Dernière mise à jour :</strong> juin 2026</p>
-      <hr style="border:none;border-top:1px solid #f0d8e0;margin:12px 0;">
-      <p style="margin-bottom:8px;"><strong>1. Description du service</strong></p>
-      <p style="margin-bottom:10px;">Weddilya est une application web de planification de mariage accessible sur weddilya.fr. L\'accès nécessite la création d\'un compte gratuit.</p>
-      <p style="margin-bottom:8px;"><strong>2. Utilisation</strong></p>
-      <p style="margin-bottom:10px;">L\'application est destinée à un usage personnel. Toute utilisation commerciale sans autorisation est interdite.</p>
-      <p style="margin-bottom:8px;"><strong>3. Responsabilité</strong></p>
-      <p style="margin-bottom:10px;">Weddilya est fourni "tel quel". Nous ne pouvons être tenus responsables de pertes de données ou d\'interruptions de service.</p>
-      <p style="margin-bottom:8px;"><strong>4. Propriété intellectuelle</strong></p>
-      <p style="margin-bottom:10px;">Le contenu de l\'application (design, code, textes) est la propriété de Weddilya. Toute reproduction est interdite sans autorisation.</p>
-      <p style="margin-bottom:8px;"><strong>5. Contact</strong></p>
-      <p>Pour toute question : <strong>contact@weddilya.fr</strong></p>
-    `
-  },
-  cookies: {
-    title: 'Politique des cookies',
-    html: `
-      <p style="margin-bottom:10px;">Weddilya utilise uniquement des cookies <strong>essentiels</strong> au fonctionnement de l\'application.</p>
-      <hr style="border:none;border-top:1px solid #f0d8e0;margin:12px 0;">
-      <p style="margin-bottom:8px;"><strong>Cookies essentiels (toujours actifs)</strong></p>
-      <p style="margin-bottom:10px;">• Authentification Firebase (maintien de votre session)<br>• Préférences locales (thème, données hors-ligne)</p>
-      <p style="margin-bottom:8px;"><strong>Cookies analytiques</strong></p>
-      <p style="margin-bottom:10px;">Weddilya n\'utilise pas de cookies analytiques ou publicitaires.</p>
-      <p style="margin-bottom:8px;"><strong>Firebase (Google)</strong></p>
-      <p style="margin-bottom:10px;">Firebase peut déposer des cookies techniques pour l\'authentification. Firebase est conforme au RGPD. <a href="https://firebase.google.com/support/privacy" target="_blank" style="color:#d4607a;">En savoir plus</a></p>
-      <p>Contact : <strong>contact@weddilya.fr</strong></p>
-    `
-  }
-};
-
-function openRGPD(type){
-  const c = RGPD_CONTENT[type];
-  if(!c) return;
-  document.getElementById('rgpd-title').textContent = c.title;
-  document.getElementById('rgpd-content').innerHTML = c.html;
-  document.getElementById('rgpd-modal').style.display = 'block';
-}
-function closeRGPD(){ document.getElementById('rgpd-modal').style.display = 'none'; }
-
-function acceptCookies(){
-  try{ localStorage.setItem('cookie_consent','accepted'); }catch{}
-  document.getElementById('cookie-banner').style.display = 'none';
-}
-function refuseCookies(){
-  try{ localStorage.setItem('cookie_consent','refused'); }catch{}
-  document.getElementById('cookie-banner').style.display = 'none';
-}
-function checkCookieBanner(){
-  try{
-    const consent = localStorage.getItem('cookie_consent');
-    if(!consent) document.getElementById('cookie-banner').style.display = 'block';
-  }catch{}
-}
-
-// ── DATEPICKER CUSTOM ────────────────────────────────────────────────────────
-let _dpYear, _dpMonth, _dpSelectedDate = null;
-
-const _dpMonths = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
-const _dpDays = ['L','M','M','J','V','S','D'];
-
-function openDatePicker(){
-  const current = document.getElementById('set-date').value;
-  const d = current ? new Date(current) : new Date();
-  _dpYear = d.getFullYear();
-  _dpMonth = d.getMonth();
-  _dpSelectedDate = current ? new Date(current) : null;
-  document.getElementById('datepicker-modal').style.display = 'flex';
-  _dpRender();
-}
-
-function closeDatePicker(){
-  document.getElementById('datepicker-modal').style.display = 'none';
-}
-
-function confirmDatePicker(){
-  if(!_dpSelectedDate) return;
-  const y = _dpSelectedDate.getFullYear();
-  const m = String(_dpSelectedDate.getMonth()+1).padStart(2,'0');
-  const d = String(_dpSelectedDate.getDate()).padStart(2,'0');
-  const val = y+'-'+m+'-'+d;
-  document.getElementById('set-date').value = val;
-  _dpUpdateLabel(val);
-  closeDatePicker();
-}
-
-function _dpUpdateLabel(val){
-  if(!val){ document.getElementById('set-date-label').textContent='Choisir une date'; return; }
-  const d = new Date(val);
-  const days = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
-  document.getElementById('set-date-label').style.color = '#3e1828';
-  document.getElementById('set-date-label').textContent = days[d.getDay()]+' '+d.getDate()+' '+_dpMonths[d.getMonth()]+' '+d.getFullYear();
-}
-
-function dpPrevMonth(){
-  _dpMonth--;
-  if(_dpMonth < 0){ _dpMonth = 11; _dpYear--; }
-  _dpRender();
-}
-
-function dpNextMonth(){
-  _dpMonth++;
-  if(_dpMonth > 11){ _dpMonth = 0; _dpYear++; }
-  _dpRender();
-}
-
-function _dpSelectDay(day){
-  _dpSelectedDate = new Date(_dpYear, _dpMonth, day);
-  _dpRender();
-}
-
-function _dpRender(){
-  // Header
-  const days = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
-  if(_dpSelectedDate){
-    document.getElementById('dp-year').textContent = _dpSelectedDate.getFullYear();
-    document.getElementById('dp-selected').textContent = days[_dpSelectedDate.getDay()]+' '+_dpSelectedDate.getDate()+' '+_dpMonths[_dpSelectedDate.getMonth()].substring(0,3)+'.';
-  } else {
-    document.getElementById('dp-year').textContent = _dpYear;
-    document.getElementById('dp-selected').textContent = 'Choisir une date';
-  }
-  // Titre mois
-  document.getElementById('dp-month-title').textContent = _dpMonths[_dpMonth]+' '+_dpYear;
-  // Grille
-  const grid = document.getElementById('dp-grid');
-  grid.innerHTML = '';
-  // Premier jour du mois (0=dim, 1=lun...)
-  const firstDay = new Date(_dpYear, _dpMonth, 1).getDay();
-  const offset = firstDay === 0 ? 6 : firstDay - 1; // Lundi = 0
-  const daysInMonth = new Date(_dpYear, _dpMonth+1, 0).getDate();
-  // Cases vides
-  for(let i=0; i<offset; i++){
-    grid.appendChild(document.createElement('div'));
-  }
-  // Jours
-  for(let d=1; d<=daysInMonth; d++){
-    const isSelected = _dpSelectedDate &&
-      _dpSelectedDate.getDate()===d &&
-      _dpSelectedDate.getMonth()===_dpMonth &&
-      _dpSelectedDate.getFullYear()===_dpYear;
-    const btn = document.createElement('button');
-    btn.textContent = d;
-    btn.onclick = ()=>_dpSelectDay(d);
-    btn.style.cssText = 'width:100%;aspect-ratio:1;border:none;border-radius:50%;cursor:pointer;font-family:Lora,serif;font-size:13px;transition:all .15s;'+
-      (isSelected
-        ? 'background:#d4607a;color:#fff;font-weight:700;'
-        : 'background:transparent;color:#3e1828;');
-    grid.appendChild(btn);
-  }
-}
-
-// Initialiser le label au chargement des paramètres
-function _dpInitLabel(){
-  const val = document.getElementById('set-date') ? document.getElementById('set-date').value : '';
-  if(val) _dpUpdateLabel(val);
-}
-
-function togglePass(id, btn){
-  const inp = document.getElementById(id);
-  if(!inp) return;
-  if(inp.type === 'password'){ inp.type = 'text'; btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`; }
-  else { inp.type = 'password'; btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`; }
-}
-
-function doLogout(){
-  // Déconnecter Firebase Auth aussi
-  if(window.firebaseAuth && window.firebaseAuthLib){
-    try{
-      window.firebaseAuthLib.signOut(window.firebaseAuth);
-    } catch(e){console.warn('signOut error:',e);}
-  }
-  localStorage.removeItem('sess');
-  // Verify session is cleared before reloading
-  if(!localStorage.getItem('sess')){
-    window.location.reload(true);
-  }
-}
-
-async function deleteAccount(){
-  if(!await appConfirm('Êtes-vous sûr de vouloir supprimer votre compte ? Toutes vos données locales seront effacées.')) return;
-  if(!USER) return;
-  // Remove all localStorage keys for this user
-  const email = WEB_USER.email;
-  const keysToRemove = [];
-  for(let i=0; i<localStorage.length; i++){
-    const key = localStorage.key(i);
-    if(key && (key.includes(email) || key === 'sess' || key === 'rem_e' || key === 'rem_p')) {
-      keysToRemove.push(key);
-    }
-  }
-  keysToRemove.forEach(k => localStorage.removeItem(k));
-  // Also delete from Firebase if available
-  if(window.firebaseDB && window.firebaseLib){
-    try{
-      const {doc, deleteDoc} = window.firebaseLib;
-      const albumId = (window.firebaseAuth && window.firebaseAuth.currentUser) ? window.firebaseAuth.currentUser.uid : btoa(email).replace(/[^a-zA-Z0-9]/g,'').substring(0,20);
-      deleteDoc(doc(window.firebaseDB,'mariages',albumId)).catch(e=>console.warn(e));
-    }catch(e){console.warn(e);}
-  }
-  await appAlert('Compte supprimé. Vous allez être redirigé.');
-  location.reload();
-}
-
-
-// ── FIREBASE SYNC ─────────────────────────────────────────────────────────────
-// Check if guest album mode on load
-function startApp(u){
-  USER = u;
-  checkCookieBanner();
-  // Load driveUrl from Firebase if not in localStorage
-  if(!ld('drive_url_'+u.email,'') && window.firebaseDB && window.firebaseLib && window.firebaseAuth && window.firebaseAuth.currentUser){
-    const {doc, getDoc} = window.firebaseLib;
-    const albumId = window.firebaseAuth.currentUser.uid;
-    getDoc(doc(window.firebaseDB,'mariages',albumId)).then(snap=>{
-      if(snap.exists() && snap.data().driveUrl){
-        sv('drive_url_'+u.email, snap.data().driveUrl);
-      }
-    }).catch(e=>console.warn('[mariages]', e.code));
-  }
-  // Load all data
-  WEB_TASKS = ld(`tasks_${u.email}`, []);
-  if(WEB_TASKS.length < 50) WEB_TASKS = DEF_TASKS.map(t=>({...t, done:false}));
-  WEB_BUDGET = ld(`budget_${u.email}`, null);
-  if(!BUDGET || !BUDGET.length || (WEB_BUDGET[0] && WEB_BUDGET[0].real !== undefined)){
-    WEB_BUDGET = DEF_BUDGET.map(b=>({...b, reel:0, paye:0}));
-  } else {
-    // Dédupliquer par cat (garde le premier de chaque catégorie)
-    const seen = new Set();
-    WEB_BUDGET = WEB_BUDGET.filter(b=>{
-      const key = b.cat.trim().toLowerCase();
-      if(seen.has(key)) return false;
-      seen.add(key); return true;
-    });
-  }
-  WEB_GUESTS = ld(`guests_${u.email}`, DEF_GUESTS);
-  WEB_TABLES = ld(`tables_${u.email}`, DEF_TABLES);
-  WEB_VENDORS_FAV = ld(`vfav_${u.email}`, []);
-  WEB_VENDORS_CHO = ld(`vcho_${u.email}`, []);
-  WEB_NOTES = ld(`notes_${u.email}`, '');
-  WEB_MENU = ld(`menu_${u.email}`, DEF_MENU);
-  // Auto-fix: if entrée section has old 2-item format, replace with new 1-item format
-  const entree = WEB_MENU.find(s=>s.section==='Entrée');
-  if(entree && entree.items.length===2 && entree.items[0].text==='Entrée froide ou chaude'){
-    entree.items = [{id:21, text:"Froide ou chaude (foie gras, tartare de poisson, salade raffinée...)", done:false}];
-    sv(`menu_${u.email}`, WEB_MENU);
-  }
-  ALBUM = ld(`album_${u.email}`, []);
-  el('auth-screen').style.display='none';
-  el('app').style.display='block';
-  updateHeader();
-
-  // ── SYNC FIRESTORE — attendre que Firebase soit prêt ──
-  _onFirebaseReady(function(){
-    if(!window.firebaseDB || !window.firebaseLib || !window.firebaseAuth) return;
-    const {onAuthStateChanged} = window.firebaseAuthLib;
-    onAuthStateChanged(window.firebaseAuth, function(user){
-      if(!user) return;
-      window._activeDataDocId = user.uid;
-      const {doc, setDoc} = window.firebaseLib;
-      setDoc(doc(window.firebaseDB, 'userData', user.uid), {
-        email: u.email,
-        p1: WEB_USER.p1||'',
-        p2: WEB_USER.p2||'',
-        wDate: WEB_USER.wDate||'',
-        _lastLogin: Date.now()
-      }, {merge:true})
-      .then(()=>console.log('✅ Firestore sync OK, UID:', user.uid))
-      .catch(e=>console.error('❌ Firestore erreur:', e.code, e.message));
-    });
-  });
-  startCountdown();
-  buildTabs();
-  renderTab(0);
-
-  // ── Forcer la sync Firestore au démarrage ──────────────────────────────────
-  // Écrire toutes les données localStorage dans Firestore sous l'UID
-  if(window.firebaseDB && window.firebaseLib && window.firebaseAuth && window.firebaseAuth.currentUser){
-    const uid = window.firebaseAuth.currentUser.uid;
-    window._activeDataDocId = uid;
-    const {doc, setDoc} = window.firebaseLib;
-    const dataToSync = {
-      email: u.email,
-      p1: u.p1||'', p2: u.p2||'', wDate: u.wDate||'',
-      albumCode: u.albumCode||'',
-      tasks: ld(`tasks_${u.email}`, []),
-      budget: ld(`budget_${u.email}`, []),
-      guests: ld(`guests_${u.email}`, []),
-      tables: ld(`tables_${u.email}`, []),
-      notes: ld(`notes_${u.email}`, ''),
-      menu: ld(`menu_${u.email}`, []),
-      vendorsFav: ld(`vfav_${u.email}`, []),
-      vendorsCho: ld(`vcho_${u.email}`, []),
-    };
-    setDoc(doc(window.firebaseDB, 'userData', uid), dataToSync, {merge:true})
-      .then(()=>console.log('[startApp] Données synchronisées dans Firestore sous UID:', uid))
-      .catch(e=>console.error('[startApp] Erreur sync:', e));
-  }
-}
-
-function updateHeader(){
-  const ds=WEB_USER.wDate?new Date(WEB_USER.wDate).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}):'';
-  el('hdr-sub').innerHTML=`Mariage de <strong style="color:${tx}">${h(WEB_USER.p1)}</strong> &amp; <strong style="color:${tx}">${h(WEB_USER.p2)}</strong>${ds?` — <span style="color:${pk}">${ds}</span>`:''}`;
-  const slug=(WEB_USER.email.split('@')[0]||'user').replace(/[^a-z0-9]/gi,'-');
-  window._shareLink=`https://weddilya.fr/album/${slug}`;
-}
-
-function startCountdown(){
-  if(cdInt)clearInterval(cdInt);
-  if(!WEB_USER.wDate)return;
-  const tick=()=>{
-    const diff=new Date(WEB_USER.wDate)-new Date();
-    const w=el('countdown-wrap'); if(!w)return;
-    if(diff<=0){w.innerHTML=`<div style="color:${gd};font-family:Playfair Display,serif;font-size:16px;padding:6px 0;">🎊 C'est le grand jour !</div>`;return;}
-    const d=Math.floor(diff/86400000),hh=Math.floor((diff%86400000)/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);
-    w.innerHTML=[['d',d,'Jours'],['h',hh,'Heures'],['m',m,'Min'],['s',s,'Sec']].map(([,v,l])=>`<div style="text-align:center;background:#ffffff;border-radius:10px;padding:6px 12px;min-width:56px;border:1.5px solid ${br}"><div style="font-family:Playfair Display,serif;font-size:22px;font-weight:700;color:${pk};line-height:1">${String(v).padStart(2,'0')}</div><div style="font-size:9px;color:${tl};letter-spacing:1.5px;text-transform:uppercase;margin-top:1px">${l}</div></div>`).join('');
-  };
-  tick(); cdInt=setInterval(tick,1000);
-}
-
-function buildTabs(){
-  const bar=el('tabs-bar');
-  bar.innerHTML=TABS.map((t,i)=>`<button class="tab-btn${i===0?' active':''}" onclick="showTab(${i})">${h(t)}</button>`).join('');
-}
-function showTab(i){
-  const prev=currentTab;
-  currentTab=i;
-  document.querySelectorAll('.page').forEach((p,j)=>{
-    p.classList.remove('active','slide-back');
-    if(j===i){
-      p.classList.add('active');
-      if(i<prev)p.classList.add('slide-back');
-    }
-  });
-  document.querySelectorAll('#tabs-bar .tab-btn').forEach((b,j)=>{
-    b.style.cssText='';
-    b.classList.toggle('active',j===i);
-    b.style.background='';b.style.color='';b.style.borderColor='';b.style.boxShadow='';
-  });
-  // Scroll tab bar horizontalement sans déclencher de page scroll
-  const bar=document.getElementById('tabs-bar');
-  const activeBtn=document.querySelector('#tabs-bar .tab-btn.active');
-  if(bar&&activeBtn){
-    const btnLeft=activeBtn.offsetLeft;
-    const btnW=activeBtn.offsetWidth;
-    const barW=bar.offsetWidth;
-    const target=btnLeft-(barW/2)+(btnW/2);
-    bar.scrollTo({left:target,behavior:'smooth'});
-  }
-  renderTab(i);
-}
-function renderTab(i){
-  if(i===0)_renderChecklist();
-  else if(i===1)_renderBudget();
-  else if(i===2)_renderGuests();
-  else if(i===3)_renderTablePlan();
-  else if(i===4)_renderVendors();
-  else if(i===5)_renderMenu();
-  else if(i===6)_renderDecorations();
-  else if(i===7)_renderAssistant();
-  else if(i===8)_renderAlbum();
-  else if(i===9)_renderNotes();
-}
-
-// ── SETTINGS ──────────────────────────────────────────────────────────────────
-function toggleMenu(){
-  const m=el('power-menu');
-  const opening=m.style.display==='none';
-  m.style.display=opening?'block':'none';
-  if(opening){
-    setTimeout(function(){
-      document.addEventListener('click', closeMenuOutside, {once:true});
-    },0);
-  }
-}
-function closeMenuOutside(e){
-  const menu=el('power-menu');
-  const wrap=el('power-wrap');
-  if(menu && wrap && !wrap.contains(e.target)){
-    menu.style.display='none';
-  }
-}
-
-function openSettings(){history.pushState({settings:true},'',location.href);window._settingsOpen=true;
-  loadPartnerStatus();
-  el('set-p1').value=WEB_USER.p1; el('set-p2').value=WEB_USER.p2; el('set-date').value=WEB_USER.wDate||'';
-  _dpInitLabel();
-  el('set-pass').value=''; el('set-pass2').value=''; el('set-pass2-wrap').style.display='none';
-  el('set-err').style.display='none'; el('settings-modal').style.display='block';
-  el('power-menu').style.display='none';
-  el('set-pass').oninput=function(){el('set-pass2-wrap').style.display=this.value?'block':'none';};
-}
-function closeSettings(){window._settingsOpen=false;el('settings-modal').style.display='none';}
-function saveSettings(){
-  const p1=el('set-p1').value.trim(),p2=el('set-p2').value.trim(),wDate=el('set-date').value;
-  const np=el('set-pass').value,cp=el('set-pass2').value;
-  if(np&&np!==cp){el('set-err').textContent='Mots de passe différents.';el('set-err').style.display='block';return;}
-  USER={...USER,p1,p2,wDate,pass:np||USER.pass}; sv(`u_${WEB_USER.email}`,USER);
-  // Sync Firestore
-  if(window.firebaseDB && window.firebaseLib && window.firebaseAuth && window.firebaseAuth.currentUser){
-    const {doc,setDoc}=window.firebaseLib;
-    const uid=window.firebaseAuth.currentUser.uid;
-    setDoc(doc(window.firebaseDB,'userData',uid),{p1,p2,wDate,email:WEB_USER.email},{merge:true})
-      .then(()=>console.log('[saveSettings] Firestore sync OK'))
-      .catch(e=>console.warn('[saveSettings] Firestore error:',e));
-  }
-  updateHeader(); startCountdown(); closeSettings();
-}
-
-// ── CHECKLIST ─────────────────────────────────────────────────────────────────
-function __saveTasks(){sv('tasks_'+WEB_USER.email,WEB_TASKS);}
-let collapsedMonths={};
-function toggleMonth(month){
-  collapsedMonths[month]=!collapsedMonths[month];
-  const tasks=el('chk-tasks-'+btoa(unescape(encodeURIComponent(month))).replace(/=/g,''));
-  const arrow=el('chk-arrow-'+btoa(unescape(encodeURIComponent(month))).replace(/=/g,''));
-  if(tasks){tasks.style.display=collapsedMonths[month]?'none':'block';}
-  if(arrow){arrow.style.transform=collapsedMonths[month]?'rotate(-90deg)':'rotate(0deg)';}
-}
-function __renderChecklist(){
-  const done=WEB_TASKS.filter(t=>t.done).length, tot=WEB_TASKS.length, pct=tot?Math.round(done/tot*100):0;
-  const grouped=WEB_TASKS.reduce((a,t)=>{(a[t.month]=a[t.month]||[]).push(t);return a;},{});
-  const allMonths=[...MONTHS,...Object.keys(grouped).filter(m=>!MONTHS.includes(m))];
-  const monthsWithTasks=allMonths.filter(m=>grouped[m]&&grouped[m].length);
-  _eld('web-tab-0').innerHTML=`
-  <div class="card" style="padding:16px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,${sf},#fff)">
-    <div><div class="lbl">Progression</div><div style="font-family:Playfair Display,serif;font-size:28px;color:${tx}">${done}<span style="font-size:14px;color:${tl}"> / ${tot}</span></div></div>
-    <svg viewBox="0 0 36 36" width="60" height="60"><circle cx="18" cy="18" r="15.9" fill="none" stroke="${br}" stroke-width="3"/><circle cx="18" cy="18" r="15.9" fill="none" stroke="${pk}" stroke-width="3" stroke-dasharray="${pct} 100" stroke-linecap="round" transform="rotate(-90 18 18)"/><text x="18" y="22" text-anchor="middle" font-size="7" fill="${tx}" font-family="serif" font-weight="bold">${pct}%</text></svg>
-  </div>
-  <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
-    <input class="inp" id="chk-text" placeholder="Ajouter une tâche..." style="flex:2;min-width:140px;" onkeydown="if(event.key==='Enter')addTask()">
-    <select class="inp" id="chk-cat" style="flex:1;min-width:120px;">
-      ${[...new Set(WEB_TASKS.map(t=>t.month)),'Personnalisé'].map(m=>`<option value="${h(m)}">${h(m)}</option>`).join('')}
-    </select>
-    <button class="btn" onclick="addTask()" style="padding:9px 14px;font-size:18px;">+</button>
-  </div>
-  <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
-    <button onclick="resetTasks()" class="btn-sec" style="font-size:11px;padding:5px 12px;color:${tl};border-color:${br};">↺ Restaurer les tâches par défaut</button>
-  </div>
-  ${monthsWithTasks.map(month=>{
-    const safeId=btoa(unescape(encodeURIComponent(month))).replace(/=/g,'');
-    const collapsed=!!collapsedMonths[month];
-    const doneInMonth=grouped[month].filter(t=>t.done).length;
-    return `<div style="margin-bottom:10px;">
-      <div onclick="toggleMonth('${month.replace(/'/g,"\\'")}') " style="display:flex;align-items:center;justify-content:center;gap:8px;background:${sf};border:1.5px solid ${br};border-radius:11px;padding:11px 16px;cursor:pointer;margin-bottom:6px;">
-        <span id="chk-arrow-${safeId}" style="font-size:13px;color:${pk};transition:transform .25s;transform:${collapsed?'rotate(-90deg)':'rotate(0deg)'};display:inline-block;">▼</span>
-        <span style="font-family:Playfair Display,serif;font-size:15px;font-weight:700;color:${tm};letter-spacing:1px;">${h(month)}</span>
-        <span style="font-size:11px;color:${tl};margin-left:4px;">(${doneInMonth}/${grouped[month].length})</span>
-      </div>
-      <div id="chk-tasks-${safeId}" style="display:${collapsed?'none':'block'};">
-        ${grouped[month].map(t=>`
-          <div onclick="toggleTask(${t.id})" style="display:flex;align-items:center;gap:11px;background:${t.done?sf:'#fff'};border:none;border-bottom:1px solid ${sf};border-radius:0;padding:10px 4px;margin-bottom:2px;cursor:pointer;">
-            <div style="width:20px;height:20px;border-radius:50%;border:2px solid ${t.done?pk:br};background:${t.done?pk:'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">${t.done?'<span style="color:#fff;font-size:11px;font-weight:bold;">✓</span>':''}</div>
-            <span style="flex:1;font-size:13px;color:${t.done?tl:tx};text-decoration:${t.done?'line-through':'none'}">${h(t.text)}</span>
-            <button onclick="event.stopPropagation();removeTask(${t.id})" style="background:none;border:none;cursor:pointer;color:${br};font-size:16px;">×</button>
-          </div>`).join('')}
-      </div>
-    </div>`;
-  }).join('')}`;
-}
-function addTask(){
-  const t=el('chk-text').value.trim();
-  if(!t)return;
-  const cat=el('chk-cat')?.value||'Personnalisé';
-  WEB_TASKS.push({id:Date.now(),text:t,done:false,month:cat});
-  el('chk-text').value='';
-  _saveTasks();_renderChecklist();
-}
-function toggleTask(id){TASKS=WEB_TASKS.map(t=>t.id===id?{...t,done:!t.done}:t);_saveTasks();_renderChecklist();}
-function removeTask(id){TASKS=WEB_TASKS.filter(t=>t.id!==id);_saveTasks();_renderChecklist();}
-async function resetTasks(){
-  if(await appConfirm('Restaurer toutes les tâches par défaut ? Vos tâches personnalisées seront conservées.')){
-    const custom = WEB_TASKS.filter(t=>t.month==='Personnalisé');
-    const existingTexts = new Set(WEB_TASKS.map(t=>t.text));
-    // Add all missing default tasks (keeping done state of existing ones)
-    const restoredDef = DEF_TASKS.map(def => {
-      const existing = WEB_TASKS.find(t=>t.text===def.text);
-      return existing ? existing : {...def, done:false};
-    });
-    WEB_TASKS = [...restoredDef, ...custom];
-    _saveTasks();
-    _renderChecklist();
-  }
-}
-
-// ── WEB_BUDGET ────────────────────────────────────────────────────────────────────
-function __saveBudget(){sv('budget_'+WEB_USER.email,WEB_BUDGET);}
-function __renderBudget(){
-  const tE=WEB_BUDGET.reduce((s,i)=>s+(i.est||0),0),tR=WEB_BUDGET.reduce((s,i)=>s+(i.reel||0),0),tP=WEB_BUDGET.reduce((s,i)=>s+(i.paye||0),0),reste=tR-tP;
-  _eld('web-tab-1').innerHTML=`
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
-    <div class="card" style="padding:13px;text-align:center;"><div class="lbl">Budget estimé total</div><div style="font-family:Playfair Display,serif;font-size:19px;font-weight:700;color:${tx}">${fmt(tE)} €</div></div>
-    <div class="card" style="padding:13px;text-align:center;"><div class="lbl">Budget réel total</div><div style="font-family:Playfair Display,serif;font-size:19px;font-weight:700;color:${pk}">${fmt(tR)} €</div></div>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
-    <div style="background:#f0f8f2;border:1.5px solid ${br};border-radius:14px;padding:13px;text-align:center;"><div class="lbl">Déjà payé</div><div style="font-family:Playfair Display,serif;font-size:19px;font-weight:700;color:${gn}">${fmt(tP)} €</div></div>
-    <div style="background:${reste>0?'#fff8f0':'#f0f8f2'};border:1.5px solid ${br};border-radius:14px;padding:13px;text-align:center;"><div class="lbl">Reste à payer</div><div style="font-family:Playfair Display,serif;font-size:19px;font-weight:700;color:${reste>0?am:gn}">${fmt(reste)} €</div></div>
-  </div>
-  <div style="display:flex;gap:8px;margin-bottom:12px;">
-    <input class="inp" id="bgt-cat" placeholder="Nouvelle catégorie" style="flex:2;background:#fff;">
-    <input class="inp" id="bgt-est" placeholder="Budget estimé €" type="number" style="flex:1;background:#fff;">
-    <button class="btn" onclick="addBudget()" style="padding:9px 14px;font-size:18px;">+</button>
-  </div>
-  <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
-    <button onclick="resetBudget()" class="btn-sec" style="font-size:11px;padding:5px 12px;color:${tl};border-color:${br};">↺ Restaurer les catégories par défaut</button>
-  </div>
-  ${BUDGET.map(item=>{
-    const pct=item.est>0?Math.min((item.reel||0)/item.est*100,100):0;
-    const over=(item.reel||0)>(item.est||0);
-    const r=(item.reel||0)-(item.paye||0);
-    return `<div class="card" style="padding:13px;margin-bottom:9px;">
-      <div style="margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;">
-        <span data-budget-cat="${item.id}" onclick="renameBudget(${item.id})" style="font-family:Playfair Display,serif;font-size:14px;font-weight:700;color:${tm};cursor:text;border-bottom:1px dashed ${br};padding-bottom:1px;" title="Toucher pour renommer">${h(item.cat)}</span>
-        <div style="display:flex;gap:6px;align-items:center;">
-          <span style="font-size:10px;color:${over?rd:gn};font-weight:700;background:${over?'#fff0f0':'#f0f8f2'};border-radius:20px;padding:2px 8px;">${over?'Dépassé':Math.round(pct)+'%'}</span>
-          <button onclick="removeBudget(${item.id})" style="background:none;border:none;cursor:pointer;color:${br};font-size:15px;">×</button>
-        </div>
-      </div>
-      <div style="height:5px;background:${sf};border-radius:3px;margin-bottom:10px;overflow:hidden;"><div style="height:100%;width:${pct}%;background:${over?rd:`linear-gradient(90deg,${pk},${pm})`};border-radius:3px;"></div></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
-        <div><div class="lbl">Budget estimé</div><input type="number" value="${item.est||''}" placeholder="0" onfocus="if(this.value=='0')this.value=''" onchange="updBudget(${item.id},'est',this.value)" style="width:100%;border:1.5px solid ${br};border-radius:8px;padding:6px 8px;font-size:13px;color:#7a4a60;font-weight:700;outline:none;background:#fffafc;"></div>
-        <div><div class="lbl">Budget réel</div><input type="number" value="${item.reel||''}" placeholder="0" onfocus="if(this.value=='0')this.value=''" onchange="updBudget(${item.id},'reel',this.value)" style="width:100%;border:1.5px solid ${br};border-radius:8px;padding:6px 8px;font-size:13px;color:${pk};font-weight:700;outline:none;background:#fffafc;"></div>
-        <div><div class="lbl">Déjà payé</div><input type="number" value="${item.paye||''}" placeholder="0" onfocus="if(this.value=='0')this.value=''" onchange="updBudget(${item.id},'paye',this.value)" style="width:100%;border:1.5px solid ${br};border-radius:8px;padding:6px 8px;font-size:13px;color:${gn};font-weight:700;outline:none;background:#fffafc;"></div>
-      </div>
-      <div style="margin-top:6px;text-align:right;font-size:11px;color:${tl}">Reste à payer : <strong style="color:${r>0?am:gn}">${fmt(r)} €</strong></div>
-    </div>`;
-  }).join('')}`;
-}
-function addBudget(){const cat=el('bgt-cat').value.trim();if(!cat)return;BUDGET.push({id:Date.now(),cat,est:Number(el('bgt-est').value)||0,reel:0,paye:0});el('bgt-cat').value='';el('bgt-est').value='';_saveBudget();_renderBudget();}
-async function resetBudget(){
-  if(await appConfirm('Restaurer toutes les catégories par défaut ? Les doublons et catégories ajoutées seront supprimés.')){
-    WEB_BUDGET = DEF_BUDGET.map(def=>({...def,reel:0,paye:0}));
-    _saveBudget();_renderBudget();
-  }
-}
-function updBudget(id,f,v){BUDGET=WEB_BUDGET.map(i=>i.id===id?{...i,[f]:v===''?0:Number(v)}:i);_saveBudget();_renderBudget();}
-function removeBudget(id){BUDGET=WEB_BUDGET.filter(i=>i.id!==id);_saveBudget();_renderBudget();}
-function renameBudget(id){
-  const span=document.querySelector('[data-budget-cat="'+id+'"]');
-  if(!span)return;
-  const item=WEB_BUDGET.find(i=>i.id===id);
-  const inp=document.createElement('input');
-  inp.value=item.cat;
-  inp.style.cssText='font-size:14px;font-weight:700;color:#3e1828;border:none;border-bottom:2px solid #d4607a;outline:none;background:transparent;font-family:Playfair Display,serif;width:100%;';
-  span.replaceWith(inp);
-  inp.focus();inp.select();
-  function save(){
-    if(inp.value.trim()){BUDGET=WEB_BUDGET.map(i=>i.id===id?{...i,cat:inp.value.trim()}:i);}
-    _saveBudget();_renderBudget();
-  }
-  inp.addEventListener('blur',save);
-  inp.addEventListener('keydown',function(e){if(e.key==='Enter')inp.blur();if(e.key==='Escape'){_renderBudget();}});
-}
-
-// ── WEB_GUESTS ────────────────────────────────────────────────────────────────────
-function __saveGuests(){sv('guests_'+WEB_USER.email,WEB_GUESTS);}
-function __renderGuests(){
+function _saveGuests(){sv('guests_'+WEB_USER.email,WEB_GUESTS);}
+function _renderGuests(){
   WEB_GUESTS=ld('guests_'+WEB_USER.email,WEB_GUESTS);
   const pg2=_eld('web-tab-2');if(pg2)pg2.classList.add('no-anim');
   // Sauvegarder le scroll horizontal du tableau avant le re-render
@@ -3497,7 +2354,7 @@ function __renderGuests(){
   <div id="guest-table-wrap" style="overflow-x:auto;margin-top:6px;">
     <table style="width:100%;border-collapse:separate;border-spacing:0 5px;min-width:750px;">
       <thead><tr>${["Nom","Côté","Rôle","Régime","Vin d'honneur","Adulte/Enfant","Invitation","Présence",""].map(h2=>`<th style="text-align:left;padding:4px 9px;font-size:9px;color:${tl};letter-spacing:2px;text-transform:uppercase;">${h2}</th>`).join('')}</tr></thead>
-      <tbody>${GUESTS.map(g=>guestRow(g)).join('')}</tbody>
+      <tbody>${WEB_GUESTS.map(g=>guestRow(g)).join('')}</tbody>
     </table>
   </div>
   <p style="font-size:11px;color:${tl};font-style:italic;margin-top:10px;text-align:center;">💡 Import : un fichier Excel ou CSV avec au minimum une colonne "Nom"</p>`;
@@ -3545,7 +2402,7 @@ function addGuest(){
   WEB_GUESTS.push({id:Date.now(),nom,email:el('gf-email').value.trim(),cote:el('gf-cote').value,invitation:'non envoyée',presence:'en attente',role:el('gf-role').value,regime:'Aucun',vinHonneur:el('gf-vh').checked,age:el('gf-age')?.value||'Adulte',seatTableId:null,seatIdx:null});
   showingAdd=false;_saveGuests();_renderGuests();
 }
-function updGuest(id,f,v){GUESTS=WEB_GUESTS.map(g=>g.id===id?{...g,[f]:v}:g);_saveGuests();_renderGuests();}
+function updGuest(id,f,v){WEB_GUESTS=WEB_GUESTS.map(g=>g.id===id?{...g,[f]:v}:g);_saveGuests();_renderGuests();}
 
 // Pickers custom (aux couleurs de l'app) qui remplacent les <select> natifs gris
 async function pickGuestRole(id){
@@ -3587,7 +2444,7 @@ async function pickGuestPresence(id){
   ], g.presence, 'Présence', {icon:'📋'});
   if(v!==null) updGuest(id,'presence',v);
 }
-function removeGuest(id){GUESTS=WEB_GUESTS.filter(g=>g.id!==id);_saveGuests();_renderGuests();}
+function removeGuest(id){WEB_GUESTS=WEB_GUESTS.filter(g=>g.id!==id);_saveGuests();_renderGuests();}
 function renameGuest(id){
   const span=document.querySelector('[data-guest-nom="'+id+'"]');
   if(!span)return;
@@ -3614,8 +2471,8 @@ function exportGuests(){
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 async function deleteAllGuests(){
-  if(!GUESTS.length){ showImportMsg('Aucun invité à supprimer.','err'); return; }
-  const ok = await appConfirm(`Supprimer définitivement les ${GUESTS.length} invité(s) de la liste ? Cette action est irréversible.`, 'Tout supprimer');
+  if(!WEB_GUESTS.length){ showImportMsg('Aucun invité à supprimer.','err'); return; }
+  const ok = await appConfirm(`Supprimer définitivement les ${WEB_GUESTS.length} invité(s) de la liste ? Cette action est irréversible.`, 'Tout supprimer');
   if(!ok) return;
   // Libérer aussi les placements de table
   WEB_GUESTS = [];
@@ -3953,7 +2810,7 @@ function showImportMsg(msg,type){
 }
 
 // ── TABLE PLAN ────────────────────────────────────────────────────────────────
-function __saveTables(){sv('tables_'+WEB_USER.email,WEB_TABLES);sv('guests_'+WEB_USER.email,WEB_GUESTS);}
+function _saveTables(){sv('tables_'+WEB_USER.email,WEB_TABLES);sv('guests_'+WEB_USER.email,WEB_GUESTS);}
 let tpDrag=null;
 // Zoom/pan state
 let tpScale=1,tpPanX=0,tpPanY=0,tpPanning=false,tpPanStart=null,tpPinchDist=0,tpPanMode=false;
@@ -3978,7 +2835,7 @@ function tpApplyTransform(){
   const inner=el('tp-inner');
   if(inner)inner.style.transform=`translate(${tpPanX}px,${tpPanY}px) scale(${tpScale})`;
 }
-function __renderTablePlan(){
+function _renderTablePlan(){
   tpScale=1;tpPanX=0;tpPanY=0;tpPanMode=false;window.tpSelectedShape='round';
   _eld('web-tab-3').innerHTML=`
   <div class="card" style="padding:12px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
@@ -4063,7 +2920,7 @@ function refreshTables(){
   inner.innerHTML='';
   WEB_TABLES.forEach(t=>addTableEl(t));
 }
-function __renderTPLegend(){
+function _renderTPLegend(){
   const l=el('tp-legend');if(!l)return;
   l.innerHTML=[['#e8a0b0',`Côté ${WEB_USER.p1}`],['#a0b0e8',`Côté ${WEB_USER.p2}`],['#f5e0e8','Libre']].map(([c,label])=>`<div style="display:flex;align-items:center;gap:5px;font-size:12px;color:${tl};"><div style="width:12px;height:12px;border-radius:50%;background:${c};"></div>${h(label)}</div>`).join('');
 }
@@ -4099,7 +2956,7 @@ function addTableEl(table){
     inp.focus();inp.select();
     const finish=()=>{
       const v=inp.value.trim();
-      if(v){const i=WEB_TABLES.findIndex(t=>t.id===table.id);if(i>=0)TABLES[i].nom=v;_saveTables();lbl.textContent=v;table.nom=v;}
+      if(v){const i=WEB_TABLES.findIndex(t=>t.id===table.id);if(i>=0)WEB_TABLES[i].nom=v;_saveTables();lbl.textContent=v;table.nom=v;}
       inp.remove();lbl.style.display='';
     };
     inp.addEventListener('blur',finish);
@@ -4127,7 +2984,7 @@ function addTableEl(table){
   // Delete
   const del=document.createElement('div');
   del.style.cssText=`position:absolute;top:-8px;right:-8px;width:18px;height:18px;border-radius:50%;background:#fff;border:1px solid ${br};display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;color:${rd};z-index:10;`;
-  del.textContent='×';del.onclick=e=>{e.stopPropagation();TABLES=WEB_TABLES.filter(t=>t.id!==table.id);div.remove();_saveTables();};
+  del.textContent='×';del.onclick=e=>{e.stopPropagation();WEB_TABLES=WEB_TABLES.filter(t=>t.id!==table.id);div.remove();_saveTables();};
   div.appendChild(del);
 
   // Surface de la table (centrée dans la boîte)
@@ -4158,15 +3015,15 @@ function addTableEl(table){
   cntDisplay.style.cssText=`min-width:16px;text-align:center;font-size:12px;font-weight:bold;color:${tm};`;
   const minus=mkBtn('−',()=>{
     const i=WEB_TABLES.findIndex(t=>t.id===table.id);if(i<0)return;
-    if(WEB_TABLES[i].seats>1){TABLES[i].seats--;
+    if(WEB_TABLES[i].seats>1){WEB_TABLES[i].seats--;
       // nettoyer les invités placés au-delà du nouveau nombre
       WEB_GUESTS=WEB_GUESTS.map(g=>(g.seatTableId===table.id&&g.seatIdx>=WEB_TABLES[i].seats)?{...g,seatTableId:null,seatIdx:null}:g);
-      WEB_TABLES[i].hiddenSeats=(WEB_TABLES[i].hiddenSeats||[]).filter(x=>x<TABLES[i].seats);
+      WEB_TABLES[i].hiddenSeats=(WEB_TABLES[i].hiddenSeats||[]).filter(x=>x<WEB_TABLES[i].seats);
       _saveTables();refreshTables();}
   });
   const plus=mkBtn('+',()=>{
     const i=WEB_TABLES.findIndex(t=>t.id===table.id);if(i<0)return;
-    if(WEB_TABLES[i].seats<12){TABLES[i].seats++;_saveTables();refreshTables();}
+    if(WEB_TABLES[i].seats<12){WEB_TABLES[i].seats++;_saveTables();refreshTables();}
   });
   seatCtrl.appendChild(minus);seatCtrl.appendChild(cntDisplay);seatCtrl.appendChild(plus);
   div.appendChild(seatCtrl);
@@ -4259,7 +3116,7 @@ function addTableEl(table){
     const rect=canvas.getBoundingClientRect();
     const nx=Math.max(0,(clientX-rect.left-tpPanX)/tpScale-tpDrag.ox);
     const ny=Math.max(0,(clientY-rect.top-tpPanY)/tpScale-tpDrag.oy);
-    const i=WEB_TABLES.findIndex(t=>t.id===table.id);if(i>=0){TABLES[i].x=nx;TABLES[i].y=ny;}
+    const i=WEB_TABLES.findIndex(t=>t.id===table.id);if(i>=0){WEB_TABLES[i].x=nx;WEB_TABLES[i].y=ny;}
     div.style.left=nx+'px';div.style.top=ny+'px';
   };
   const endDrag=(tgt,wasHandle)=>{
@@ -4521,7 +3378,7 @@ function loadJsPDF(){
   return _jsPDFPromise;
 }
 
-function addTable(){TABLES.push({id:Date.now(),nom:`Table ${TABLES.length+1}`,shape:window.tpSelectedShape||'round',seats:6,x:80+Math.random()*150,y:80+Math.random()*80,hiddenSeats:[]});_saveTables();_renderTablePlan();}
+function addTable(){WEB_TABLES.push({id:Date.now(),nom:`Table ${WEB_TABLES.length+1}`,shape:window.tpSelectedShape||'round',seats:6,x:80+Math.random()*150,y:80+Math.random()*80,hiddenSeats:[]});_saveTables();_renderTablePlan();}
 
 // Affiche la liste des invités placés autour d'une table (au tap sur la table)
 function openTableGuestsModal(tableId){
@@ -4536,7 +3393,7 @@ function openTableGuestsModal(tableId){
         return `<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid ${sf};">
           <div style="width:28px;height:28px;border-radius:50%;background:${cote};display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;font-weight:bold;flex-shrink:0;">${initials}</div>
           <div style="flex:1;font-size:13px;color:${tx};font-weight:600;">${h(g.nom)}</div>
-          <button onclick="GUESTS=WEB_GUESTS.map(x=>x.id===${g.id}?{...x,seatTableId:null,seatIdx:null}:x);_saveGuests();refreshTables();openTableGuestsModal(${tableId});" style="background:none;border:none;color:${tl};font-size:11px;cursor:pointer;text-decoration:underline;">retirer</button>
+          <button onclick="WEB_GUESTS=WEB_GUESTS.map(x=>x.id===${g.id}?{...x,seatTableId:null,seatIdx:null}:x);_saveGuests();refreshTables();openTableGuestsModal(${tableId});" style="background:none;border:none;color:${tl};font-size:11px;cursor:pointer;text-decoration:underline;">retirer</button>
         </div>`;
       }).join('')
     : `<div style="padding:18px;text-align:center;color:${tl};font-size:13px;font-style:italic;">Aucun invité placé à cette table pour l'instant.<br>Touche une chaise pour y placer quelqu'un.</div>`;
@@ -4601,7 +3458,7 @@ function openAutoPlaceModal(){
       </div>
       <div style="overflow-y:auto;padding:16px;flex:1;">
         <div style="font-size:13px;color:${tx};line-height:1.6;margin-bottom:14px;">
-          ${conf.length} invité${conf.length>1?'s':''} confirmé${conf.length>1?'s':''} · ${totalSeats} place${totalSeats>1?'s':''} disponible${totalSeats>1?'s':''} sur ${TABLES.length} table${TABLES.length>1?'s':''}.
+          ${conf.length} invité${conf.length>1?'s':''} confirmé${conf.length>1?'s':''} · ${totalSeats} place${totalSeats>1?'s':''} disponible${totalSeats>1?'s':''} sur ${WEB_TABLES.length} table${WEB_TABLES.length>1?'s':''}.
         </div>
         ${totalSeats < conf.length ? `<div style="background:#fff5f5;border:1px solid ${rd}40;border-radius:10px;padding:10px 12px;font-size:12px;color:${rd};margin-bottom:14px;">⚠️ Pas assez de places (${totalSeats}) pour tous les invités (${conf.length}). Ajoute des tables ou des chaises.</div>` : ''}
 
@@ -4747,7 +3604,7 @@ function runAutoPlace(byCote, erase){
       // Placer ici
       const seatIdx = ts.free.shift();
       const gi = WEB_GUESTS.findIndex(g=>g.id===guest.id);
-      WEB_GUESTS[gi] = {...GUESTS[gi], seatTableId: ts.tableId, seatIdx};
+      WEB_GUESTS[gi] = {...WEB_GUESTS[gi], seatTableId: ts.tableId, seatIdx};
       ts.placedGuestIds.push(guest.id);
       placed = true;
       break;
@@ -4888,7 +3745,7 @@ function assignSeat(gid){
   });
   _saveTables();refreshTables();
 }
-function removeSeat(){if(!seatPicker)return;GUESTS=WEB_GUESTS.map(g=>g.seatTableId===seatPicker.tid&&g.seatIdx===seatPicker.si?{...g,seatTableId:null,seatIdx:null}:g);_saveTables();refreshTables();}
+function removeSeat(){if(!seatPicker)return;WEB_GUESTS=WEB_GUESTS.map(g=>g.seatTableId===seatPicker.tid&&g.seatIdx===seatPicker.si?{...g,seatTableId:null,seatIdx:null}:g);_saveTables();refreshTables();}
 function toggleHideSeat(){
   if(!seatPicker)return;
   const i=WEB_TABLES.findIndex(t=>t.id===seatPicker.tid);if(i<0)return;
@@ -4934,7 +3791,7 @@ const vSort = (list, s) => [...list].sort((a, b) => {
 });
 function setSortFav(s,btn){sortFav=s;btn.closest('div').querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');_renderFavs();}
 function setSortCho(s,btn){sortCho=s;btn.closest('div').querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');_renderChosen();}
-function addToFav(i){const v=window._vndResults?.[i];if(!v||VENDORS_FAV.find(f=>f.nom===v.nom))return;VENDORS_FAV.push({...v,id:Date.now()});sv(`vfav_${WEB_USER.email}`,VENDORS_FAV);_renderFavs();if(window._vndResults)renderVndResults(el('vnd-loc')?.value.trim()||'');}
+function addToFav(i){const v=window._vndResults?.[i];if(!v||WEB_VENDORS_FAV.find(f=>f.nom===v.nom))return;WEB_VENDORS_FAV.push({...v,id:Date.now()});sv(`vfav_${WEB_USER.email}`,WEB_VENDORS_FAV);_renderFavs();if(window._vndResults)renderVndResults(el('vnd-loc')?.value.trim()||'');}
 
 // Ajout manuel d'un prestataire (zone = 'fav' ou 'cho')
 function addManualVendor(zone){
@@ -4977,17 +3834,17 @@ function addManualVendor(zone){
       prix_perso: isNaN(prix)?'':prix,
       manuel:true
     };
-    if(zone==='fav'){ WEB_VENDORS_FAV.push(v); sv(`vfav_${WEB_USER.email}`,VENDORS_FAV); _renderFavs(); }
-    else { WEB_VENDORS_CHO.push(v); sv(`vcho_${WEB_USER.email}`,VENDORS_CHO); _renderChosen(); }
+    if(zone==='fav'){ WEB_VENDORS_FAV.push(v); sv(`vfav_${WEB_USER.email}`,WEB_VENDORS_FAV); _renderFavs(); }
+    else { WEB_VENDORS_CHO.push(v); sv(`vcho_${WEB_USER.email}`,WEB_VENDORS_CHO); _renderChosen(); }
     close();
   });
   root.addEventListener('click',e=>{if(e.target===root)close();});
   setTimeout(()=>el('mv-nom')?.focus(),100);
 }
-function movToChosen(id){const v=WEB_VENDORS_FAV.find(f=>f.id===id);if(!v)return;VENDORS_FAV=WEB_VENDORS_FAV.filter(f=>f.id!==id);if(!VENDORS_CHO.find(c=>c.id===id))VENDORS_CHO.push(v);sv(`vfav_${WEB_USER.email}`,VENDORS_FAV);sv(`vcho_${WEB_USER.email}`,VENDORS_CHO);_renderFavs();_renderChosen();}
-function removFav(id){VENDORS_FAV=WEB_VENDORS_FAV.filter(f=>f.id!==id);sv(`vfav_${WEB_USER.email}`,VENDORS_FAV);_renderFavs();}
-function removCho(id){VENDORS_CHO=WEB_VENDORS_CHO.filter(c=>c.id!==id);sv(`vcho_${WEB_USER.email}`,VENDORS_CHO);_renderChosen();}
-function __renderVendors(){
+function movToChosen(id){const v=WEB_VENDORS_FAV.find(f=>f.id===id);if(!v)return;WEB_VENDORS_FAV=WEB_VENDORS_FAV.filter(f=>f.id!==id);if(!WEB_VENDORS_CHO.find(c=>c.id===id))WEB_VENDORS_CHO.push(v);sv(`vfav_${WEB_USER.email}`,WEB_VENDORS_FAV);sv(`vcho_${WEB_USER.email}`,WEB_VENDORS_CHO);_renderFavs();_renderChosen();}
+function removFav(id){WEB_VENDORS_FAV=WEB_VENDORS_FAV.filter(f=>f.id!==id);sv(`vfav_${WEB_USER.email}`,WEB_VENDORS_FAV);_renderFavs();}
+function removCho(id){WEB_VENDORS_CHO=WEB_VENDORS_CHO.filter(c=>c.id!==id);sv(`vcho_${WEB_USER.email}`,WEB_VENDORS_CHO);_renderChosen();}
+function _renderVendors(){
   _eld('web-tab-4').innerHTML=`
   <div class="card" style="padding:14px;margin-bottom:14px;background:linear-gradient(135deg,${sf},#fff);">
     <div style="font-size:13px;color:${tm};margin-bottom:10px;font-weight:700;">Rechercher un prestataire</div>
@@ -5037,7 +3894,7 @@ function __renderVendors(){
   <div id="vnd-results-wrap" style="margin-bottom:16px;"></div>
   <div style="margin-bottom:18px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
-      <div style="font-family:Playfair Display,serif;font-size:17px;color:${tx};">Prestataires favoris <span id="fav-cnt" style="background:${sf};color:${pk};font-size:11px;border-radius:20px;padding:2px 9px;font-weight:700;">${VENDORS_FAV.length}</span></div>
+      <div style="font-family:Playfair Display,serif;font-size:17px;color:${tx};">Prestataires favoris <span id="fav-cnt" style="background:${sf};color:${pk};font-size:11px;border-radius:20px;padding:2px 9px;font-weight:700;">${WEB_VENDORS_FAV.length}</span></div>
       <div style="display:flex;gap:5px;align-items:center;">
         <button onclick="addManualVendor('fav')" style="background:${sf};color:${pk};border:1px solid ${br};border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;">+ Ajouter</button>
         ${['alpha|A→Z','prix|Prix','distance|Distance'].map(s=>{const[v,l]=s.split('|');return`<button class="tab-btn${sortFav===v?' active':''}" onclick="setSortFav('${v}',this)" style="font-size:11px;padding:4px 10px;">${l}</button>`;}).join('')}</div>
@@ -5046,7 +3903,7 @@ function __renderVendors(){
   </div>
   <div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
-      <div style="font-family:Playfair Display,serif;font-size:17px;color:${tx};">Prestataires choisis <span id="cho-cnt" style="background:#f0f8f0;color:${gn};font-size:11px;border-radius:20px;padding:2px 9px;font-weight:700;">${VENDORS_CHO.length}</span></div>
+      <div style="font-family:Playfair Display,serif;font-size:17px;color:${tx};">Prestataires choisis <span id="cho-cnt" style="background:#f0f8f0;color:${gn};font-size:11px;border-radius:20px;padding:2px 9px;font-weight:700;">${WEB_VENDORS_CHO.length}</span></div>
       <div style="display:flex;gap:5px;align-items:center;">
         <button onclick="addManualVendor('cho')" style="background:#f0f8f0;color:${gn};border:1px solid ${gn}30;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;">+ Ajouter</button>
         ${['alpha|A→Z','prix|Prix','distance|Distance'].map(s=>{const[v,l]=s.split('|');return`<button class="tab-btn${sortCho===v?' active':''}" onclick="setSortCho('${v}',this)" style="font-size:11px;padding:4px 10px;">${l}</button>`;}).join('')}</div>
@@ -5586,8 +4443,8 @@ function renderVndResults(query){
             : `<a href="https://www.google.com/search?q=${encodeURIComponent(v.nom+' '+(v.categorie||'')+' '+(v.adresse||''))}" target="_blank" rel="noopener" style="background:${sf};color:${pk};border-radius:8px;padding:6px 10px;font-size:11px;text-decoration:none;font-weight:700;">🌐 Trouver le site</a>`}
           ${mapsUrl?`<a href="${mapsUrl}" target="_blank" rel="noopener" style="background:#f0f8f0;color:${gn};border-radius:8px;padding:6px 10px;font-size:11px;text-decoration:none;font-weight:700;">🗺️ Itinéraire</a>`:''}
         </div>
-        <button onclick="addToFav(${i})" style="width:100%;background:${VENDORS_FAV.find(f=>f.nom===v.nom)?'#f0f8f0':'linear-gradient(135deg,'+pk+',#b84060)'};color:${VENDORS_FAV.find(f=>f.nom===v.nom)?gn:'#fff'};border:none;border-radius:9px;padding:9px;cursor:pointer;font-size:13px;font-weight:700;font-family:Lora,serif;">
-          ${VENDORS_FAV.find(f=>f.nom===v.nom)?'✓ Déjà dans les favoris':'+ Ajouter aux favoris'}
+        <button onclick="addToFav(${i})" style="width:100%;background:${WEB_VENDORS_FAV.find(f=>f.nom===v.nom)?'#f0f8f0':'linear-gradient(135deg,'+pk+',#b84060)'};color:${WEB_VENDORS_FAV.find(f=>f.nom===v.nom)?gn:'#fff'};border:none;border-radius:9px;padding:9px;cursor:pointer;font-size:13px;font-weight:700;font-family:Lora,serif;">
+          ${WEB_VENDORS_FAV.find(f=>f.nom===v.nom)?'✓ Déjà dans les favoris':'+ Ajouter aux favoris'}
         </button>
       </div>
     </div>`;
@@ -5630,34 +4487,34 @@ function vndMiniCard(v,zone){
   </div>`;
 }
 function updVndPrice(id,zone,val){
-  if(zone==='fav')VENDORS_FAV=WEB_VENDORS_FAV.map(v=>v.id===id?{...v,prix_perso:val}:v);
+  if(zone==='fav')WEB_VENDORS_FAV=WEB_VENDORS_FAV.map(v=>v.id===id?{...v,prix_perso:val}:v);
   else WEB_VENDORS_CHO=WEB_VENDORS_CHO.map(v=>v.id===id?{...v,prix_perso:val}:v);
-  sv(`vfav_${WEB_USER.email}`,VENDORS_FAV);sv(`vcho_${WEB_USER.email}`,VENDORS_CHO);
+  sv(`vfav_${WEB_USER.email}`,WEB_VENDORS_FAV);sv(`vcho_${WEB_USER.email}`,WEB_VENDORS_CHO);
 }
 let dragVndId=null,dragVndZone=null;
 function dragVnd(e,id,zone){dragVndId=id;dragVndZone=zone;e.dataTransfer.effectAllowed='move';}
 function dropToFav(e){e.preventDefault();if(!dragVndId)return;if(dragVndZone==='cho'){movToFav(dragVndId);}dragVndId=null;}
 function dropToChosen(e){e.preventDefault();if(!dragVndId)return;if(dragVndZone==='fav'){movToChosen(dragVndId);}dragVndId=null;}
-function movToFav(id){const v=WEB_VENDORS_CHO.find(c=>c.id===id);if(!v)return;VENDORS_CHO=WEB_VENDORS_CHO.filter(c=>c.id!==id);if(!VENDORS_FAV.find(f=>f.id===id))VENDORS_FAV.push(v);sv(`vfav_${WEB_USER.email}`,VENDORS_FAV);sv(`vcho_${WEB_USER.email}`,VENDORS_CHO);_renderFavs();_renderChosen();}
-function __renderFavs(){
+function movToFav(id){const v=WEB_VENDORS_CHO.find(c=>c.id===id);if(!v)return;WEB_VENDORS_CHO=WEB_VENDORS_CHO.filter(c=>c.id!==id);if(!WEB_VENDORS_FAV.find(f=>f.id===id))WEB_VENDORS_FAV.push(v);sv(`vfav_${WEB_USER.email}`,WEB_VENDORS_FAV);sv(`vcho_${WEB_USER.email}`,WEB_VENDORS_CHO);_renderFavs();_renderChosen();}
+function _renderFavs(){
   const d=el('vnd-favs');if(!d)return;
   d.innerHTML=WEB_VENDORS_FAV.length===0
     ?`<div style="background:${sf};border:2px dashed ${br};border-radius:12px;padding:16px;text-align:center;color:${tl};font-size:13px;font-style:italic;">Ajoutez des prestataires depuis la recherche</div>`
-    :vSort(VENDORS_FAV,sortFav).map(v=>vndMiniCard(v,'fav')).join('');
+    :vSort(WEB_VENDORS_FAV,sortFav).map(v=>vndMiniCard(v,'fav')).join('');
   const cnt=el('fav-cnt');if(cnt)cnt.textContent=WEB_VENDORS_FAV.length;
 }
-function __renderChosen(){
+function _renderChosen(){
   const d=el('vnd-chosen');if(!d)return;
   d.innerHTML=WEB_VENDORS_CHO.length===0
     ?`<div style="background:${sf};border:2px dashed ${br};border-radius:12px;padding:16px;text-align:center;color:${tl};font-size:13px;font-style:italic;">Glissez vos favoris ici ou cliquez sur "Déplacer"</div>`
-    :vSort(VENDORS_CHO,sortCho).map(v=>vndMiniCard(v,'cho')).join('');
+    :vSort(WEB_VENDORS_CHO,sortCho).map(v=>vndMiniCard(v,'cho')).join('');
   const cnt=el('cho-cnt');if(cnt)cnt.textContent=WEB_VENDORS_CHO.length;
 }
 
 // ── WEB_MENU ──────────────────────────────────────────────────────────────────────
-function __saveMenu(){sv('menu_'+WEB_USER.email,WEB_MENU);}
+function _saveMenu(){sv('menu_'+WEB_USER.email,WEB_MENU);}
 let menuCalcResult=null;
-function __renderMenu(){
+function _renderMenu(){
   const conf = WEB_GUESTS.filter(g=>g.presence==='confirmée'||g.presence==='en attente');
   const noAlc = conf.filter(g=>g.regime&&g.regime.includes('Sans alcool')).length;
   const spec = conf.filter(g=>g.regime&&g.regime!=='Aucun'&&!g.regime.includes('Sans alcool')).length;
@@ -5755,7 +4612,7 @@ function __renderMenu(){
     <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
       <button onclick="resetMenu()" class="btn-sec" style="font-size:11px;padding:5px 12px;color:${tl};border-color:${br};">↺ Réinitialiser le menu par défaut</button>
     </div>
-    ${MENU.map((section,si)=>`
+    ${WEB_MENU.map((section,si)=>`
       <div style="margin-bottom:16px;border:1.5px solid ${br};border-radius:12px;padding:12px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
           <span data-menu-cat="${si}" onclick="renameMenuCategory(${si})" style="font-weight:700;font-size:13px;color:${pk};text-transform:uppercase;letter-spacing:1px;cursor:pointer;flex:1;" title="Appuyer pour renommer">${h(section.section)}</span>
@@ -5790,7 +4647,7 @@ function addMenuItem(si){
   WEB_MENU[si].items.push({id:Date.now(),text:inp.value.trim(),done:false});
   _saveMenu();_renderMenu();
 }
-function __saveMenu(){sv('menu_'+WEB_USER.email,WEB_MENU);}
+function _saveMenu(){sv('menu_'+WEB_USER.email,WEB_MENU);}
 async function resetMenu(){
   if(await appConfirm('Réinitialiser le menu par défaut ? Vos modifications seront perdues.')){
     WEB_MENU = DEF_MENU.map(s=>({...s, items:s.items.map(i=>({...i}))}));
@@ -5815,9 +4672,9 @@ function renameMenuCategory(si){
   inp.value=old;
   inp.style.cssText='flex:1;font-size:13px;font-weight:700;color:#d4607a;border:none;border-bottom:2px solid #d4607a;outline:none;background:transparent;text-transform:uppercase;letter-spacing:1px;width:100%;';
   span.replaceWith(inp);inp.focus();inp.select();
-  function save(){if(inp.value.trim())MENU[si].section=inp.value.trim();_saveMenu();_renderMenu();}
+  function save(){if(inp.value.trim())WEB_MENU[si].section=inp.value.trim();_saveMenu();_renderMenu();}
   inp.addEventListener('blur',save);
-  inp.addEventListener('keydown',function(e){if(e.key==='Enter')inp.blur();if(e.key==='Escape'){MENU[si].section=old;_renderMenu();}});
+  inp.addEventListener('keydown',function(e){if(e.key==='Enter')inp.blur();if(e.key==='Escape'){WEB_MENU[si].section=old;_renderMenu();}});
 }
 function renameMenuItem(si,ii){
   const span=document.querySelector('[data-menu="'+si+'-'+ii+'"]');
@@ -5829,11 +4686,11 @@ function renameMenuItem(si,ii){
   span.replaceWith(inp);
   inp.focus();inp.select();
   function save(){
-    if(inp.value.trim())MENU[si].items[ii].text=inp.value.trim();
+    if(inp.value.trim())WEB_MENU[si].items[ii].text=inp.value.trim();
     _saveMenu();_renderMenu();
   }
   inp.addEventListener('blur',save);
-  inp.addEventListener('keydown',function(e){if(e.key==='Enter')inp.blur();if(e.key==='Escape'){MENU[si].items[ii].text=old;_renderMenu();}});
+  inp.addEventListener('keydown',function(e){if(e.key==='Enter')inp.blur();if(e.key==='Escape'){WEB_MENU[si].items[ii].text=old;_renderMenu();}});
 }
 
 function resetMenuQty(){
@@ -5917,7 +4774,7 @@ function renameDecoCategory(cat,catIdx){
   inp.addEventListener('keydown',function(e){if(e.key==='Enter')inp.blur();if(e.key==='Escape'){_renderDecorations();}});
 }
 
-function __renderDecorations(){
+function _renderDecorations(){
   const saved = ld('deco_'+WEB_USER.email, {});
   const decoData = getDecoData();
   let html = '';
@@ -6019,7 +4876,7 @@ function renameDecoItem(cat, i){
 }
 
 // ── ALBUM ─────────────────────────────────────────────────────────────────────
-function __renderAlbum(){
+function _renderAlbum(){
   const driveUrl = ld('drive_url_'+WEB_USER.email, '');
   const qrUrl = driveUrl
     ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(driveUrl)}&color=d4607a&bgcolor=fff9fb&margin=6`
@@ -8051,7 +6908,7 @@ function pinterestUrl(query){
   return 'https://www.pinterest.com/search/pins/?q=' + encodeURIComponent(query);
 }
 
-function __renderAssistant(){
+function _renderAssistant(){
   _eld('web-tab-7').innerHTML = `
     <div class="card" style="padding:18px 16px;margin-bottom:16px;background:linear-gradient(135deg,${sf},#fff);">
       <h2 style="font-family:Playfair Display,Georgia,serif;font-size:22px;color:${tm};margin:0 0 6px;text-align:center;font-weight:700;">✨ Assistant Weddilya</h2>
@@ -9403,11 +8260,11 @@ function assistPlaylistAmbi(cont){
 }
 
 // ── WEB_NOTES ─────────────────────────────────────────────────────────────────────
-function __renderNotes(){
+function _renderNotes(){
   _eld('web-tab-9').innerHTML = `
   <div class="card" style="padding:16px;">
     <div style="font-family:Playfair Display,serif;font-style:italic;font-size:20px;color:${tm};margin-bottom:12px;text-align:center;">MES WEB_NOTES</div>
-    <textarea id="notes-area" style="width:100%;min-height:400px;border:none;outline:none;font-family:Lora,serif;font-size:14px;color:${tx};background:transparent;resize:vertical;line-height:1.8;" placeholder="Écrivez vos notes ici...">${h(NOTES)}</textarea>
+    <textarea id="notes-area" style="width:100%;min-height:400px;border:none;outline:none;font-family:Lora,serif;font-size:14px;color:${tx};background:transparent;resize:vertical;line-height:1.8;" placeholder="Écrivez vos notes ici...">${h(WEB_NOTES)}</textarea>
   </div>
   `;
   document.getElementById('notes-area')?.addEventListener('input', function(){
