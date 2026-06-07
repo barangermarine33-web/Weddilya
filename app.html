@@ -3003,27 +3003,27 @@ async function exportPlanPDF(){
 
     //  PAGE 1 : titre + plan visuel 
     drawFrame();
-    // ── WEDDILYA : titre principal centré (style app) ──
-    setText(C_PK); pdf.setFont('helvetica','normal'); pdf.setFontSize(24);
-    pdf.setCharSpace(12); pdf.text('WEDDILYA',pw/2,16,{align:'center'}); pdf.setCharSpace(0);
-    // ── Anneaux centrés sous le titre ──
-    drawRings(pw/2,25,5);
-    // ── Séparateur léger ──
-    setStroke(C_BD); pdf.setLineWidth(0.3); pdf.line(pw/2-45,33,pw/2+45,33);
-    // ── Titre section ──
-    setText(C_TM); pdf.setFont('times','bold'); pdf.setFontSize(15);
-    pdf.text('Plan de table',pw/2,41,{align:'center'});
-    // ── Trait rose sous titre section ──
-    setStroke(C_PK); pdf.setLineWidth(0.4); pdf.line(pw/2-16,45,pw/2+16,45);
+    // ── WEDDILYA grand titre espacé ──
+    setText(C_PK); pdf.setFont('helvetica','normal'); pdf.setFontSize(28);
+    pdf.setCharSpace(14); pdf.text('WEDDILYA',pw/2,14,{align:'center'}); pdf.setCharSpace(0);
+    // ── Anneaux centrés sous WEDDILYA ──
+    drawRings(pw/2,23,5.5);
+    // ── Séparateur ──
+    setStroke(C_BD); pdf.setLineWidth(0.25); pdf.line(pw/2-40,32,pw/2+40,32);
+    // ── Titre section en italique ──
+    setText(C_TM); pdf.setFont('times','italic'); pdf.setFontSize(14);
+    pdf.text('Plan de table',pw/2,39,{align:'center'});
+    // ── Trait rose ──
+    setStroke(C_PK); pdf.setLineWidth(0.35); pdf.line(pw/2-14,43,pw/2+14,43);
     // ── Mariés ──
-    setText(C_TL); pdf.setFont('times','italic'); pdf.setFontSize(9);
-    pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,51,{align:'center'});
+    setText(C_TL); pdf.setFont('times','normal'); pdf.setFontSize(9);
+    pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,49,{align:'center'});
 
     // Géométrie IDENTIQUE à l'application (mêmes constantes en px, puis mise à l'échelle)
     const RND=68, SQ=72, TW=120, TH=58, SEAT=24, GAP=10;
     // Boîte englobante d'une table (en px app), centre de surface placé à (t.x+70, t.y+70)
     // Bornes réelles de tout le plan, chaises comprises
-    const m=18, top=60, planW=pw-2*m, planH=ph-top-8;
+    const m=18, top=58, planW=pw-2*m, planH=ph-top-6;
     let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
     TABLES.forEach(t=>{
       const cx=t.x+70, cy=t.y+70;
@@ -3102,17 +3102,17 @@ async function exportPlanPDF(){
 
     //  PAGE 2+ : liste des invités par table (toutes ensemble, en cartes) 
     pdf.addPage(); drawFrame();
-    setText(C_PK); pdf.setFont('helvetica','normal'); pdf.setFontSize(24);
-    pdf.setCharSpace(12); pdf.text('WEDDILYA',pw/2,16,{align:'center'}); pdf.setCharSpace(0);
-    drawRings(pw/2,25,5);
-    setStroke(C_BD); pdf.setLineWidth(0.3); pdf.line(pw/2-45,33,pw/2+45,33);
-    setText(C_TM); pdf.setFont('times','bold'); pdf.setFontSize(15);
-    pdf.text('Invités par table',pw/2,41,{align:'center'});
-    setStroke(C_PK); pdf.setLineWidth(0.4); pdf.line(pw/2-16,45,pw/2+16,45);
-    setText(C_TL); pdf.setFont('times','italic'); pdf.setFontSize(9);
-    pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,51,{align:'center'});
+    setText(C_PK); pdf.setFont('helvetica','normal'); pdf.setFontSize(28);
+    pdf.setCharSpace(14); pdf.text('WEDDILYA',pw/2,14,{align:'center'}); pdf.setCharSpace(0);
+    drawRings(pw/2,23,5.5);
+    setStroke(C_BD); pdf.setLineWidth(0.25); pdf.line(pw/2-40,32,pw/2+40,32);
+    setText(C_TM); pdf.setFont('times','italic'); pdf.setFontSize(14);
+    pdf.text('Invités par table',pw/2,39,{align:'center'});
+    setStroke(C_PK); pdf.setLineWidth(0.35); pdf.line(pw/2-14,43,pw/2+14,43);
+    setText(C_TL); pdf.setFont('times','normal'); pdf.setFontSize(9);
+    pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,49,{align:'center'});
 
-    const mm=16, yTop=59, colGap=8, nCols=3, colW=(pw-2*mm-(nCols-1)*colGap)/nCols;
+    const mm=16, yTop=56, colGap=8, nCols=3, colW=(pw-2*mm-(nCols-1)*colGap)/nCols;
     let col=0, y=yTop;
     const lineH=6.4;
 
@@ -3121,13 +3121,13 @@ async function exportPlanPDF(){
       if(y+needed>ph-16){
         col++;
         if(col>=nCols){ pdf.addPage(); drawFrame();
-          setText(C_PK); pdf.setFont('helvetica','bold'); pdf.setFontSize(28);
-          pdf.setCharSpace(10); pdf.text('WEDDILYA',pw/2,16,{align:'center'}); pdf.setCharSpace(0);
-          drawRings(pw/2,25,5);
-          setStroke(C_BD); pdf.setLineWidth(0.3); pdf.line(pw/2-45,33,pw/2+45,33);
-          setText(C_TM); pdf.setFont('times','bold'); pdf.setFontSize(15);
-          pdf.text('Invités par table',pw/2,41,{align:'center'});
-          setStroke(C_PK); pdf.setLineWidth(0.4); pdf.line(pw/2-16,45,pw/2+16,45);
+          setText(C_PK); pdf.setFont('helvetica','normal'); pdf.setFontSize(28);
+          pdf.setCharSpace(14); pdf.text('WEDDILYA',pw/2,14,{align:'center'}); pdf.setCharSpace(0);
+          drawRings(pw/2,23,5.5);
+          setStroke(C_BD); pdf.setLineWidth(0.25); pdf.line(pw/2-40,32,pw/2+40,32);
+          setText(C_TM); pdf.setFont('times','italic'); pdf.setFontSize(14);
+          pdf.text('Invités par table',pw/2,39,{align:'center'});
+          setStroke(C_PK); pdf.setLineWidth(0.35); pdf.line(pw/2-14,43,pw/2+14,43);
           col=0; }
         y=yTop;
       }
@@ -3692,18 +3692,17 @@ function renderVendors(){
       </button>`).join('')}
     </div>
 
-    <!-- Code postal + Rayon -->
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
-      <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:180px;">
-        <label style="font-size:11px;color:${tl};font-weight:700;white-space:nowrap;">Code postal :</label>
-        <input type="text" id="vnd-postal" placeholder="Code postal (ex: 57000)" style="flex:1;font-size:13px;padding:8px 10px;border:1px solid #eedce5;border-radius:10px;font-family:Lora,serif;color:#3e1828;background:#fff;outline:none;min-height:36px;" onkeydown="if(event.key==='Enter')searchByPostal()">
-        <button onclick="searchByPostal()" style="background:${sf};color:${pk};border:1px solid #f0e8ec;border-radius:9px;padding:7px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;white-space:nowrap;">Rechercher</button>
-      </div>
-      <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:160px;">
-        <label style="font-size:11px;color:${tl};font-weight:700;white-space:nowrap;">Rayon :</label>
-        <input type="range" id="vnd-radius" min="5" max="100" step="5" value="20" oninput="document.getElementById('vnd-radius-val').textContent=this.value+' km'" style="flex:1;accent-color:${pk};">
-        <span id="vnd-radius-val" style="font-size:11px;color:${tx};font-weight:700;min-width:44px;text-align:right;">20 km</span>
-      </div>
+    <!-- Code postal -->
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+      <label style="font-size:11px;color:${tl};font-weight:700;white-space:nowrap;flex-shrink:0;">Code postal :</label>
+      <input type="text" id="vnd-postal" placeholder="ex: 57000, Bordeaux..." style="flex:1;font-size:13px;padding:8px 10px;border:1px solid #eedce5;border-radius:10px;font-family:Lora,serif;color:#3e1828;background:#fff;outline:none;min-height:36px;" onkeydown="if(event.key==='Enter')searchByPostal()">
+      <button onclick="searchByPostal()" style="background:${sf};color:${pk};border:1px solid #f0e8ec;border-radius:9px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:Lora,serif;white-space:nowrap;flex-shrink:0;">Rechercher</button>
+    </div>
+    <!-- Rayon -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+      <label style="font-size:11px;color:${tl};font-weight:700;white-space:nowrap;flex-shrink:0;">Rayon :</label>
+      <input type="range" id="vnd-radius" min="5" max="100" step="5" value="20" oninput="document.getElementById('vnd-radius-val').textContent=this.value+' km'" style="flex:1;accent-color:${pk};">
+      <span id="vnd-radius-val" style="font-size:11px;color:${tx};font-weight:700;min-width:44px;text-align:right;flex-shrink:0;">20 km</span>
     </div>
     <div id="vnd-location-status" style="font-size:11px;color:${tl};margin-bottom:6px;"></div>
 
@@ -3716,7 +3715,7 @@ function renderVendors(){
       </div>
     </details>
 
-    <p style="font-size:11px;color:${tl};font-style:italic;margin-top:8px;">Entrez un code postal et cliquez OK, puis sélectionnez une catégorie. Sans code postal, votre position GPS sera utilisée.</p>
+    <p style="font-size:11px;color:${tl};font-style:italic;margin-top:6px;">Entrez un code postal ou une ville et cliquez Rechercher, puis sélectionnez une catégorie ci-dessus.</p>
   </div>
   <div id="vnd-results-wrap" style="margin-bottom:16px;"></div>
   <div style="margin-bottom:18px;">
@@ -4475,9 +4474,8 @@ function renderMenu(){
           <button onclick="removeMenuCategory(${si})" style="background:none;border:none;color:${br};font-size:18px;cursor:pointer;padding:0 4px;">×</button>
         </div>
         ${section.items.map((item,ii)=>`
-          <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f9edf2;">
-            <input type="checkbox" ${item.done?'checked':''} onchange="toggleMenuItem(${si},${ii},this.checked)" style="accent-color:${pk};width:16px;height:16px;flex-shrink:0;cursor:pointer;">
-            <span data-menu="${si}-${ii}" onclick="renameMenuItem(${si},${ii})" style="flex:1;font-size:13px;color:${item.done?tl:tx};text-decoration:${item.done?'line-through':'none'};cursor:pointer;" title="Appuyer pour renommer">${h(item.text)}</span>
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #f9edf2;">
+            <span data-menu="${si}-${ii}" onclick="renameMenuItem(${si},${ii})" style="flex:1;font-size:13px;color:${tx};cursor:pointer;" title="Appuyer pour renommer">${h(item.text)}</span>
             <button onclick="removeMenuItem(${si},${ii})" style="background:none;border:none;color:${br};font-size:16px;cursor:pointer;">×</button>
           </div>`).join('')}
         <div style="display:flex;gap:8px;margin-top:8px;">
