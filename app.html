@@ -100,7 +100,7 @@ body{background:#fdf8f5;font-family:Lora,serif;color:#3e1828;min-height:100vh;}
 .inp{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-family:Lora,serif;font-size:14px;color:var(--text);background:var(--card);outline:none;-webkit-appearance:none;appearance:none;min-height:44px;}
 .inp:focus{border-color:var(--accent);}
 .lbl{display:block;font-size:11px;font-weight:700;letter-spacing:0.8px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;}
-.card{background:var(--card);border:1.5px solid var(--border);border-radius:14px;margin-bottom:12px;}
+.card{background:var(--card);border:1px solid #f5e8ee;border-radius:14px;margin-bottom:12px;}
 .tab-btn{border:none;border-bottom:2px solid transparent;border-radius:0;padding:7px 14px 6px;font-size:12px;font-weight:700;font-family:Lora,serif;cursor:pointer;white-space:nowrap;color:#c8809a;background:transparent !important;transition:all .2s;min-height:36px;}
 .tab-btn.active{background:transparent !important;color:#b84060 !important;border-bottom:2px solid #b84060 !important;box-shadow:none !important;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
@@ -2098,7 +2098,7 @@ function guestRow(g){
     <td style="padding:8px 9px;background:#fff;border-bottom:1px solid #f9edf2;">
       <div onclick="editGuestRegimes(${g.id})" style="font-size:11px;color:${g.regime&&g.regime!=='Aucun'?am:tl};cursor:pointer;font-weight:600;max-width:110px;word-break:break-word;padding:4px;min-height:28px;display:flex;align-items:center;">${g.regime&&g.regime!=='Aucun'?h(g.regime):'+ Ajouter'}</div>
     </td>
-    <td style="padding:8px 9px;background:#fff;border:1.5px solid ${br};border-left:none;border-right:none;text-align:center;">
+    <td style="padding:8px 9px;background:#fff;border-bottom:1px solid #f9edf2;text-align:center;">
       <span onclick="updGuest(${g.id},'vinHonneur',!${g.vinHonneur})" style="font-size:11px;font-weight:600;cursor:pointer;color:${g.vinHonneur?pk:br};user-select:none;">${g.vinHonneur?'Uniquement':'-'}</span>
     </td>
     <td style="padding:8px 9px;background:#fff;border-bottom:1px solid #f9edf2;">
