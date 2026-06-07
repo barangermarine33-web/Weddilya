@@ -1901,7 +1901,7 @@ function renderChecklist(){
   const allMonths=[...MONTHS,...Object.keys(grouped).filter(m=>!MONTHS.includes(m))];
   const monthsWithTasks=allMonths.filter(m=>grouped[m]&&grouped[m].length);
   el('page-0').innerHTML=`
-  <div class="card" style="padding:16px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,${sf},#fff)">
+  <div class="card" style="padding:16px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;background:#fff;border-bottom:1px solid ${sf};">
     <div><div class="lbl">Progression</div><div style="font-family:Playfair Display,serif;font-size:28px;color:${tx}">${done}<span style="font-size:14px;color:${tl}"> / ${tot}</span></div></div>
     <svg viewBox="0 0 36 36" width="60" height="60"><circle cx="18" cy="18" r="15.9" fill="none" stroke="${br}" stroke-width="3"/><circle cx="18" cy="18" r="15.9" fill="none" stroke="${pk}" stroke-width="3" stroke-dasharray="${pct} 100" stroke-linecap="round" transform="rotate(-90 18 18)"/><text x="18" y="22" text-anchor="middle" font-size="7" fill="${tx}" font-family="serif" font-weight="bold">${pct}%</text></svg>
   </div>
@@ -1920,14 +1920,14 @@ function renderChecklist(){
     const collapsed=!!collapsedMonths[month];
     const doneInMonth=grouped[month].filter(t=>t.done).length;
     return `<div style="margin-bottom:10px;">
-      <div onclick="toggleMonth('${month.replace(/'/g,"\\'")}') " style="display:flex;align-items:center;justify-content:center;gap:8px;background:${sf};border:1.5px solid ${br};border-radius:11px;padding:11px 16px;cursor:pointer;margin-bottom:6px;">
+      <div onclick="toggleMonth('${month.replace(/'/g,"\\'")}') " style="display:flex;align-items:center;justify-content:center;gap:8px;background:transparent;border:none;border-bottom:2px solid ${sf};border-radius:0;padding:10px 4px;cursor:pointer;margin-bottom:6px;margin-top:8px;">
         <span id="chk-arrow-${safeId}" style="font-size:13px;color:${pk};transition:transform .25s;transform:${collapsed?'rotate(-90deg)':'rotate(0deg)'};display:inline-block;">▼</span>
         <span style="font-family:Playfair Display,serif;font-size:15px;font-weight:700;color:${tm};letter-spacing:1px;">${h(month)}</span>
         <span style="font-size:11px;color:${tl};margin-left:4px;">(${doneInMonth}/${grouped[month].length})</span>
       </div>
       <div id="chk-tasks-${safeId}" style="display:${collapsed?'none':'block'};">
         ${grouped[month].map(t=>`
-          <div onclick="toggleTask(${t.id})" style="display:flex;align-items:center;gap:11px;background:${t.done?sf:'#fff'};border:none;border-bottom:1px solid ${sf};border-radius:0;padding:10px 4px;margin-bottom:2px;cursor:pointer;">
+          <div onclick="toggleTask(${t.id})" style="display:flex;align-items:center;gap:11px;background:#fff;border:none;border-bottom:1px solid #f9edf2;border-radius:0;padding:10px 4px;cursor:pointer;">
             <div style="width:20px;height:20px;border-radius:50%;border:2px solid ${t.done?pk:br};background:${t.done?pk:'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">${t.done?'<span style="color:#fff;font-size:11px;font-weight:bold;">✓</span>':''}</div>
             <span style="flex:1;font-size:13px;color:${t.done?tl:tx};text-decoration:${t.done?'line-through':'none'}">${h(t.text)}</span>
             <button onclick="event.stopPropagation();removeTask(${t.id})" style="background:none;border:none;cursor:pointer;color:${br};font-size:16px;">×</button>
