@@ -2925,12 +2925,12 @@ async function exportPlanPDF(){
 
     // Frame Weddilya avec fond rosé et logo
     const drawFrame=()=>{
-      // Fond principal blanc cassé
+      // Fond blanc
       setFill(C_BG); pdf.rect(0,0,pw,ph,'F');
-      // Bandeau décoratif rose en haut
-      setFill(C_PK); pdf.rect(0,0,pw,3,'F');
-      // Bandeau rose très clair
-      setFill(C_SF); pdf.rect(0,3,pw,32,'F');
+      // Bandeau rose en haut (couleur exacte app)
+      setFill(C_PK); pdf.rect(0,0,pw,2,'F');
+      // Zone header rosée
+      setFill(C_SF); pdf.rect(0,2,pw,58,'F');
     };
     // Dessiner le logo anneaux (SVG-like en jsPDF)
     const drawRings=(x,y,r)=>{
@@ -2946,21 +2946,21 @@ async function exportPlanPDF(){
 
     //  PAGE 1 : titre + plan visuel 
     drawFrame();
-    // ── WEDDILYA grand titre ──
-    setText(C_PK); pdf.setFont('helvetica','bold'); pdf.setFontSize(26);
-    pdf.setCharSpace(6); pdf.text('WEDDILYA',pw/2,18,{align:'center'}); pdf.setCharSpace(0);
-    // ── Logo anneaux sous WEDDILYA ──
-    drawRings(pw/2,27,5);
-    // ── Ligne séparatrice ──
-    setStroke(C_BD); pdf.setLineWidth(0.3); pdf.line(pw/2-50,35,pw/2+50,35);
-    // ── Titre section (plus petit) ──
-    setText(C_TM); pdf.setFont('times','bold'); pdf.setFontSize(16);
-    pdf.text('Plan de table',pw/2,43,{align:'center'});
-    // ── Trait rose ──
-    setStroke(C_PK); pdf.setLineWidth(0.4); pdf.line(pw/2-18,47,pw/2+18,47);
-    // ── Sous-titre mariés ──
+    // ── WEDDILYA : titre principal centré (style app) ──
+    setText(C_PK); pdf.setFont('helvetica','bold'); pdf.setFontSize(28);
+    pdf.setCharSpace(10); pdf.text('WEDDILYA',pw/2,16,{align:'center'}); pdf.setCharSpace(0);
+    // ── Anneaux centrés sous le titre ──
+    drawRings(pw/2,25,5);
+    // ── Séparateur léger ──
+    setStroke(C_BD); pdf.setLineWidth(0.3); pdf.line(pw/2-45,33,pw/2+45,33);
+    // ── Titre section ──
+    setText(C_TM); pdf.setFont('times','bold'); pdf.setFontSize(15);
+    pdf.text('Plan de table',pw/2,41,{align:'center'});
+    // ── Trait rose sous titre section ──
+    setStroke(C_PK); pdf.setLineWidth(0.4); pdf.line(pw/2-16,45,pw/2+16,45);
+    // ── Mariés ──
     setText(C_TL); pdf.setFont('times','italic'); pdf.setFontSize(9);
-    pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,53,{align:'center'});
+    pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,51,{align:'center'});
 
     // Géométrie IDENTIQUE à l'application (mêmes constantes en px, puis mise à l'échelle)
     const RND=68, SQ=72, TW=120, TH=58, SEAT=24, GAP=10;
@@ -3045,15 +3045,15 @@ async function exportPlanPDF(){
 
     //  PAGE 2+ : liste des invités par table (toutes ensemble, en cartes) 
     pdf.addPage(); drawFrame();
-    setText(C_PK); pdf.setFont('helvetica','bold'); pdf.setFontSize(26);
-    pdf.setCharSpace(6); pdf.text('WEDDILYA',pw/2,18,{align:'center'}); pdf.setCharSpace(0);
-    drawRings(pw/2,27,5);
-    setStroke(C_BD); pdf.setLineWidth(0.3); pdf.line(pw/2-50,35,pw/2+50,35);
-    setText(C_TM); pdf.setFont('times','bold'); pdf.setFontSize(16);
-    pdf.text('Invités par table',pw/2,43,{align:'center'});
-    setStroke(C_PK); pdf.setLineWidth(0.4); pdf.line(pw/2-18,47,pw/2+18,47);
+    setText(C_PK); pdf.setFont('helvetica','bold'); pdf.setFontSize(28);
+    pdf.setCharSpace(10); pdf.text('WEDDILYA',pw/2,16,{align:'center'}); pdf.setCharSpace(0);
+    drawRings(pw/2,25,5);
+    setStroke(C_BD); pdf.setLineWidth(0.3); pdf.line(pw/2-45,33,pw/2+45,33);
+    setText(C_TM); pdf.setFont('times','bold'); pdf.setFontSize(15);
+    pdf.text('Invités par table',pw/2,41,{align:'center'});
+    setStroke(C_PK); pdf.setLineWidth(0.4); pdf.line(pw/2-16,45,pw/2+16,45);
     setText(C_TL); pdf.setFont('times','italic'); pdf.setFontSize(9);
-    pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,53,{align:'center'});
+    pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,51,{align:'center'});
 
     const mm=16, yTop=59, colGap=8, nCols=3, colW=(pw-2*mm-(nCols-1)*colGap)/nCols;
     let col=0, y=yTop;
@@ -3064,13 +3064,13 @@ async function exportPlanPDF(){
       if(y+needed>ph-16){
         col++;
         if(col>=nCols){ pdf.addPage(); drawFrame();
-          setText(C_PK); pdf.setFont('helvetica','bold'); pdf.setFontSize(26);
-          pdf.setCharSpace(6); pdf.text('WEDDILYA',pw/2,18,{align:'center'}); pdf.setCharSpace(0);
-          drawRings(pw/2,27,5);
-          setStroke(C_BD); pdf.setLineWidth(0.3); pdf.line(pw/2-50,35,pw/2+50,35);
-          setText(C_TM); pdf.setFont('times','bold'); pdf.setFontSize(16);
-          pdf.text('Invités par table',pw/2,43,{align:'center'});
-          setStroke(C_PK); pdf.setLineWidth(0.4); pdf.line(pw/2-18,47,pw/2+18,47);
+          setText(C_PK); pdf.setFont('helvetica','bold'); pdf.setFontSize(28);
+          pdf.setCharSpace(10); pdf.text('WEDDILYA',pw/2,16,{align:'center'}); pdf.setCharSpace(0);
+          drawRings(pw/2,25,5);
+          setStroke(C_BD); pdf.setLineWidth(0.3); pdf.line(pw/2-45,33,pw/2+45,33);
+          setText(C_TM); pdf.setFont('times','bold'); pdf.setFontSize(15);
+          pdf.text('Invités par table',pw/2,41,{align:'center'});
+          setStroke(C_PK); pdf.setLineWidth(0.4); pdf.line(pw/2-16,45,pw/2+16,45);
           col=0; }
         y=yTop;
       }
@@ -3630,7 +3630,7 @@ function renderVendors(){
         {key:'voiture',label:'Voiture',icon:''},
         {key:'hotel',label:'Hébergement',icon:''},
         {key:'decor',label:'Décoration',icon:''}
-      ].map(c=>`<button onclick="searchByCategory('${c.key}','${c.label}')" class="vnd-cat-btn" style="background:#fdf8f5;color:${tx};border:1px solid #f0e8ec;border-radius:10px;padding:8px 10px;cursor:pointer;font-size:12px;font-weight:700;font-family:Lora,serif;text-align:center;justify-content:center;display:flex;align-items:center;transition:all .15s;">
+      ].map(c=>`<button onclick="searchByCategory('${c.key}','${c.label}')" data-catkey="${c.key}" class="vnd-cat-btn" style="background:#fdf8f5;color:${tx};border:1px solid #f0e8ec;border-radius:10px;padding:8px 10px;cursor:pointer;font-size:12px;font-weight:700;font-family:Lora,serif;text-align:center;justify-content:center;display:flex;align-items:center;transition:all .15s;">
         <span style="font-size:14px;">${c.icon}</span><span>${c.label}</span>
       </button>`).join('')}
     </div>
@@ -3761,7 +3761,7 @@ const VND_CATEGORIES = {
   dj:          {label:'DJ/Musique',         tags:['craft=musical_instrument','shop=musical_instrument','office=dj','shop=music']},
   fleuriste:   {label:'Fleuriste',          tags:['shop=florist']},
   patisserie:  {label:'Pâtisserie/Cake',    tags:['shop=bakery','shop=pastry','shop=confectionery','craft=confectioner']},
-  robe:        {label:'Robe mariée',        tags:['shop=wedding','shop=bridal','shop=wedding_contract','shop=clothes','shop=boutique']},
+  robe:        {label:'Robe mariée',        tags:['shop=wedding','shop=bridal','shop=wedding_contract']},
   costume:     {label:'Costume/Tailleur',   tags:['craft=tailor','shop=tailor','shop=clothes']},
   coiffeur:    {label:'Coiffeur',           tags:['shop=hairdresser']},
   beaute:      {label:'Maquillage/Beauté',  tags:['shop=beauty','shop=cosmetics','leisure=spa']},
@@ -3776,6 +3776,14 @@ const VND_CATEGORIES = {
 // (pas par nom). C'est ce qui fait que "Salle" trouve toutes les salles de
 // réception, pas seulement les établissements appelés "Salle".
 async function searchByCategory(catKey, catLabel){
+  // Mettre en rose le bouton sélectionné
+  window._activeCatKey = catKey;
+  document.querySelectorAll('.vnd-cat-btn').forEach(btn=>{
+    const btnActive = btn.getAttribute('data-catkey') === catKey;
+    btn.style.background = btnActive ? '#fef2f6' : '#fdf8f5';
+    btn.style.color = btnActive ? '#b84060' : '#3e1828';
+    btn.style.borderColor = btnActive ? '#f5d5e0' : '#f0e8ec';
+  });
   const cat = VND_CATEGORIES[catKey];
   if(!cat){console.warn('Catégorie inconnue:',catKey);return;}
 
@@ -4290,14 +4298,14 @@ function movToFav(id){const v=VENDORS_CHO.find(c=>c.id===id);if(!v)return;VENDOR
 function renderFavs(){
   const d=el('vnd-favs');if(!d)return;
   d.innerHTML=VENDORS_FAV.length===0
-    ?`<div style="background:${sf};border:1px solid #f0e8ec;border-radius:12px;padding:16px;text-align:center;color:${tl};font-size:13px;font-style:italic;">Ajoutez des prestataires depuis la recherche</div>`
+    ?`<div style="background:${sf};border:1.5px dashed ${br};border-radius:12px;padding:16px;text-align:center;color:${tl};font-size:13px;font-style:italic;">Glissez vos prestataires ici depuis les résultats</div>`
     :vSort(VENDORS_FAV,sortFav).map(v=>vndMiniCard(v,'fav')).join('');
   const cnt=el('fav-cnt');if(cnt)cnt.textContent=VENDORS_FAV.length;
 }
 function renderChosen(){
   const d=el('vnd-chosen');if(!d)return;
   d.innerHTML=VENDORS_CHO.length===0
-    ?`<div style="background:${sf};border:2px dashed ${br};border-radius:12px;padding:16px;text-align:center;color:${tl};font-size:13px;font-style:italic;">Glissez vos favoris ici ou cliquez sur "Déplacer"</div>`
+    ?`<div style="background:${sf};border:1.5px dashed ${br};border-radius:12px;padding:16px;text-align:center;color:${tl};font-size:13px;font-style:italic;">Glissez vos favoris ici ou cliquez sur "Déplacer"</div>`
     :vSort(VENDORS_CHO,sortCho).map(v=>vndMiniCard(v,'cho')).join('');
   const cnt=el('cho-cnt');if(cnt)cnt.textContent=VENDORS_CHO.length;
 }
