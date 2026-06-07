@@ -2989,12 +2989,8 @@ async function exportPlanPDF(){
 
     // Frame Weddilya avec fond rosé et logo
     const drawFrame=()=>{
-      // Fond blanc
+      // Fond blanc uni
       setFill(C_BG); pdf.rect(0,0,pw,ph,'F');
-      // Bandeau rose en haut (couleur exacte app)
-      setFill(C_PK); pdf.rect(0,0,pw,2,'F');
-      // Zone header rosée
-      setFill(C_SF); pdf.rect(0,2,pw,58,'F');
     };
     // Dessiner le logo anneaux (SVG-like en jsPDF)
     const drawRings=(x,y,r)=>{
@@ -3008,8 +3004,8 @@ async function exportPlanPDF(){
     //  PAGE 1 : titre + plan visuel 
     drawFrame();
     // ── WEDDILYA : titre principal centré (style app) ──
-    setText(C_PK); pdf.setFont('helvetica','bold'); pdf.setFontSize(28);
-    pdf.setCharSpace(10); pdf.text('WEDDILYA',pw/2,16,{align:'center'}); pdf.setCharSpace(0);
+    setText(C_PK); pdf.setFont('helvetica','normal'); pdf.setFontSize(24);
+    pdf.setCharSpace(12); pdf.text('WEDDILYA',pw/2,16,{align:'center'}); pdf.setCharSpace(0);
     // ── Anneaux centrés sous le titre ──
     drawRings(pw/2,25,5);
     // ── Séparateur léger ──
@@ -3106,8 +3102,8 @@ async function exportPlanPDF(){
 
     //  PAGE 2+ : liste des invités par table (toutes ensemble, en cartes) 
     pdf.addPage(); drawFrame();
-    setText(C_PK); pdf.setFont('helvetica','bold'); pdf.setFontSize(28);
-    pdf.setCharSpace(10); pdf.text('WEDDILYA',pw/2,16,{align:'center'}); pdf.setCharSpace(0);
+    setText(C_PK); pdf.setFont('helvetica','normal'); pdf.setFontSize(24);
+    pdf.setCharSpace(12); pdf.text('WEDDILYA',pw/2,16,{align:'center'}); pdf.setCharSpace(0);
     drawRings(pw/2,25,5);
     setStroke(C_BD); pdf.setLineWidth(0.3); pdf.line(pw/2-45,33,pw/2+45,33);
     setText(C_TM); pdf.setFont('times','bold'); pdf.setFontSize(15);
@@ -3670,7 +3666,7 @@ function removCho(id){VENDORS_CHO=VENDORS_CHO.filter(c=>c.id!==id);sv(`vcho_${US
 function renderVendors(){
   el('page-4').innerHTML=`
   <div class="card" style="padding:14px;margin-bottom:14px;">
-    <div style="font-family:Playfair Display,serif;font-size:20px;font-weight:700;color:${tx};margin-bottom:14px;text-align:center;">Rechercher un prestataire</div>
+    <div style="font-family:Playfair Display,serif;font-size:20px;color:${tx};margin-bottom:12px;text-align:center;">Rechercher un prestataire</div>
 
     <!-- Grille de boutons catégories : chaque clic lance une recherche par TAG OSM précis -->
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:6px;margin-bottom:12px;">
@@ -3700,7 +3696,7 @@ function renderVendors(){
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
       <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:180px;">
         <label style="font-size:11px;color:${tl};font-weight:700;white-space:nowrap;">Code postal :</label>
-        <input class="inp" id="vnd-postal" placeholder="Code postal (ex: 57000)" style="flex:1;font-size:12px;padding:7px 10px;" onkeydown="if(event.key==='Enter')searchByPostal()">
+        <input type="text" id="vnd-postal" placeholder="Code postal (ex: 57000)" style="flex:1;font-size:13px;padding:8px 10px;border:1px solid #eedce5;border-radius:10px;font-family:Lora,serif;color:#3e1828;background:#fff;outline:none;min-height:36px;" onkeydown="if(event.key==='Enter')searchByPostal()">
         <button onclick="searchByPostal()" style="background:${sf};color:${pk};border:1px solid #f0e8ec;border-radius:9px;padding:7px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;white-space:nowrap;">Rechercher</button>
       </div>
       <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:160px;">
@@ -3725,7 +3721,7 @@ function renderVendors(){
   <div id="vnd-results-wrap" style="margin-bottom:16px;"></div>
   <div style="margin-bottom:18px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
-      <div style="font-family:Playfair Display,serif;font-size:20px;font-weight:700;color:${tx};margin-bottom:14px;text-align:center;padding:10px 0 8px;border-bottom:2px solid ${sf};">Prestataires favoris <span id="fav-cnt" style="background:${sf};color:${pk};font-size:11px;border-radius:20px;padding:2px 9px;font-weight:700;">${VENDORS_FAV.length}</span></div>
+      <div style="font-family:Playfair Display,serif;font-size:20px;color:${tx};margin-bottom:12px;text-align:center;padding:10px 0 8px;border-bottom:2px solid ${sf};">Prestataires favoris <span id="fav-cnt" style="background:${sf};color:${pk};font-size:11px;border-radius:20px;padding:2px 9px;font-weight:700;">${VENDORS_FAV.length}</span></div>
       <div style="display:flex;gap:5px;align-items:center;">
         <button onclick="addManualVendor('fav')" style="background:${sf};color:${pk};border:1px solid ${br};border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;">+ Ajouter</button>
         ${['alpha|A→Z','prix|Prix','distance|Distance'].map(s=>{const[v,l]=s.split('|');return`<button class="tab-btn${sortFav===v?' active':''}" onclick="setSortFav('${v}',this)" style="font-size:11px;padding:4px 10px;">${l}</button>`;}).join('')}</div>
@@ -3734,7 +3730,7 @@ function renderVendors(){
   </div>
   <div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
-      <div style="font-family:Playfair Display,serif;font-size:20px;font-weight:700;color:${tx};margin-bottom:14px;text-align:center;padding:10px 0 8px;border-bottom:2px solid ${sf};">Prestataires choisis <span id="cho-cnt" style="background:${sf};color:${pk};font-size:11px;border-radius:20px;padding:2px 9px;font-weight:700;">${VENDORS_CHO.length}</span></div>
+      <div style="font-family:Playfair Display,serif;font-size:20px;color:${tx};margin-bottom:12px;text-align:center;padding:10px 0 8px;border-bottom:2px solid ${sf};">Prestataires choisis <span id="cho-cnt" style="background:${sf};color:${pk};font-size:11px;border-radius:20px;padding:2px 9px;font-weight:700;">${VENDORS_CHO.length}</span></div>
       <div style="display:flex;gap:5px;align-items:center;">
         <button onclick="addManualVendor('cho')" style="background:${sf};color:${pk};border:1px solid #f0e8ec;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;">+ Ajouter</button>
         ${['alpha|A→Z','prix|Prix','distance|Distance'].map(s=>{const[v,l]=s.split('|');return`<button class="tab-btn${sortCho===v?' active':''}" onclick="setSortCho('${v}',this)" style="font-size:11px;padding:4px 10px;">${l}</button>`;}).join('')}</div>
@@ -4408,7 +4404,7 @@ function renderMenu(){
   </div>
 
   <div class="card" style="padding:14px;margin-bottom:14px;">
-    <div style="font-family:Playfair Display,serif;font-size:20px;font-weight:700;color:${tx};margin-bottom:14px;text-align:center;">Répartition des invitésRépartition des invités</div>
+    <div style="font-family:Playfair Display,serif;font-size:20px;color:${tx};margin-bottom:12px;text-align:center;">Répartition des invités</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;">
       <div style="display:flex;flex-direction:column;">
         <label class="lbl" style="min-height:28px;display:flex;align-items:flex-end;">Vin d'honneur uniquement</label>
@@ -4427,7 +4423,7 @@ function renderMenu(){
   </div>
 
   <div class="card" style="padding:14px;margin-bottom:14px;">
-    <div style="font-family:Playfair Display,serif;font-size:20px;font-weight:700;color:${tx};margin-bottom:14px;text-align:center;">Estimation des boissonsEstimation des boissons</div>
+    <div style="font-family:Playfair Display,serif;font-size:20px;color:${tx};margin-bottom:12px;text-align:center;">Estimation des boissons</div>
     ${[
       {nom:' Champagne', calc: Math.ceil(total/3), unit:'bouteilles', note:'1 bouteille / 3 invités (principalement vin d\'honneur)'},
       {nom:' Cocktails', calc: total*2, unit:'verres', note:'2 verres / invité (principalement vin d\'honneur)'},
@@ -4464,7 +4460,7 @@ function renderMenu(){
   </div>
 
   <div class="card" style="padding:14px;margin-top:14px;">
-    <div style="font-family:Playfair Display,serif;font-size:20px;font-weight:700;color:${tx};margin-bottom:14px;text-align:center;"> Menu</div>
+    <div style="font-family:Playfair Display,serif;font-size:20px;color:${tx};margin-bottom:12px;text-align:center;"> Menu</div>
     <div style="display:flex;gap:8px;margin-bottom:8px;">
       <input class="inp" id="menu-new-cat" placeholder="Nouvelle catégorie..." style="flex:1;font-size:13px;">
       <button onclick="addMenuCategory()" class="btn" style="padding:8px 14px;">+</button>
@@ -4475,7 +4471,7 @@ function renderMenu(){
     ${MENU.map((section,si)=>`
       <div style="margin-bottom:16px;border:1px solid #f0e8ec;border-radius:12px;padding:12px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding:8px 10px;background:${sf};border-radius:8px;">
-          <span data-menu-cat="${si}" onclick="renameMenuCategory(${si})" style="font-weight:700;font-size:13px;color:${tm};text-transform:uppercase;letter-spacing:0.5px;cursor:pointer;flex:1;" title="Appuyer pour renommer">${h(section.section)}</span>
+          <span data-menu-cat="${si}" onclick="renameMenuCategory(${si})" style="font-weight:700;font-size:13px;color:${tm};cursor:pointer;flex:1;" title="Appuyer pour renommer">${h(section.section)}</span>
           <button onclick="removeMenuCategory(${si})" style="background:none;border:none;color:${br};font-size:18px;cursor:pointer;padding:0 4px;">×</button>
         </div>
         ${section.items.map((item,ii)=>`
@@ -4744,7 +4740,7 @@ function renderAlbum(){
 
   el('page-8').innerHTML = `
   <div class="card" style="padding:16px;margin-bottom:16px;background:#fff;">
-    <div style="font-family:Playfair Display,serif;font-size:20px;font-weight:700;color:${tx};margin-bottom:14px;text-align:center;">Album partagé</div>
+    <div style="font-family:Playfair Display,serif;font-size:20px;color:${tx};margin-bottom:12px;text-align:center;">Album partagé</div>
     <p style="font-size:13px;color:${tl};margin-bottom:14px;">Partagez votre album <strong>Google Photos</strong> avec vos invités.</p>
     <div style="margin-bottom:16px;">
       <label class="lbl">Lien de votre album Google Photos</label>
@@ -4767,7 +4763,7 @@ function renderAlbum(){
     `}
   </div>
   <div class="card" style="padding:16px;">
-    <div style="font-family:Playfair Display,serif;font-size:20px;font-weight:700;color:${tx};margin-bottom:14px;text-align:center;">Comment créer votre album partagé ?</div>
+    <div style="font-family:Playfair Display,serif;font-size:20px;color:${tx};margin-bottom:12px;text-align:center;">Comment créer votre album partagé ?</div>
     <div style="font-size:13px;color:${tl};line-height:2;">
       <div>Ouvrez <strong>Google Photos</strong> sur votre téléphone</div>
       <div>Appuyez sur <strong>"Bibliothèque"</strong> → <strong>"Albums"</strong> → <strong>"+"</strong></div>
@@ -6771,7 +6767,7 @@ function pinterestUrl(query){
 function renderAssistant(){
   el('page-7').innerHTML = `
     <div style="padding:20px 16px 16px;text-align:center;">
-      <div style="font-family:Playfair Display,serif;font-size:20px;font-weight:700;color:${tx};margin-bottom:4px;text-align:center;">Assistant Weddilya</div>
+      <div style="font-family:Playfair Display,serif;font-size:20px;color:${tx};margin-bottom:8px;text-align:center;">Assistant Weddilya</div>
       <div style="width:32px;height:1.5px;background:${pk};margin:6px auto 8px;border-radius:2px;"></div>
       <div style="font-size:12px;color:${tl};font-style:italic;">Tous les conseils dont tu as besoin pour ton mariage.</div>
     </div>
@@ -8128,7 +8124,7 @@ function renderNotes(){
   el('page-9').innerHTML = `
   <div style="padding:28px 20px 20px;background:#fff;">
     <div style="text-align:center;margin-bottom:24px;">
-      <div style="font-family:Playfair Display,serif;font-size:20px;font-weight:700;color:${tx};margin-bottom:14px;text-align:center;">Mes notes</div>
+      <div style="font-family:Playfair Display,serif;font-size:20px;color:${tx};margin-bottom:12px;text-align:center;">Mes notes</div>
       <div style="width:40px;height:1.5px;background:linear-gradient(90deg,transparent,${pk},transparent);margin:0 auto;"></div>
     </div>
     <textarea id="notes-area" style="width:100%;min-height:500px;border:none;outline:none;font-family:Lora,serif;font-size:15px;color:${tx};background:transparent;resize:vertical;line-height:2;box-sizing:border-box;padding:0;" placeholder="Écrivez vos notes, idées, inspirations…">${h(NOTES)}</textarea>
