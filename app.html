@@ -1793,7 +1793,7 @@ function startCountdown(){
     const w=el('countdown-wrap'); if(!w)return;
     if(diff<=0){w.innerHTML=`<div style="color:${gd};font-family:Playfair Display,serif;font-size:16px;padding:6px 0;">C'est le grand jour !</div>`;return;}
     const d=Math.floor(diff/86400000),hh=Math.floor((diff%86400000)/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);
-    w.innerHTML=[['d',d,'Jours'],['h',hh,'Heures'],['m',m,'Min'],['s',s,'Sec']].map(([,v,l])=>`<div style="text-align:center;background:#ffffff;border-radius:10px;padding:6px 12px;min-width:56px;border:1px solid #f0e8ec;"><div style="font-family:Playfair Display,serif;font-size:22px;font-weight:700;color:${pk};line-height:1">${String(v).padStart(2,'0')}</div><div style="font-size:9px;color:${tl};letter-spacing:1.5px;text-transform:uppercase;margin-top:1px">${l}</div></div>`).join('');
+    w.innerHTML=[['d',d,'Jours'],['h',hh,'Heures'],['m',m,'Min'],['s',s,'Sec']].map(([,v,l])=>`<div style="text-align:center;padding:4px 10px;min-width:48px;"><div style="font-family:Playfair Display,serif;font-size:22px;font-weight:700;color:${pk};line-height:1">${String(v).padStart(2,'0')}</div><div style="font-size:9px;color:${tl};letter-spacing:1.5px;text-transform:uppercase;margin-top:1px">${l}</div></div>`).join('');
   };
   tick(); cdInt=setInterval(tick,1000);
 }
@@ -2647,6 +2647,7 @@ function renderTablePlan(){
         <button onclick="tpZoom(0.2)" style="width:32px;height:32px;background:#fdf8f5;border:1px solid #f0e8ec;border-radius:8px;cursor:pointer;font-size:16px;font-weight:700;color:#b84060;display:flex;align-items:center;justify-content:center;">+</button>
         <button onclick="tpZoom(-0.2)" style="width:32px;height:32px;background:#fdf8f5;border:1px solid #f0e8ec;border-radius:8px;cursor:pointer;font-size:16px;font-weight:700;color:#b84060;display:flex;align-items:center;justify-content:center;">−</button>
         <button onclick="tpReset()" style="width:32px;height:32px;background:#fdf8f5;border:1px solid #f0e8ec;border-radius:8px;cursor:pointer;font-size:13px;color:#b07a90;display:flex;align-items:center;justify-content:center;" title="Recentrer">↺</button>
+        <button id="tp-pan-btn" onclick="togglePanMode()" style="width:32px;height:32px;background:#fff;border:1px solid #f0e8ec;border-radius:8px;cursor:pointer;font-size:14px;color:#c47a2a;display:flex;align-items:center;justify-content:center;" title="Mode navigation">✋</button>
       </div>
     </div>
   </div>
@@ -2969,7 +2970,7 @@ async function resetPlacement(){
 
 // Exporte le plan de table en PDF, à la charte graphique de l'application
 async function exportPlanPDF(){
-  appAlert('Préparation du PDF en cours…','Export');
+  appAlert('Préparation du PDF en cours…');
   try{
     const jsPDF = await loadJsPDF();
     const pdf = new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
@@ -2989,8 +2990,16 @@ async function exportPlanPDF(){
 
     // Frame Weddilya avec fond rosé et logo
     const drawFrame=()=>{
-      // Fond blanc uni
+      // Fond blanc
       setFill(C_BG); pdf.rect(0,0,pw,ph,'F');
+      // Fond rosé très clair en bas (gradient simulé)
+      setFill([254,242,246]); pdf.rect(0,ph*0.65,pw,ph*0.35,'F');
+      // Coins décorés rose
+      setStroke(C_SF); pdf.setLineWidth(1.2);
+      pdf.lines([[20,0],[0,0],[0,20]],6,6); // coin haut gauche
+      pdf.lines([[-20,0],[0,0],[0,20]],pw-6,6); // coin haut droit
+      pdf.lines([[20,0],[0,0],[0,-20]],6,ph-6); // coin bas gauche
+      pdf.lines([[-20,0],[0,0],[0,-20]],pw-6,ph-6); // coin bas droit
     };
     // Dessiner le logo anneaux (SVG-like en jsPDF)
     const drawRings=(x,y,r)=>{
@@ -3773,7 +3782,7 @@ async function searchByPostal(){
     if(window._activeCatKey && window._activeCatLabel){
       await searchByCategory(window._activeCatKey, window._activeCatLabel);
     } else {
-      if(status) status.innerHTML += ' <span style="color:#b07a90;font-size:11px;">— Sélectionnez une catégorie ci-dessus</span>';
+      if(status) status.innerHTML += '<br><span style="color:#b07a90;font-size:11px;">✓ Lieu défini — cliquez maintenant sur une catégorie ci-dessus</span>';
     }
   } catch(e) {
     if(status) status.textContent = 'Lieu non trouvé. Vérifiez le code postal.';
@@ -3823,7 +3832,7 @@ const VND_CATEGORIES = {
   dj:          {label:'DJ/Musique',         tags:['craft=musical_instrument','shop=musical_instrument','office=dj','shop=music']},
   fleuriste:   {label:'Fleuriste',          tags:['shop=florist']},
   patisserie:  {label:'Pâtisserie/Cake',    tags:['shop=bakery','shop=pastry','shop=confectionery','craft=confectioner']},
-  robe:        {label:'Robe mariée',        tags:['shop=wedding','shop=bridal','shop=wedding_contract']},
+  robe:        {label:'Robe mariée',        tags:['shop=wedding','shop=bridal','shop=wedding_contract'], extra:'robe mariée'},
   costume:     {label:'Costume/Tailleur',   tags:['craft=tailor','shop=tailor','shop=clothes']},
   coiffeur:    {label:'Coiffeur',           tags:['shop=hairdresser']},
   beaute:      {label:'Maquillage/Beauté',  tags:['shop=beauty','shop=cosmetics','leisure=spa']},
@@ -3873,7 +3882,8 @@ async function searchByCategory(catKey, catLabel){
       window._userLat = lat = pos.coords.latitude;
       window._userLng = lng = pos.coords.longitude;
     } catch(geoErr){
-      if(wrap) wrap.innerHTML = `<p style="text-align:center;padding:14px;font-size:13px;color:${tl};">Localisation indisponible.<br><span style="font-size:11px;">Entrez un code postal et cliquez OK avant de rechercher.</span></p>`;
+      // Géoloc refusée → chercher par nom de ville via Nominatim sans position GPS
+      if(wrap) wrap.innerHTML = `<p style="text-align:center;padding:14px;font-size:12px;color:${tl};">Localisation GPS indisponible.<br>Entrez un code postal ou une ville et cliquez <strong>Rechercher</strong>.</p>`;
       return;
     }
   }
@@ -3911,6 +3921,7 @@ async function runCategorySearch(tags, catLabel, lat, lng, radiusMeters){
 
   let results = [];
   const seenNames = new Set();
+  const cat = Object.values(VND_CATEGORIES).find(c=>c.tags===tags);
 
   try {
     const res = await fetchWithTimeout(url, {}, 14000);
@@ -3956,6 +3967,26 @@ async function runCategorySearch(tags, catLabel, lat, lng, radiusMeters){
   }
 
   results = results.sort((a,b)=>a.distance - b.distance).slice(0, 30);
+
+  // Fallback Nominatim si peu/aucun résultat Overpass
+  if(results.length < 3){
+    try {
+      const searchTerm = Object.values(VND_CATEGORIES).find(c=>c.tags===tags)?.extra || catLabel;
+      const nomUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchTerm+' '+Math.round(lat*100)/100+','+Math.round(lng*100)/100)}&format=json&limit=20&countrycodes=fr,be,ch,lu&addressdetails=1`;
+      const nomRes = await fetchWithTimeout(nomUrl, {headers:{'Accept-Language':'fr'}}, 8000);
+      const nomData = await nomRes.json();
+      for(const e of nomData){
+        if(!e.display_name) continue;
+        const eName = e.display_name.split(',')[0].trim();
+        if(seenNames.has(eName)) continue;
+        seenNames.add(eName);
+        const eLat=parseFloat(e.lat), eLng=parseFloat(e.lon);
+        const dist=haversine(lat,lng,eLat,eLng);
+        if(dist<=radiusMeters/1000) results.push({id:Date.now()+Math.random(),nom:eName,categorie:catLabel,adresse:e.display_name.split(',').slice(1,3).join(',').trim(),lat:eLat,lng:eLng,distance:dist,tel:'',site:'',notes:''});
+      }
+      results = results.sort((a,b)=>a.distance-b.distance).slice(0,30);
+    } catch(nomErr){ console.warn('Fallback Nominatim:', nomErr); }
+  }
 
   if(!results.length){
     if(wrap) wrap.innerHTML = `
