@@ -705,10 +705,10 @@ function appPicker(options, currentValue, title, opts){
         <div style="overflow-y:auto;padding:12px 14px;flex:1;">
           ${opts2.map((o,i)=>{
             const selected = o.value === currentValue;
-            return `<button data-i="${i}" style="display:flex;align-items:center;gap:12px;width:100%;padding:12px 16px;margin-bottom:6px;border-radius:12px;border:none;background:${selected?'#fef2f6':'#fdf8f5'};color:#3e1828;font-family:Lora,serif;font-size:14px;font-weight:${selected?'700':'400'};cursor:pointer;text-align:left;transition:background .15s;">
-              ${o.icon?`<span style="font-size:16px;">${o.icon}</span>`:''}
-              <span style="flex:1;color:${selected?'#d4607a':'#3e1828'};">${o.label}</span>
-              ${selected?`<span style="color:#d4607a;font-size:16px;"></span>`:''}
+            const optColor = o.color || '#d4607a';
+            return `<button data-i="${i}" style="display:flex;align-items:center;gap:12px;width:100%;padding:12px 16px;margin-bottom:6px;border-radius:12px;border:none;border-left:${selected?'3px solid '+optColor:'3px solid transparent'};background:${selected?(optColor+'18'):'#fdf8f5'};font-family:Lora,serif;font-size:14px;font-weight:${selected?'700':'400'};cursor:pointer;text-align:left;transition:all .15s;">
+              <span style="flex:1;color:${selected?optColor:'#3e1828'};">${o.label}</span>
+              ${selected?`<span style="color:${optColor};font-size:16px;">✓</span>`:''}
             </button>`;
           }).join('')}
         </div>
@@ -1949,10 +1949,9 @@ function addTask(){
 function toggleTask(id){TASKS=TASKS.map(t=>t.id===id?{...t,done:!t.done}:t);saveTasks();renderChecklist();}
 function removeTask(id){TASKS=TASKS.filter(t=>t.id!==id);saveTasks();renderChecklist();}
 async function resetTasks(){
-  if(confirm('Remettre toutes les tâches à zéro ?\nTout sera décoché et les tâches par défaut restaurées.')){
+  if(await appConfirm('Remettre toutes les tâches à zéro ? Tout sera décoché.','Réinitialiser',{icon:'↺',danger:false})){
     TASKS = DEF_TASKS.map(t=>({...t, done:false}));
     saveTasks();
-    // Sync Firestore pour écraser les données cloud aussi
     if(window.firebaseDB && window.firebaseLib && window._activeDataDocId){
       try{
         const {doc,setDoc}=window.firebaseLib;
@@ -1974,8 +1973,8 @@ function renderBudget(){
     <div class="card" style="padding:13px;text-align:center;"><div class="lbl">Budget réel total</div><div style="font-family:Playfair Display,serif;font-size:19px;font-weight:700;color:${pk}">${fmt(tR)} €</div></div>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
-    <div style="background:#f0f8f2;border:1px solid rgba(90,138,106,.2);border-radius:14px;padding:13px;text-align:center;"><div class="lbl">Déjà payé</div><div style="font-family:Playfair Display,serif;font-size:19px;font-weight:700;color:${gn}">${fmt(tP)} €</div></div>
-    <div style="background:${reste>0?'#fff8f0':'#f0f8f2'};border:1px solid ${reste>0?'rgba(196,122,42,.2)':'rgba(90,138,106,.2)'};border-radius:14px;padding:13px;text-align:center;"><div class="lbl">Reste à payer</div><div style="font-family:Playfair Display,serif;font-size:19px;font-weight:700;color:${reste>0?am:gn}">${fmt(reste)} €</div></div>
+    <div style="background:#f0f8f2;border:1px solid rgba(90,138,106,.25);border-radius:14px;padding:13px;text-align:center;"><div class="lbl" style="color:#5a8a6a;">Déjà payé</div><div style="font-family:Playfair Display,serif;font-size:19px;font-weight:700;color:${gn}">${fmt(tP)} €</div></div>
+    <div style="background:${tP>0&&reste===0?'#f0f8f2':'#fff8f0'};border:1px solid ${tP>0&&reste===0?'rgba(90,138,106,.25)':'rgba(184,64,96,.2)'};border-radius:14px;padding:13px;text-align:center;"><div class="lbl" style="color:${tP>0&&reste===0?'#5a8a6a':'#b84060'};">Reste à payer</div><div style="font-family:Playfair Display,serif;font-size:19px;font-weight:700;color:${tP>0&&reste===0?gn:pk}">${fmt(reste)} €</div></div>
   </div>
   <div style="display:flex;gap:8px;margin-bottom:12px;">
     <input class="inp" id="bgt-cat" placeholder="Nouvelle catégorie" style="flex:2;background:#fff;">
@@ -2188,7 +2187,7 @@ function changeCote(id){const g=GUESTS.find(g=>g.id===id);updGuest(id,'cote',g.c
 function exportGuests(){
   const bom='\uFEFF';
   let csv='Nom complet;Email;Côté;Rôle;Régime particulier;Uniquement au vin d\'honneur;Invitation;Présence\n';
-  GUESTS.forEach(g=>{csv+=`"${g.nom}";"${g.email||''}"; "${g.cote==='p1'?USER.p1:USER.p2}";"${g.role||''}"; "${g.regime||''}"; "${g.vinHonneur?'Oui':'Non'}"; "${g.invitation}"; "${g.presence}"\n`;});
+  GUESTS.forEach(g=>{csv+=`"${g.nom}";"${g.email||''}";"${g.cote==='p1'?USER.p1:USER.p2}";"${g.role||''}";"${g.regime||''}";"${g.vinHonneur?'Oui':'Non'}";"${g.invitation}";"${g.presence}"\n`;});
   const blob=new Blob([bom+csv],{type:'text/csv;charset=utf-8;'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;a.download=`invites_${USER.p1}_${USER.p2}.csv`;a.click();
@@ -2562,24 +2561,33 @@ function tpApplyTransform(){
 function renderTablePlan(){
   tpScale=1;tpPanX=0;tpPanY=0;tpPanMode=false;window.tpSelectedShape='round';
   el('page-3').innerHTML=`
-  <div style="padding:12px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;border-bottom:1px solid #f9edf2;">
-    <div style="display:flex;gap:6px;">
-      <button id="tp-shape-round" onclick="setTpShape(\'round\')" style="background:#d4607a;color:#fff;border:1.5px solid #d4607a;border-radius:9px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;font-family:Lora,serif;"> Ronde</button>
-      <button id="tp-shape-rect" onclick="setTpShape(\'rect\')" style="background:#fff;color:#b07a90;border:1px solid #f0e8ec;border-radius:9px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;font-family:Lora,serif;"> Rect.</button>
-      <button id="tp-shape-square" onclick="setTpShape(\'square\')" style="background:#fff;color:#b07a90;border:1px solid #f0e8ec;border-radius:9px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;font-family:Lora,serif;"> Carrée</button>
+  <div style="padding:10px 12px;margin-bottom:12px;border-bottom:1px solid #f0e8ec;">
+    <!-- Ligne 1 : Forme + Actions principales -->
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;">
+      <!-- Groupe forme -->
+      <div style="display:flex;background:#fdf8f5;border:1px solid #f0e8ec;border-radius:10px;padding:3px;gap:3px;">
+        <button id="tp-shape-round" onclick="setTpShape(\'round\')" style="padding:6px 12px;border:none;border-radius:8px;background:#b84060;color:#fff;font-size:12px;font-weight:700;font-family:Lora,serif;cursor:pointer;min-height:32px;">Ronde</button>
+        <button id="tp-shape-rect" onclick="setTpShape(\'rect\')" style="padding:6px 12px;border:none;border-radius:8px;background:transparent;color:#b07a90;font-size:12px;font-weight:700;font-family:Lora,serif;cursor:pointer;min-height:32px;">Rect.</button>
+        <button id="tp-shape-square" onclick="setTpShape(\'square\')" style="padding:6px 12px;border:none;border-radius:8px;background:transparent;color:#b07a90;font-size:12px;font-weight:700;font-family:Lora,serif;cursor:pointer;min-height:32px;">Carrée</button>
+      </div>
+      <!-- Bouton + Table -->
+      <button onclick="addTable()" style="padding:6px 14px;background:linear-gradient(135deg,#b84060,#d4607a);color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:700;font-family:Lora,serif;cursor:pointer;min-height:32px;">+ Table</button>
     </div>
-    <button class="btn" onclick="addTable()" style="font-size:12px;padding:7px 12px;">+ Table</button>
-    <button class="btn" onclick="openAutoPlaceModal()" style="background:linear-gradient(135deg,#d4607a,#8a4a60);font-size:12px;padding:7px 12px;">Placement auto</button>
-    <button class="btn-sec" onclick="resetPlacement()" style="color:#c43a3a;border-color:#c43a3a55;font-size:12px;padding:7px 12px;">↺ Réinitialiser</button>
-    <button class="btn-sec" onclick="exportPlanPDF()" style="font-size:12px;padding:7px 12px;">PDF</button>
-    <div style="display:flex;gap:6px;margin-left:auto;">
-      <button onclick="tpZoom(0.2)" style="background:#fff;border:1px solid #f0e8ec;border-radius:8px;width:34px;height:34px;cursor:pointer;font-size:18px;font-weight:700;color:${pk};">+</button>
-      <button onclick="tpZoom(-0.2)" style="background:#fff;border:1px solid #f0e8ec;border-radius:8px;width:34px;height:34px;cursor:pointer;font-size:18px;font-weight:700;color:${pk};">-</button>
-      <button onclick="tpReset()" style="background:#fff;border:1px solid #f0e8ec;border-radius:8px;padding:0 10px;height:34px;cursor:pointer;font-size:11px;font-weight:700;color:${tl};">↺</button>
-      <button id="tp-pan-btn" onclick="tpTogglePan()" title="Activer navigation" style="background:#fff;border:1px solid #f0e8ec;border-radius:8px;width:34px;height:34px;cursor:pointer;font-size:16px;color:#c47a2a;" title="Mode navigation (2 doigts=zoom, 1 doigt=déplacer)"></button>
+    <!-- Ligne 2 : Actions + Zoom -->
+    <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
+      <button onclick="openAutoPlaceModal()" style="padding:6px 12px;background:#fef2f6;color:#b84060;border:1px solid #f5d5e0;border-radius:10px;font-size:12px;font-weight:700;font-family:Lora,serif;cursor:pointer;min-height:32px;">Placement auto</button>
+      <button onclick="resetPlacement()" style="padding:6px 12px;background:#fdf8f5;color:#8a4a60;border:1px solid #f0e8ec;border-radius:10px;font-size:12px;font-weight:700;font-family:Lora,serif;cursor:pointer;min-height:32px;">Réinitialiser</button>
+      <button onclick="exportPlanPDF()" style="padding:6px 12px;background:#fdf8f5;color:#8a4a60;border:1px solid #f0e8ec;border-radius:10px;font-size:12px;font-weight:700;font-family:Lora,serif;cursor:pointer;min-height:32px;">PDF</button>
+      <!-- Zoom -->
+      <div style="display:flex;gap:4px;margin-left:auto;">
+        <button onclick="tpZoom(0.2)" style="width:32px;height:32px;background:#fdf8f5;border:1px solid #f0e8ec;border-radius:8px;cursor:pointer;font-size:16px;font-weight:700;color:#b84060;display:flex;align-items:center;justify-content:center;">+</button>
+        <button onclick="tpZoom(-0.2)" style="width:32px;height:32px;background:#fdf8f5;border:1px solid #f0e8ec;border-radius:8px;cursor:pointer;font-size:16px;font-weight:700;color:#b84060;display:flex;align-items:center;justify-content:center;">−</button>
+        <button onclick="tpReset()" style="width:32px;height:32px;background:#fdf8f5;border:1px solid #f0e8ec;border-radius:8px;cursor:pointer;font-size:13px;color:#b07a90;display:flex;align-items:center;justify-content:center;" title="Recentrer">↺</button>
+      </div>
     </div>
   </div>
-  <div id="tp-canvas" style="position:relative;background:#fff;border:1.5px solid #f0e8ec;border-radius:16px;height:70vh;min-height:400px;overflow:hidden;touch-action:none;user-select:none;margin:0 12px;">
+  <div id="tp-canvas"
+ style="position:relative;background:#fff;border:1.5px solid #f0e8ec;border-radius:16px;height:70vh;min-height:400px;overflow:hidden;touch-action:none;user-select:none;margin:0 12px;">
     <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:.05;pointer-events:none;"><defs><pattern id="pg" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0L0 0 0 28" fill="none" stroke="${pk}" stroke-width="0.5"/></pattern></defs><rect width="100%" height="100%" fill="url(#pg)"/></svg>
     <div id="tp-inner" style="position:absolute;inset:0;transform-origin:0 0;will-change:transform;"></div>
   </div>
@@ -2700,9 +2708,9 @@ function addTableEl(table){
   // Poignée de déplacement (en haut à gauche) — zone dédiée au glissement, fiable au doigt
   const handle=document.createElement('div');
   handle.className='tp-drag-handle';
-  handle.textContent='';
+  handle.innerHTML='<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 1v10M1 6h10M6 1L4 3M6 1l2 2M6 11l-2-2M6 11l2-2M1 6l2-2M1 6l2 2M11 6l-2-2M11 6l-2 2" stroke="white" stroke-width="1.2" stroke-linecap="round"/></svg>';
   handle.title='Glisser pour déplacer la table';
-  handle.style.cssText=`position:absolute;top:-8px;left:-8px;width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,${pk},${tm});color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:move;z-index:15;box-shadow:0 2px 6px rgba(154,40,72,.4);touch-action:none;user-select:none;`;
+  handle.style.cssText=`position:absolute;top:-8px;left:-8px;width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,${pk},${tm});color:#fff;display:flex;align-items:center;justify-content:center;cursor:move;z-index:15;box-shadow:0 2px 6px rgba(154,40,72,.4);touch-action:none;user-select:none;`;
   div.appendChild(handle);
 
   // Delete
