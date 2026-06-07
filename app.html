@@ -1903,7 +1903,7 @@ function renderChecklist(){
   const allMonths=[...MONTHS,...Object.keys(grouped).filter(m=>!MONTHS.includes(m))];
   const monthsWithTasks=allMonths.filter(m=>grouped[m]&&grouped[m].length);
   el('page-0').innerHTML=`
-  <div class="card" style="padding:16px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;background:#fff;border-bottom:1px solid ${sf};">
+  <div class="card" style="padding:16px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;background:${sf};">
     <div><div class="lbl">Progression</div><div style="font-family:Playfair Display,serif;font-size:28px;color:${tx}">${done}<span style="font-size:14px;color:${tl}"> / ${tot}</span></div></div>
     <svg viewBox="0 0 36 36" width="60" height="60"><circle cx="18" cy="18" r="15.9" fill="none" stroke="${br}" stroke-width="3"/><circle cx="18" cy="18" r="15.9" fill="none" stroke="${pk}" stroke-width="3" stroke-dasharray="${pct} 100" stroke-linecap="round" transform="rotate(-90 18 18)"/><text x="18" y="22" text-anchor="middle" font-size="7" fill="${tx}" font-family="serif" font-weight="bold">${pct}%</text></svg>
   </div>
@@ -1922,14 +1922,14 @@ function renderChecklist(){
     const collapsed=!!collapsedMonths[month];
     const doneInMonth=grouped[month].filter(t=>t.done).length;
     return `<div style="margin-bottom:10px;">
-      <div onclick="toggleMonth('${month.replace(/'/g,"\\'")}') " style="display:flex;align-items:center;justify-content:center;gap:8px;background:transparent;border:none;border-bottom:2px solid ${sf};border-radius:0;padding:10px 4px;cursor:pointer;margin-bottom:6px;margin-top:8px;">
+      <div onclick="toggleMonth('${month.replace(/'/g,"\\'")}') " style="display:flex;align-items:center;justify-content:center;gap:8px;background:${sf};border:none;border-radius:10px;padding:10px 16px;cursor:pointer;margin-bottom:6px;margin-top:8px;">
         <span id="chk-arrow-${safeId}" style="font-size:13px;color:${pk};transition:transform .25s;transform:${collapsed?'rotate(-90deg)':'rotate(0deg)'};display:inline-block;"></span>
         <span style="font-family:Playfair Display,serif;font-size:15px;font-weight:700;color:${tm};letter-spacing:1px;">${h(month)}</span>
         <span style="font-size:11px;color:${tl};margin-left:4px;">(${doneInMonth}/${grouped[month].length})</span>
       </div>
       <div id="chk-tasks-${safeId}" style="display:${collapsed?'none':'block'};">
         ${grouped[month].map(t=>`
-          <div onclick="toggleTask(${t.id})" style="display:flex;align-items:center;gap:11px;background:#fff;border:none;border-bottom:1px solid #f9edf2;border-radius:0;padding:10px 4px;cursor:pointer;">
+          <div onclick="toggleTask(${t.id})" style="display:flex;align-items:center;gap:11px;background:${t.done?'#fdf9fb':'#fff'};border:none;border-bottom:1px solid #f9edf2;border-radius:0;padding:10px 4px;cursor:pointer;">
             <div style="width:20px;height:20px;border-radius:50%;border:2px solid ${t.done?pk:br};background:${t.done?pk:'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">${t.done?'<span style="color:#fff;font-size:11px;font-weight:bold;"></span>':''}</div>
             <span style="flex:1;font-size:13px;color:${t.done?tl:tx};text-decoration:${t.done?'line-through':'none'}">${h(t.text)}</span>
             <button onclick="event.stopPropagation();removeTask(${t.id})" style="background:none;border:none;cursor:pointer;color:${br};font-size:16px;">×</button>
@@ -1949,16 +1949,17 @@ function addTask(){
 function toggleTask(id){TASKS=TASKS.map(t=>t.id===id?{...t,done:!t.done}:t);saveTasks();renderChecklist();}
 function removeTask(id){TASKS=TASKS.filter(t=>t.id!==id);saveTasks();renderChecklist();}
 async function resetTasks(){
-  if(confirm('Restaurer toutes les tâches par défaut ?\nVos tâches personnalisées seront conservées.')){
-    const custom = TASKS.filter(t=>t.month==='Personnalisé');
-    const existingTexts = new Set(TASKS.map(t=>t.text));
-    // Add all missing default tasks (keeping done state of existing ones)
-    const restoredDef = DEF_TASKS.map(def => {
-      const existing = TASKS.find(t=>t.text===def.text);
-      return existing ? existing : {...def, done:false};
-    });
-    TASKS = [...restoredDef, ...custom];
+  if(confirm('Remettre toutes les tâches à zéro ?\nTout sera décoché et les tâches par défaut restaurées.')){
+    TASKS = DEF_TASKS.map(t=>({...t, done:false}));
     saveTasks();
+    // Sync Firestore pour écraser les données cloud aussi
+    if(window.firebaseDB && window.firebaseLib && window._activeDataDocId){
+      try{
+        const {doc,setDoc}=window.firebaseLib;
+        await setDoc(doc(window.firebaseDB,'userData',window._activeDataDocId),
+          {[`tasks_${USER.email}`]: JSON.stringify(TASKS)},{merge:true});
+      }catch(e){}
+    }
     renderChecklist();
   }
 }
@@ -1973,8 +1974,8 @@ function renderBudget(){
     <div class="card" style="padding:13px;text-align:center;"><div class="lbl">Budget réel total</div><div style="font-family:Playfair Display,serif;font-size:19px;font-weight:700;color:${pk}">${fmt(tR)} €</div></div>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
-    <div style="background:#f0f8f2;border-radius:14px;padding:13px;text-align:center;"><div class="lbl">Déjà payé</div><div style="font-family:Playfair Display,serif;font-size:19px;font-weight:700;color:${gn}">${fmt(tP)} €</div></div>
-    <div style="background:${reste>0?'#fff8f0':'#f0f8f2'};border-radius:14px;padding:13px;text-align:center;"><div class="lbl">Reste à payer</div><div style="font-family:Playfair Display,serif;font-size:19px;font-weight:700;color:${reste>0?am:gn}">${fmt(reste)} €</div></div>
+    <div style="background:#f0f8f2;border:1px solid rgba(90,138,106,.2);border-radius:14px;padding:13px;text-align:center;"><div class="lbl">Déjà payé</div><div style="font-family:Playfair Display,serif;font-size:19px;font-weight:700;color:${gn}">${fmt(tP)} €</div></div>
+    <div style="background:${reste>0?'#fff8f0':'#f0f8f2'};border:1px solid ${reste>0?'rgba(196,122,42,.2)':'rgba(90,138,106,.2)'};border-radius:14px;padding:13px;text-align:center;"><div class="lbl">Reste à payer</div><div style="font-family:Playfair Display,serif;font-size:19px;font-weight:700;color:${reste>0?am:gn}">${fmt(reste)} €</div></div>
   </div>
   <div style="display:flex;gap:8px;margin-bottom:12px;">
     <input class="inp" id="bgt-cat" placeholder="Nouvelle catégorie" style="flex:2;background:#fff;">
@@ -2046,9 +2047,9 @@ function renderGuests(){
   const confirmedGuests = GUESTS.filter(g=>g.presence==='confirmée').length;
   el('page-2').innerHTML=`
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;">
-    <div style="background:#f0f8f0;border-radius:12px;padding:11px;text-align:center;"><div style="font-family:Playfair Display,serif;font-size:24px;font-weight:700;color:${gn}">${conf}</div><div style="font-size:10px;color:${gn};letter-spacing:1px;text-transform:uppercase;margin-top:2px;">Confirmés</div></div>
-    <div style="background:#fff8f0;border-radius:12px;padding:11px;text-align:center;"><div style="font-family:Playfair Display,serif;font-size:24px;font-weight:700;color:${am}">${pend}</div><div style="font-size:10px;color:${am};letter-spacing:1px;text-transform:uppercase;margin-top:2px;">En attente</div></div>
-    <div style="background:#fff0f0;border-radius:12px;padding:11px;text-align:center;"><div style="font-family:Playfair Display,serif;font-size:24px;font-weight:700;color:${rd}">${decl}</div><div style="font-size:10px;color:${rd};letter-spacing:1px;text-transform:uppercase;margin-top:2px;">Déclinés</div></div>
+    <div style="background:#f0f8f0;border:1px solid rgba(90,138,106,.25);border-radius:12px;padding:11px;text-align:center;"><div style="font-family:Playfair Display,serif;font-size:24px;font-weight:700;color:${gn}">${conf}</div><div style="font-size:10px;color:${gn};letter-spacing:1px;text-transform:uppercase;margin-top:2px;">Confirmés</div></div>
+    <div style="background:#fff8f0;border:1px solid rgba(196,122,42,.25);border-radius:12px;padding:11px;text-align:center;"><div style="font-family:Playfair Display,serif;font-size:24px;font-weight:700;color:${am}">${pend}</div><div style="font-size:10px;color:${am};letter-spacing:1px;text-transform:uppercase;margin-top:2px;">En attente</div></div>
+    <div style="background:#fff0f0;border:1px solid rgba(196,58,58,.25);border-radius:12px;padding:11px;text-align:center;"><div style="font-family:Playfair Display,serif;font-size:24px;font-weight:700;color:${rd}">${decl}</div><div style="font-size:10px;color:${rd};letter-spacing:1px;text-transform:uppercase;margin-top:2px;">Déclinés</div></div>
   </div>
   <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
     <button class="btn" onclick="toggleAddGuest()">+ Ajouter un invité</button>
@@ -2067,7 +2068,7 @@ function renderGuests(){
       <div><label class="lbl">Rôle</label><select class="inp" id="gf-role">${ROLES.map(r=>`<option>${h(r)}</option>`).join('')}</select></div>
       <div style="grid-column:1/-1"><label class="lbl">Régime particulier</label><select class="inp" id="gf-regime">${REGIMES.map(r=>`<option>${h(r)}</option>`).join('')}</select></div>
       <div style="grid-column:1/-1"><label class="lbl">Adulte / Enfant</label><select class="inp" id="gf-age"><option value="Adulte">Adulte</option><option value="Enfant">Enfant</option></select></div>
-      <label style="grid-column:1/-1;display:flex;align-items:center;gap:8px;font-size:13px;color:${tm};cursor:pointer;padding:8px 10px;background:${sf};border-radius:8px;">
+      <label style="grid-column:1/-1;display:flex;align-items:center;gap:8px;font-size:13px;color:${tm};cursor:pointer;padding:8px 10px;background:#fef2f6;border-radius:8px;">
         <input type="checkbox" id="gf-vh"> Uniquement au vin d'honneur
       </label>
     </div>
@@ -2110,7 +2111,7 @@ function guestRow(g){
       <span onclick="toggleInvitation(${g.id})" style="color:${g.invitation==='envoyée'?gn:rd};font-size:11px;cursor:pointer;font-weight:600;padding:2px 8px;border-radius:6px;background:transparent;display:inline-block;">${g.invitation==='envoyée'?' Envoyée':' Non envoyée'}</span>
     </td>
     <td style="padding:8px 9px;background:#fff;border-bottom:1px solid #f9edf2;">
-      <span onclick="pickGuestPresence(${g.id})" style="color:${sc[g.presence]||'#888'};font-size:11px;cursor:pointer;font-weight:600;padding:2px 8px;border-radius:6px;background:transparent;display:inline-block;">${g.presence==='confirmée'?' Confirmée':g.presence==='déclinée'?' Déclinée':'En attente'} </span>
+      <span onclick="pickGuestPresence(${g.id})" style="color:${sc[g.presence]||'#888'};font-size:11px;cursor:pointer;font-weight:600;padding:2px 8px;border-radius:6px;background:transparent;display:inline-block;">${g.presence==='confirmée'?'Confirmée':g.presence==='déclinée'?'Déclinée':'En attente'} </span>
     </td>
     <td style="padding:8px 10px;background:#fff;border-bottom:1px solid #f9edf2;">
       <button onclick="removeGuest(${g.id})" style="background:none;border:none;cursor:pointer;color:${br};font-size:15px;">×</button>
@@ -2161,7 +2162,7 @@ async function pickGuestPresence(id){
   const g = GUESTS.find(x=>x.id===id); if(!g) return;
   const v = await appPicker([
     {value:'confirmée', label:'Confirmée', icon:'', color:'#5a8a6a'},
-    {value:'en attente', label:'En attente', icon:'⏳', color:'#c47a2a'},
+    {value:'en attente', label:'En attente', icon:'', color:'#c47a2a'},
     {value:'déclinée', label:'Déclinée', icon:'', color:'#c43a3a'}
   ], g.presence, 'Présence', {icon:''});
   if(v!==null) updGuest(id,'presence',v);
@@ -3651,7 +3652,7 @@ function renderVendors(){
   <div id="vnd-results-wrap" style="margin-bottom:16px;"></div>
   <div style="margin-bottom:18px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
-      <div style="font-family:Playfair Display,serif;font-size:17px;color:${tx};">Prestataires favoris <span id="fav-cnt" style="background:${sf};color:${pk};font-size:11px;border-radius:20px;padding:2px 9px;font-weight:700;">${VENDORS_FAV.length}</span></div>
+      <div style="font-family:Playfair Display,serif;font-size:17px;color:${tx};padding:10px 0 8px;border-bottom:2px solid ${sf};">Prestataires favoris <span id="fav-cnt" style="background:${sf};color:${pk};font-size:11px;border-radius:20px;padding:2px 9px;font-weight:700;">${VENDORS_FAV.length}</span></div>
       <div style="display:flex;gap:5px;align-items:center;">
         <button onclick="addManualVendor('fav')" style="background:${sf};color:${pk};border:1px solid ${br};border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;">+ Ajouter</button>
         ${['alpha|A→Z','prix|Prix','distance|Distance'].map(s=>{const[v,l]=s.split('|');return`<button class="tab-btn${sortFav===v?' active':''}" onclick="setSortFav('${v}',this)" style="font-size:11px;padding:4px 10px;">${l}</button>`;}).join('')}</div>
@@ -3660,7 +3661,7 @@ function renderVendors(){
   </div>
   <div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
-      <div style="font-family:Playfair Display,serif;font-size:17px;color:${tx};">Prestataires choisis <span id="cho-cnt" style="background:${sf};color:${pk};font-size:11px;border-radius:20px;padding:2px 9px;font-weight:700;">${VENDORS_CHO.length}</span></div>
+      <div style="font-family:Playfair Display,serif;font-size:17px;color:${tx};padding:10px 0 8px;border-bottom:2px solid ${sf};">Prestataires choisis <span id="cho-cnt" style="background:${sf};color:${pk};font-size:11px;border-radius:20px;padding:2px 9px;font-weight:700;">${VENDORS_CHO.length}</span></div>
       <div style="display:flex;gap:5px;align-items:center;">
         <button onclick="addManualVendor('cho')" style="background:${sf};color:${pk};border:1px solid #f0e8ec;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;">+ Ajouter</button>
         ${['alpha|A→Z','prix|Prix','distance|Distance'].map(s=>{const[v,l]=s.split('|');return`<button class="tab-btn${sortCho===v?' active':''}" onclick="setSortCho('${v}',this)" style="font-size:11px;padding:4px 10px;">${l}</button>`;}).join('')}</div>
@@ -4389,7 +4390,7 @@ function renderMenu(){
     </div>
     ${MENU.map((section,si)=>`
       <div style="margin-bottom:16px;border:1px solid #f0e8ec;border-radius:12px;padding:12px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding:8px 10px;background:${sf};border-radius:8px;">
           <span data-menu-cat="${si}" onclick="renameMenuCategory(${si})" style="font-weight:700;font-size:13px;color:${tm};text-transform:uppercase;letter-spacing:0.5px;cursor:pointer;flex:1;" title="Appuyer pour renommer">${h(section.section)}</span>
           <button onclick="removeMenuCategory(${si})" style="background:none;border:none;color:${br};font-size:18px;cursor:pointer;padding:0 4px;">×</button>
         </div>
@@ -4559,7 +4560,7 @@ function renderDecorations(){
     const total = items.length;
     const done = items.filter((_,i) => saved[cat+i]).length;
     html += `<div class="card" style="margin-bottom:12px;overflow:hidden;">
-      <div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid #f5e8ee;">
+      <div style="display:flex;align-items:center;padding:12px 16px;background:${sf};border-radius:10px 10px 0 0;">
         <div onclick="toggleDecoSection(${catIdx})" style="flex:1;cursor:pointer;">
           <div data-deco-cat="${cat}" onclick="renameDecoCategory('${cat.replace(/'/g,"'")}',${catIdx})" style="font-family:Playfair Display,serif;font-size:15px;color:${tx};font-weight:700;cursor:pointer;" title="Appuyer pour renommer">${h(cat)}</div>
           <div style="font-size:11px;color:${tl};margin-top:2px;">${done}/${total} éléments</div>
@@ -4658,7 +4659,7 @@ function renderAlbum(){
     : '';
 
   el('page-8').innerHTML = `
-  <div class="card" style="padding:16px;margin-bottom:16px;">
+  <div class="card" style="padding:16px;margin-bottom:16px;background:#fff;">
     <div style="font-family:Playfair Display,serif;font-size:16px;color:${tx};margin-bottom:12px;">Album partagé</div>
     <p style="font-size:13px;color:${tl};margin-bottom:14px;">Partagez votre album <strong>Google Photos</strong> avec vos invités.</p>
     <div style="margin-bottom:16px;">
@@ -8039,7 +8040,7 @@ function assistPlaylistAmbi(cont){
 //  NOTES 
 function renderNotes(){
   el('page-9').innerHTML = `
-  <div style="padding:28px 20px 20px;">
+  <div style="padding:28px 20px 20px;background:#fff;">
     <div style="text-align:center;margin-bottom:24px;">
       <div style="font-family:Playfair Display,serif;font-style:italic;font-size:26px;color:${tx};margin-bottom:6px;">Mes notes</div>
       <div style="width:40px;height:1.5px;background:linear-gradient(90deg,transparent,${pk},transparent);margin:0 auto;"></div>
