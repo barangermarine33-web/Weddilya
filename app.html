@@ -2008,7 +2008,7 @@ function renderBudget(){
 }
 function addBudget(){const cat=el('bgt-cat').value.trim();if(!cat)return;BUDGET.push({id:Date.now(),cat,est:Number(el('bgt-est').value)||0,reel:0,paye:0});el('bgt-cat').value='';el('bgt-est').value='';saveBudget();renderBudget();}
 async function resetBudget(){
-  if(await appConfirm('Restaurer toutes les catégories par défaut ? Les doublons et catégories ajoutées seront supprimés.')){
+  if(await appConfirm('Restaurer les catégories par défaut ? Les catégories ajoutées seront supprimées.')){
     BUDGET = DEF_BUDGET.map(def=>({...def,reel:0,paye:0}));
     saveBudget();renderBudget();
   }
@@ -2934,35 +2934,44 @@ async function exportPlanPDF(){
     };
     // Dessiner le logo anneaux (SVG-like en jsPDF)
     const drawRings=(x,y,r)=>{
-      setStroke(C_PK); pdf.setLineWidth(0.6);
-      setFill([255,255,255]);
-      pdf.circle(x-r*0.35,y,r,'D');
-      pdf.circle(x+r*0.35,y,r,'D');
+      // Deux anneaux qui se chevauchent (style logo Weddilya)
+      setFill(C_SF); pdf.setLineWidth(0);
+      pdf.circle(x-r*0.4,y,r,'F');
+      pdf.circle(x+r*0.4,y,r,'F');
+      setStroke(C_PK); pdf.setLineWidth(0.8);
+      setFill([255,255,255,0]);
+      pdf.circle(x-r*0.4,y,r,'D');
+      pdf.circle(x+r*0.4,y,r,'D');
     };
 
     //  PAGE 1 : titre + plan visuel 
     drawFrame();
     // Logo anneaux
     drawRings(pw/2,16,4.5);
-    // Logo anneaux
-    drawRings(pw/2,12,4);
-    // Brand
-    setText(C_PK); pdf.setFont('helvetica','bold'); pdf.setFontSize(9);
-    pdf.setCharSpace(5); pdf.text('WEDDILYA',pw/2,22,{align:'center'}); pdf.setCharSpace(0);
-    // Titre
-    setText(C_TM); pdf.setFont('times','bold'); pdf.setFontSize(28);
-    pdf.text('Plan de table',pw/2,38,{align:'center'});
-    // Ligne décorative rose centrée
-    setStroke(C_PK); pdf.setLineWidth(0.5); pdf.line(pw/2-25,42,pw/2+25,42);
-    // Sous-titre
-    setText(C_TL); pdf.setFont('times','italic'); pdf.setFontSize(10);
-    pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,48,{align:'center'});
+    // WEDDILYA en grand
+    setText(C_PK); pdf.setFont('helvetica','bold'); pdf.setFontSize(22);
+    pdf.setCharSpace(8); pdf.text('WEDDILYA',pw/2,16,{align:'center'}); pdf.setCharSpace(0);
+    // Logo anneaux sous le titre
+    drawRings(pw/2,24,5);
+    // Sous-titre app
+    setText(C_TL); pdf.setFont('times','italic'); pdf.setFontSize(8);
+    pdf.text('Organisez le plus beau jour de votre vie',pw/2,33,{align:'center'});
+    // Ligne séparatrice
+    setStroke(C_BD); pdf.setLineWidth(0.3); pdf.line(pw/2-40,37,pw/2+40,37);
+    // Titre section - plus petit que WEDDILYA
+    setText(C_TM); pdf.setFont('times','bold'); pdf.setFontSize(18);
+    pdf.text('Plan de table',pw/2,46,{align:'center'});
+    // Ligne décorative rose
+    setStroke(C_PK); pdf.setLineWidth(0.5); pdf.line(pw/2-20,50,pw/2+20,50);
+    // Noms mariés
+    setText(C_TL); pdf.setFont('times','italic'); pdf.setFontSize(9);
+    pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,56,{align:'center'});
 
     // Géométrie IDENTIQUE à l'application (mêmes constantes en px, puis mise à l'échelle)
     const RND=68, SQ=72, TW=120, TH=58, SEAT=24, GAP=10;
     // Boîte englobante d'une table (en px app), centre de surface placé à (t.x+70, t.y+70)
     // Bornes réelles de tout le plan, chaises comprises
-    const m=18, top=56, planW=pw-2*m, planH=ph-top-10;
+    const m=18, top=64, planW=pw-2*m, planH=ph-top-8;
     let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
     TABLES.forEach(t=>{
       const cx=t.x+70, cy=t.y+70;
@@ -3042,16 +3051,19 @@ async function exportPlanPDF(){
     //  PAGE 2+ : liste des invités par table (toutes ensemble, en cartes) 
     pdf.addPage(); drawFrame();
     drawRings(pw/2,16,4.5);
-    drawRings(pw/2,12,4);
-    setText(C_PK); pdf.setFont('helvetica','bold'); pdf.setFontSize(9);
-    pdf.setCharSpace(5); pdf.text('WEDDILYA',pw/2,22,{align:'center'}); pdf.setCharSpace(0);
-    setText(C_TM); pdf.setFont('times','bold'); pdf.setFontSize(28);
-    pdf.text('Invités par table',pw/2,38,{align:'center'});
-    setStroke(C_PK); pdf.setLineWidth(0.5); pdf.line(pw/2-25,42,pw/2+25,42);
-    setText(C_TL); pdf.setFont('times','italic'); pdf.setFontSize(10);
-    pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,48,{align:'center'});
+    setText(C_PK); pdf.setFont('helvetica','bold'); pdf.setFontSize(22);
+    pdf.setCharSpace(8); pdf.text('WEDDILYA',pw/2,16,{align:'center'}); pdf.setCharSpace(0);
+    drawRings(pw/2,24,5);
+    setText(C_TL); pdf.setFont('times','italic'); pdf.setFontSize(8);
+    pdf.text('Organisez le plus beau jour de votre vie',pw/2,33,{align:'center'});
+    setStroke(C_BD); pdf.setLineWidth(0.3); pdf.line(pw/2-40,37,pw/2+40,37);
+    setText(C_TM); pdf.setFont('times','bold'); pdf.setFontSize(18);
+    pdf.text('Invités par table',pw/2,46,{align:'center'});
+    setStroke(C_PK); pdf.setLineWidth(0.5); pdf.line(pw/2-20,50,pw/2+20,50);
+    setText(C_TL); pdf.setFont('times','italic'); pdf.setFontSize(9);
+    pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,56,{align:'center'});
 
-    const mm=16, yTop=54, colGap=8, nCols=3, colW=(pw-2*mm-(nCols-1)*colGap)/nCols;
+    const mm=16, yTop=62, colGap=8, nCols=3, colW=(pw-2*mm-(nCols-1)*colGap)/nCols;
     let col=0, y=yTop;
     const lineH=6.4;
 
@@ -3061,12 +3073,13 @@ async function exportPlanPDF(){
         col++;
         if(col>=nCols){ pdf.addPage(); drawFrame();
           drawRings(pw/2,16,4.5);
-          drawRings(pw/2,12,4);
-          setText(C_PK); pdf.setFont('helvetica','bold'); pdf.setFontSize(9);
-          pdf.setCharSpace(5); pdf.text('WEDDILYA',pw/2,22,{align:'center'}); pdf.setCharSpace(0);
-          setText(C_TM); pdf.setFont('times','bold'); pdf.setFontSize(28);
-          pdf.text('Invités par table',pw/2,38,{align:'center'});
-          setStroke(C_PK); pdf.setLineWidth(0.5); pdf.line(pw/2-25,42,pw/2+25,42);
+          setText(C_PK); pdf.setFont('helvetica','bold'); pdf.setFontSize(22);
+          pdf.setCharSpace(8); pdf.text('WEDDILYA',pw/2,16,{align:'center'}); pdf.setCharSpace(0);
+          drawRings(pw/2,24,5);
+          setStroke(C_BD); pdf.setLineWidth(0.3); pdf.line(pw/2-40,37,pw/2+40,37);
+          setText(C_TM); pdf.setFont('times','bold'); pdf.setFontSize(18);
+          pdf.text('Invités par table',pw/2,46,{align:'center'});
+          setStroke(C_PK); pdf.setLineWidth(0.5); pdf.line(pw/2-20,50,pw/2+20,50);
           col=0; }
         y=yTop;
       }
@@ -3605,7 +3618,7 @@ function removCho(id){VENDORS_CHO=VENDORS_CHO.filter(c=>c.id!==id);sv(`vcho_${US
 function renderVendors(){
   el('page-4').innerHTML=`
   <div class="card" style="padding:14px;margin-bottom:14px;">
-    <div style="font-size:13px;color:${tm};margin-bottom:10px;font-weight:700;">Rechercher un prestataire</div>
+    <div style="font-family:Playfair Display,serif;font-size:16px;color:${tx};margin-bottom:10px;font-weight:700;">Rechercher un prestataire</div>
 
     <!-- Grille de boutons catégories : chaque clic lance une recherche par TAG OSM précis -->
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:6px;margin-bottom:12px;">
@@ -3626,7 +3639,7 @@ function renderVendors(){
         {key:'voiture',label:'Voiture',icon:''},
         {key:'hotel',label:'Hébergement',icon:''},
         {key:'decor',label:'Décoration',icon:''}
-      ].map(c=>`<button onclick="searchByCategory('${c.key}','${c.label}')" class="vnd-cat-btn" style="background:#fdf8f5;color:${tx};border:1px solid #f0e8ec;border-radius:10px;padding:8px 10px;cursor:pointer;font-size:11px;font-weight:600;font-family:Lora,serif;text-align:left;display:flex;align-items:center;gap:6px;transition:all .15s;">
+      ].map(c=>`<button onclick="searchByCategory('${c.key}','${c.label}')" class="vnd-cat-btn" style="background:#fdf8f5;color:${tx};border:1px solid #f0e8ec;border-radius:10px;padding:8px 10px;cursor:pointer;font-size:12px;font-weight:700;font-family:Lora,serif;text-align:center;justify-content:center;display:flex;align-items:center;transition:all .15s;">
         <span style="font-size:14px;">${c.icon}</span><span>${c.label}</span>
       </button>`).join('')}
     </div>
@@ -3660,7 +3673,7 @@ function renderVendors(){
   <div id="vnd-results-wrap" style="margin-bottom:16px;"></div>
   <div style="margin-bottom:18px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
-      <div style="font-family:Playfair Display,serif;font-size:17px;color:${tx};padding:10px 0 8px;border-bottom:2px solid ${sf};">Prestataires favoris <span id="fav-cnt" style="background:${sf};color:${pk};font-size:11px;border-radius:20px;padding:2px 9px;font-weight:700;">${VENDORS_FAV.length}</span></div>
+      <div style="font-family:Playfair Display,serif;font-size:18px;font-weight:700;color:${tx};padding:10px 0 8px;border-bottom:2px solid ${sf};">Prestataires favoris <span id="fav-cnt" style="background:${sf};color:${pk};font-size:11px;border-radius:20px;padding:2px 9px;font-weight:700;">${VENDORS_FAV.length}</span></div>
       <div style="display:flex;gap:5px;align-items:center;">
         <button onclick="addManualVendor('fav')" style="background:${sf};color:${pk};border:1px solid ${br};border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;">+ Ajouter</button>
         ${['alpha|A→Z','prix|Prix','distance|Distance'].map(s=>{const[v,l]=s.split('|');return`<button class="tab-btn${sortFav===v?' active':''}" onclick="setSortFav('${v}',this)" style="font-size:11px;padding:4px 10px;">${l}</button>`;}).join('')}</div>
@@ -3669,7 +3682,7 @@ function renderVendors(){
   </div>
   <div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
-      <div style="font-family:Playfair Display,serif;font-size:17px;color:${tx};padding:10px 0 8px;border-bottom:2px solid ${sf};">Prestataires choisis <span id="cho-cnt" style="background:${sf};color:${pk};font-size:11px;border-radius:20px;padding:2px 9px;font-weight:700;">${VENDORS_CHO.length}</span></div>
+      <div style="font-family:Playfair Display,serif;font-size:18px;font-weight:700;color:${tx};padding:10px 0 8px;border-bottom:2px solid ${sf};">Prestataires choisis <span id="cho-cnt" style="background:${sf};color:${pk};font-size:11px;border-radius:20px;padding:2px 9px;font-weight:700;">${VENDORS_CHO.length}</span></div>
       <div style="display:flex;gap:5px;align-items:center;">
         <button onclick="addManualVendor('cho')" style="background:${sf};color:${pk};border:1px solid #f0e8ec;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;">+ Ajouter</button>
         ${['alpha|A→Z','prix|Prix','distance|Distance'].map(s=>{const[v,l]=s.split('|');return`<button class="tab-btn${sortCho===v?' active':''}" onclick="setSortCho('${v}',this)" style="font-size:11px;padding:4px 10px;">${l}</button>`;}).join('')}</div>
@@ -3756,7 +3769,7 @@ const VND_CATEGORIES = {
   dj:          {label:'DJ/Musique',         tags:['craft=musical_instrument','shop=musical_instrument','office=dj','shop=music']},
   fleuriste:   {label:'Fleuriste',          tags:['shop=florist']},
   patisserie:  {label:'Pâtisserie/Cake',    tags:['shop=bakery','shop=pastry','shop=confectionery','craft=confectioner']},
-  robe:        {label:'Robe mariée',        tags:['shop=wedding_contract','shop=bridal']},
+  robe:        {label:'Robe mariée',        tags:['shop=wedding','shop=bridal','shop=wedding_contract','shop=clothes','shop=boutique']},
   costume:     {label:'Costume/Tailleur',   tags:['craft=tailor','shop=tailor','shop=clothes']},
   coiffeur:    {label:'Coiffeur',           tags:['shop=hairdresser']},
   beaute:      {label:'Maquillage/Beauté',  tags:['shop=beauty','shop=cosmetics','leisure=spa']},
@@ -4283,7 +4296,7 @@ function movToFav(id){const v=VENDORS_CHO.find(c=>c.id===id);if(!v)return;VENDOR
 function renderFavs(){
   const d=el('vnd-favs');if(!d)return;
   d.innerHTML=VENDORS_FAV.length===0
-    ?`<div style="background:#fdf8f5;border:1px solid #f0e8ec;border-radius:12px;padding:16px;text-align:center;color:${tl};font-size:13px;font-style:italic;">Ajoutez des prestataires depuis la recherche</div>`
+    ?`<div style="background:${sf};border:1px solid #f0e8ec;border-radius:12px;padding:16px;text-align:center;color:${tl};font-size:13px;font-style:italic;">Ajoutez des prestataires depuis la recherche</div>`
     :vSort(VENDORS_FAV,sortFav).map(v=>vndMiniCard(v,'fav')).join('');
   const cnt=el('fav-cnt');if(cnt)cnt.textContent=VENDORS_FAV.length;
 }
