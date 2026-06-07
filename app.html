@@ -1903,9 +1903,9 @@ function renderChecklist(){
   const allMonths=[...MONTHS,...Object.keys(grouped).filter(m=>!MONTHS.includes(m))];
   const monthsWithTasks=allMonths.filter(m=>grouped[m]&&grouped[m].length);
   el('page-0').innerHTML=`
-  <div class="card" style="padding:16px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;background:${sf};">
+  <div class="card" style="padding:16px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;background:#fff;">
     <div><div class="lbl">Progression</div><div style="font-family:Playfair Display,serif;font-size:28px;color:${tx}">${done}<span style="font-size:14px;color:${tl}"> / ${tot}</span></div></div>
-    <svg viewBox="0 0 36 36" width="60" height="60"><circle cx="18" cy="18" r="15.9" fill="none" stroke="${br}" stroke-width="3"/><circle cx="18" cy="18" r="15.9" fill="none" stroke="${pk}" stroke-width="3" stroke-dasharray="${pct} 100" stroke-linecap="round" transform="rotate(-90 18 18)"/><text x="18" y="22" text-anchor="middle" font-size="7" fill="${tx}" font-family="serif" font-weight="bold">${pct}%</text></svg>
+    <svg viewBox="0 0 36 36" width="60" height="60"><circle cx="18" cy="18" r="15.9" fill="none" stroke="#f5e8ee" stroke-width="3"/><circle cx="18" cy="18" r="15.9" fill="none" stroke="#c07080" stroke-width="3" stroke-dasharray="${pct} 100" stroke-linecap="round" transform="rotate(-90 18 18)"/><text x="18" y="22" text-anchor="middle" font-size="7" fill="${tx}" font-family="serif" font-weight="bold">${pct}%</text></svg>
   </div>
   <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
     <input class="inp" id="chk-text" placeholder="Ajouter une tâche..." style="flex:2;min-width:140px;" onkeydown="if(event.key==='Enter')addTask()">
@@ -2982,11 +2982,13 @@ async function exportPlanPDF(){
     const jsPDF = await loadJsPDF();
     const pdf = new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
     // Enregistrer Josefin Sans dans jsPDF
+    let _josefinLoaded = false;
     try {
-      const fontBytes = Uint8Array.from(atob(_JOSEFIN_B64), c=>c.charCodeAt(0));
       pdf.addFileToVFS('JosefinSans300.ttf', _JOSEFIN_B64);
       pdf.addFont('JosefinSans300.ttf', 'JosefinSans', 'normal');
+      _josefinLoaded = true;
     } catch(fe){ console.warn('Font load error:', fe); }
+    const FONT_TITLE = _josefinLoaded ? 'JosefinSans' : 'helvetica';
     const pw=pdf.internal.pageSize.getWidth(), ph=pdf.internal.pageSize.getHeight();
     // Couleurs Weddilya épurées
     const C_PK=[184,64,96],    // #b84060 rose foncé
@@ -3031,7 +3033,7 @@ async function exportPlanPDF(){
     //  PAGE 1 : titre + plan visuel 
     drawFrame();
     // ── WEDDILYA grand titre espacé ──
-    setText(C_PK); pdf.setFont('JosefinSans','normal'); pdf.setFontSize(22);
+    setText(C_PK); pdf.setFont(FONT_TITLE,'normal'); pdf.setFontSize(22);
  pdf.text('WEDDILYA',pw/2,18,{align:'center'});
     // ── Anneaux centrés sous WEDDILYA ──
     drawRings(pw/2,29,5);
@@ -3129,7 +3131,7 @@ async function exportPlanPDF(){
 
     //  PAGE 2+ : liste des invités par table (toutes ensemble, en cartes) 
     pdf.addPage(); drawFrame();
-    setText(C_PK); pdf.setFont('JosefinSans','normal'); pdf.setFontSize(22);
+    setText(C_PK); pdf.setFont(FONT_TITLE,'normal'); pdf.setFontSize(22);
  pdf.text('WEDDILYA',pw/2,18,{align:'center'});
     drawRings(pw/2,29,5);
     setStroke(C_BD); pdf.setLineWidth(0.25); pdf.line(pw/2-40,38,pw/2+40,38);
@@ -3148,7 +3150,7 @@ async function exportPlanPDF(){
       if(y+needed>ph-16){
         col++;
         if(col>=nCols){ pdf.addPage(); drawFrame();
-          setText(C_PK); pdf.setFont('JosefinSans','normal'); pdf.setFontSize(22);
+          setText(C_PK); pdf.setFont(FONT_TITLE,'normal'); pdf.setFontSize(22);
  pdf.text('WEDDILYA',pw/2,18,{align:'center'});
           drawRings(pw/2,29,5);
           setStroke(C_BD); pdf.setLineWidth(0.25); pdf.line(pw/2-40,38,pw/2+40,38);
@@ -6863,7 +6865,7 @@ function renderAssistant(){
         {key:'voeux',         label:'Vœux personnalisés',   desc:'Modèles de vœux à adapter'},
         {key:'voyageNoces',   label:'Voyage de noces',      desc:'Idées de destinations'},
         {key:'weddingCake',   label:'Wedding cake',         desc:'Styles et inspirations'}
-      ].map(s=>`<button onclick="assistOpen('${s.key}')" style="display:flex;align-items:center;gap:14px;width:100%;background:#fdf8f5;border:none;border-bottom:1px solid #f0e8ec;padding:13px 6px;cursor:pointer;font-family:Lora,serif;text-align:left;transition:all .15s;box-sizing:border-box;" onmouseover="this.style.background='#fef2f6';this.style.paddingLeft='12px'" onmouseout="this.style.background='#fdf8f5';this.style.paddingLeft='6px'">
+      ].map(s=>`<button onclick="assistOpen('${s.key}')" style="display:flex;align-items:center;gap:14px;width:100%;background:#fef5f8;border:none;border-bottom:1px solid #f5e0e8;padding:13px 6px;cursor:pointer;font-family:Lora,serif;text-align:left;transition:all .15s;box-sizing:border-box;" onmouseover="this.style.background='#feeef4';this.style.paddingLeft='12px'" onmouseout="this.style.background='#fef5f8';this.style.paddingLeft='6px'">
         <div style="width:3px;height:32px;border-radius:2px;background:linear-gradient(180deg,#d4607a,#f0a0b8);flex-shrink:0;"></div>
         <div style="flex:1;">
           <div style="font-size:14px;font-weight:700;color:${tx};margin-bottom:2px;">${s.label}</div>
