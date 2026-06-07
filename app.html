@@ -2576,8 +2576,8 @@ function renderTablePlan(){
     <!-- Ligne 2 : Actions + Zoom -->
     <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
       <button onclick="openAutoPlaceModal()" style="padding:6px 12px;background:#fef2f6;color:#b84060;border:1px solid #f5d5e0;border-radius:10px;font-size:12px;font-weight:700;font-family:Lora,serif;cursor:pointer;min-height:32px;">Placement auto</button>
+      <button onclick="exportPlanPDF()" style="padding:6px 12px;background:#fef2f6;color:#b84060;border:1px solid #f5d5e0;border-radius:10px;font-size:12px;font-weight:700;font-family:Lora,serif;cursor:pointer;min-height:32px;">Exporter en PDF</button>
       <button onclick="resetPlacement()" style="padding:6px 12px;background:#fdf8f5;color:#8a4a60;border:1px solid #f0e8ec;border-radius:10px;font-size:12px;font-weight:700;font-family:Lora,serif;cursor:pointer;min-height:32px;">Réinitialiser</button>
-      <button onclick="exportPlanPDF()" style="padding:6px 12px;background:#fdf8f5;color:#8a4a60;border:1px solid #f0e8ec;border-radius:10px;font-size:12px;font-weight:700;font-family:Lora,serif;cursor:pointer;min-height:32px;">PDF</button>
       <!-- Zoom -->
       <div style="display:flex;gap:4px;margin-left:auto;">
         <button onclick="tpZoom(0.2)" style="width:32px;height:32px;background:#fdf8f5;border:1px solid #f0e8ec;border-radius:8px;cursor:pointer;font-size:16px;font-weight:700;color:#b84060;display:flex;align-items:center;justify-content:center;">+</button>
@@ -2946,32 +2946,27 @@ async function exportPlanPDF(){
 
     //  PAGE 1 : titre + plan visuel 
     drawFrame();
-    // Logo anneaux
-    drawRings(pw/2,16,4.5);
-    // WEDDILYA en grand
-    setText(C_PK); pdf.setFont('helvetica','bold'); pdf.setFontSize(22);
-    pdf.setCharSpace(8); pdf.text('WEDDILYA',pw/2,16,{align:'center'}); pdf.setCharSpace(0);
-    // Logo anneaux sous le titre
-    drawRings(pw/2,24,5);
-    // Sous-titre app
-    setText(C_TL); pdf.setFont('times','italic'); pdf.setFontSize(8);
-    pdf.text('Organisez le plus beau jour de votre vie',pw/2,33,{align:'center'});
-    // Ligne séparatrice
-    setStroke(C_BD); pdf.setLineWidth(0.3); pdf.line(pw/2-40,37,pw/2+40,37);
-    // Titre section - plus petit que WEDDILYA
-    setText(C_TM); pdf.setFont('times','bold'); pdf.setFontSize(18);
-    pdf.text('Plan de table',pw/2,46,{align:'center'});
-    // Ligne décorative rose
-    setStroke(C_PK); pdf.setLineWidth(0.5); pdf.line(pw/2-20,50,pw/2+20,50);
-    // Noms mariés
+    // ── WEDDILYA grand titre ──
+    setText(C_PK); pdf.setFont('helvetica','bold'); pdf.setFontSize(26);
+    pdf.setCharSpace(6); pdf.text('WEDDILYA',pw/2,18,{align:'center'}); pdf.setCharSpace(0);
+    // ── Logo anneaux sous WEDDILYA ──
+    drawRings(pw/2,27,5);
+    // ── Ligne séparatrice ──
+    setStroke(C_BD); pdf.setLineWidth(0.3); pdf.line(pw/2-50,35,pw/2+50,35);
+    // ── Titre section (plus petit) ──
+    setText(C_TM); pdf.setFont('times','bold'); pdf.setFontSize(16);
+    pdf.text('Plan de table',pw/2,43,{align:'center'});
+    // ── Trait rose ──
+    setStroke(C_PK); pdf.setLineWidth(0.4); pdf.line(pw/2-18,47,pw/2+18,47);
+    // ── Sous-titre mariés ──
     setText(C_TL); pdf.setFont('times','italic'); pdf.setFontSize(9);
-    pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,56,{align:'center'});
+    pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,53,{align:'center'});
 
     // Géométrie IDENTIQUE à l'application (mêmes constantes en px, puis mise à l'échelle)
     const RND=68, SQ=72, TW=120, TH=58, SEAT=24, GAP=10;
     // Boîte englobante d'une table (en px app), centre de surface placé à (t.x+70, t.y+70)
     // Bornes réelles de tout le plan, chaises comprises
-    const m=18, top=64, planW=pw-2*m, planH=ph-top-8;
+    const m=18, top=60, planW=pw-2*m, planH=ph-top-8;
     let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
     TABLES.forEach(t=>{
       const cx=t.x+70, cy=t.y+70;
@@ -3050,20 +3045,17 @@ async function exportPlanPDF(){
 
     //  PAGE 2+ : liste des invités par table (toutes ensemble, en cartes) 
     pdf.addPage(); drawFrame();
-    drawRings(pw/2,16,4.5);
-    setText(C_PK); pdf.setFont('helvetica','bold'); pdf.setFontSize(22);
-    pdf.setCharSpace(8); pdf.text('WEDDILYA',pw/2,16,{align:'center'}); pdf.setCharSpace(0);
-    drawRings(pw/2,24,5);
-    setText(C_TL); pdf.setFont('times','italic'); pdf.setFontSize(8);
-    pdf.text('Organisez le plus beau jour de votre vie',pw/2,33,{align:'center'});
-    setStroke(C_BD); pdf.setLineWidth(0.3); pdf.line(pw/2-40,37,pw/2+40,37);
-    setText(C_TM); pdf.setFont('times','bold'); pdf.setFontSize(18);
-    pdf.text('Invités par table',pw/2,46,{align:'center'});
-    setStroke(C_PK); pdf.setLineWidth(0.5); pdf.line(pw/2-20,50,pw/2+20,50);
+    setText(C_PK); pdf.setFont('helvetica','bold'); pdf.setFontSize(26);
+    pdf.setCharSpace(6); pdf.text('WEDDILYA',pw/2,18,{align:'center'}); pdf.setCharSpace(0);
+    drawRings(pw/2,27,5);
+    setStroke(C_BD); pdf.setLineWidth(0.3); pdf.line(pw/2-50,35,pw/2+50,35);
+    setText(C_TM); pdf.setFont('times','bold'); pdf.setFontSize(16);
+    pdf.text('Invités par table',pw/2,43,{align:'center'});
+    setStroke(C_PK); pdf.setLineWidth(0.4); pdf.line(pw/2-18,47,pw/2+18,47);
     setText(C_TL); pdf.setFont('times','italic'); pdf.setFontSize(9);
-    pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,56,{align:'center'});
+    pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,53,{align:'center'});
 
-    const mm=16, yTop=62, colGap=8, nCols=3, colW=(pw-2*mm-(nCols-1)*colGap)/nCols;
+    const mm=16, yTop=59, colGap=8, nCols=3, colW=(pw-2*mm-(nCols-1)*colGap)/nCols;
     let col=0, y=yTop;
     const lineH=6.4;
 
@@ -3072,14 +3064,13 @@ async function exportPlanPDF(){
       if(y+needed>ph-16){
         col++;
         if(col>=nCols){ pdf.addPage(); drawFrame();
-          drawRings(pw/2,16,4.5);
-          setText(C_PK); pdf.setFont('helvetica','bold'); pdf.setFontSize(22);
-          pdf.setCharSpace(8); pdf.text('WEDDILYA',pw/2,16,{align:'center'}); pdf.setCharSpace(0);
-          drawRings(pw/2,24,5);
-          setStroke(C_BD); pdf.setLineWidth(0.3); pdf.line(pw/2-40,37,pw/2+40,37);
-          setText(C_TM); pdf.setFont('times','bold'); pdf.setFontSize(18);
-          pdf.text('Invités par table',pw/2,46,{align:'center'});
-          setStroke(C_PK); pdf.setLineWidth(0.5); pdf.line(pw/2-20,50,pw/2+20,50);
+          setText(C_PK); pdf.setFont('helvetica','bold'); pdf.setFontSize(26);
+          pdf.setCharSpace(6); pdf.text('WEDDILYA',pw/2,18,{align:'center'}); pdf.setCharSpace(0);
+          drawRings(pw/2,27,5);
+          setStroke(C_BD); pdf.setLineWidth(0.3); pdf.line(pw/2-50,35,pw/2+50,35);
+          setText(C_TM); pdf.setFont('times','bold'); pdf.setFontSize(16);
+          pdf.text('Invités par table',pw/2,43,{align:'center'});
+          setStroke(C_PK); pdf.setLineWidth(0.4); pdf.line(pw/2-18,47,pw/2+18,47);
           col=0; }
         y=yTop;
       }
@@ -3618,7 +3609,7 @@ function removCho(id){VENDORS_CHO=VENDORS_CHO.filter(c=>c.id!==id);sv(`vcho_${US
 function renderVendors(){
   el('page-4').innerHTML=`
   <div class="card" style="padding:14px;margin-bottom:14px;">
-    <div style="font-family:Playfair Display,serif;font-size:16px;color:${tx};margin-bottom:10px;font-weight:700;">Rechercher un prestataire</div>
+    <div style="font-family:Playfair Display,serif;font-size:16px;color:${tx};margin-bottom:12px;font-weight:700;">Rechercher un prestataire</div>
 
     <!-- Grille de boutons catégories : chaque clic lance une recherche par TAG OSM précis -->
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:6px;margin-bottom:12px;">
@@ -3649,7 +3640,7 @@ function renderVendors(){
       <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:180px;">
         <label style="font-size:11px;color:${tl};font-weight:700;white-space:nowrap;">Lieu :</label>
         <input class="inp" id="vnd-postal" placeholder="Code postal (ex: 57000)" style="flex:1;font-size:12px;padding:7px 10px;" onkeydown="if(event.key==='Enter')searchByPostal()">
-        <button onclick="searchByPostal()" style="background:${sf};color:${pk};border:1px solid #f0e8ec;border-radius:9px;padding:7px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;white-space:nowrap;">OK</button>
+        <button onclick="searchByPostal()" style="background:${sf};color:${pk};border:1px solid #f0e8ec;border-radius:9px;padding:7px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;white-space:nowrap;">Rechercher</button>
       </div>
       <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:160px;">
         <label style="font-size:11px;color:${tl};font-weight:700;white-space:nowrap;">Rayon :</label>
@@ -3668,7 +3659,7 @@ function renderVendors(){
       </div>
     </details>
 
-    <p style="font-size:11px;color:${tl};font-style:italic;margin-top:8px;">Données OpenStreetMap, triées par distance. Entrez un code postal pour chercher ailleurs.</p>
+    <p style="font-size:11px;color:${tl};font-style:italic;margin-top:8px;">Entrez un code postal et cliquez OK, puis sélectionnez une catégorie. Sans code postal, votre position GPS sera utilisée.</p>
   </div>
   <div id="vnd-results-wrap" style="margin-bottom:16px;"></div>
   <div style="margin-bottom:18px;">
@@ -3719,6 +3710,7 @@ async function searchByPostal(){
     if(!data || !data.length){ if(status) status.textContent = 'Lieu non trouvé.'; return; }
     const lat = parseFloat(data[0].lat), lng = parseFloat(data[0].lon);
     window._userLat = lat; window._userLng = lng;
+    window._manualLocation = true; // Lieu choisi manuellement
     const name = data[0].display_name.split(',').slice(0,2).join(', ');
     if(status) status.innerHTML = '<span style="color:#d4607a;font-weight:700;">Lieu : '+name+'</span>';
   } catch(e) {
@@ -3793,22 +3785,24 @@ async function searchByCategory(catKey, catLabel){
   const wrap = el('vnd-results-wrap');
   if(wrap) wrap.innerHTML = `<p style="text-align:center;padding:14px;font-size:12px;color:${tl};">Recherche des ${catLabel.toLowerCase()}s dans un rayon de ${radiusKm} km...</p>`;
 
-  // Géoloc nécessaire : sans position, on ne peut pas filtrer par rayon
+  // Utiliser le lieu manuel si défini, sinon géoloc
   let lat = window._userLat, lng = window._userLng;
-  if(!lat || !lng){
+  if(window._manualLocation && lat && lng){
+    // Lieu saisi manuellement → utiliser directement sans redemander la géoloc
+  } else if(!lat || !lng){
     if(!navigator.geolocation){
-      if(wrap) wrap.innerHTML = `<p style="text-align:center;padding:14px;font-size:13px;color:${rd};">Géolocalisation non disponible.</p>`;
+      if(wrap) wrap.innerHTML = `<p style="text-align:center;padding:14px;font-size:13px;color:${tl};">Entrez un code postal et cliquez OK pour rechercher.</p>`;
       return;
     }
-    if(wrap) wrap.innerHTML = `<p style="text-align:center;padding:14px;font-size:12px;color:${tl};">Demande de localisation...</p>`;
+    if(wrap) wrap.innerHTML = `<p style="text-align:center;padding:14px;font-size:12px;color:${tl};">Détection de votre position...</p>`;
     try {
       const pos = await new Promise((resolve,reject)=>{
-        navigator.geolocation.getCurrentPosition(resolve, reject, {timeout:10000, maximumAge:300000});
+        navigator.geolocation.getCurrentPosition(resolve, reject, {timeout:8000, maximumAge:300000});
       });
       window._userLat = lat = pos.coords.latitude;
       window._userLng = lng = pos.coords.longitude;
     } catch(geoErr){
-      if(wrap) wrap.innerHTML = `<p style="text-align:center;padding:14px;font-size:13px;color:${rd};">Géolocalisation refusée ou indisponible.<br><span style="font-size:11px;font-style:italic;">Autorise la localisation dans les paramètres du navigateur.</span></p>`;
+      if(wrap) wrap.innerHTML = `<p style="text-align:center;padding:14px;font-size:13px;color:${tl};">Localisation indisponible.<br><span style="font-size:11px;">Entrez un code postal et cliquez OK avant de rechercher.</span></p>`;
       return;
     }
   }
