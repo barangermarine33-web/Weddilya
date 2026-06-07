@@ -2575,7 +2575,7 @@ function renderTablePlan(){
       <button id="tp-pan-btn" onclick="tpTogglePan()" title="Activer navigation" style="background:#fff;border:1px solid #f0e8ec;border-radius:8px;width:34px;height:34px;cursor:pointer;font-size:16px;color:#c47a2a;" title="Mode navigation (2 doigts=zoom, 1 doigt=déplacer)">✋</button>
     </div>
   </div>
-  <div id="tp-canvas" style="position:relative;background:#fff;border:1.5px solid #f0e8ec;border-radius:16px;height:70vh;min-height:400px;overflow:hidden;touch-action:none;user-select:none;">
+  <div id="tp-canvas" style="position:relative;background:#fff;border:1.5px solid #f0e8ec;border-radius:16px;height:70vh;min-height:400px;overflow:hidden;touch-action:none;user-select:none;margin:0 12px;">
     <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:.05;pointer-events:none;"><defs><pattern id="pg" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0L0 0 0 28" fill="none" stroke="${pk}" stroke-width="0.5"/></pattern></defs><rect width="100%" height="100%" fill="url(#pg)"/></svg>
     <div id="tp-inner" style="position:absolute;inset:0;transform-origin:0 0;will-change:transform;"></div>
   </div>
