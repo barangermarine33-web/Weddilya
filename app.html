@@ -2107,7 +2107,7 @@ function guestRow(g){
       <span onclick="toggleAge(${g.id})" style="color:${g.age==='Enfant'?am:tl};font-size:11px;cursor:pointer;font-weight:600;padding:2px 8px;border-radius:6px;background:transparent;display:inline-block;">${g.age==='Enfant'?'Enfant':'Adulte'}</span>
     </td>
     <td style="padding:8px 9px;background:#fff;border-bottom:1px solid #f9edf2;">
-      <span onclick="toggleInvitation(${g.id})" style="color:${g.invitation==='envoyée'?gn:rd};font-size:11px;cursor:pointer;font-weight:600;padding:2px 8px;border-radius:6px;background:transparent;display:inline-block;">${g.invitation==='envoyée'?' Envoyée':' Non envoyée'}</span>
+      <span onclick="pickGuestInvitation(${g.id})" style="color:${g.invitation==='envoyée'?gn:rd};font-size:11px;cursor:pointer;font-weight:600;padding:2px 8px;border-radius:6px;background:transparent;display:inline-block;">${g.invitation==='envoyée'?' Envoyée':' Non envoyée'}</span>
     </td>
     <td style="padding:8px 9px;background:#fff;border-bottom:1px solid #f9edf2;">
       <span onclick="pickGuestPresence(${g.id})" style="color:${sc[g.presence]||'#888'};font-size:11px;cursor:pointer;font-weight:600;padding:2px 8px;border-radius:6px;background:transparent;display:inline-block;">${g.presence==='confirmée'?'Confirmée':g.presence==='déclinée'?'Déclinée':'En attente'} </span>
@@ -3005,25 +3005,25 @@ async function exportPlanPDF(){
     drawFrame();
     // ── WEDDILYA grand titre espacé ──
     setText(C_PK); pdf.setFont('helvetica','normal'); pdf.setFontSize(28);
-    pdf.setCharSpace(14); pdf.text('WEDDILYA',pw/2,14,{align:'center'}); pdf.setCharSpace(0);
+ pdf.text('WEDDILYA',pw/2,18,{align:'center'});
     // ── Anneaux centrés sous WEDDILYA ──
-    drawRings(pw/2,23,5.5);
+    drawRings(pw/2,29,5);
     // ── Séparateur ──
-    setStroke(C_BD); pdf.setLineWidth(0.25); pdf.line(pw/2-40,32,pw/2+40,32);
+    setStroke(C_BD); pdf.setLineWidth(0.25); pdf.line(pw/2-40,38,pw/2+40,38);
     // ── Titre section en italique ──
     setText(C_TM); pdf.setFont('times','italic'); pdf.setFontSize(14);
-    pdf.text('Plan de table',pw/2,39,{align:'center'});
+    pdf.text('Plan de table',pw/2,45,{align:'center'});
     // ── Trait rose ──
-    setStroke(C_PK); pdf.setLineWidth(0.35); pdf.line(pw/2-14,43,pw/2+14,43);
+    setStroke(C_PK); pdf.setLineWidth(0.35); pdf.line(pw/2-14,49,pw/2+14,49);
     // ── Mariés ──
     setText(C_TL); pdf.setFont('times','normal'); pdf.setFontSize(9);
-    pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,49,{align:'center'});
+    pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,55,{align:'center'});
 
     // Géométrie IDENTIQUE à l'application (mêmes constantes en px, puis mise à l'échelle)
     const RND=68, SQ=72, TW=120, TH=58, SEAT=24, GAP=10;
     // Boîte englobante d'une table (en px app), centre de surface placé à (t.x+70, t.y+70)
     // Bornes réelles de tout le plan, chaises comprises
-    const m=18, top=58, planW=pw-2*m, planH=ph-top-6;
+    const m=18, top=64, planW=pw-2*m, planH=ph-top-6;
     let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
     TABLES.forEach(t=>{
       const cx=t.x+70, cy=t.y+70;
@@ -3103,16 +3103,16 @@ async function exportPlanPDF(){
     //  PAGE 2+ : liste des invités par table (toutes ensemble, en cartes) 
     pdf.addPage(); drawFrame();
     setText(C_PK); pdf.setFont('helvetica','normal'); pdf.setFontSize(28);
-    pdf.setCharSpace(14); pdf.text('WEDDILYA',pw/2,14,{align:'center'}); pdf.setCharSpace(0);
-    drawRings(pw/2,23,5.5);
-    setStroke(C_BD); pdf.setLineWidth(0.25); pdf.line(pw/2-40,32,pw/2+40,32);
+ pdf.text('WEDDILYA',pw/2,18,{align:'center'});
+    drawRings(pw/2,29,5);
+    setStroke(C_BD); pdf.setLineWidth(0.25); pdf.line(pw/2-40,38,pw/2+40,38);
     setText(C_TM); pdf.setFont('times','italic'); pdf.setFontSize(14);
-    pdf.text('Invités par table',pw/2,39,{align:'center'});
-    setStroke(C_PK); pdf.setLineWidth(0.35); pdf.line(pw/2-14,43,pw/2+14,43);
+    pdf.text('Invités par table',pw/2,45,{align:'center'});
+    setStroke(C_PK); pdf.setLineWidth(0.35); pdf.line(pw/2-14,49,pw/2+14,49);
     setText(C_TL); pdf.setFont('times','normal'); pdf.setFontSize(9);
-    pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,49,{align:'center'});
+    pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,55,{align:'center'});
 
-    const mm=16, yTop=56, colGap=8, nCols=3, colW=(pw-2*mm-(nCols-1)*colGap)/nCols;
+    const mm=16, yTop=62, colGap=8, nCols=3, colW=(pw-2*mm-(nCols-1)*colGap)/nCols;
     let col=0, y=yTop;
     const lineH=6.4;
 
@@ -3122,12 +3122,12 @@ async function exportPlanPDF(){
         col++;
         if(col>=nCols){ pdf.addPage(); drawFrame();
           setText(C_PK); pdf.setFont('helvetica','normal'); pdf.setFontSize(28);
-          pdf.setCharSpace(14); pdf.text('WEDDILYA',pw/2,14,{align:'center'}); pdf.setCharSpace(0);
-          drawRings(pw/2,23,5.5);
-          setStroke(C_BD); pdf.setLineWidth(0.25); pdf.line(pw/2-40,32,pw/2+40,32);
+ pdf.text('WEDDILYA',pw/2,18,{align:'center'});
+          drawRings(pw/2,29,5);
+          setStroke(C_BD); pdf.setLineWidth(0.25); pdf.line(pw/2-40,38,pw/2+40,38);
           setText(C_TM); pdf.setFont('times','italic'); pdf.setFontSize(14);
-          pdf.text('Invités par table',pw/2,39,{align:'center'});
-          setStroke(C_PK); pdf.setLineWidth(0.35); pdf.line(pw/2-14,43,pw/2+14,43);
+          pdf.text('Invités par table',pw/2,45,{align:'center'});
+          setStroke(C_PK); pdf.setLineWidth(0.35); pdf.line(pw/2-14,49,pw/2+14,49);
           col=0; }
         y=yTop;
       }
@@ -3715,7 +3715,7 @@ function renderVendors(){
       </div>
     </details>
 
-    <p style="font-size:11px;color:${tl};font-style:italic;margin-top:6px;">Entrez un code postal ou une ville et cliquez Rechercher, puis sélectionnez une catégorie ci-dessus.</p>
+    <p style="font-size:11px;color:${tl};font-style:italic;margin-top:6px;">1. Sélectionnez une catégorie · 2. Entrez un code postal · 3. Cliquez Rechercher</p>
   </div>
   <div id="vnd-results-wrap" style="margin-bottom:16px;"></div>
   <div style="margin-bottom:18px;">
@@ -3769,8 +3769,14 @@ async function searchByPostal(){
     window._manualLocation = true; // Lieu choisi manuellement
     const name = data[0].display_name.split(',').slice(0,2).join(', ');
     if(status) status.innerHTML = '<span style="color:#d4607a;font-weight:700;">Lieu : '+name+'</span>';
+    // Lancer automatiquement la recherche si une catégorie est sélectionnée
+    if(window._activeCatKey && window._activeCatLabel){
+      await searchByCategory(window._activeCatKey, window._activeCatLabel);
+    } else {
+      if(status) status.innerHTML += ' <span style="color:#b07a90;font-size:11px;">— Sélectionnez une catégorie ci-dessus</span>';
+    }
   } catch(e) {
-    if(status) status.textContent = 'Erreur de géocodage.';
+    if(status) status.textContent = 'Lieu non trouvé. Vérifiez le code postal.';
   }
 }
 
@@ -3832,8 +3838,9 @@ const VND_CATEGORIES = {
 // (pas par nom). C'est ce qui fait que "Salle" trouve toutes les salles de
 // réception, pas seulement les établissements appelés "Salle".
 async function searchByCategory(catKey, catLabel){
-  // Mettre en rose le bouton sélectionné
+  // Mémoriser la catégorie active
   window._activeCatKey = catKey;
+  window._activeCatLabel = catLabel;
   document.querySelectorAll('.vnd-cat-btn').forEach(btn=>{
     const btnActive = btn.getAttribute('data-catkey') === catKey;
     btn.style.background = btnActive ? '#fef2f6' : '#fdf8f5';
@@ -6800,13 +6807,14 @@ function renderAssistant(){
         {key:'voeux',         label:'Vœux personnalisés',   desc:'Modèles de vœux à adapter'},
         {key:'voyageNoces',   label:'Voyage de noces',      desc:'Idées de destinations'},
         {key:'weddingCake',   label:'Wedding cake',         desc:'Styles et inspirations'}
-      ].map(s=>`<button onclick="assistOpen('${s.key}')" style="display:flex;align-items:center;justify-content:space-between;width:100%;background:#fff;border:none;border-bottom:1px solid #f5eaef;padding:14px 8px;cursor:pointer;font-family:Lora,serif;text-align:left;transition:all .15s;box-sizing:border-box;" onmouseover="this.style.background='#fef2f6';this.style.paddingLeft='14px'" onmouseout="this.style.background='#fff';this.style.paddingLeft='8px'">
-        <div>
-          <div style="font-size:14px;font-weight:700;color:${tx};margin-bottom:3px;">${s.label}</div>
-          <div style="font-size:11px;color:${tl};line-height:1.4;">${s.desc}</div>
+      ].map(s=>`<button onclick="assistOpen('${s.key}')" style="display:flex;align-items:center;gap:14px;width:100%;background:#fff;border:none;border-bottom:1px solid #f5eaef;padding:13px 6px;cursor:pointer;font-family:Lora,serif;text-align:left;transition:background .15s;box-sizing:border-box;" onmouseover="this.style.background='#fef8fb'" onmouseout="this.style.background='#fff'">
+        <div style="width:3px;height:32px;border-radius:2px;background:linear-gradient(180deg,#d4607a,#f0a0b8);flex-shrink:0;"></div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:700;color:${tx};margin-bottom:2px;">${s.label}</div>
+          <div style="font-size:11px;color:${tl};">${s.desc}</div>
         </div>
-        <div style="flex-shrink:0;margin-left:12px;width:28px;height:28px;border-radius:50%;background:${sf};display:flex;align-items:center;justify-content:center;">
-          <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M5 2l5 5-5 5" stroke="${pk}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div style="flex-shrink:0;width:24px;height:24px;border-radius:50%;border:1px solid #f5d5e0;display:flex;align-items:center;justify-content:center;">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 2l4 3-4 3" stroke="#d4607a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
       </button>`).join('')}
     </div>
