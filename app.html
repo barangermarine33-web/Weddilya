@@ -1971,8 +1971,8 @@ function renderBudget(){
     <div class="card" style="padding:13px;text-align:center;"><div class="lbl">Budget réel total</div><div style="font-family:Playfair Display,serif;font-size:19px;font-weight:700;color:${pk}">${fmt(tR)} €</div></div>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
-    <div style="background:#f0f8f2;border:1.5px solid ${br};border-radius:14px;padding:13px;text-align:center;"><div class="lbl">Déjà payé</div><div style="font-family:Playfair Display,serif;font-size:19px;font-weight:700;color:${gn}">${fmt(tP)} €</div></div>
-    <div style="background:${reste>0?'#fff8f0':'#f0f8f2'};border:1.5px solid ${br};border-radius:14px;padding:13px;text-align:center;"><div class="lbl">Reste à payer</div><div style="font-family:Playfair Display,serif;font-size:19px;font-weight:700;color:${reste>0?am:gn}">${fmt(reste)} €</div></div>
+    <div style="background:#f0f8f2;border-radius:14px;padding:13px;text-align:center;"><div class="lbl">Déjà payé</div><div style="font-family:Playfair Display,serif;font-size:19px;font-weight:700;color:${gn}">${fmt(tP)} €</div></div>
+    <div style="background:${reste>0?'#fff8f0':'#f0f8f2'};border-radius:14px;padding:13px;text-align:center;"><div class="lbl">Reste à payer</div><div style="font-family:Playfair Display,serif;font-size:19px;font-weight:700;color:${reste>0?am:gn}">${fmt(reste)} €</div></div>
   </div>
   <div style="display:flex;gap:8px;margin-bottom:12px;">
     <input class="inp" id="bgt-cat" placeholder="Nouvelle catégorie" style="flex:2;background:#fff;">
@@ -1996,9 +1996,9 @@ function renderBudget(){
       </div>
       <div style="height:5px;background:${sf};border-radius:3px;margin-bottom:10px;overflow:hidden;"><div style="height:100%;width:${pct}%;background:${over?rd:`linear-gradient(90deg,${pk},${pm})`};border-radius:3px;"></div></div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
-        <div><div class="lbl">Budget estimé</div><input type="number" value="${item.est||''}" placeholder="0" onfocus="if(this.value=='0')this.value=''" onchange="updBudget(${item.id},'est',this.value)" style="width:100%;border:1.5px solid ${br};border-radius:8px;padding:6px 8px;font-size:13px;color:#7a4a60;font-weight:700;outline:none;background:#fffafc;"></div>
-        <div><div class="lbl">Budget réel</div><input type="number" value="${item.reel||''}" placeholder="0" onfocus="if(this.value=='0')this.value=''" onchange="updBudget(${item.id},'reel',this.value)" style="width:100%;border:1.5px solid ${br};border-radius:8px;padding:6px 8px;font-size:13px;color:${pk};font-weight:700;outline:none;background:#fffafc;"></div>
-        <div><div class="lbl">Déjà payé</div><input type="number" value="${item.paye||''}" placeholder="0" onfocus="if(this.value=='0')this.value=''" onchange="updBudget(${item.id},'paye',this.value)" style="width:100%;border:1.5px solid ${br};border-radius:8px;padding:6px 8px;font-size:13px;color:${gn};font-weight:700;outline:none;background:#fffafc;"></div>
+        <div><div class="lbl">Budget estimé</div><input type="number" value="${item.est||''}" placeholder="0" onfocus="if(this.value=='0')this.value=''" onchange="updBudget(${item.id},'est',this.value)" style="width:100%;border:none;border-bottom:1.5px solid ${sf};border-radius:0;padding:6px 4px;font-size:13px;color:#7a4a60;font-weight:700;outline:none;background:transparent;"></div>
+        <div><div class="lbl">Budget réel</div><input type="number" value="${item.reel||''}" placeholder="0" onfocus="if(this.value=='0')this.value=''" onchange="updBudget(${item.id},'reel',this.value)" style="width:100%;border:none;border-bottom:1.5px solid ${sf};border-radius:0;padding:6px 4px;font-size:13px;color:${pk};font-weight:700;outline:none;background:transparent;"></div>
+        <div><div class="lbl">Déjà payé</div><input type="number" value="${item.paye||''}" placeholder="0" onfocus="if(this.value=='0')this.value=''" onchange="updBudget(${item.id},'paye',this.value)" style="width:100%;border:none;border-bottom:1.5px solid ${sf};border-radius:0;padding:6px 4px;font-size:13px;color:${gn};font-weight:700;outline:none;background:transparent;"></div>
       </div>
       <div style="margin-top:6px;text-align:right;font-size:11px;color:${tl}">Reste à payer : <strong style="color:${r>0?am:gn}">${fmt(r)} €</strong></div>
     </div>`;
@@ -2044,9 +2044,9 @@ function renderGuests(){
   const confirmedGuests = GUESTS.filter(g=>g.presence==='confirmée').length;
   el('page-2').innerHTML=`
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;">
-    <div style="background:#f0f8f0;border:1.5px solid rgba(90,138,106,.3);border-radius:12px;padding:11px;text-align:center;"><div style="font-family:Playfair Display,serif;font-size:24px;font-weight:700;color:${gn}">${conf}</div><div style="font-size:9px;color:${gn};letter-spacing:1.5px;text-transform:uppercase">Confirmés</div></div>
-    <div style="background:#fff8f0;border:1.5px solid rgba(196,122,42,.3);border-radius:12px;padding:11px;text-align:center;"><div style="font-family:Playfair Display,serif;font-size:24px;font-weight:700;color:${am}">${pend}</div><div style="font-size:9px;color:${am};letter-spacing:1.5px;text-transform:uppercase">En attente</div></div>
-    <div style="background:#fff0f0;border:1.5px solid rgba(196,58,58,.3);border-radius:12px;padding:11px;text-align:center;"><div style="font-family:Playfair Display,serif;font-size:24px;font-weight:700;color:${rd}">${decl}</div><div style="font-size:9px;color:${rd};letter-spacing:1.5px;text-transform:uppercase">Déclinés</div></div>
+    <div style="background:#f0f8f0;border-radius:12px;padding:11px;text-align:center;"><div style="font-family:Playfair Display,serif;font-size:24px;font-weight:700;color:${gn}">${conf}</div><div style="font-size:9px;color:${gn};letter-spacing:1.5px;text-transform:uppercase">Confirmés</div></div>
+    <div style="background:#fff8f0;border-radius:12px;padding:11px;text-align:center;"><div style="font-family:Playfair Display,serif;font-size:24px;font-weight:700;color:${am}">${pend}</div><div style="font-size:9px;color:${am};letter-spacing:1.5px;text-transform:uppercase">En attente</div></div>
+    <div style="background:#fff0f0;border-radius:12px;padding:11px;text-align:center;"><div style="font-family:Playfair Display,serif;font-size:24px;font-weight:700;color:${rd}">${decl}</div><div style="font-size:9px;color:${rd};letter-spacing:1.5px;text-transform:uppercase">Déclinés</div></div>
   </div>
   <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
     <button class="btn" onclick="toggleAddGuest()">+ Ajouter un invité</button>
@@ -2086,31 +2086,31 @@ function guestRow(g){
   const cn=g.cote==='p1'?USER.p1:USER.p2;
   const cc=g.cote==='p1'?'#fce8ef':'#e8f0fc';const ct=g.cote==='p1'?'#a0485e':'#485ea0';
   return `<tr>
-    <td style="padding:8px 10px;background:#fff;border-radius:10px 0 0 10px;border:1.5px solid ${br};border-right:none;">
+    <td style="padding:8px 10px;background:#fff;border-bottom:1px solid #f9edf2;">
       <span data-guest-nom="${g.id}" onclick="renameGuest(${g.id})" style="font-size:13px;font-weight:700;cursor:text;border-bottom:1px dashed ${br};">${g.nom}</span>
     </td>
-    <td style="padding:8px 9px;background:#fff;border:1.5px solid ${br};border-left:none;border-right:none;">
-      <span onclick="changeCote(${g.id})" style="background:${cc};color:${ct};border-radius:20px;padding:3px 9px;font-size:11px;font-weight:700;cursor:pointer;">${h(cn)}</span>
+    <td style="padding:8px 9px;background:#fff;border-bottom:1px solid #f9edf2;">
+      <span onclick="changeCote(${g.id})" style="background:${cc};color:${ct};border-radius:6px;padding:2px 8px;font-size:11px;font-weight:600;cursor:pointer;">${h(cn)}</span>
     </td>
-    <td style="padding:8px 9px;background:#fff;border:1.5px solid ${br};border-left:none;border-right:none;">
-      <span onclick="pickGuestRole(${g.id})" style="color:${rc[g.role]||tl};font-size:11px;cursor:pointer;font-weight:700;padding:3px 9px;border-radius:20px;background:${sf};border:1px solid ${br};display:inline-block;">${h(g.role)} ▾</span>
+    <td style="padding:8px 9px;background:#fff;border-bottom:1px solid #f9edf2;">
+      <span onclick="pickGuestRole(${g.id})" style="color:${rc[g.role]||tl};font-size:11px;cursor:pointer;font-weight:600;padding:2px 8px;border-radius:6px;background:transparent;display:inline-block;">${h(g.role)} ▾</span>
     </td>
-    <td style="padding:8px 9px;background:#fff;border:1.5px solid ${br};border-left:none;border-right:none;">
-      <div onclick="editGuestRegimes(${g.id})" style="font-size:11px;color:${g.regime&&g.regime!=='Aucun'?am:tl};cursor:pointer;font-weight:700;max-width:110px;word-break:break-word;padding:4px;min-height:28px;display:flex;align-items:center;border-radius:6px;background:${sf};">${g.regime&&g.regime!=='Aucun'?h(g.regime):'+ Ajouter'}</div>
+    <td style="padding:8px 9px;background:#fff;border-bottom:1px solid #f9edf2;">
+      <div onclick="editGuestRegimes(${g.id})" style="font-size:11px;color:${g.regime&&g.regime!=='Aucun'?am:tl};cursor:pointer;font-weight:600;max-width:110px;word-break:break-word;padding:4px;min-height:28px;display:flex;align-items:center;">${g.regime&&g.regime!=='Aucun'?h(g.regime):'+ Ajouter'}</div>
     </td>
     <td style="padding:8px 9px;background:#fff;border:1.5px solid ${br};border-left:none;border-right:none;text-align:center;">
       <span onclick="updGuest(${g.id},'vinHonneur',!${g.vinHonneur})" style="font-size:11px;font-weight:700;cursor:pointer;color:${g.vinHonneur?pk:br};border:1.5px solid ${g.vinHonneur?pk:br};border-radius:20px;padding:2px 9px;user-select:none;">${g.vinHonneur?'Uniquement':'-'}</span>
     </td>
-    <td style="padding:8px 9px;background:#fff;border:1.5px solid ${br};border-left:none;border-right:none;">
-      <span onclick="toggleAge(${g.id})" style="color:${g.age==='Enfant'?am:tl};font-size:11px;cursor:pointer;font-weight:700;padding:3px 9px;border-radius:20px;background:${sf};border:1px solid ${br};display:inline-block;">${g.age==='Enfant'?'Enfant':'Adulte'}</span>
+    <td style="padding:8px 9px;background:#fff;border-bottom:1px solid #f9edf2;">
+      <span onclick="toggleAge(${g.id})" style="color:${g.age==='Enfant'?am:tl};font-size:11px;cursor:pointer;font-weight:600;padding:2px 8px;border-radius:6px;background:transparent;display:inline-block;">${g.age==='Enfant'?'Enfant':'Adulte'}</span>
     </td>
-    <td style="padding:8px 9px;background:#fff;border:1.5px solid ${br};border-left:none;border-right:none;">
-      <span onclick="toggleInvitation(${g.id})" style="color:${g.invitation==='envoyée'?gn:rd};font-size:11px;cursor:pointer;font-weight:700;padding:3px 9px;border-radius:20px;background:${sf};border:1px solid ${br};display:inline-block;">${g.invitation==='envoyée'?'✓ Envoyée':'✗ Non envoyée'}</span>
+    <td style="padding:8px 9px;background:#fff;border-bottom:1px solid #f9edf2;">
+      <span onclick="toggleInvitation(${g.id})" style="color:${g.invitation==='envoyée'?gn:rd};font-size:11px;cursor:pointer;font-weight:600;padding:2px 8px;border-radius:6px;background:transparent;display:inline-block;">${g.invitation==='envoyée'?'✓ Envoyée':'✗ Non envoyée'}</span>
     </td>
-    <td style="padding:8px 9px;background:#fff;border:1.5px solid ${br};border-left:none;border-right:none;">
-      <span onclick="pickGuestPresence(${g.id})" style="color:${sc[g.presence]||'#888'};font-size:11px;cursor:pointer;font-weight:700;padding:3px 9px;border-radius:20px;background:${sf};border:1px solid ${br};display:inline-block;">${g.presence==='confirmée'?'✓ Confirmée':g.presence==='déclinée'?'✗ Déclinée':'En attente'} ▾</span>
+    <td style="padding:8px 9px;background:#fff;border-bottom:1px solid #f9edf2;">
+      <span onclick="pickGuestPresence(${g.id})" style="color:${sc[g.presence]||'#888'};font-size:11px;cursor:pointer;font-weight:600;padding:2px 8px;border-radius:6px;background:transparent;display:inline-block;">${g.presence==='confirmée'?'✓ Confirmée':g.presence==='déclinée'?'✗ Déclinée':'En attente'} ▾</span>
     </td>
-    <td style="padding:8px 10px;background:#fff;border-radius:0 10px 10px 0;border:1.5px solid ${br};border-left:none;">
+    <td style="padding:8px 10px;background:#fff;border-bottom:1px solid #f9edf2;">
       <button onclick="removeGuest(${g.id})" style="background:none;border:none;cursor:pointer;color:${br};font-size:15px;">×</button>
     </td>
   </tr>`;
