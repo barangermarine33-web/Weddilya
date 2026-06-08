@@ -219,10 +219,10 @@ button,label,.tab-btn,.card{-webkit-user-select:none;user-select:none;}
     </div>
     <hr style="border:none;border-top:1px solid var(--border);margin:12px 0;">
     <div style="margin-bottom:12px;">
-      <div style="font-family:Playfair Display,serif;font-size:16px;color:#3e1828;margin-bottom:8px;">Partenaire</div>
+      <div style="font-size:13px;font-weight:700;color:#3e1828;font-family:Lora,serif;margin-bottom:10px;">👫 Partenaire</div>
       <div id="partner-status" style="font-size:12px;color:#8a4a60;margin-bottom:10px;font-family:Lora,serif;font-style:italic;">Chargement...</div>
       <div id="partner-invite-wrap">
-        <p style="font-size:12px;color:#8a4a60;font-family:Lora,serif;font-style:italic;margin-bottom:10px;">Générez un lien d'invitation et partagez-le à votre partenaire par le moyen de votre choix.</p>
+        <p style="font-size:12px;color:#8a4a60;font-family:Lora,serif;font-style:italic;margin-bottom:10px;">Générez un lien d'invitation à partager à votre partenaire.</p>
         <button class="btn" onclick="generatePartnerLink()" style="width:100%;font-size:13px;">Générer un lien d'invitation</button>
         <div id="partner-link-wrap" style="display:none;margin-top:10px;">
           <div style="font-size:11px;color:#8a4a60;font-family:Lora,serif;margin-bottom:6px;">Lien d'invitation :</div>
@@ -230,7 +230,7 @@ button,label,.tab-btn,.card{-webkit-user-select:none;user-select:none;}
             <input id="partner-link-input" readonly style="flex:1;border:1px solid #f0e8ec;border-radius:10px;padding:8px 10px;font-family:Lora,serif;font-size:11px;color:#3e1828;background:#fdf8f5;outline:none;" value="">
             <button onclick="copyPartnerLink()" style="background:#fef2f6;color:#b84060;border:1px solid #f5d5e0;border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:Lora,serif;white-space:nowrap;">Copier</button>
           </div>
-          <div id="partner-copy-ok" style="display:none;font-size:11px;color:#5a8a6a;font-family:Lora,serif;margin-top:4px;font-style:italic;">✓ Lien copié !</div>
+          <div id="partner-copy-ok" style="display:none;font-size:11px;color:#5a8a6a;font-family:Lora,serif;margin-top:4px;">✓ Lien copié !</div>
           <p style="font-size:11px;color:#b07a90;font-family:Lora,serif;font-style:italic;margin-top:6px;">Ce lien expire dans 7 jours.</p>
         </div>
         <div id="partner-err" style="display:none;padding:8px 12px;border-radius:8px;font-size:12px;font-family:Lora,serif;margin-top:8px;border:1px solid;"></div>
@@ -1163,10 +1163,10 @@ async function _processInviteTokenDirect(token, email, uid){
     // Lier le compte partenaire
     await setDoc(doc(window.firebaseDB, 'userData', uid), {
       _sharedOwnerEmail: inv.ownerEmail,
-      _sharedOwnerDocId: ownerDocId
+      _sharedOwnerDocId: inv.ownerDocId
     }, {merge: true});
     // Mettre à jour le compte owner
-    await setDoc(doc(window.firebaseDB, 'userData', ownerDocId), {
+    await setDoc(doc(window.firebaseDB, 'userData', inv.ownerDocId), {
       _partnerEmail: email,
       _pendingPartnerEmail: null,
       _inviteToken: token
@@ -1196,8 +1196,7 @@ async function _processInviteToken(email){
       console.warn('[_processInviteToken] email ne correspond pas:', email, '!=', inv.partnerEmail);
       return;
     }
-    const ownerDocId = inv.ownerDocId || inv.ownerUid;
-    if(!ownerDocId){ console.warn('[_processInviteToken] ownerDocId manquant'); return; }
+    if(!inv.ownerDocId){ console.warn('[_processInviteToken] ownerDocId manquant'); return; }
     // Utiliser l'UID du partenaire (pas l'email transformé)
     const myDocId = (window.firebaseAuth && window.firebaseAuth.currentUser) 
       ? window.firebaseAuth.currentUser.uid 
@@ -1205,28 +1204,21 @@ async function _processInviteToken(email){
     // Lier le compte partenaire au compte owner
     await setDoc(doc(window.firebaseDB, 'userData', myDocId), {
       _sharedOwnerEmail: inv.ownerEmail,
-      _sharedOwnerDocId: ownerDocId
+      _sharedOwnerDocId: inv.ownerDocId
     }, {merge: true});
     // Mettre à jour _activeDataDocId pour pointer vers les données du propriétaire
-    window._activeDataDocId = ownerDocId;
+    window._activeDataDocId = inv.ownerDocId;
     console.log('[_processInviteToken] Lié:', myDocId, '->', inv.ownerDocId);
     // Mettre à jour le compte owner
-    await setDoc(doc(window.firebaseDB, 'userData', ownerDocId), {
+    await setDoc(doc(window.firebaseDB, 'userData', inv.ownerDocId), {
       _partnerEmail: email,
       _pendingPartnerEmail: null,
       _inviteToken: token
     }, {merge: true});
     // Marquer l'invitation comme acceptée
     await setDoc(doc(window.firebaseDB, 'invitations', token), {status:'accepted'}, {merge:true});
-    window._activeDataDocId = ownerDocId;
-    // Recharger les données du propriétaire
-    if(window.firebaseAuth && window.firebaseAuth.currentUser){
-      await loadUserDataFromFirestore(window.firebaseAuth.currentUser.email);
-      if(window.USER && window.firebaseAuth.currentUser){
-        startApp(window.firebaseAuth.currentUser);
-      }
-    }
-    await appModal({title:'Invitation acceptée',icon:'',message:"Vous accédez maintenant à l'espace partagé !",buttons:[{label:'OK',value:true,primary:true}]});
+    window._activeDataDocId = inv.ownerDocId;
+    await appAlert('✅ Invitation acceptée ! Vous accédez maintenant à l\'espace partagé.');
   } catch(e){ console.error('_processInviteToken:', e); }
 }
 
@@ -1282,63 +1274,25 @@ async function loadPartnerStatus(){
 
 // Envoie une invitation par email via EmailJS (ou lien direct)
 async function generatePartnerLink(){
-  const errEl = document.getElementById('partner-err');
-  const linkWrap = document.getElementById('partner-link-wrap');
-  const linkInput = document.getElementById('partner-link-input');
-  const copyOk = document.getElementById('partner-copy-ok');
-  if(errEl) errEl.style.display='none';
-
-  const uid = window._currentUID || window.firebaseAuth?.currentUser?.uid;
-  if(!uid){ 
-    if(errEl){errEl.textContent='Vous devez être connecté.';errEl.style.background='#fff0f0';errEl.style.borderColor='#ffccd0';errEl.style.color='#c43a3a';errEl.style.display='block';}
-    return; 
-  }
-
+  const errEl=document.getElementById('partner-err');const linkWrap=document.getElementById('partner-link-wrap');const linkInput=document.getElementById('partner-link-input');const copyOk=document.getElementById('partner-copy-ok');
+  if(errEl)errEl.style.display='none';
+  const uid=window._currentUID||window.firebaseAuth?.currentUser?.uid;
+  if(!uid){if(errEl){errEl.textContent='Vous devez être connecté.';errEl.style.cssText='display:block;background:#fff0f0;border-color:#ffccd0;color:#c43a3a;padding:8px 12px;border-radius:8px;font-size:12px;font-family:Lora,serif;margin-top:8px;border:1px solid;';}return;}
   try{
-    // Générer un token unique
-    const token = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2) + Date.now().toString(36);
-    const expiresAt = Date.now() + 7*24*60*60*1000; // 7 jours
-
-    // Sauvegarder le token dans Firestore
-    const {doc, setDoc} = window.firebaseLib;
-    const ownerDocId = window._activeDataDocId || uid;
-    await setDoc(doc(window.firebaseDB, 'invitations', token), {
-      ownerUid: uid,
-      ownerDocId: ownerDocId,
-      ownerEmail: USER.email || '',
-      createdAt: Date.now(),
-      expiresAt: expiresAt,
-      used: false
-    });
-
-    // Construire le lien
-    const baseUrl = window.location.origin + window.location.pathname;
-    const link = `${baseUrl}?invite=${token}`;
-
-    // Afficher le lien
-    if(linkInput) linkInput.value = link;
-    if(linkWrap) linkWrap.style.display = 'block';
-    if(copyOk) copyOk.style.display = 'none';
-
-  }catch(e){
-    if(errEl){errEl.textContent='Erreur : ' + e.message;errEl.style.background='#fff0f0';errEl.style.borderColor='#ffccd0';errEl.style.color='#c43a3a';errEl.style.display='block';}
-  }
+    const token=Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2)+Date.now().toString(36);
+    const {doc,setDoc}=window.firebaseLib;
+    await setDoc(doc(window.firebaseDB,'invitations',token),{ownerUid:uid,ownerDocId:window._activeDataDocId||uid,ownerEmail:USER.email||'',createdAt:Date.now(),expiresAt:Date.now()+7*24*60*60*1000,used:false});
+    const link=window.location.origin+window.location.pathname+'?invite='+token;
+    if(linkInput)linkInput.value=link;
+    if(linkWrap)linkWrap.style.display='block';
+    if(copyOk)copyOk.style.display='none';
+  }catch(e){if(errEl){errEl.textContent='Erreur : '+e.message;errEl.style.cssText='display:block;background:#fff0f0;border-color:#ffccd0;color:#c43a3a;padding:8px 12px;border-radius:8px;font-size:12px;font-family:Lora,serif;margin-top:8px;border:1px solid;';}}
 }
-
 function copyPartnerLink(){
-  const linkInput = document.getElementById('partner-link-input');
-  const copyOk = document.getElementById('partner-copy-ok');
-  if(!linkInput || !linkInput.value) return;
-  navigator.clipboard.writeText(linkInput.value).then(()=>{
-    if(copyOk){ copyOk.style.display='block'; setTimeout(()=>{ copyOk.style.display='none'; }, 3000); }
-  }).catch(()=>{
-    // Fallback pour les navigateurs qui ne supportent pas clipboard API
-    linkInput.select();
-    document.execCommand('copy');
-    if(copyOk){ copyOk.style.display='block'; setTimeout(()=>{ copyOk.style.display='none'; }, 3000); }
-  });
+  const inp=document.getElementById('partner-link-input');const ok=document.getElementById('partner-copy-ok');
+  if(!inp||!inp.value)return;
+  navigator.clipboard.writeText(inp.value).then(()=>{if(ok){ok.style.display='block';setTimeout(()=>ok.style.display='none',3000);}}).catch(()=>{inp.select();document.execCommand('copy');if(ok){ok.style.display='block';setTimeout(()=>ok.style.display='none',3000);}});
 }
-
 
 async function revokePartnerAccess(){
   if(!await appConfirm('Révoquer l\'accès de votre partenaire ? Il ne pourra plus accéder à votre espace.')) return;
@@ -1802,7 +1756,7 @@ function startCountdown(){
     const w=el('countdown-wrap'); if(!w)return;
     if(diff<=0){w.innerHTML=`<div style="color:${gd};font-family:Playfair Display,serif;font-size:16px;padding:6px 0;">🎊 C'est le grand jour !</div>`;return;}
     const d=Math.floor(diff/86400000),hh=Math.floor((diff%86400000)/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);
-    w.innerHTML=[['d',d,'Jours'],['h',hh,'Heures'],['m',m,'Min'],['s',s,'Sec']].map(([,v,l])=>`<div style="text-align:center;background:#ffffff;border-radius:10px;padding:6px 12px;min-width:56px;border:1.5px solid ${br}"><div style="font-family:Playfair Display,serif;font-size:22px;font-weight:700;color:${pk};line-height:1">${String(v).padStart(2,'0')}</div><div style="font-size:9px;color:${tl};letter-spacing:1.5px;text-transform:uppercase;margin-top:1px">${l}</div></div>`).join('');
+    w.innerHTML=[['d',d,'Jours'],['h',hh,'Heures'],['m',m,'Min'],['s',s,'Sec']].map(([,v,l])=>`<div style="text-align:center;padding:4px 10px;min-width:48px;"><div style="font-family:Playfair Display,serif;font-size:22px;font-weight:700;color:${pk};line-height:1">${String(v).padStart(2,'0')}</div><div style="font-size:9px;color:${tl};letter-spacing:1.5px;text-transform:uppercase;margin-top:1px">${l}</div></div>`).join('');
   };
   tick(); cdInt=setInterval(tick,1000);
 }
@@ -1912,7 +1866,7 @@ function renderChecklist(){
   const allMonths=[...MONTHS,...Object.keys(grouped).filter(m=>!MONTHS.includes(m))];
   const monthsWithTasks=allMonths.filter(m=>grouped[m]&&grouped[m].length);
   el('page-0').innerHTML=`
-  <div class="card" style="padding:16px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,${sf},#fff)">
+  <div class="card" style="padding:16px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;background:#fff">
     <div><div class="lbl">Progression</div><div style="font-family:Playfair Display,serif;font-size:28px;color:${tx}">${done}<span style="font-size:14px;color:${tl}"> / ${tot}</span></div></div>
     <svg viewBox="0 0 36 36" width="60" height="60"><circle cx="18" cy="18" r="15.9" fill="none" stroke="#f5e8ee" stroke-width="3"/><circle cx="18" cy="18" r="15.9" fill="none" stroke="#c07080" stroke-width="3" stroke-dasharray="${pct} 100" stroke-linecap="round" transform="rotate(-90 18 18)"/><text x="18" y="22" text-anchor="middle" font-size="7" fill="${tx}" font-family="serif" font-weight="bold">${pct}%</text></svg>
   </div>
@@ -2082,15 +2036,13 @@ function renderGuests(){
     </div>
     <div style="padding:0 14px 14px;"><button class="btn" onclick="addGuest()">Ajouter</button></div>
   </div>
-  <div id="guest-table-wrap" style="margin-top:6px;">
-    <table style="width:100%;border-collapse:separate;border-spacing:0 5px;">
-      <thead>
-      <tr>
+  <div id="guest-table-wrap" style="overflow-x:auto;margin-top:6px;">
+    <table style="width:100%;border-collapse:separate;border-spacing:0 5px;min-width:750px;">
+      <thead><tr>
         <th style="padding:6px 12px;font-family:Josefin Sans,sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:${tl};font-weight:700;text-align:left;">Invité</th>
         <th style="padding:6px 9px;font-family:Josefin Sans,sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:${tl};font-weight:700;text-align:center;">Invitation</th>
         <th style="padding:6px 9px;font-family:Josefin Sans,sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:${tl};font-weight:700;text-align:center;">Présence</th>
-      </tr>
-    </thead>      <tbody>${GUESTS.map(g=>guestRow(g)).join('')}</tbody>
+      </tr></thead>      <tbody>${GUESTS.map(g=>guestRow(g)).join('')}</tbody>
     </table>
   </div>
   <p style="font-size:11px;color:${tl};font-style:italic;margin-top:10px;text-align:center;">💡 Import : un fichier Excel ou CSV avec au minimum une colonne "Nom"</p>`;
@@ -2116,76 +2068,46 @@ function guestRow(g){
   </tr>`;
 }
 
-async function toggleVinHonneur(id){const g=GUESTS.find(x=>x.id===id);if(g){updGuest(id,"vinHonneur",!g.vinHonneur);setTimeout(()=>openGuestDetail(id),200);}}
+function toggleVinHonneur(id){
+  const g=GUESTS.find(x=>x.id===id);
+  if(g){updGuest(id,'vinHonneur',!g.vinHonneur);}
+}
+
 async function openGuestDetail(id){
-  const g = GUESTS.find(x=>x.id===id); if(!g) return;
+  const g=GUESTS.find(x=>x.id===id); if(!g) return;
   const sc={'confirmée':gn,'déclinée':rd,'en attente':am};
-  const cn = g.cote==='p1'?USER.p1:USER.p2;
-  const coteColor = g.cote==='p1'?'#fce8ef':'#e8f0fc';
-  const coteTxt = g.cote==='p1'?'#a0485e':'#485ea0';
-  const presLabel = g.presence==='confirmée'?'✓ Confirmée':g.presence==='déclinée'?'✗ Déclinée':'En attente';
-  const presColor = sc[g.presence]||tl;
-  const invLabel = g.invitation==='envoyée'?'✓ Envoyée':'✗ Non envoyée';
-  const invColor = g.invitation==='envoyée'?gn:rd;
-  const vinLabel = g.vinHonneur?"Uniquement vin d'honneur":'Toute la réception';
-  const vinColor = g.vinHonneur?pk:tl;
-  const ageLabel = g.age==='Enfant'?'Enfant':'Adulte';
-  const roleLabel = g.role||'Invité·e';
+  const cn=g.cote==='p1'?USER.p1:USER.p2;
+  const coteColor=g.cote==='p1'?'#fce8ef':'#e8f0fc';
+  const coteTxt=g.cote==='p1'?'#a0485e':'#485ea0';
+  const presLabel=g.presence==='confirmée'?'✓ Confirmée':g.presence==='déclinée'?'✗ Déclinée':'En attente';
+  const presColor=sc[g.presence]||tl;
+  const invLabel=g.invitation==='envoyée'?'✓ Envoyée':'✗ Non envoyée';
+  const invColor=g.invitation==='envoyée'?gn:rd;
+  const vinLabel=g.vinHonneur?"Uniquement vin d'honneur":'Toute la réception';
+  const vinColor=g.vinHonneur?pk:tl;
+  const ageLabel=g.age==='Enfant'?'Enfant':'Adulte';
+  const roleLabel=g.role||'Invité·e';
 
   await new Promise(resolve=>{
-    const overlay = document.createElement('div');
+    const overlay=document.createElement('div');
     overlay.style.cssText='position:fixed;inset:0;background:rgba(62,24,40,.45);backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:flex-end;justify-content:center;';
-
-    const box = document.createElement('div');
+    const box=document.createElement('div');
     box.style.cssText='background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:500px;box-shadow:0 -8px 40px rgba(62,24,40,0.18);max-height:90vh;overflow-y:auto;';
-
-    const emailRow = g.email ? `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fdf8f5;border-radius:12px;"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#8a4a60;">Email</span><span style="font-size:12px;color:#3e1828;">${h(g.email)}</span></div>` : '';
-    const adresseRow = g.adresse ? `<div style="padding:10px 14px;background:#fdf8f5;border-radius:12px;"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#8a4a60;display:block;margin-bottom:4px;">Adresse postale</span><span style="font-size:12px;color:#3e1828;">${h(g.adresse)}</span></div>` : '';
-
-    box.innerHTML = `
-      <div style="display:flex;justify-content:center;padding:10px 0 0;">
-        <div style="width:36px;height:4px;background:#f0e8ec;border-radius:2px;"></div>
-      </div>
+    const row=(label,content)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fdf8f5;border-radius:12px;"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#8a4a60;">${label}</span>${content}</div>`;
+    const sel=(val,opts,field)=>`<select onchange="updGuest(${id},'${field}',${field==='vinHonneur'?"this.value==='oui'":field==='age'?"this.value":`this.value`});" style="border:none;background:transparent;font-size:12px;font-weight:700;color:#3e1828;cursor:pointer;outline:none;">${opts.map(o=>`<option value="${o.v}" ${val===o.v?'selected':''}>${o.l}</option>`).join('')}</select>`;
+    const emailRow=g.email?row('Email',`<span style="font-size:12px;color:#3e1828;">${h(g.email)}</span>`):'';
+    const adresseRow=g.adresse?`<div style="padding:10px 14px;background:#fdf8f5;border-radius:12px;"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#8a4a60;display:block;margin-bottom:4px;">Adresse</span><span style="font-size:12px;color:#3e1828;">${h(g.adresse)}</span></div>`:'';
+    box.innerHTML=`
+      <div style="display:flex;justify-content:center;padding:10px 0 0;"><div style="width:36px;height:4px;background:#f0e8ec;border-radius:2px;"></div></div>
       <div style="padding:16px 20px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f5e8ee;">
         <div style="font-family:Playfair Display,serif;font-size:18px;font-weight:700;color:#3e1828;">${h(g.nom)}</div>
-        <button id="gd-close" style="background:none;border:none;font-size:22px;color:#b07a90;cursor:pointer;">×</button>
+        <button id="gd-x" style="background:none;border:none;font-size:22px;color:#b07a90;cursor:pointer;">×</button>
       </div>
       <div style="padding:16px 20px;display:flex;flex-direction:column;gap:10px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fdf8f5;border-radius:12px;">
-          <span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#8a4a60;">Côté</span>
-          <select onchange="updGuest(${id},'cote',this.value);this.closest('div').querySelector('span+select')" style="border:none;background:${coteColor};color:${coteTxt};border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;" onchange="updGuest(${id},'cote',this.value);this.style.background=this.value==='p1'?'#fce8ef':'#e8f0fc';this.style.color=this.value==='p1'?'#a0485e':'#485ea0';">
-            <option value="p1" ${g.cote==='p1'?'selected':''}>${h(USER.p1||'Côté 1')}</option>
-            <option value="p2" ${g.cote==='p2'?'selected':''}>${h(USER.p2||'Côté 2')}</option>
-          </select>
-        </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fdf8f5;border-radius:12px;">
-          <span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#8a4a60;">Rôle</span>
-          <select onchange="updGuest(${id},'role',this.value);" style="border:none;background:transparent;font-size:12px;font-weight:700;color:#3e1828;cursor:pointer;outline:none;">
-            <option value="Invité·e" ${(g.role||'Invité·e')==='Invité·e'?'selected':''}>Invité·e</option>
-            <option value="Témoin" ${g.role==='Témoin'?'selected':''}>Témoin</option>
-            <option value="Demoiselle d'honneur" ${g.role==="Demoiselle d'honneur"?'selected':''}>Demoiselle d'honneur</option>
-            <option value="Garçon d'honneur" ${g.role==="Garçon d'honneur"?'selected':''}>Garçon d'honneur</option>
-            <option value="Famille" ${g.role==='Famille'?'selected':''}>Famille</option>
-          </select>
-        </div>
-        <div onclick="editGuestRegimes(${id});setTimeout(()=>{overlay.remove();resolve();openGuestDetail(${id});},400);" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fdf8f5;border-radius:12px;cursor:pointer;">
-          <span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#8a4a60;">Régime</span>
-          <span style="font-size:12px;font-weight:700;color:#3e1828;">${g.regime&&g.regime!=='Aucun'?h(g.regime):'Aucun'} ▾</span>
-        </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fdf8f5;border-radius:12px;">
-          <span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#8a4a60;">Âge</span>
-          <select onchange="updGuest(${id},'age',this.value);" style="border:none;background:transparent;font-size:12px;font-weight:700;color:#3e1828;cursor:pointer;outline:none;">
-            <option value="Adulte" ${g.age!=='Enfant'?'selected':''}>Adulte</option>
-            <option value="Enfant" ${g.age==='Enfant'?'selected':''}>Enfant</option>
-          </select>
-        </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fdf8f5;border-radius:12px;">
-          <span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#8a4a60;">Vin d'honneur</span>
-          <select onchange="updGuest(${id},'vinHonneur',this.value==='oui');" style="border:none;background:transparent;font-size:12px;font-weight:700;color:#3e1828;cursor:pointer;outline:none;">
-            <option value="non" ${!g.vinHonneur?'selected':''}>Toute la réception</option>
-            <option value="oui" ${g.vinHonneur?'selected':''}>Uniquement vin d'honneur</option>
-          </select>
-        </div>
+        ${row('Côté',sel(g.cote,[{v:'p1',l:h(USER.p1||'Côté 1')},{v:'p2',l:h(USER.p2||'Côté 2')}],'cote'))}
+        ${row('Rôle',sel(roleLabel,[{v:"Invité·e",l:"Invité·e"},{v:"Témoin",l:"Témoin"},{v:"Demoiselle d'honneur",l:"Demoiselle d'honneur"},{v:"Garçon d'honneur",l:"Garçon d'honneur"},{v:"Famille",l:"Famille"}],'role'))}
+        ${row('Âge',sel(ageLabel,[{v:'Adulte',l:'Adulte'},{v:'Enfant',l:'Enfant'}],'age'))}
+        ${row("Vin d'honneur",sel(g.vinHonneur?'oui':'non',[{v:'non',l:'Toute la réception'},{v:'oui',l:"Uniquement vin d'honneur"}],'vinHonneur'))}
         <div onclick="pickGuestInvitation(${id});setTimeout(()=>{overlay.remove();resolve();openGuestDetail(${id});},400);" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fdf8f5;border-radius:12px;cursor:pointer;">
           <span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#8a4a60;">Invitation</span>
           <span style="font-size:12px;font-weight:700;color:${invColor};">${invLabel} ▾</span>
@@ -2194,29 +2116,34 @@ async function openGuestDetail(id){
           <span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#8a4a60;">Présence</span>
           <span style="font-size:12px;font-weight:700;color:${presColor};">${presLabel} ▾</span>
         </div>
-        ${emailRow}
-        ${adresseRow}
+        ${emailRow}${adresseRow}
       </div>
       <div style="padding:12px 20px 28px;display:flex;gap:8px;">
-        <button id="gd-close2" style="flex:1;padding:12px;background:#fdf8f5;border:none;border-radius:12px;font-family:Lora,serif;font-size:13px;font-weight:700;color:#b07a90;cursor:pointer;">Fermer</button>
+        <button id="gd-close" style="flex:1;padding:12px;background:#fdf8f5;border:none;border-radius:12px;font-family:Lora,serif;font-size:13px;font-weight:700;color:#b07a90;cursor:pointer;">Fermer</button>
         <button id="gd-del" style="flex:1;padding:12px;background:#fff0f0;border:none;border-radius:12px;font-family:Lora,serif;font-size:13px;font-weight:700;color:#c43a3a;cursor:pointer;">Supprimer</button>
       </div>`;
-
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
-
-    const close = ()=>{ overlay.remove(); resolve(); };
-    box.querySelector('#gd-close').onclick = close;
-    box.querySelector('#gd-close2').onclick = close;
-    box.querySelector('#gd-del').onclick = ()=>{ removeGuest(id); close(); };
-    overlay.onclick = e=>{ if(e.target===overlay) close(); };
-
-    let startY=0;
-    box.addEventListener('touchstart',e=>{startY=e.touches[0].clientY;},{passive:true});
-    box.addEventListener('touchend',e=>{if(e.changedTouches[0].clientY-startY>80) close();},{passive:true});
+    overlay.appendChild(box);document.body.appendChild(overlay);
+    const close=()=>{overlay.remove();resolve();};
+    box.querySelector('#gd-x').onclick=close;
+    box.querySelector('#gd-close').onclick=close;
+    box.querySelector('#gd-del').onclick=()=>{removeGuest(id);close();};
+    overlay.onclick=e=>{if(e.target===overlay)close();};
+    let sy=0;
+    box.addEventListener('touchstart',e=>{sy=e.touches[0].clientY;},{passive:true});
+    box.addEventListener('touchend',e=>{if(e.changedTouches[0].clientY-sy>80)close();},{passive:true});
   });
 }
 
+let showingAdd=false;
+function toggleAddGuest(){showingAdd=!showingAdd;const f=el('guest-add-form');if(f)f.style.display=showingAdd?'block':'none';}
+function addGuest(){
+  const nom=el('gf-nom').value.trim();if(!nom)return;
+  GUESTS.push({id:Date.now(),nom,email:el('gf-email').value.trim(),cote:el('gf-cote').value,invitation:'non envoyée',presence:'en attente',role:el('gf-role').value,regime:'Aucun',vinHonneur:el('gf-vh').checked,age:el('gf-age')?.value||'Adulte',seatTableId:null,seatIdx:null});
+  showingAdd=false;saveGuests();renderGuests();
+}
+function updGuest(id,f,v){GUESTS=GUESTS.map(g=>g.id===id?{...g,[f]:v}:g);saveGuests();renderGuests();}
+
+// Pickers custom (aux couleurs de l'app) qui remplacent les <select> natifs gris
 async function pickGuestRole(id){
   const g = GUESTS.find(x=>x.id===id); if(!g) return;
   const opts = ROLES.map(r=>({value:r, label:r, icon: r==='Témoin'?'⭐':r.includes('Demoiselle')?'👰':r.includes('Garçon')?'🤵':'👤'}));
@@ -2280,27 +2207,15 @@ async function exportGuests(){
   await new Promise(r=>setTimeout(r,200));
   const rows=[['Nom complet','Email','Cote','Role','Regime particulier',"Vin d'honneur uniquement",'Invitation','Presence']];
   GUESTS.forEach(g=>{rows.push([g.nom,g.email||'',g.cote==='p1'?USER.p1:USER.p2,g.role||'',g.regime||'',g.vinHonneur?'Oui':'Non',g.invitation,g.presence]);});
-  const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'\"')+'"').join(';')).join('\r\n');
-  // Encoder en ISO-8859-1 pour compatibilité Excel/Android
-  const iso = (()=>{
-    const map = {'é':'\xe9','è':'\xe8','ê':'\xea','ë':'\xeb','à':'\xe0','â':'\xe2','ä':'\xe4','î':'\xee','ï':'\xef','ô':'\xf4','ö':'\xf6','ù':'\xf9','û':'\xfb','ü':'\xfc','ç':'\xe7','æ':'\xe6','ñ':'\xf1','É':'\xc9','È':'\xc8','Ê':'\xca','À':'\xc0','Â':'\xc2','Î':'\xce','Ô':'\xd4','Ù':'\xd9','Û':'\xdb','Ç':'\xc7','«':'\xab','»':'\xbb',' ':'\xa0','·':'\xb7'};
-    const bytes=[0xFF,0xFE]; // BOM UTF-16 LE — non, on fait ISO-8859-1 avec BOM
-    // En fait: écrire directement en latin-1 avec BOM latin-1 (aucun BOM pour latin-1)
-    // Utiliser un tableau de bytes
-    const out2=[];
-    for(const ch of csv){
-      const code=ch.charCodeAt(0);
-      if(code<=255) out2.push(code);
-      else out2.push(63); // '?' pour les caractères non supportés
-    }
-    return new Uint8Array(out2);
-  })();
+  const csv=rows.map(function(row){return row.map(function(cell){var s=String(cell);return '"'+s.split('"').join('""')+'"';}).join(';');}).join('\r\n');
+  const iso=(()=>{const out=[];for(const ch of csv){const code=ch.charCodeAt(0);out.push(code<=255?code:63);}return new Uint8Array(out);})();
   const blob=new Blob([iso],{type:'text/csv;charset=iso-8859-1;'});
   const url=URL.createObjectURL(blob);const a=document.createElement('a');
   a.href=url;a.download=`invites_${USER.p1}_${USER.p2}.csv`;
   document.body.appendChild(a);a.click();
   setTimeout(()=>{URL.revokeObjectURL(url);a.remove();closeM();},800);
 }
+
 function importGuests(e){
   const file=e.target.files?.[0];if(!file)return;
   const name=(file.name||'').toLowerCase();
@@ -2634,7 +2549,7 @@ function saveTables(){sv(`tables_${USER.email}`,TABLES);sv(`guests_${USER.email}
 let tpDrag=null;
 // Zoom/pan state
 let tpScale=1,tpPanX=0,tpPanY=0,tpPanning=false,tpPanStart=null,tpPinchDist=0,tpPanMode=false;
-function togglePanMode(){tpPanMode=!tpPanMode;const btn=document.getElementById('tp-pan-btn');const canvas=document.getElementById('tp-canvas');if(btn){btn.style.background=tpPanMode?'#fef2f6':'#fff';btn.style.color=tpPanMode?'#b84060':'#c47a2a';btn.style.borderColor=tpPanMode?'#f5d5e0':'#f0e8ec';}if(canvas)canvas.style.cursor=tpPanMode?'grab':'';}
+function togglePanMode(){tpPanMode=!tpPanMode;const btn=document.getElementById('tp-pan-btn');const canvas=document.getElementById('tp-canvas');if(btn){btn.style.background=tpPanMode?'#fef2f6':'#fff';btn.style.color=tpPanMode?'#b84060':'#c47a2a';}if(canvas)canvas.style.cursor=tpPanMode?'grab':'';}
 window.tpSelectedShape='round';
 function setTpShape(s){
   window.tpSelectedShape=s;
@@ -2666,7 +2581,8 @@ function renderTablePlan(){
       <button id="tp-shape-square" onclick="setTpShape(\'square\')" style="background:#fff;color:#b07a90;border:1.5px solid #f5d5e0;border-radius:9px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;font-family:Lora,serif;">■ Carrée</button>
     </div>
     <button class="btn" onclick="addTable()" style="font-size:12px;padding:7px 12px;">+ Table</button>
-    <button class="btn" onclick="openAutoPlaceModal()" style="background:linear-gradient(135deg,#d4607a,#8a4a60);font-size:12px;padding:7px 12px;">✨ Placement auto</button>
+    <button class="btn" onclick="exportPlanPDF()" style="padding:6px 12px;background:#fef2f6;color:#b84060;border:1px solid #f5d5e0;border-radius:10px;font-size:12px;font-weight:700;font-family:Lora,serif;cursor:pointer;">Exporter en PDF</button>
+      <button onclick="openAutoPlaceModal()" style="background:linear-gradient(135deg,#d4607a,#8a4a60);font-size:12px;padding:7px 12px;">✨ Placement auto</button>
     <button class="btn-sec" onclick="resetPlacement()" style="color:#c43a3a;border-color:#c43a3a55;font-size:12px;padding:7px 12px;">↺ Réinitialiser</button>
     <button class="btn-sec" onclick="exportPlanPDF()" style="font-size:12px;padding:7px 12px;">PDF</button>
     <div style="display:flex;gap:6px;margin-left:auto;">
@@ -3028,7 +2944,6 @@ async function exportPlanPDF(){
 
     // ─── PAGE 1 : titre + plan visuel ───
         drawFrame();
-    // Image header Weddilya
     if(_wi) pdf.addImage(_wi,'PNG',pw/2-40,3,80,17.5);
     else { setText(C_PK);pdf.setFont('helvetica','normal');pdf.setFontSize(18);pdf.text('WEDDILYA',pw/2,14,{align:'center'});drawRings(pw/2,22,4); }
     setStroke(C_BD);pdf.setLineWidth(0.25);pdf.line(pw/2-35,21,pw/2+35,21);
@@ -3038,7 +2953,11 @@ async function exportPlanPDF(){
     setText(C_TL);pdf.setFont('times','normal');pdf.setFontSize(10);
     pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,40,{align:'center'});
 
-
+    // Ligne séparatrice
+    setStroke(C_BD); pdf.setLineWidth(0.4); pdf.line(18,28,pw-18,28);
+    // Sous-titre
+    setText(C_TL); pdf.setFont('times','italic'); pdf.setFontSize(10);
+    pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,34,{align:'center'});
 
     // Géométrie IDENTIQUE à l'application (mêmes constantes en px, puis mise à l'échelle)
     const RND=68, SQ=72, TW=120, TH=58, SEAT=24, GAP=10;
@@ -3123,17 +3042,13 @@ async function exportPlanPDF(){
 
     // ─── PAGE 2+ : liste des invités par table (toutes ensemble, en cartes) ───
     pdf.addPage(); drawFrame();
-    // Image header Weddilya
-    if(_wi) pdf.addImage(_wi,'PNG',pw/2-40,3,80,17.5);
-    else { setText(C_PK);pdf.setFont('helvetica','normal');pdf.setFontSize(18);pdf.text('WEDDILYA',pw/2,14,{align:'center'});drawRings(pw/2,22,4); }
-    setStroke(C_BD);pdf.setLineWidth(0.25);pdf.line(pw/2-35,21,pw/2+35,21);
-    setText(C_TM);pdf.setFont('times','italic');pdf.setFontSize(16);
-    pdf.text('Invités par table',pw/2,29,{align:'center'});
-    setStroke(C_PK);pdf.setLineWidth(0.35);pdf.line(pw/2-16,33,pw/2+16,33);
-    setText(C_TL);pdf.setFont('times','normal');pdf.setFontSize(10);
-    pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,40,{align:'center'});
-
-
+    setText(C_PK); pdf.setFont('helvetica','normal'); pdf.setFontSize(8);
+    pdf.text('WEDDILYA',pw/2,14,{align:'center',charSpace:3});
+    setText(C_TM); pdf.setFont('times','bold'); pdf.setFontSize(22);
+    pdf.text('Invités par table',pw/2,24,{align:'center'});
+    setStroke(C_BD); pdf.setLineWidth(0.4); pdf.line(18,28,pw-18,28);
+    setText(C_TL); pdf.setFont('times','italic'); pdf.setFontSize(10);
+    pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,34,{align:'center'});
 
     const mm=16, yTop=48, colGap=8, nCols=3, colW=(pw-2*mm-(nCols-1)*colGap)/nCols;
     let col=0, y=yTop;
@@ -3144,16 +3059,10 @@ async function exportPlanPDF(){
       if(y+needed>ph-16){
         col++;
         if(col>=nCols){ pdf.addPage(); drawFrame();
-          // Image header Weddilya
-          if(_wi) pdf.addImage(_wi,'PNG',pw/2-40,3,80,17.5);
-          else { setText(C_PK);pdf.setFont('helvetica','normal');pdf.setFontSize(18);pdf.text('WEDDILYA',pw/2,14,{align:'center'});drawRings(pw/2,22,4); }
-          setStroke(C_BD);pdf.setLineWidth(0.25);pdf.line(pw/2-35,21,pw/2+35,21);
-          setText(C_TM);pdf.setFont('times','italic');pdf.setFontSize(16);
-          pdf.text('Invités par table',pw/2,29,{align:'center'});
-          setStroke(C_PK);pdf.setLineWidth(0.35);pdf.line(pw/2-16,33,pw/2+16,33);
-          setText(C_TL);pdf.setFont('times','normal');pdf.setFontSize(10);
-          pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,40,{align:'center'});
-
+          setText(C_PK); pdf.setFont('helvetica','normal'); pdf.setFontSize(8);
+          pdf.text('WEDDILYA',pw/2,14,{align:'center',charSpace:3});
+          setText(C_TM); pdf.setFont('times','bold'); pdf.setFontSize(22);
+          pdf.text('Invités par table',pw/2,24,{align:'center'});
           setStroke(C_BD); pdf.setLineWidth(0.4); pdf.line(18,28,pw-18,28);
           col=0; }
         y=yTop;
@@ -3714,19 +3623,19 @@ function renderVendors(){
       </button>`).join('')}
     </div>
 
-    <!-- Code postal -->
+    <!-- Code postal + Rechercher -->
     <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
       <label style="font-size:11px;color:${tl};font-weight:700;white-space:nowrap;flex-shrink:0;">Code postal :</label>
-      <input type="text" id="vnd-postal" placeholder="ex: 57000, Bordeaux..." style="flex:1;font-size:13px;padding:8px 10px;border:1px solid #eedce5;border-radius:10px;font-family:Lora,serif;color:#3e1828;background:#fff;outline:none;min-height:36px;" onkeydown="if(event.key==='Enter')searchByPostal()">
+      <input type="text" id="vnd-postal" placeholder="ex: 57000, Bordeaux..." style="flex:1;font-size:13px;padding:8px 10px;border:1px solid #eedce5;border-radius:10px;font-family:Lora,serif;color:#3e1828;background:#fff;outline:none;" onkeydown="if(event.key==='Enter')searchByPostal()">
       <button onclick="searchByPostal()" style="background:${sf};color:${pk};border:1px solid #f0e8ec;border-radius:9px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:Lora,serif;white-space:nowrap;flex-shrink:0;">Rechercher</button>
     </div>
-    <!-- Rayon -->
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-      <label style="font-size:11px;color:${tl};font-weight:700;white-space:nowrap;flex-shrink:0;">Rayon :</label>
+    <div id="vnd-location-status" style="font-size:11px;color:${tl};margin-bottom:6px;min-height:16px;"></div>
+    <!-- Slider rayon -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+      <label style="font-size:11px;color:${tl};font-weight:700;flex-shrink:0;">Rayon :</label>
       <input type="range" id="vnd-radius" min="5" max="100" step="5" value="20" oninput="document.getElementById('vnd-radius-val').textContent=this.value+' km'" style="flex:1;accent-color:${pk};">
-      <span id="vnd-radius-val" style="font-size:11px;color:${tx};font-weight:700;min-width:44px;text-align:right;flex-shrink:0;">20 km</span>
+      <span id="vnd-radius-val" style="font-size:12px;color:${tx};font-weight:700;min-width:50px;text-align:right;">20 km</span>
     </div>
-    <div id="vnd-location-status" style="font-size:11px;color:${tl};margin-bottom:6px;"></div>
 
     <!-- Recherche libre (optionnelle, si la catégorie ne couvre pas le besoin) -->
     <details style="margin-top:8px;">
@@ -3875,48 +3784,22 @@ async function runCategorySearch(tags, catLabel, lat, lng, radiusMeters){
   function hav(a,b,c,d){const R=6371,t=x=>x*Math.PI/180;const da=t(c-a),db=t(d-b);const x=Math.sin(da/2)**2+Math.cos(t(a))*Math.cos(t(c))*Math.sin(db/2)**2;return Math.round(R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))*10)/10;}
   async function ft(url,ms=12000){const c=new AbortController();const t=setTimeout(()=>c.abort(),ms);try{return await fetch(url,{signal:c.signal,headers:{'Accept-Language':'fr'}});}finally{clearTimeout(t);}}
   let results=[];const seen=new Set();
-
-  // SOURCE 1 : Overpass tags OSM précis
-  try{
-    const fp=tags.map(t=>{const[k,v]=t.split('=');return `node["${k}"="${v}"](around:${radiusMeters},${lat},${lng});way["${k}"="${v}"](around:${radiusMeters},${lat},${lng});`;}).join('');
-    const res=await ft('https://overpass-api.de/api/interpreter?data='+encodeURIComponent(`[out:json][timeout:15];(${fp});out center 50;`));
-    if(res.ok){const d=await res.json();for(const e of(d.elements||[]).filter(e=>e.tags?.name)){const n=e.tags.name;if(seen.has(n))continue;seen.add(n);const la=e.lat||(e.center?.lat)||0,lo=e.lon||(e.center?.lon)||0;results.push({id:Date.now()+Math.random(),nom:n,categorie:catLabel,adresse:[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' ')||'',lat:la,lng:lo,distance:hav(lat,lng,la,lo),tel:e.tags.phone||'',site:e.tags.website||'',notes:''});}}
-  }catch(e){console.warn('Overpass1:',e.message);}
-
-  // SOURCE 2 : Overpass recherche par nom contenant mots-clés
-  const nameKw={robe:['mari','bridal','wedding','robe'],salle:['mariage','réception','domaine','château','salle'],traiteur:['traiteur'],photographe:['photographe'],coiffeur:['coiff'],maquillage:['maquill'],fleuriste:['fleur'],bijouterie:['bijou','alliance'],patisserie:['cake','pâtiss','gâteau'],dj:['dj ','sono'],costume:['smoking','costume'],decor:['décor'],videaste:['vidéo'],voiture:['limousine'],hebergement:['hôtel','gîte'],imprimeur:['imprimer'],location:['événementiel'],officiant:['officiant']};
+  // SOURCE 1 : Overpass tags OSM
+  try{const fp=tags.map(t=>{const[k,v]=t.split('=');return `node["${k}"="${v}"](around:${radiusMeters},${lat},${lng});way["${k}"="${v}"](around:${radiusMeters},${lat},${lng});`;}).join('');const res=await ft('https://overpass-api.de/api/interpreter?data='+encodeURIComponent(`[out:json][timeout:15];(${fp});out center 50;`));if(res.ok){const d=await res.json();for(const e of(d.elements||[]).filter(e=>e.tags?.name)){const n=e.tags.name;if(seen.has(n))continue;seen.add(n);const la=e.lat||(e.center?.lat)||0,lo=e.lon||(e.center?.lon)||0;results.push({id:Date.now()+Math.random(),nom:n,categorie:catLabel,adresse:[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' ')||'',lat:la,lng:lo,distance:hav(lat,lng,la,lo),tel:e.tags.phone||'',site:e.tags.website||'',notes:''});}}}catch(e){console.warn('Overpass1:',e.message);}
+  // SOURCE 2 : Overpass nom contenant mot-clé
+  const nkw={robe:['mari','bridal','wedding','robe'],salle:['mariage','réception','domaine','château'],traiteur:['traiteur'],photographe:['photographe'],coiffeur:['coiff'],maquillage:['maquill'],fleuriste:['fleur'],bijouterie:['bijou','alliance'],patisserie:['cake','pâtiss'],dj:['dj','sono'],costume:['smoking','costume'],decor:['décor'],videaste:['vidéo'],voiture:['limousine'],hebergement:['hôtel'],imprimeur:['imprimeur'],location:['événementiel'],officiant:['officiant']};
   const ck=Object.keys(VND_CATEGORIES).find(k=>VND_CATEGORIES[k].tags===tags)||'';
-  for(const kw of(nameKw[ck]||[]).slice(0,2)){
-    try{
-      const q=`[out:json][timeout:10];(node["name"~"${kw}",i](around:${radiusMeters},${lat},${lng});way["name"~"${kw}",i](around:${radiusMeters},${lat},${lng}););out center 30;`;
-      const res=await ft('https://overpass-api.de/api/interpreter?data='+encodeURIComponent(q));
-      if(res.ok){const d=await res.json();for(const e of(d.elements||[]).filter(e=>e.tags?.name)){const n=e.tags.name;if(seen.has(n))continue;seen.add(n);const la=e.lat||(e.center?.lat)||0,lo=e.lon||(e.center?.lon)||0;results.push({id:Date.now()+Math.random(),nom:n,categorie:catLabel,adresse:[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' ')||'',lat:la,lng:lo,distance:hav(lat,lng,la,lo),tel:e.tags.phone||'',site:e.tags.website||'',notes:''});}}
-    }catch(e){console.warn('Overpass2:',e.message);}
-  }
-
+  for(const kw of(nkw[ck]||[]).slice(0,2)){try{const res=await ft('https://overpass-api.de/api/interpreter?data='+encodeURIComponent(`[out:json][timeout:10];(node["name"~"${kw}",i](around:${radiusMeters},${lat},${lng});way["name"~"${kw}",i](around:${radiusMeters},${lat},${lng}););out center 30;`));if(res.ok){const d=await res.json();for(const e of(d.elements||[]).filter(e=>e.tags?.name)){const n=e.tags.name;if(seen.has(n))continue;seen.add(n);const la=e.lat||(e.center?.lat)||0,lo=e.lon||(e.center?.lon)||0;results.push({id:Date.now()+Math.random(),nom:n,categorie:catLabel,adresse:[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' ')||'',lat:la,lng:lo,distance:hav(lat,lng,la,lo),tel:e.tags.phone||'',site:e.tags.website||'',notes:''});}}}catch(e){console.warn('Overpass2:',e.message);}}
   // SOURCE 3 : Nominatim texte libre
-  const nomT={robe:['robe mariée','boutique mariage'],salle:['salle mariage','domaine mariage'],traiteur:['traiteur mariage'],photographe:['photographe mariage'],coiffeur:['coiffeur mariage'],maquillage:['maquillage mariage'],fleuriste:['fleuriste mariage'],bijouterie:['bijouterie alliance'],patisserie:['wedding cake','pâtissier mariage'],dj:['DJ mariage'],costume:['costume mariage'],decor:['décoration mariage'],videaste:['vidéaste mariage'],voiture:['location voiture mariage'],hebergement:['hôtel'],imprimeur:['imprimeur faire-part'],location:['location matériel mariage'],officiant:['officiant laïque']};
-  for(const term of(nomT[ck]||[catLabel]).slice(0,2)){
-    try{
-      const res=await ft(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(term)}&format=json&limit=30&lat=${lat}&lon=${lng}&addressdetails=1&countrycodes=fr,be,ch,lu`,8000);
-      if(!res.ok) continue;const d=await res.json();
-      for(const e of d){if(!e.lat)continue;const n=e.display_name.split(',')[0].trim();if(!n||seen.has(n)||n.length<3)continue;seen.add(n);const la=parseFloat(e.lat),lo=parseFloat(e.lon),dist=hav(lat,lng,la,lo);if(dist>radiusKm*2)continue;results.push({id:Date.now()+Math.random(),nom:n,categorie:catLabel,adresse:((e.address?.road||'')+' '+(e.address?.city||e.address?.town||'')).trim(),lat:la,lng:lo,distance:dist,tel:'',site:'',notes:''});}
-    }catch(e){console.warn('Nominatim:',e.message);}
-  }
-
+  const nt={robe:['robe mariée','boutique mariage'],salle:['salle mariage','domaine mariage'],traiteur:['traiteur mariage'],photographe:['photographe mariage'],coiffeur:['coiffeur mariage'],maquillage:['maquillage mariage'],fleuriste:['fleuriste mariage'],bijouterie:['bijouterie alliance'],patisserie:['wedding cake'],dj:['DJ mariage'],costume:['costume mariage'],decor:['décoration mariage'],videaste:['vidéaste mariage'],voiture:['location voiture mariage'],hebergement:['hôtel'],imprimeur:['imprimeur faire-part'],location:['location matériel mariage'],officiant:['officiant laïque']};
+  for(const term of(nt[ck]||[catLabel]).slice(0,2)){try{const res=await ft(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(term)}&format=json&limit=30&lat=${lat}&lon=${lng}&addressdetails=1&countrycodes=fr,be,ch,lu`,8000);if(!res.ok)continue;const d=await res.json();for(const e of d){if(!e.lat)continue;const n=e.display_name.split(',')[0].trim();if(!n||seen.has(n)||n.length<3)continue;seen.add(n);const la=parseFloat(e.lat),lo=parseFloat(e.lon),dist=hav(lat,lng,la,lo);if(dist>radiusKm*2)continue;results.push({id:Date.now()+Math.random(),nom:n,categorie:catLabel,adresse:((e.address?.road||'')+' '+(e.address?.city||e.address?.town||'')).trim(),lat:la,lng:lo,distance:dist,tel:'',site:'',notes:'',});}}catch(e){console.warn('Nominatim:',e.message);}}
   results=results.sort((a,b)=>a.distance-b.distance).slice(0,30);
   const city=el('vnd-location-status')?.textContent?.replace('Lieu défini :','').trim().split(',')[0]||'';
   const gmUrl=`https://www.google.com/maps/search/${encodeURIComponent(catLabel+' '+city)}/@${lat},${lng},13z`;
-  const googleBtn=`<a href="${gmUrl}" target="_blank" rel="noopener" style="display:block;margin-top:10px;padding:10px;background:${sf};border:1.5px solid ${br};border-radius:12px;text-align:center;text-decoration:none;color:${pk};font-size:13px;font-weight:700;font-family:Lora,serif;">Voir aussi sur Google Maps</a>`;
-
-  if(!results.length){
-    if(wrap) wrap.innerHTML=`<div style="padding:16px;text-align:center;"><p style="font-size:13px;color:${tl};margin-bottom:14px;">Aucun résultat sur OpenStreetMap.<br><span style="font-size:11px;font-style:italic;">La base OSM est parfois incomplète.</span></p>${googleBtn}</div>`;
-    return;
-  }
   window._vndResults=results;window._vndGoogleUrl=gmUrl;
+  if(!results.length){if(wrap)wrap.innerHTML=`<div style="padding:16px;text-align:center;"><p style="font-size:13px;color:${tl};margin-bottom:14px;">Aucun résultat sur OpenStreetMap.<br><span style="font-size:11px;font-style:italic;">Essayez Google Maps :</span></p><a href="${gmUrl}" target="_blank" style="display:block;padding:12px;background:${sf};border:1px solid ${br};border-radius:14px;text-decoration:none;color:${pk};font-size:13px;font-weight:700;font-family:Lora,serif;text-align:center;">Chercher sur Google Maps</a></div>`;return;}
   renderVndResults(catLabel);
 }
-
 
 async function searchVendorsWithLocation(query,lat,lng){
   const btn=el('vnd-btn');btn.textContent='Recherche...';btn.disabled=true;
@@ -4591,7 +4474,7 @@ function renderDecorations(){
     const total = items.length;
     const done = items.filter((_,i) => saved[cat+i]).length;
     html += `<div class="card" style="margin-bottom:12px;overflow:hidden;">
-      <div style="display:flex;align-items:center;background:linear-gradient(135deg,${sf},#fff);padding:13px 16px;">
+      <div style="display:flex;align-items:center;background:${sf};border-radius:10px 10px 0 0;padding:12px 16px;">
         <div onclick="toggleDecoSection(${catIdx})" style="flex:1;cursor:pointer;">
           <div data-deco-cat="${cat}" onclick="renameDecoCategory('${cat.replace(/'/g,"'")}',${catIdx})" style="font-family:Playfair Display,serif;font-family:Lora,serif;font-size:13px;color:${tm};font-weight:700;cursor:pointer;" title="Appuyer pour renommer">${h(cat)}</div>
           <div style="font-size:11px;color:${tl};margin-top:2px;">${done}/${total} éléments</div>
@@ -4690,7 +4573,7 @@ function renderAlbum(){
     : '';
 
   el('page-8').innerHTML = `
-  <div class="card" style="padding:16px;margin-bottom:16px;background:linear-gradient(135deg,${sf},#fff);">
+  <div class="card" style="padding:16px;border:1.5px solid #f0e8ec;margin-bottom:16px;background:linear-gradient(135deg,${sf},#fff);">
     <div style="font-family:Playfair Display,serif;font-size:18px;color:${tx};margin-bottom:12px;">📸 Album partagé</div>
     <p style="font-size:13px;color:${tl};margin-bottom:14px;">Partagez votre album <strong>Google Photos</strong> avec vos invités.</p>
     <div style="margin-bottom:16px;">
@@ -4705,7 +4588,7 @@ function renderAlbum(){
       <img src="${qrUrl}" style="border-radius:12px;box-shadow:0 2px 12px rgba(180,100,130,0.2);" alt="QR Code">
       <button class="btn" onclick="shareCurrentDriveUrl()" style="width:100%;">📤 Partager le lien</button>
       <button class="btn-sec" onclick="copyCurrentDriveUrl()" style="width:100%;">📋 Copier le lien</button>
-      <a id="drive-open-link" href="${driveUrl}" target="_blank" class="btn" style="width:100%;text-align:center;text-decoration:none;display:block;">📂 Ouvrir mon album Google Photos</a>
+      <a id="drive-open-link" href="${driveUrl}" target="_blank" style="font-family:Lora,serif;font-size:13px;color:#b07a90;text-decoration:underline;display:block;text-align:center;padding:4px 0;">Ouvrir mon album Google Photos</a>
     </div>
     ` : `
     <div style="background:${sf};border:2px dashed ${br};border-radius:12px;padding:20px;text-align:center;color:${tl};font-size:13px;font-style:italic;">
@@ -6724,54 +6607,52 @@ function renderAssistant(){
     </div>
     <div style="padding:0 12px 16px;">
       ${[
-        {key:'animations',    label:'Animations soirée',    desc:'Idées pour égayer la fête'},
-        {key:'belleFamille',  label:'Belle-famille',        desc:'Gérer les situations délicates'},
-        {key:'bijouxMariee',  label:'Bijoux mariée',        desc:'Selon robe et coiffure'},
-        {key:'cadeauxInvites',label:'Cadeaux invités',      desc:'Selon votre budget'},
-        {key:'checklistAvant',label:'Check 10min avant',    desc:'Tout vérifier avant cérémonie'},
-        {key:'budget',        label:'Conseils budget',      desc:'Répartition optimisée'},
-        {key:'weddingDay',    label:'Conseils jour J',      desc:'Pas-à-pas du jour J'},
-        {key:'tenueMarie',    label:'Costume',              desc:'Costumes et accessoires'},
-        {key:'decoration',    label:'Décoration mariage',   desc:'Inspiration selon style'},
-        {key:'enfants',       label:'Enfants au mariage',   desc:'Rôles et animations'},
-        {key:'fairepart',     label:'Faire-part',           desc:'12 modèles prêts à utiliser'},
-        {key:'stress',        label:'Gestion du stress',    desc:'Avant, pendant, après'},
-        {key:'problemes',     label:'Imprévus & solutions', desc:'Comment réagir'},
-        {key:'invitesLoin',   label:'Invités de loin',      desc:'Logement, attentions, infos'},
-        {key:'listeCadeaux',  label:'Liste / Cagnotte',     desc:'Sites, idées, conseils'},
-        {key:'menu',          label:'Menu personnalisé',    desc:'Menu adapté au style et à la saison'},
-        {key:'emotion',       label:'Moments-émotion',      desc:'Instants à ne pas manquer'},
-        {key:'photos',        label:'Photos à prévoir',     desc:'Checklist photographe'},
-        {key:'playlistAmbi',  label:'Playlist par ambiance',desc:'Cérémonie, cocktail, soirée'},
-        {key:'prepCivile',    label:'Préparation civile',   desc:'Documents, étapes mairie'},
+        {key:'animations',    label:'Animations soirée',     desc:'Idées pour égayer la fête'},
+        {key:'belleFamille',  label:'Belle-famille',         desc:'Gérer les situations délicates'},
+        {key:'bijouxMariee',  label:'Bijoux mariée',         desc:'Selon robe et coiffure'},
+        {key:'cadeauxInvites',label:'Cadeaux invités',       desc:'Selon votre budget'},
+        {key:'checklistAvant',label:'Check 10min avant',     desc:'Tout vérifier avant cérémonie'},
+        {key:'budget',        label:'Conseils budget',       desc:'Répartition optimisée'},
+        {key:'weddingDay',    label:'Conseils jour J',       desc:'Pas-à-pas du jour J'},
+        {key:'tenueMarie',    label:'Costume',               desc:'Costumes et accessoires'},
+        {key:'decoration',    label:'Décoration mariage',    desc:'Inspiration selon style'},
+        {key:'enfants',       label:'Enfants au mariage',    desc:'Rôles et animations'},
+        {key:'fairepart',     label:'Faire-part',            desc:'12 modèles prêts à utiliser'},
+        {key:'stress',        label:'Gestion du stress',     desc:'Avant, pendant, après'},
+        {key:'problemes',     label:'Imprévus & solutions',  desc:'Comment réagir'},
+        {key:'invitesLoin',   label:'Invités de loin',       desc:'Logement, attentions, infos'},
+        {key:'listeCadeaux',  label:'Liste de mariage',      desc:'Sites, idées, conseils'},
+        {key:'menu',          label:'Menu personnalisé',     desc:'Adapté au style et à la saison'},
+        {key:'emotion',       label:'Moments émotion',       desc:'Instants à ne pas manquer'},
+        {key:'photos',        label:'Photos à prévoir',      desc:'Checklist photographe'},
+        {key:'playlistAmbi',  label:'Playlist par ambiance', desc:'Cérémonie, cocktail, soirée'},
+        {key:'prepCivile',    label:'Préparation civile',    desc:'Documents, étapes mairie'},
         {key:'prepReligieuse',label:'Préparation religieuse',desc:'Selon la religion'},
         {key:'questions',     label:'Questions prestataires',desc:'Que demander à chacun'},
-        {key:'remerciements', label:'Remerciements',        desc:'Cartes post-mariage'},
-        {key:'tenueMariee',   label:'Robe de mariée',       desc:'Modèles, styles, bijoux'},
-        {key:'timeline',      label:'Timeline jour J',      desc:'Planning heure par heure'},
-        {key:'voeux',         label:'Vœux personnalisés',   desc:'Modèles de vœux à adapter'},
-        {key:'voyageNoces',   label:'Voyage de noces',      desc:'Idées de destinations'},
-        {key:'weddingCake',   label:'Wedding cake',         desc:'Styles et inspirations'}
-      ].map(s=>`<button onclick="assistOpen('${s.key}')" style="display:flex;align-items:center;gap:14px;width:100%;background:#fff;border:none;border-bottom:1px solid #f5eaef;padding:14px 6px;cursor:pointer;font-family:Lora,serif;text-align:left;transition:all .15s;box-sizing:border-box;" onmouseover="this.style.background='#fef8fb';this.style.paddingLeft='12px'" onmouseout="this.style.background='#fff';this.style.paddingLeft='6px'">
-        <div style="width:3px;height:32px;border-radius:2px;background:linear-gradient(180deg,#d4607a,#f0a0b8);flex-shrink:0;"></div>
+        {key:'remerciements', label:'Remerciements',         desc:'Cartes post-mariage'},
+        {key:'tenueMariee',   label:'Robe de mariée',        desc:'Modèles, styles, bijoux'},
+        {key:'timeline',      label:'Timeline jour J',       desc:'Planning heure par heure'},
+        {key:'voeux',         label:'Vœux personnalisés',    desc:'Modèles à adapter'},
+        {key:'voyageNoces',   label:'Voyage de noces',       desc:'Idées de destinations'},
+        {key:'weddingCake',   label:'Wedding cake',          desc:'Styles et inspirations'}
+      ].map(s=>`<button onclick="assistOpen('${s.key}')" id="assist-btn-${s.key}" style="display:flex;align-items:center;gap:14px;width:100%;background:#fff;border:none;border-bottom:1px solid #f5eaef;padding:14px 6px;cursor:pointer;font-family:Lora,serif;text-align:left;transition:all .15s;box-sizing:border-box;" onmouseover="this.style.background='#fef8fb'" onmouseout="if(!this.classList.contains('active'))this.style.background='#fff'">
+        <div style="width:3px;height:32px;border-radius:2px;background:linear-gradient(180deg,${pk},#f0a0b8);flex-shrink:0;"></div>
         <div style="flex:1;">
           <div style="font-size:14px;font-weight:700;color:${tx};margin-bottom:2px;">${s.label}</div>
           <div style="font-size:11px;color:${tl};">${s.desc}</div>
         </div>
-        <div style="flex-shrink:0;width:24px;height:24px;border-radius:50%;border:1px solid #f5d5e0;display:flex;align-items:center;justify-content:center;">
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 2l4 3-4 3" stroke="#d4607a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 2l4 3-4 3" stroke="${pk}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>`).join('')}
     </div>
-    <div id="assist-content" style="margin-top:8px;padding:0 12px;"></div>
+    <div id="assist-content" style="padding:0 12px 16px;"></div>
   `;
 }
 
 function assistOpen(service){
   const cont = el('assist-content');
   if(!cont) return;
-  // Reset tous les boutons
-  document.querySelectorAll('#page-7 button[onclick^="assistOpen"]').forEach(b=>{b.style.background='#fff';b.style.paddingLeft='6px';});
+  document.querySelectorAll('#page-7 button[id^="assist-btn"]').forEach(b=>{b.style.background='#fff';b.classList.remove('active');});
+  const ab=document.getElementById('assist-btn-'+service);if(ab){ab.style.background='#fef5f8';ab.classList.add('active');}
   // Scroller en douceur jusqu'au contenu après le clic
   setTimeout(()=>{cont.scrollIntoView({behavior:'smooth',block:'start'});}, 50);
   if(service === 'menu')           return assistMenu(cont);
