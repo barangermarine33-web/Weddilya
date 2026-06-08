@@ -123,7 +123,7 @@ button,label,.tab-btn,.card{-webkit-user-select:none;user-select:none;}
       <circle cx="33" cy="18" r="13" stroke="#d4607a" stroke-width="2.5" fill="none"/>
     </svg>
   </div>
-  <div style="font-style:italic;color:#b07a90;margin-bottom:28px;font-size:15px;">Créez le mariage dont vous rêvez.</div>
+  <div style="font-style:italic;color:#b07a90;margin-bottom:28px;font-size:15px;">Organisez le plus beau jour de votre vie</div>
   <div style="background:var(--card);border-radius:18px;padding:24px;width:100%;max-width:380px;box-shadow:0 8px 32px var(--shadow);border:1px solid var(--border);">
     <div style="display:flex;background:#fef2f6;border-radius:12px;padding:4px;margin-bottom:20px;">
       <button id="tab-login" onclick="showLogin()" style="flex:1;padding:10px;border:none;border-radius:9px;font-weight:700;font-family:Lora,serif;font-size:14px;cursor:pointer;background:#fff;color:#d4607a;">Se connecter</button>
@@ -219,10 +219,10 @@ button,label,.tab-btn,.card{-webkit-user-select:none;user-select:none;}
     </div>
     <hr style="border:none;border-top:1px solid var(--border);margin:12px 0;">
     <div style="margin-bottom:12px;">
-      <div style="font-size:13px;font-weight:700;color:#3e1828;font-family:Lora,serif;margin-bottom:10px;">👫 Partenaire</div>
+      <div style="font-family:Playfair Display,serif;font-size:16px;color:#3e1828;margin-bottom:8px;">Partenaire</div>
       <div id="partner-status" style="font-size:12px;color:#8a4a60;margin-bottom:10px;font-family:Lora,serif;font-style:italic;">Chargement...</div>
       <div id="partner-invite-wrap">
-        <p style="font-size:12px;color:#8a4a60;font-family:Lora,serif;font-style:italic;margin-bottom:10px;">Générez un lien d'invitation à partager à votre partenaire.</p>
+        <p style="font-size:12px;color:#8a4a60;font-family:Lora,serif;font-style:italic;margin-bottom:10px;">Générez un lien d'invitation et partagez-le à votre partenaire par le moyen de votre choix.</p>
         <button class="btn" onclick="generatePartnerLink()" style="width:100%;font-size:13px;">Générer un lien d'invitation</button>
         <div id="partner-link-wrap" style="display:none;margin-top:10px;">
           <div style="font-size:11px;color:#8a4a60;font-family:Lora,serif;margin-bottom:6px;">Lien d'invitation :</div>
@@ -230,7 +230,7 @@ button,label,.tab-btn,.card{-webkit-user-select:none;user-select:none;}
             <input id="partner-link-input" readonly style="flex:1;border:1px solid #f0e8ec;border-radius:10px;padding:8px 10px;font-family:Lora,serif;font-size:11px;color:#3e1828;background:#fdf8f5;outline:none;" value="">
             <button onclick="copyPartnerLink()" style="background:#fef2f6;color:#b84060;border:1px solid #f5d5e0;border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:Lora,serif;white-space:nowrap;">Copier</button>
           </div>
-          <div id="partner-copy-ok" style="display:none;font-size:11px;color:#5a8a6a;font-family:Lora,serif;margin-top:4px;">✓ Lien copié !</div>
+          <div id="partner-copy-ok" style="display:none;font-size:11px;color:#5a8a6a;font-family:Lora,serif;margin-top:4px;font-style:italic;">✓ Lien copié !</div>
           <p style="font-size:11px;color:#b07a90;font-family:Lora,serif;font-style:italic;margin-top:6px;">Ce lien expire dans 7 jours.</p>
         </div>
         <div id="partner-err" style="display:none;padding:8px 12px;border-radius:8px;font-size:12px;font-family:Lora,serif;margin-top:8px;border:1px solid;"></div>
@@ -1274,25 +1274,61 @@ async function loadPartnerStatus(){
 
 // Envoie une invitation par email via EmailJS (ou lien direct)
 async function generatePartnerLink(){
-  const errEl=document.getElementById('partner-err');const linkWrap=document.getElementById('partner-link-wrap');const linkInput=document.getElementById('partner-link-input');const copyOk=document.getElementById('partner-copy-ok');
-  if(errEl)errEl.style.display='none';
-  const uid=window._currentUID||window.firebaseAuth?.currentUser?.uid;
-  if(!uid){if(errEl){errEl.textContent='Vous devez être connecté.';errEl.style.cssText='display:block;background:#fff0f0;border-color:#ffccd0;color:#c43a3a;padding:8px 12px;border-radius:8px;font-size:12px;font-family:Lora,serif;margin-top:8px;border:1px solid;';}return;}
+  const errEl = document.getElementById('partner-err');
+  const linkWrap = document.getElementById('partner-link-wrap');
+  const linkInput = document.getElementById('partner-link-input');
+  const copyOk = document.getElementById('partner-copy-ok');
+  if(errEl) errEl.style.display='none';
+
+  const uid = window._currentUID || window.firebaseAuth?.currentUser?.uid;
+  if(!uid){ 
+    if(errEl){errEl.textContent='Vous devez être connecté.';errEl.style.background='#fff0f0';errEl.style.borderColor='#ffccd0';errEl.style.color='#c43a3a';errEl.style.display='block';}
+    return; 
+  }
+
   try{
-    const token=Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2)+Date.now().toString(36);
-    const {doc,setDoc}=window.firebaseLib;
-    await setDoc(doc(window.firebaseDB,'invitations',token),{ownerUid:uid,ownerDocId:window._activeDataDocId||uid,ownerEmail:USER.email||'',createdAt:Date.now(),expiresAt:Date.now()+7*24*60*60*1000,used:false});
-    const link=window.location.origin+window.location.pathname+'?invite='+token;
-    if(linkInput)linkInput.value=link;
-    if(linkWrap)linkWrap.style.display='block';
-    if(copyOk)copyOk.style.display='none';
-  }catch(e){if(errEl){errEl.textContent='Erreur : '+e.message;errEl.style.cssText='display:block;background:#fff0f0;border-color:#ffccd0;color:#c43a3a;padding:8px 12px;border-radius:8px;font-size:12px;font-family:Lora,serif;margin-top:8px;border:1px solid;';}}
+    // Générer un token unique
+    const token = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    const expiresAt = Date.now() + 7*24*60*60*1000; // 7 jours
+
+    // Sauvegarder le token dans Firestore
+    const {doc, setDoc} = window.firebaseLib;
+    await setDoc(doc(window.firebaseDB, 'invitations', token), {
+      ownerUid: uid,
+      ownerEmail: USER.email || '',
+      createdAt: Date.now(),
+      expiresAt: expiresAt,
+      used: false
+    });
+
+    // Construire le lien
+    const baseUrl = window.location.origin + window.location.pathname;
+    const link = `${baseUrl}?invite=${token}`;
+
+    // Afficher le lien
+    if(linkInput) linkInput.value = link;
+    if(linkWrap) linkWrap.style.display = 'block';
+    if(copyOk) copyOk.style.display = 'none';
+
+  }catch(e){
+    if(errEl){errEl.textContent='Erreur : ' + e.message;errEl.style.background='#fff0f0';errEl.style.borderColor='#ffccd0';errEl.style.color='#c43a3a';errEl.style.display='block';}
+  }
 }
+
 function copyPartnerLink(){
-  const inp=document.getElementById('partner-link-input');const ok=document.getElementById('partner-copy-ok');
-  if(!inp||!inp.value)return;
-  navigator.clipboard.writeText(inp.value).then(()=>{if(ok){ok.style.display='block';setTimeout(()=>ok.style.display='none',3000);}}).catch(()=>{inp.select();document.execCommand('copy');if(ok){ok.style.display='block';setTimeout(()=>ok.style.display='none',3000);}});
+  const linkInput = document.getElementById('partner-link-input');
+  const copyOk = document.getElementById('partner-copy-ok');
+  if(!linkInput || !linkInput.value) return;
+  navigator.clipboard.writeText(linkInput.value).then(()=>{
+    if(copyOk){ copyOk.style.display='block'; setTimeout(()=>{ copyOk.style.display='none'; }, 3000); }
+  }).catch(()=>{
+    // Fallback pour les navigateurs qui ne supportent pas clipboard API
+    linkInput.select();
+    document.execCommand('copy');
+    if(copyOk){ copyOk.style.display='block'; setTimeout(()=>{ copyOk.style.display='none'; }, 3000); }
+  });
 }
+
 
 async function revokePartnerAccess(){
   if(!await appConfirm('Révoquer l\'accès de votre partenaire ? Il ne pourra plus accéder à votre espace.')) return;
@@ -1756,7 +1792,7 @@ function startCountdown(){
     const w=el('countdown-wrap'); if(!w)return;
     if(diff<=0){w.innerHTML=`<div style="color:${gd};font-family:Playfair Display,serif;font-size:16px;padding:6px 0;">🎊 C'est le grand jour !</div>`;return;}
     const d=Math.floor(diff/86400000),hh=Math.floor((diff%86400000)/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);
-    w.innerHTML=[['d',d,'Jours'],['h',hh,'Heures'],['m',m,'Min'],['s',s,'Sec']].map(([,v,l])=>`<div style="text-align:center;padding:4px 10px;min-width:48px;"><div style="font-family:Playfair Display,serif;font-size:22px;font-weight:700;color:${pk};line-height:1">${String(v).padStart(2,'0')}</div><div style="font-size:9px;color:${tl};letter-spacing:1.5px;text-transform:uppercase;margin-top:1px">${l}</div></div>`).join('');
+    w.innerHTML=[['d',d,'Jours'],['h',hh,'Heures'],['m',m,'Min'],['s',s,'Sec']].map(([,v,l])=>`<div style="text-align:center;background:#ffffff;border-radius:10px;padding:6px 12px;min-width:56px;border:1.5px solid ${br}"><div style="font-family:Playfair Display,serif;font-size:22px;font-weight:700;color:${pk};line-height:1">${String(v).padStart(2,'0')}</div><div style="font-size:9px;color:${tl};letter-spacing:1.5px;text-transform:uppercase;margin-top:1px">${l}</div></div>`).join('');
   };
   tick(); cdInt=setInterval(tick,1000);
 }
@@ -1866,9 +1902,9 @@ function renderChecklist(){
   const allMonths=[...MONTHS,...Object.keys(grouped).filter(m=>!MONTHS.includes(m))];
   const monthsWithTasks=allMonths.filter(m=>grouped[m]&&grouped[m].length);
   el('page-0').innerHTML=`
-  <div class="card" style="padding:16px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;background:#fff">
+  <div class="card" style="padding:16px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,${sf},#fff)">
     <div><div class="lbl">Progression</div><div style="font-family:Playfair Display,serif;font-size:28px;color:${tx}">${done}<span style="font-size:14px;color:${tl}"> / ${tot}</span></div></div>
-    <svg viewBox="0 0 36 36" width="60" height="60"><circle cx="18" cy="18" r="15.9" fill="none" stroke="#f5e8ee" stroke-width="3"/><circle cx="18" cy="18" r="15.9" fill="none" stroke="#c07080" stroke-width="3" stroke-dasharray="${pct} 100" stroke-linecap="round" transform="rotate(-90 18 18)"/><text x="18" y="22" text-anchor="middle" font-size="7" fill="${tx}" font-family="serif" font-weight="bold">${pct}%</text></svg>
+    <svg viewBox="0 0 36 36" width="60" height="60"><circle cx="18" cy="18" r="15.9" fill="none" stroke="${br}" stroke-width="3"/><circle cx="18" cy="18" r="15.9" fill="none" stroke="${pk}" stroke-width="3" stroke-dasharray="${pct} 100" stroke-linecap="round" transform="rotate(-90 18 18)"/><text x="18" y="22" text-anchor="middle" font-size="7" fill="${tx}" font-family="serif" font-weight="bold">${pct}%</text></svg>
   </div>
   <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
     <input class="inp" id="chk-text" placeholder="Ajouter une tâche..." style="flex:2;min-width:140px;" onkeydown="if(event.key==='Enter')addTask()">
@@ -2036,13 +2072,15 @@ function renderGuests(){
     </div>
     <div style="padding:0 14px 14px;"><button class="btn" onclick="addGuest()">Ajouter</button></div>
   </div>
-  <div id="guest-table-wrap" style="margin-top:6px;">
-    <table style="width:100%;border-collapse:separate;border-spacing:0 5px;">
-      <thead><tr>
+  <div id="guest-table-wrap" style="overflow-x:auto;margin-top:6px;">
+    <table style="width:100%;border-collapse:separate;border-spacing:0 5px;min-width:750px;">
+      <thead>
+      <tr>
         <th style="padding:6px 12px;font-family:Josefin Sans,sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:${tl};font-weight:700;text-align:left;">Invité</th>
         <th style="padding:6px 9px;font-family:Josefin Sans,sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:${tl};font-weight:700;text-align:center;">Invitation</th>
         <th style="padding:6px 9px;font-family:Josefin Sans,sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:${tl};font-weight:700;text-align:center;">Présence</th>
-      </tr></thead>      <tbody>${GUESTS.map(g=>guestRow(g)).join('')}</tbody>
+      </tr>
+    </thead>      <tbody>${GUESTS.map(g=>guestRow(g)).join('')}</tbody>
     </table>
   </div>
   <p style="font-size:11px;color:${tl};font-style:italic;margin-top:10px;text-align:center;">💡 Import : un fichier Excel ou CSV avec au minimum une colonne "Nom"</p>`;
@@ -2068,46 +2106,61 @@ function guestRow(g){
   </tr>`;
 }
 
-function toggleVinHonneur(id){
-  const g=GUESTS.find(x=>x.id===id);
-  if(g){updGuest(id,'vinHonneur',!g.vinHonneur);}
-}
-
+async function toggleVinHonneur(id){const g=GUESTS.find(x=>x.id===id);if(g){updGuest(id,"vinHonneur",!g.vinHonneur);setTimeout(()=>openGuestDetail(id),200);}}
 async function openGuestDetail(id){
-  const g=GUESTS.find(x=>x.id===id); if(!g) return;
+  const g = GUESTS.find(x=>x.id===id); if(!g) return;
   const sc={'confirmée':gn,'déclinée':rd,'en attente':am};
-  const cn=g.cote==='p1'?USER.p1:USER.p2;
-  const coteColor=g.cote==='p1'?'#fce8ef':'#e8f0fc';
-  const coteTxt=g.cote==='p1'?'#a0485e':'#485ea0';
-  const presLabel=g.presence==='confirmée'?'✓ Confirmée':g.presence==='déclinée'?'✗ Déclinée':'En attente';
-  const presColor=sc[g.presence]||tl;
-  const invLabel=g.invitation==='envoyée'?'✓ Envoyée':'✗ Non envoyée';
-  const invColor=g.invitation==='envoyée'?gn:rd;
-  const vinLabel=g.vinHonneur?"Uniquement vin d'honneur":'Toute la réception';
-  const vinColor=g.vinHonneur?pk:tl;
-  const ageLabel=g.age==='Enfant'?'Enfant':'Adulte';
-  const roleLabel=g.role||'Invité·e';
+  const cn = g.cote==='p1'?USER.p1:USER.p2;
+  const coteColor = g.cote==='p1'?'#fce8ef':'#e8f0fc';
+  const coteTxt = g.cote==='p1'?'#a0485e':'#485ea0';
+  const presLabel = g.presence==='confirmée'?'✓ Confirmée':g.presence==='déclinée'?'✗ Déclinée':'En attente';
+  const presColor = sc[g.presence]||tl;
+  const invLabel = g.invitation==='envoyée'?'✓ Envoyée':'✗ Non envoyée';
+  const invColor = g.invitation==='envoyée'?gn:rd;
+  const vinLabel = g.vinHonneur?"Uniquement vin d'honneur":'Toute la réception';
+  const vinColor = g.vinHonneur?pk:tl;
+  const ageLabel = g.age==='Enfant'?'Enfant':'Adulte';
+  const roleLabel = g.role||'Invité·e';
 
   await new Promise(resolve=>{
-    const overlay=document.createElement('div');
+    const overlay = document.createElement('div');
     overlay.style.cssText='position:fixed;inset:0;background:rgba(62,24,40,.45);backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:flex-end;justify-content:center;';
-    const box=document.createElement('div');
+
+    const box = document.createElement('div');
     box.style.cssText='background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:500px;box-shadow:0 -8px 40px rgba(62,24,40,0.18);max-height:90vh;overflow-y:auto;';
-    const row=(label,content)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fdf8f5;border-radius:12px;"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#8a4a60;">${label}</span>${content}</div>`;
-    const sel=(val,opts,field)=>`<select onchange="updGuest(${id},'${field}',${field==='vinHonneur'?"this.value==='oui'":field==='age'?"this.value":`this.value`});" style="border:none;background:transparent;font-size:12px;font-weight:700;color:#3e1828;cursor:pointer;outline:none;">${opts.map(o=>`<option value="${o.v}" ${val===o.v?'selected':''}>${o.l}</option>`).join('')}</select>`;
-    const emailRow=g.email?row('Email',`<span style="font-size:12px;color:#3e1828;">${h(g.email)}</span>`):'';
-    const adresseRow=g.adresse?`<div style="padding:10px 14px;background:#fdf8f5;border-radius:12px;"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#8a4a60;display:block;margin-bottom:4px;">Adresse</span><span style="font-size:12px;color:#3e1828;">${h(g.adresse)}</span></div>`:'';
-    box.innerHTML=`
-      <div style="display:flex;justify-content:center;padding:10px 0 0;"><div style="width:36px;height:4px;background:#f0e8ec;border-radius:2px;"></div></div>
+
+    const emailRow = g.email ? `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fdf8f5;border-radius:12px;"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#8a4a60;">Email</span><span style="font-size:12px;color:#3e1828;">${h(g.email)}</span></div>` : '';
+    const adresseRow = g.adresse ? `<div style="padding:10px 14px;background:#fdf8f5;border-radius:12px;"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#8a4a60;display:block;margin-bottom:4px;">Adresse postale</span><span style="font-size:12px;color:#3e1828;">${h(g.adresse)}</span></div>` : '';
+
+    box.innerHTML = `
+      <div style="display:flex;justify-content:center;padding:10px 0 0;">
+        <div style="width:36px;height:4px;background:#f0e8ec;border-radius:2px;"></div>
+      </div>
       <div style="padding:16px 20px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f5e8ee;">
         <div style="font-family:Playfair Display,serif;font-size:18px;font-weight:700;color:#3e1828;">${h(g.nom)}</div>
-        <button id="gd-x" style="background:none;border:none;font-size:22px;color:#b07a90;cursor:pointer;">×</button>
+        <button id="gd-close" style="background:none;border:none;font-size:22px;color:#b07a90;cursor:pointer;">×</button>
       </div>
       <div style="padding:16px 20px;display:flex;flex-direction:column;gap:10px;">
-        ${row('Côté',sel(g.cote,[{v:'p1',l:h(USER.p1||'Côté 1')},{v:'p2',l:h(USER.p2||'Côté 2')}],'cote'))}
-        ${row('Rôle',sel(roleLabel,[{v:"Invité·e",l:"Invité·e"},{v:"Témoin",l:"Témoin"},{v:"Demoiselle d'honneur",l:"Demoiselle d'honneur"},{v:"Garçon d'honneur",l:"Garçon d'honneur"},{v:"Famille",l:"Famille"}],'role'))}
-        ${row('Âge',sel(ageLabel,[{v:'Adulte',l:'Adulte'},{v:'Enfant',l:'Enfant'}],'age'))}
-        ${row("Vin d'honneur",sel(g.vinHonneur?'oui':'non',[{v:'non',l:'Toute la réception'},{v:'oui',l:"Uniquement vin d'honneur"}],'vinHonneur'))}
+        <div onclick="changeCote(${id});setTimeout(()=>{overlay.remove();resolve();openGuestDetail(${id});},200);" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fdf8f5;border-radius:12px;cursor:pointer;">
+          <span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#8a4a60;">Côté</span>
+          <span style="background:${coteColor};color:${coteTxt};border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;">${h(cn)} ▾</span>
+        </div>
+        <div onclick="pickGuestRole(${id});setTimeout(()=>{overlay.remove();resolve();openGuestDetail(${id});},400);" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fdf8f5;border-radius:12px;cursor:pointer;">
+          <span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#8a4a60;">Rôle</span>
+          <span style="font-size:12px;font-weight:700;color:#3e1828;">${h(roleLabel)} ▾</span>
+        </div>
+        <div onclick="editGuestRegimes(${id});setTimeout(()=>{overlay.remove();resolve();openGuestDetail(${id});},400);" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fdf8f5;border-radius:12px;cursor:pointer;">
+          <span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#8a4a60;">Régime</span>
+          <span style="font-size:12px;font-weight:700;color:#3e1828;">${g.regime&&g.regime!=='Aucun'?h(g.regime):'Aucun'} ▾</span>
+        </div>
+        <div onclick="toggleAge(${id});setTimeout(()=>{overlay.remove();resolve();openGuestDetail(${id});},200);" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fdf8f5;border-radius:12px;cursor:pointer;">
+          <span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#8a4a60;">Âge</span>
+          <span style="font-size:12px;font-weight:700;color:#3e1828;">${ageLabel} ▾</span>
+        </div>
+        <div onclick="toggleVinHonneur(${id});setTimeout(()=>{overlay.remove();resolve();openGuestDetail(${id});},200);" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fdf8f5;border-radius:12px;cursor:pointer;">
+          <span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#8a4a60;">Vin d'honneur</span>
+          <span style="font-size:12px;font-weight:700;color:${vinColor};">${vinLabel} ▾</span>
+        </div>
         <div onclick="pickGuestInvitation(${id});setTimeout(()=>{overlay.remove();resolve();openGuestDetail(${id});},400);" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fdf8f5;border-radius:12px;cursor:pointer;">
           <span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#8a4a60;">Invitation</span>
           <span style="font-size:12px;font-weight:700;color:${invColor};">${invLabel} ▾</span>
@@ -2116,34 +2169,29 @@ async function openGuestDetail(id){
           <span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#8a4a60;">Présence</span>
           <span style="font-size:12px;font-weight:700;color:${presColor};">${presLabel} ▾</span>
         </div>
-        ${emailRow}${adresseRow}
+        ${emailRow}
+        ${adresseRow}
       </div>
       <div style="padding:12px 20px 28px;display:flex;gap:8px;">
-        <button id="gd-close" style="flex:1;padding:12px;background:#fdf8f5;border:none;border-radius:12px;font-family:Lora,serif;font-size:13px;font-weight:700;color:#b07a90;cursor:pointer;">Fermer</button>
+        <button id="gd-close2" style="flex:1;padding:12px;background:#fdf8f5;border:none;border-radius:12px;font-family:Lora,serif;font-size:13px;font-weight:700;color:#b07a90;cursor:pointer;">Fermer</button>
         <button id="gd-del" style="flex:1;padding:12px;background:#fff0f0;border:none;border-radius:12px;font-family:Lora,serif;font-size:13px;font-weight:700;color:#c43a3a;cursor:pointer;">Supprimer</button>
       </div>`;
-    overlay.appendChild(box);document.body.appendChild(overlay);
-    const close=()=>{overlay.remove();resolve();};
-    box.querySelector('#gd-x').onclick=close;
-    box.querySelector('#gd-close').onclick=close;
-    box.querySelector('#gd-del').onclick=()=>{removeGuest(id);close();};
-    overlay.onclick=e=>{if(e.target===overlay)close();};
-    let sy=0;
-    box.addEventListener('touchstart',e=>{sy=e.touches[0].clientY;},{passive:true});
-    box.addEventListener('touchend',e=>{if(e.changedTouches[0].clientY-sy>80)close();},{passive:true});
+
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+
+    const close = ()=>{ overlay.remove(); resolve(); };
+    box.querySelector('#gd-close').onclick = close;
+    box.querySelector('#gd-close2').onclick = close;
+    box.querySelector('#gd-del').onclick = ()=>{ removeGuest(id); close(); };
+    overlay.onclick = e=>{ if(e.target===overlay) close(); };
+
+    let startY=0;
+    box.addEventListener('touchstart',e=>{startY=e.touches[0].clientY;},{passive:true});
+    box.addEventListener('touchend',e=>{if(e.changedTouches[0].clientY-startY>80) close();},{passive:true});
   });
 }
 
-let showingAdd=false;
-function toggleAddGuest(){showingAdd=!showingAdd;const f=el('guest-add-form');if(f)f.style.display=showingAdd?'block':'none';}
-function addGuest(){
-  const nom=el('gf-nom').value.trim();if(!nom)return;
-  GUESTS.push({id:Date.now(),nom,email:el('gf-email').value.trim(),cote:el('gf-cote').value,invitation:'non envoyée',presence:'en attente',role:el('gf-role').value,regime:'Aucun',vinHonneur:el('gf-vh').checked,age:el('gf-age')?.value||'Adulte',seatTableId:null,seatIdx:null});
-  showingAdd=false;saveGuests();renderGuests();
-}
-function updGuest(id,f,v){GUESTS=GUESTS.map(g=>g.id===id?{...g,[f]:v}:g);saveGuests();renderGuests();}
-
-// Pickers custom (aux couleurs de l'app) qui remplacent les <select> natifs gris
 async function pickGuestRole(id){
   const g = GUESTS.find(x=>x.id===id); if(!g) return;
   const opts = ROLES.map(r=>({value:r, label:r, icon: r==='Témoin'?'⭐':r.includes('Demoiselle')?'👰':r.includes('Garçon')?'🤵':'👤'}));
@@ -2205,17 +2253,18 @@ async function exportGuests(){
   const closeM=()=>{const r=document.getElementById('app-modal-root');if(r){r.style.display='none';r.innerHTML='';}};
   appModal({title:'Export invités',icon:'',message:'Préparation du fichier…',buttons:[]}).catch(()=>{});
   await new Promise(r=>setTimeout(r,200));
-  const rows=[['Nom complet','Email','Cote','Role','Regime particulier',"Vin d'honneur uniquement",'Invitation','Presence']];
+  const rows=[['Nom complet','Email','Côté','Rôle','Régime particulier',"Vin d'honneur uniquement",'Invitation','Présence']];
   GUESTS.forEach(g=>{rows.push([g.nom,g.email||'',g.cote==='p1'?USER.p1:USER.p2,g.role||'',g.regime||'',g.vinHonneur?'Oui':'Non',g.invitation,g.presence]);});
-  const csv=rows.map(function(row){return row.map(function(cell){var s=String(cell);return '"'+s.split('"').join('""')+'"';}).join(';');}).join('\r\n');
-  const iso=(()=>{const out=[];for(const ch of csv){const code=ch.charCodeAt(0);out.push(code<=255?code:63);}return new Uint8Array(out);})();
-  const blob=new Blob([iso],{type:'text/csv;charset=iso-8859-1;'});
+  const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'\"')+'"').join(';')).join('\r\n');
+  const enc=new TextEncoder();const csvB=enc.encode(csv);
+  const bom=new Uint8Array([0xEF,0xBB,0xBF]);const out=new Uint8Array(bom.length+csvB.length);
+  out.set(bom,0);out.set(csvB,bom.length);
+  const blob=new Blob([out],{type:'text/csv;charset=utf-8;'});
   const url=URL.createObjectURL(blob);const a=document.createElement('a');
   a.href=url;a.download=`invites_${USER.p1}_${USER.p2}.csv`;
   document.body.appendChild(a);a.click();
   setTimeout(()=>{URL.revokeObjectURL(url);a.remove();closeM();},800);
 }
-
 function importGuests(e){
   const file=e.target.files?.[0];if(!file)return;
   const name=(file.name||'').toLowerCase();
@@ -2549,7 +2598,7 @@ function saveTables(){sv(`tables_${USER.email}`,TABLES);sv(`guests_${USER.email}
 let tpDrag=null;
 // Zoom/pan state
 let tpScale=1,tpPanX=0,tpPanY=0,tpPanning=false,tpPanStart=null,tpPinchDist=0,tpPanMode=false;
-function togglePanMode(){tpPanMode=!tpPanMode;const btn=document.getElementById('tp-pan-btn');const canvas=document.getElementById('tp-canvas');if(btn){btn.style.background=tpPanMode?'#fef2f6':'#fff';btn.style.color=tpPanMode?'#b84060':'#c47a2a';}if(canvas)canvas.style.cursor=tpPanMode?'grab':'';}
+function togglePanMode(){tpPanMode=!tpPanMode;const btn=document.getElementById('tp-pan-btn');const canvas=document.getElementById('tp-canvas');if(btn){btn.style.background=tpPanMode?'#fef2f6':'#fff';btn.style.color=tpPanMode?'#b84060':'#c47a2a';btn.style.borderColor=tpPanMode?'#f5d5e0':'#f0e8ec';}if(canvas)canvas.style.cursor=tpPanMode?'grab':'';}
 window.tpSelectedShape='round';
 function setTpShape(s){
   window.tpSelectedShape=s;
@@ -2581,8 +2630,7 @@ function renderTablePlan(){
       <button id="tp-shape-square" onclick="setTpShape(\'square\')" style="background:#fff;color:#b07a90;border:1.5px solid #f5d5e0;border-radius:9px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;font-family:Lora,serif;">■ Carrée</button>
     </div>
     <button class="btn" onclick="addTable()" style="font-size:12px;padding:7px 12px;">+ Table</button>
-    <button class="btn" onclick="exportPlanPDF()" style="padding:6px 12px;background:#fef2f6;color:#b84060;border:1px solid #f5d5e0;border-radius:10px;font-size:12px;font-weight:700;font-family:Lora,serif;cursor:pointer;">Exporter en PDF</button>
-      <button onclick="openAutoPlaceModal()" style="background:linear-gradient(135deg,#d4607a,#8a4a60);font-size:12px;padding:7px 12px;">✨ Placement auto</button>
+    <button class="btn" onclick="openAutoPlaceModal()" style="background:linear-gradient(135deg,#d4607a,#8a4a60);font-size:12px;padding:7px 12px;">✨ Placement auto</button>
     <button class="btn-sec" onclick="resetPlacement()" style="color:#c43a3a;border-color:#c43a3a55;font-size:12px;padding:7px 12px;">↺ Réinitialiser</button>
     <button class="btn-sec" onclick="exportPlanPDF()" style="font-size:12px;padding:7px 12px;">PDF</button>
     <div style="display:flex;gap:6px;margin-left:auto;">
@@ -2943,8 +2991,9 @@ async function exportPlanPDF(){
     };;
 
     // ─── PAGE 1 : titre + plan visuel ───
-            drawFrame();
-    if(_wi) pdf.addImage(_wi,'PNG',pw/2-40,3,80,17.5);
+        drawFrame();
+    // Image header Weddilya
+    if(_wi) pdf.addImage(_wi,'PNG',pw/2-40,3,80,14);
     else { setText(C_PK);pdf.setFont('helvetica','normal');pdf.setFontSize(18);pdf.text('WEDDILYA',pw/2,14,{align:'center'});drawRings(pw/2,22,4); }
     setStroke(C_BD);pdf.setLineWidth(0.25);pdf.line(pw/2-35,21,pw/2+35,21);
     setText(C_TM);pdf.setFont('times','italic');pdf.setFontSize(16);
@@ -2953,6 +3002,16 @@ async function exportPlanPDF(){
     setText(C_TL);pdf.setFont('times','normal');pdf.setFontSize(10);
     pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,40,{align:'center'});
 
+    // Ligne séparatrice
+    setStroke(C_BD); pdf.setLineWidth(0.4); pdf.line(18,28,pw-18,28);
+    // Sous-titre
+    setText(C_TL); pdf.setFont('times','italic'); pdf.setFontSize(10);
+    pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,34,{align:'center'});
+
+    // Géométrie IDENTIQUE à l'application (mêmes constantes en px, puis mise à l'échelle)
+    const RND=68, SQ=72, TW=120, TH=58, SEAT=24, GAP=10;
+    // Boîte englobante d'une table (en px app), centre de surface placé à (t.x+70, t.y+70)
+    // Bornes réelles de tout le plan, chaises comprises
     const m=18, top=48, planW=pw-2*m, planH=ph-top-14;
     let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
     TABLES.forEach(t=>{
@@ -3031,8 +3090,9 @@ async function exportPlanPDF(){
     });
 
     // ─── PAGE 2+ : liste des invités par table (toutes ensemble, en cartes) ───
-    pdf.addPage();     pdf.addPage(); drawFrame();
-    if(_wi) pdf.addImage(_wi,'PNG',pw/2-40,3,80,17.5);
+    pdf.addPage(); drawFrame();
+    // Image header Weddilya
+    if(_wi) pdf.addImage(_wi,'PNG',pw/2-40,3,80,14);
     else { setText(C_PK);pdf.setFont('helvetica','normal');pdf.setFontSize(18);pdf.text('WEDDILYA',pw/2,14,{align:'center'});drawRings(pw/2,22,4); }
     setStroke(C_BD);pdf.setLineWidth(0.25);pdf.line(pw/2-35,21,pw/2+35,21);
     setText(C_TM);pdf.setFont('times','italic');pdf.setFontSize(16);
@@ -3042,6 +3102,8 @@ async function exportPlanPDF(){
     pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,40,{align:'center'});
 
     setStroke(C_BD); pdf.setLineWidth(0.4); pdf.line(18,28,pw-18,28);
+    setText(C_TL); pdf.setFont('times','italic'); pdf.setFontSize(10);
+    pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,34,{align:'center'});
 
     const mm=16, yTop=48, colGap=8, nCols=3, colW=(pw-2*mm-(nCols-1)*colGap)/nCols;
     let col=0, y=yTop;
@@ -3052,7 +3114,8 @@ async function exportPlanPDF(){
       if(y+needed>ph-16){
         col++;
         if(col>=nCols){ pdf.addPage(); drawFrame();
-          if(_wi) pdf.addImage(_wi,'PNG',pw/2-40,3,80,17.5);
+          // Image header Weddilya
+          if(_wi) pdf.addImage(_wi,'PNG',pw/2-40,3,80,14);
           else { setText(C_PK);pdf.setFont('helvetica','normal');pdf.setFontSize(18);pdf.text('WEDDILYA',pw/2,14,{align:'center'});drawRings(pw/2,22,4); }
           setStroke(C_BD);pdf.setLineWidth(0.25);pdf.line(pw/2-35,21,pw/2+35,21);
           setText(C_TM);pdf.setFont('times','italic');pdf.setFontSize(16);
@@ -3060,6 +3123,8 @@ async function exportPlanPDF(){
           setStroke(C_PK);pdf.setLineWidth(0.35);pdf.line(pw/2-16,33,pw/2+16,33);
           setText(C_TL);pdf.setFont('times','normal');pdf.setFontSize(10);
           pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,40,{align:'center'});
+
+          setStroke(C_BD); pdf.setLineWidth(0.4); pdf.line(18,28,pw-18,28);
           col=0; }
         y=yTop;
       }
@@ -3619,13 +3684,6 @@ function renderVendors(){
       </button>`).join('')}
     </div>
 
-    <!-- Code postal + Rechercher -->
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
-      <label style="font-size:11px;color:${tl};font-weight:700;white-space:nowrap;flex-shrink:0;">Code postal :</label>
-      <input type="text" id="vnd-postal" placeholder="ex: 57000, Bordeaux..." style="flex:1;font-size:13px;padding:8px 10px;border:1px solid #eedce5;border-radius:10px;font-family:Lora,serif;color:#3e1828;background:#fff;outline:none;" onkeydown="if(event.key==='Enter')searchByPostal()">
-      <button onclick="searchByPostal()" style="background:${sf};color:${pk};border:1px solid #f0e8ec;border-radius:9px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:Lora,serif;white-space:nowrap;flex-shrink:0;">Rechercher</button>
-    </div>
-    <div id="vnd-location-status" style="font-size:11px;color:${tl};margin-bottom:6px;min-height:16px;"></div>
     <!-- Slider rayon -->
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
       <label style="font-size:11px;color:${tl};font-weight:700;flex-shrink:0;">Rayon :</label>
@@ -3780,22 +3838,48 @@ async function runCategorySearch(tags, catLabel, lat, lng, radiusMeters){
   function hav(a,b,c,d){const R=6371,t=x=>x*Math.PI/180;const da=t(c-a),db=t(d-b);const x=Math.sin(da/2)**2+Math.cos(t(a))*Math.cos(t(c))*Math.sin(db/2)**2;return Math.round(R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))*10)/10;}
   async function ft(url,ms=12000){const c=new AbortController();const t=setTimeout(()=>c.abort(),ms);try{return await fetch(url,{signal:c.signal,headers:{'Accept-Language':'fr'}});}finally{clearTimeout(t);}}
   let results=[];const seen=new Set();
-  // SOURCE 1 : Overpass tags OSM
-  try{const fp=tags.map(t=>{const[k,v]=t.split('=');return `node["${k}"="${v}"](around:${radiusMeters},${lat},${lng});way["${k}"="${v}"](around:${radiusMeters},${lat},${lng});`;}).join('');const res=await ft('https://overpass-api.de/api/interpreter?data='+encodeURIComponent(`[out:json][timeout:15];(${fp});out center 50;`));if(res.ok){const d=await res.json();for(const e of(d.elements||[]).filter(e=>e.tags?.name)){const n=e.tags.name;if(seen.has(n))continue;seen.add(n);const la=e.lat||(e.center?.lat)||0,lo=e.lon||(e.center?.lon)||0;results.push({id:Date.now()+Math.random(),nom:n,categorie:catLabel,adresse:[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' ')||'',lat:la,lng:lo,distance:hav(lat,lng,la,lo),tel:e.tags.phone||'',site:e.tags.website||'',notes:''});}}}catch(e){console.warn('Overpass1:',e.message);}
-  // SOURCE 2 : Overpass nom contenant mot-clé
-  const nkw={robe:['mari','bridal','wedding','robe'],salle:['mariage','réception','domaine','château'],traiteur:['traiteur'],photographe:['photographe'],coiffeur:['coiff'],maquillage:['maquill'],fleuriste:['fleur'],bijouterie:['bijou','alliance'],patisserie:['cake','pâtiss'],dj:['dj','sono'],costume:['smoking','costume'],decor:['décor'],videaste:['vidéo'],voiture:['limousine'],hebergement:['hôtel'],imprimeur:['imprimeur'],location:['événementiel'],officiant:['officiant']};
+
+  // SOURCE 1 : Overpass tags OSM précis
+  try{
+    const fp=tags.map(t=>{const[k,v]=t.split('=');return `node["${k}"="${v}"](around:${radiusMeters},${lat},${lng});way["${k}"="${v}"](around:${radiusMeters},${lat},${lng});`;}).join('');
+    const res=await ft('https://overpass-api.de/api/interpreter?data='+encodeURIComponent(`[out:json][timeout:15];(${fp});out center 50;`));
+    if(res.ok){const d=await res.json();for(const e of(d.elements||[]).filter(e=>e.tags?.name)){const n=e.tags.name;if(seen.has(n))continue;seen.add(n);const la=e.lat||(e.center?.lat)||0,lo=e.lon||(e.center?.lon)||0;results.push({id:Date.now()+Math.random(),nom:n,categorie:catLabel,adresse:[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' ')||'',lat:la,lng:lo,distance:hav(lat,lng,la,lo),tel:e.tags.phone||'',site:e.tags.website||'',notes:''});}}
+  }catch(e){console.warn('Overpass1:',e.message);}
+
+  // SOURCE 2 : Overpass recherche par nom contenant mots-clés
+  const nameKw={robe:['mari','bridal','wedding','robe'],salle:['mariage','réception','domaine','château','salle'],traiteur:['traiteur'],photographe:['photographe'],coiffeur:['coiff'],maquillage:['maquill'],fleuriste:['fleur'],bijouterie:['bijou','alliance'],patisserie:['cake','pâtiss','gâteau'],dj:['dj ','sono'],costume:['smoking','costume'],decor:['décor'],videaste:['vidéo'],voiture:['limousine'],hebergement:['hôtel','gîte'],imprimeur:['imprimer'],location:['événementiel'],officiant:['officiant']};
   const ck=Object.keys(VND_CATEGORIES).find(k=>VND_CATEGORIES[k].tags===tags)||'';
-  for(const kw of(nkw[ck]||[]).slice(0,2)){try{const res=await ft('https://overpass-api.de/api/interpreter?data='+encodeURIComponent(`[out:json][timeout:10];(node["name"~"${kw}",i](around:${radiusMeters},${lat},${lng});way["name"~"${kw}",i](around:${radiusMeters},${lat},${lng}););out center 30;`));if(res.ok){const d=await res.json();for(const e of(d.elements||[]).filter(e=>e.tags?.name)){const n=e.tags.name;if(seen.has(n))continue;seen.add(n);const la=e.lat||(e.center?.lat)||0,lo=e.lon||(e.center?.lon)||0;results.push({id:Date.now()+Math.random(),nom:n,categorie:catLabel,adresse:[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' ')||'',lat:la,lng:lo,distance:hav(lat,lng,la,lo),tel:e.tags.phone||'',site:e.tags.website||'',notes:''});}}}catch(e){console.warn('Overpass2:',e.message);}}
+  for(const kw of(nameKw[ck]||[]).slice(0,2)){
+    try{
+      const q=`[out:json][timeout:10];(node["name"~"${kw}",i](around:${radiusMeters},${lat},${lng});way["name"~"${kw}",i](around:${radiusMeters},${lat},${lng}););out center 30;`;
+      const res=await ft('https://overpass-api.de/api/interpreter?data='+encodeURIComponent(q));
+      if(res.ok){const d=await res.json();for(const e of(d.elements||[]).filter(e=>e.tags?.name)){const n=e.tags.name;if(seen.has(n))continue;seen.add(n);const la=e.lat||(e.center?.lat)||0,lo=e.lon||(e.center?.lon)||0;results.push({id:Date.now()+Math.random(),nom:n,categorie:catLabel,adresse:[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' ')||'',lat:la,lng:lo,distance:hav(lat,lng,la,lo),tel:e.tags.phone||'',site:e.tags.website||'',notes:''});}}
+    }catch(e){console.warn('Overpass2:',e.message);}
+  }
+
   // SOURCE 3 : Nominatim texte libre
-  const nt={robe:['robe mariée','boutique mariage'],salle:['salle mariage','domaine mariage'],traiteur:['traiteur mariage'],photographe:['photographe mariage'],coiffeur:['coiffeur mariage'],maquillage:['maquillage mariage'],fleuriste:['fleuriste mariage'],bijouterie:['bijouterie alliance'],patisserie:['wedding cake'],dj:['DJ mariage'],costume:['costume mariage'],decor:['décoration mariage'],videaste:['vidéaste mariage'],voiture:['location voiture mariage'],hebergement:['hôtel'],imprimeur:['imprimeur faire-part'],location:['location matériel mariage'],officiant:['officiant laïque']};
-  for(const term of(nt[ck]||[catLabel]).slice(0,2)){try{const res=await ft(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(term)}&format=json&limit=30&lat=${lat}&lon=${lng}&addressdetails=1&countrycodes=fr,be,ch,lu`,8000);if(!res.ok)continue;const d=await res.json();for(const e of d){if(!e.lat)continue;const n=e.display_name.split(',')[0].trim();if(!n||seen.has(n)||n.length<3)continue;seen.add(n);const la=parseFloat(e.lat),lo=parseFloat(e.lon),dist=hav(lat,lng,la,lo);if(dist>radiusKm*2)continue;results.push({id:Date.now()+Math.random(),nom:n,categorie:catLabel,adresse:((e.address?.road||'')+' '+(e.address?.city||e.address?.town||'')).trim(),lat:la,lng:lo,distance:dist,tel:'',site:'',notes:'',});}}catch(e){console.warn('Nominatim:',e.message);}}
+  const nomT={robe:['robe mariée','boutique mariage'],salle:['salle mariage','domaine mariage'],traiteur:['traiteur mariage'],photographe:['photographe mariage'],coiffeur:['coiffeur mariage'],maquillage:['maquillage mariage'],fleuriste:['fleuriste mariage'],bijouterie:['bijouterie alliance'],patisserie:['wedding cake','pâtissier mariage'],dj:['DJ mariage'],costume:['costume mariage'],decor:['décoration mariage'],videaste:['vidéaste mariage'],voiture:['location voiture mariage'],hebergement:['hôtel'],imprimeur:['imprimeur faire-part'],location:['location matériel mariage'],officiant:['officiant laïque']};
+  for(const term of(nomT[ck]||[catLabel]).slice(0,2)){
+    try{
+      const res=await ft(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(term)}&format=json&limit=30&lat=${lat}&lon=${lng}&addressdetails=1&countrycodes=fr,be,ch,lu`,8000);
+      if(!res.ok) continue;const d=await res.json();
+      for(const e of d){if(!e.lat)continue;const n=e.display_name.split(',')[0].trim();if(!n||seen.has(n)||n.length<3)continue;seen.add(n);const la=parseFloat(e.lat),lo=parseFloat(e.lon),dist=hav(lat,lng,la,lo);if(dist>radiusKm*2)continue;results.push({id:Date.now()+Math.random(),nom:n,categorie:catLabel,adresse:((e.address?.road||'')+' '+(e.address?.city||e.address?.town||'')).trim(),lat:la,lng:lo,distance:dist,tel:'',site:'',notes:''});}
+    }catch(e){console.warn('Nominatim:',e.message);}
+  }
+
   results=results.sort((a,b)=>a.distance-b.distance).slice(0,30);
   const city=el('vnd-location-status')?.textContent?.replace('Lieu défini :','').trim().split(',')[0]||'';
   const gmUrl=`https://www.google.com/maps/search/${encodeURIComponent(catLabel+' '+city)}/@${lat},${lng},13z`;
+  const googleBtn=`<a href="${gmUrl}" target="_blank" rel="noopener" style="display:block;margin-top:10px;padding:10px;background:${sf};border:1.5px solid ${br};border-radius:12px;text-align:center;text-decoration:none;color:${pk};font-size:13px;font-weight:700;font-family:Lora,serif;">Voir aussi sur Google Maps</a>`;
+
+  if(!results.length){
+    if(wrap) wrap.innerHTML=`<div style="padding:16px;text-align:center;"><p style="font-size:13px;color:${tl};margin-bottom:14px;">Aucun résultat sur OpenStreetMap.<br><span style="font-size:11px;font-style:italic;">La base OSM est parfois incomplète.</span></p>${googleBtn}</div>`;
+    return;
+  }
   window._vndResults=results;window._vndGoogleUrl=gmUrl;
-  if(!results.length){if(wrap)wrap.innerHTML=`<div style="padding:16px;text-align:center;"><p style="font-size:13px;color:${tl};margin-bottom:14px;">Aucun résultat sur OpenStreetMap.<br><span style="font-size:11px;font-style:italic;">Essayez Google Maps :</span></p><a href="${gmUrl}" target="_blank" style="display:block;padding:12px;background:${sf};border:1px solid ${br};border-radius:14px;text-decoration:none;color:${pk};font-size:13px;font-weight:700;font-family:Lora,serif;text-align:center;">Chercher sur Google Maps</a></div>`;return;}
   renderVndResults(catLabel);
 }
+
 
 async function searchVendorsWithLocation(query,lat,lng){
   const btn=el('vnd-btn');btn.textContent='Recherche...';btn.disabled=true;
@@ -4470,9 +4554,9 @@ function renderDecorations(){
     const total = items.length;
     const done = items.filter((_,i) => saved[cat+i]).length;
     html += `<div class="card" style="margin-bottom:12px;overflow:hidden;">
-      <div style="display:flex;align-items:center;background:${sf};border-radius:10px 10px 0 0;padding:12px 16px;">
+      <div style="display:flex;align-items:center;background:linear-gradient(135deg,${sf},#fff);padding:13px 16px;">
         <div onclick="toggleDecoSection(${catIdx})" style="flex:1;cursor:pointer;">
-          <div data-deco-cat="${cat}" onclick="renameDecoCategory('${cat.replace(/'/g,"'")}',${catIdx})" style="font-family:Playfair Display,serif;font-family:Lora,serif;font-size:13px;color:${tm};font-weight:700;cursor:pointer;" title="Appuyer pour renommer">${h(cat)}</div>
+          <div data-deco-cat="${cat}" onclick="renameDecoCategory('${cat.replace(/'/g,"'")}',${catIdx})" style="font-family:Playfair Display,serif;font-size:15px;color:${tx};font-weight:700;cursor:pointer;" title="Appuyer pour renommer">${h(cat)}</div>
           <div style="font-size:11px;color:${tl};margin-top:2px;">${done}/${total} éléments</div>
         </div>
         <button onclick="removeDecoCategory('${cat.replace(/'/g,"'")}')" style="background:none;border:none;color:${br};font-size:18px;cursor:pointer;padding:0 8px;">×</button>
@@ -4569,7 +4653,7 @@ function renderAlbum(){
     : '';
 
   el('page-8').innerHTML = `
-  <div class="card" style="padding:16px;border:1.5px solid #f0e8ec;margin-bottom:16px;background:linear-gradient(135deg,${sf},#fff);">
+  <div class="card" style="padding:16px;margin-bottom:16px;background:linear-gradient(135deg,${sf},#fff);">
     <div style="font-family:Playfair Display,serif;font-size:18px;color:${tx};margin-bottom:12px;">📸 Album partagé</div>
     <p style="font-size:13px;color:${tl};margin-bottom:14px;">Partagez votre album <strong>Google Photos</strong> avec vos invités.</p>
     <div style="margin-bottom:16px;">
@@ -4580,11 +4664,11 @@ function renderAlbum(){
       </div>
     </div>
     ${driveUrl ? `
-    <div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:16px;padding:20px 16px;background:#fdf8f5;border-radius:14px;">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:16px;">
       <img src="${qrUrl}" style="border-radius:12px;box-shadow:0 2px 12px rgba(180,100,130,0.2);" alt="QR Code">
       <button class="btn" onclick="shareCurrentDriveUrl()" style="width:100%;">📤 Partager le lien</button>
       <button class="btn-sec" onclick="copyCurrentDriveUrl()" style="width:100%;">📋 Copier le lien</button>
-      <a id="drive-open-link" href="${driveUrl}" target="_blank" style="font-family:Lora,serif;font-size:13px;color:#b07a90;text-decoration:underline;display:block;text-align:center;padding:4px 0;">Ouvrir mon album Google Photos</a>
+      <a id="drive-open-link" href="${driveUrl}" target="_blank" class="btn" style="width:100%;text-align:center;text-decoration:none;display:block;">📂 Ouvrir mon album Google Photos</a>
     </div>
     ` : `
     <div style="background:${sf};border:2px dashed ${br};border-radius:12px;padding:20px;text-align:center;color:${tl};font-size:13px;font-style:italic;">
@@ -6596,59 +6680,59 @@ function pinterestUrl(query){
 
 function renderAssistant(){
   el('page-7').innerHTML = `
-    <div style="padding:20px 16px 16px;text-align:center;">
-      <div style="font-family:Playfair Display,serif;font-size:20px;color:${tx};margin-bottom:8px;">Assistant Weddilya</div>
-      <div style="width:32px;height:1.5px;background:${pk};margin:0 auto 8px;border-radius:2px;"></div>
-      <div style="font-size:12px;color:${tl};font-style:italic;">Tous les conseils dont tu as besoin pour ton mariage.</div>
+    <div class="card" style="padding:18px 16px;margin-bottom:16px;background:linear-gradient(135deg,${sf},#fff);">
+      <h2 style="font-family:Playfair Display,Georgia,serif;font-size:22px;color:${tm};margin:0 0 6px;text-align:center;font-weight:700;">✨ Assistant Weddilya</h2>
+      <p style="text-align:center;font-size:12px;color:${tl};margin:0;font-style:italic;line-height:1.5;">Tous les conseils dont tu as besoin pour ton mariage.</p>
     </div>
-    <div style="padding:0 12px 16px;">
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:10px;margin-bottom:16px;">
       ${[
-        {key:'animations',    label:'Animations soirée',     desc:'Idées pour égayer la fête'},
-        {key:'belleFamille',  label:'Belle-famille',         desc:'Gérer les situations délicates'},
-        {key:'bijouxMariee',  label:'Bijoux mariée',         desc:'Selon robe et coiffure'},
-        {key:'cadeauxInvites',label:'Cadeaux invités',       desc:'Selon votre budget'},
-        {key:'checklistAvant',label:'Check 10min avant',     desc:'Tout vérifier avant cérémonie'},
-        {key:'budget',        label:'Conseils budget',       desc:'Répartition optimisée'},
-        {key:'weddingDay',    label:'Conseils jour J',       desc:'Pas-à-pas du jour J'},
-        {key:'tenueMarie',    label:'Costume',               desc:'Costumes et accessoires'},
-        {key:'decoration',    label:'Décoration mariage',    desc:'Inspiration selon style'},
-        {key:'enfants',       label:'Enfants au mariage',    desc:'Rôles et animations'},
-        {key:'fairepart',     label:'Faire-part',            desc:'12 modèles prêts à utiliser'},
-        {key:'stress',        label:'Gestion du stress',     desc:'Avant, pendant, après'},
-        {key:'problemes',     label:'Imprévus & solutions',  desc:'Comment réagir'},
-        {key:'invitesLoin',   label:'Invités de loin',       desc:'Logement, attentions, infos'},
-        {key:'listeCadeaux',  label:'Liste de mariage',      desc:'Sites, idées, conseils'},
-        {key:'menu',          label:'Menu personnalisé',     desc:'Adapté au style et à la saison'},
-        {key:'emotion',       label:'Moments émotion',       desc:'Instants à ne pas manquer'},
-        {key:'photos',        label:'Photos à prévoir',      desc:'Checklist photographe'},
-        {key:'playlistAmbi',  label:'Playlist par ambiance', desc:'Cérémonie, cocktail, soirée'},
-        {key:'prepCivile',    label:'Préparation civile',    desc:'Documents, étapes mairie'},
-        {key:'prepReligieuse',label:'Préparation religieuse',desc:'Selon la religion'},
-        {key:'questions',     label:'Questions prestataires',desc:'Que demander à chacun'},
-        {key:'remerciements', label:'Remerciements',         desc:'Cartes post-mariage'},
-        {key:'tenueMariee',   label:'Robe de mariée',        desc:'Modèles, styles, bijoux'},
-        {key:'timeline',      label:'Timeline jour J',       desc:'Planning heure par heure'},
-        {key:'voeux',         label:'Vœux personnalisés',    desc:'Modèles à adapter'},
-        {key:'voyageNoces',   label:'Voyage de noces',       desc:'Idées de destinations'},
-        {key:'weddingCake',   label:'Wedding cake',          desc:'Styles et inspirations'}
-      ].map(s=>`<button onclick="assistOpen('${s.key}')" id="assist-btn-${s.key}" style="display:flex;align-items:center;gap:14px;width:100%;background:#fff;border:none;border-bottom:1px solid #f5eaef;padding:14px 6px;cursor:pointer;font-family:Lora,serif;text-align:left;transition:all .15s;box-sizing:border-box;" onmouseover="this.style.background='#fef8fb'" onmouseout="if(!this.classList.contains('active'))this.style.background='#fff'">
-        <div style="width:3px;height:32px;border-radius:2px;background:linear-gradient(180deg,${pk},#f0a0b8);flex-shrink:0;"></div>
-        <div style="flex:1;">
-          <div style="font-size:14px;font-weight:700;color:${tx};margin-bottom:2px;">${s.label}</div>
-          <div style="font-size:11px;color:${tl};">${s.desc}</div>
-        </div>
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 2l4 3-4 3" stroke="${pk}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        // Liste pré-triée alphabétiquement par label (français)
+        {key:'animations',    label:'Animations soirée',    icon:'🎉', desc:'Idées pour égayer la fête'},
+        {key:'belleFamille',  label:'Belle-famille',        icon:'👨‍👩‍👧', desc:'Gérer les situations délicates'},
+        {key:'bijouxMariee',  label:'Bijoux mariée',        icon:'💍', desc:'Selon robe et coiffure'},
+        {key:'cadeauxInvites',label:'Cadeaux invités',      icon:'🎁', desc:'Selon votre budget'},
+        {key:'checklistAvant',label:'Check 10min avant',    icon:'✅', desc:'Tout vérifier avant cérémonie'},
+        {key:'budget',        label:'Conseils budget',      icon:'💰', desc:'Répartition optimisée'},
+        {key:'weddingDay',    label:'Conseils jour J',      icon:'⭐', desc:'Pas-à-pas du jour J'},
+        {key:'tenueMarie',    label:'Costume',              icon:'🤵', desc:'Costumes et accessoires'},
+        {key:'decoration',    label:'Décoration mariage',   icon:'🎀', desc:'Inspiration selon style'},
+        {key:'enfants',       label:'Enfants au mariage',   icon:'🧒', desc:'Rôles et animations'},
+        {key:'fairepart',     label:'Faire-part',           icon:'✉️', desc:'12 modèles prêts à utiliser'},
+        {key:'stress',        label:'Gestion du stress',    icon:'🧘', desc:'Avant, pendant, après'},
+        {key:'problemes',     label:'Imprévus & solutions', icon:'🆘', desc:'Comment réagir'},
+        {key:'invitesLoin',   label:'Invités de loin',      icon:'🧳', desc:'Logement, attentions, infos'},
+        {key:'listeCadeaux',  label:'Liste / Cagnotte',     icon:'🎀', desc:'Sites, idées, conseils'},
+        {key:'menu',          label:'Menu personnalisé',    icon:'🍽️', desc:'Menu adapté au style et à la saison'},
+        {key:'emotion',       label:'Moments-émotion',      icon:'💖', desc:'Instants à ne pas manquer'},
+        {key:'photos',        label:'Photos à prévoir',     icon:'📸', desc:'Checklist photographe'},
+        {key:'playlistAmbi',  label:'Playlist par ambiance',icon:'🎶', desc:'Cérémonie, cocktail, soirée'},
+        {key:'prepCivile',    label:'Préparation civile',   icon:'🏛️', desc:'Documents, étapes mairie'},
+        {key:'prepReligieuse',label:'Préparation religieuse',icon:'⛪', desc:'Selon la religion'},
+        {key:'questions',     label:'Questions prestataires',icon:'❓', desc:'Que demander à chacun'},
+        {key:'remerciements', label:'Remerciements',        icon:'💌', desc:'Cartes post-mariage'},
+        {key:'tenueMariee',   label:'Robe de mariée',       icon:'👰', desc:'Modèles, styles, bijoux'},
+        {key:'timeline',      label:'Timeline jour J',      icon:'⏰', desc:'Planning heure par heure'},
+        {key:'voeux',         label:'Vœux personnalisés',   icon:'💞', desc:'Modèles de vœux à adapter'},
+        {key:'voyageNoces',   label:'Voyage de noces',      icon:'✈️', desc:'Idées de destinations'},
+        {key:'weddingCake',   label:'Wedding cake',         icon:'🎂', desc:'Styles et inspirations'}
+      ].map(s=>`<button onclick="assistOpen('${s.key}')" class="card" style="padding:14px 12px;border:1.5px solid ${br};text-align:left;cursor:pointer;background:#fff;font-family:Lora,serif;transition:all .15s;">
+        <div style="font-size:26px;margin-bottom:6px;">${s.icon}</div>
+        <div style="font-weight:700;color:${tx};font-size:13px;margin-bottom:3px;">${s.label}</div>
+        <div style="font-size:10px;color:${tl};line-height:1.4;">${s.desc}</div>
       </button>`).join('')}
     </div>
-    <div id="assist-content" style="padding:0 12px 16px;"></div>
+
+    <div id="assist-content" style="margin-top:8px;"></div>
   `;
 }
 
+// ─── Ouverture d'un service ───
 function assistOpen(service){
   const cont = el('assist-content');
   if(!cont) return;
-  document.querySelectorAll('#page-7 button[id^="assist-btn"]').forEach(b=>{b.style.background='#fff';b.classList.remove('active');});
-  const ab=document.getElementById('assist-btn-'+service);if(ab){ab.style.background='#fef5f8';ab.classList.add('active');}
+  // Reset tous les boutons
+  document.querySelectorAll('#page-7 button[onclick^="assistOpen"]').forEach(b=>{b.style.background='#fff';b.style.paddingLeft='6px';});
   // Scroller en douceur jusqu'au contenu après le clic
   setTimeout(()=>{cont.scrollIntoView({behavior:'smooth',block:'start'});}, 50);
   if(service === 'menu')           return assistMenu(cont);
@@ -6851,7 +6935,7 @@ function assistGenerateMenu(){
 
   const b = menu.boissons;
   const restricChips = restrictions.length
-    ? `<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;justify-content:center;">${restrictions.map(r=>`<span style="background:#fef5f8;border:1px solid ${br};border-radius:12px;padding:2px 9px;font-size:10px;color:${pk};font-weight:700;">${RESTRIC_LABELS[r]}</span>`).join('')}</div>`
+    ? `<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;justify-content:center;">${restrictions.map(r=>`<span style="background:${sf};border:1px solid ${br};border-radius:12px;padding:2px 9px;font-size:10px;color:${pk};font-weight:700;">${RESTRIC_LABELS[r]}</span>`).join('')}</div>`
     : '';
 
   el('menu-result').innerHTML = `
@@ -6915,7 +6999,7 @@ function assistGenerateFairepart(){
   const r = el('fp-result');
   if(!modeles.length){ r.innerHTML = `<p style="color:${tl};font-size:12px;">Aucun modèle disponible.</p>`; return; }
   r.innerHTML = `<div style="border-top:1.5px solid ${br};padding-top:14px;font-size:11px;color:${tl};margin-bottom:10px;">Remplace les [crochets] par tes propres informations.</div>` +
-    modeles.map((t, i) => `<div class="card" style="padding:14px;margin-bottom:10px;background:#fef5f8;">
+    modeles.map((t, i) => `<div class="card" style="padding:14px;margin-bottom:10px;background:${sf};">
       <div style="font-size:11px;font-weight:700;color:${pk};margin-bottom:8px;">Modèle ${i+1}</div>
       <div style="font-size:13px;color:${tx};line-height:1.7;white-space:pre-line;font-family:Playfair Display,Georgia,serif;font-style:italic;">${h(t)}</div>
       <button onclick="assistCopyText(${JSON.stringify(t).replace(/"/g,'&quot;')})" class="btn-sec" style="margin-top:10px;font-size:11px;padding:6px 12px;">📋 Copier ce modèle</button>
@@ -6951,7 +7035,7 @@ function assistGenerateDiscours(){
   const r = el('disc-result');
   if(!trames.length){ r.innerHTML = `<p style="color:${tl};font-size:12px;">Aucune trame disponible.</p>`; return; }
   r.innerHTML = `<div style="border-top:1.5px solid ${br};padding-top:14px;font-size:11px;color:${tl};margin-bottom:10px;">Remplace les [crochets] par tes propres souvenirs et anecdotes. Vise 4-6 minutes maximum.</div>` +
-    trames.map((t, i) => `<div class="card" style="padding:14px;margin-bottom:10px;background:#fef5f8;">
+    trames.map((t, i) => `<div class="card" style="padding:14px;margin-bottom:10px;background:${sf};">
       <div style="font-size:11px;font-weight:700;color:${pk};margin-bottom:8px;">Trame ${i+1}</div>
       <div style="font-size:13px;color:${tx};line-height:1.7;white-space:pre-line;">${h(t)}</div>
       <button onclick="assistCopyText(${JSON.stringify(t).replace(/"/g,'&quot;')})" class="btn-sec" style="margin-top:10px;font-size:11px;padding:6px 12px;">📋 Copier cette trame</button>
@@ -6992,7 +7076,7 @@ function assistGenerateBudget(){
     <div style="border-top:1.5px solid ${br};padding-top:14px;">
       <div style="font-family:Playfair Display,serif;font-style:italic;font-size:16px;color:${tm};margin-bottom:4px;text-align:center;">${h(data.title)}</div>
       <div style="font-size:12px;color:${tl};text-align:center;margin-bottom:14px;font-style:italic;">${h(data.parInvite)}</div>
-      ${data.repartition.map(item => `<div style="background:#fef5f8;border-radius:8px;padding:10px 12px;margin-bottom:6px;">
+      ${data.repartition.map(item => `<div style="background:${sf};border-radius:8px;padding:10px 12px;margin-bottom:6px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
           <span style="font-weight:700;font-size:13px;color:${tx};">${h(item.poste)}</span>
           <span style="font-weight:700;color:${pk};font-size:14px;">${item.montant}€<span style="color:${tl};font-size:10px;font-weight:400;margin-left:4px;">(${item.pct}%)</span></span>
@@ -7100,7 +7184,7 @@ function assistGenerateDeco(){
   r.innerHTML = `<div style="border-top:1.5px solid ${br};padding-top:14px;">
     <div style="font-family:Playfair Display,serif;font-style:italic;font-size:16px;color:${tm};margin-bottom:14px;text-align:center;">${h(d.title)}</div>
 
-    <div style="background:#fef5f8;padding:12px;border-radius:10px;margin-bottom:10px;">
+    <div style="background:${sf};padding:12px;border-radius:10px;margin-bottom:10px;">
       <div style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">🎨 Palette de couleurs</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;">${d.couleurs.map(c=>`<span style="background:#fff;padding:4px 10px;border-radius:14px;font-size:11px;color:${tx};border:1px solid ${br};font-weight:600;">${h(c)}</span>`).join('')}</div>
     </div>
@@ -7136,7 +7220,7 @@ function assistWeddingCake(cont){
       </div>
       <div style="font-family:Playfair Display,serif;font-style:italic;font-size:16px;color:${tm};margin-bottom:12px;text-align:center;">${h(current.label)}</div>
       <div style="display:grid;gap:8px;">
-        ${current.items.map(it=>`<div style="display:flex;align-items:center;gap:10px;background:#fef5f8;border-radius:10px;padding:11px 12px;">
+        ${current.items.map(it=>`<div style="display:flex;align-items:center;gap:10px;background:${sf};border-radius:10px;padding:11px 12px;">
           <span style="flex:1;font-size:13px;color:${tx};font-weight:600;line-height:1.4;">${h(it.nom)}</span>
           <a href="${pinterestUrl(it.pin)}" target="_blank" rel="noopener" style="flex-shrink:0;padding:6px 11px;background:#fff;border:1.5px solid ${gd}50;border-radius:8px;text-decoration:none;color:${tx};font-size:11px;font-weight:700;font-family:Lora,serif;white-space:nowrap;">📌 Pinterest</a>
         </div>`).join('')}
@@ -7165,7 +7249,7 @@ function assistAnimations(cont){
 function assistRenderAnim(){
   const cat = ld('assist_anim_cat', 'classique');
   const list = ASSIST_KB.animations[cat] || [];
-  el('anim-result').innerHTML = list.map(a=>`<div class="card" style="padding:14px;margin-bottom:8px;background:#fef5f8;">
+  el('anim-result').innerHTML = list.map(a=>`<div class="card" style="padding:14px;margin-bottom:8px;background:${sf};">
     <div style="font-weight:700;color:${tx};font-size:14px;margin-bottom:5px;">${h(a.nom)}</div>
     <div style="font-size:12px;color:${tm};line-height:1.6;">${h(a.desc)}</div>
   </div>`).join('');
@@ -7194,7 +7278,7 @@ function assistVoyageNoces(cont){
 function assistRenderVoyage(){
   const cat = ld('assist_voyage_cat', 'plage');
   const list = ASSIST_KB.voyageNoces[cat] || [];
-  el('voyage-result').innerHTML = list.map(d=>`<div class="card" style="padding:14px;margin-bottom:8px;background:#fef5f8;">
+  el('voyage-result').innerHTML = list.map(d=>`<div class="card" style="padding:14px;margin-bottom:8px;background:${sf};">
     <div style="font-weight:700;color:${tx};font-size:14px;margin-bottom:5px;">${h(d.dest)}</div>
     <div style="font-size:12px;color:${tm};line-height:1.6;">${h(d.desc)}</div>
   </div>`).join('');
@@ -7221,7 +7305,7 @@ function assistCadeauxInvites(cont){
 function assistRenderCadeau(){
   const cat = ld('assist_cadeau_cat', 'petit-budget');
   const list = ASSIST_KB.cadeauxInvites[cat] || [];
-  el('cadeau-result').innerHTML = list.map(c=>`<div class="card" style="padding:14px;margin-bottom:8px;background:#fef5f8;">
+  el('cadeau-result').innerHTML = list.map(c=>`<div class="card" style="padding:14px;margin-bottom:8px;background:${sf};">
     <div style="font-weight:700;color:${tx};font-size:14px;margin-bottom:5px;">${h(c.nom)}</div>
     <div style="font-size:12px;color:${tm};line-height:1.6;">${h(c.desc)}</div>
   </div>`).join('');
@@ -7235,13 +7319,13 @@ function assistTenueMariee(cont){
       <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">👰 Robe de mariée</div>
 
       <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;">🧍 Conseils selon morphologie</div>
-      ${Object.entries(d.morphologies).map(([k,v])=>`<div class="card" style="padding:12px;margin-bottom:8px;background:#fef5f8;">
+      ${Object.entries(d.morphologies).map(([k,v])=>`<div class="card" style="padding:12px;margin-bottom:8px;background:${sf};">
         <div style="font-weight:700;color:${tx};font-size:13px;text-transform:capitalize;margin-bottom:4px;">Morphologie en ${h(k)}</div>
         <div style="font-size:12px;color:${tm};line-height:1.6;">${h(v)}</div>
       </div>`).join('')}
 
       <div style="font-size:13px;font-weight:700;color:${pk};margin:18px 0 8px;">👗 Styles de robe</div>
-      ${d.styles.map(s=>`<div class="card" style="padding:12px;margin-bottom:8px;background:#fef5f8;">
+      ${d.styles.map(s=>`<div class="card" style="padding:12px;margin-bottom:8px;background:${sf};">
         <div style="font-weight:700;color:${tx};font-size:13px;margin-bottom:4px;">${h(s.nom)}</div>
         <div style="font-size:12px;color:${tm};line-height:1.6;margin-bottom:8px;">${h(s.desc)}</div>
         <a href="${pinterestUrl(s.pin || ('robe de mariée '+s.nom))}" target="_blank" rel="noopener" style="display:inline-block;padding:5px 11px;background:#fff;border:1.5px solid ${gd}50;border-radius:8px;text-decoration:none;color:${tx};font-size:11px;font-weight:700;font-family:Lora,serif;">📌 Voir sur Pinterest</a>
@@ -7258,7 +7342,7 @@ function assistTenueMarie(cont){
       <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">🤵 Costume</div>
 
       <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;">👔 Styles de costume</div>
-      ${d.styles.map(s=>`<div class="card" style="padding:12px;margin-bottom:8px;background:#fef5f8;">
+      ${d.styles.map(s=>`<div class="card" style="padding:12px;margin-bottom:8px;background:${sf};">
         <div style="font-weight:700;color:${tx};font-size:13px;margin-bottom:4px;">${h(s.nom)}</div>
         <div style="font-size:12px;color:${tm};line-height:1.6;margin-bottom:8px;">${h(s.desc)}</div>
         <a href="${pinterestUrl('costume marié '+s.nom)}" target="_blank" rel="noopener" style="display:inline-block;padding:5px 11px;background:#fff;border:1.5px solid ${gd}50;border-radius:8px;text-decoration:none;color:${tx};font-size:11px;font-weight:700;font-family:Lora,serif;">📌 Voir sur Pinterest</a>
@@ -7269,7 +7353,7 @@ function assistTenueMarie(cont){
         ${d.accessoires.map(a=>`<li>${h(a)}</li>`).join('')}
       </ul>
 
-      <div style="background:#fef5f8;padding:12px;border-radius:10px;margin-top:14px;">
+      <div style="background:${sf};padding:12px;border-radius:10px;margin-top:14px;">
         <div style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">🎨 Choix des couleurs</div>
         <div style="font-size:13px;color:${tx};line-height:1.6;">${h(d.couleurs)}</div>
       </div>
@@ -7287,23 +7371,23 @@ function assistBijouxMariee(cont){
       <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;">👗 Selon le décolleté / style de robe</div>
       ${Object.entries(d.selonRobe).map(([k,v])=>{
         const labels = {decollete:'Décolleté plongeant',bustier:'Bustier sans bretelles','col-haut':'Col haut','dos-nu':'Dos-nu',simple:'Robe minimaliste'};
-        return `<div class="card" style="padding:12px;margin-bottom:8px;background:#fef5f8;">
+        return `<div class="card" style="padding:12px;margin-bottom:8px;background:${sf};">
           <div style="font-weight:700;color:${tx};font-size:13px;margin-bottom:4px;">${labels[k]||k}</div>
           <div style="font-size:12px;color:${tm};line-height:1.6;">${h(v)}</div>
         </div>`;
       }).join('')}
 
-      <div style="background:#fef5f8;padding:12px;border-radius:10px;margin-top:14px;margin-bottom:10px;">
+      <div style="background:${sf};padding:12px;border-radius:10px;margin-top:14px;margin-bottom:10px;">
         <div style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">👰 Coordination avec le voile</div>
         <div style="font-size:13px;color:${tx};line-height:1.6;">${h(d.voile)}</div>
       </div>
 
-      <div style="background:#fef5f8;padding:12px;border-radius:10px;margin-bottom:10px;">
+      <div style="background:${sf};padding:12px;border-radius:10px;margin-bottom:10px;">
         <div style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">💇 Selon la coiffure</div>
         <div style="font-size:13px;color:${tx};line-height:1.6;">${h(d.coiffure)}</div>
       </div>
 
-      <div style="background:#fef5f8;padding:12px;border-radius:10px;">
+      <div style="background:${sf};padding:12px;border-radius:10px;">
         <div style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">💐 Coordination avec le bouquet</div>
         <div style="font-size:13px;color:${tx};line-height:1.6;">${h(d.bouquet)}</div>
       </div>
@@ -7404,7 +7488,7 @@ function assistBelleFamille(cont){
       <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">👨‍👩‍👧 Belle-famille & situations délicates</div>
 
       <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;">Situations courantes</div>
-      ${d.situations.map(s=>`<div class="card" style="padding:12px;margin-bottom:8px;background:#fef5f8;">
+      ${d.situations.map(s=>`<div class="card" style="padding:12px;margin-bottom:8px;background:${sf};">
         <div style="font-weight:700;color:${tx};font-size:13px;margin-bottom:4px;">${h(s.nom)}</div>
         <div style="font-size:12px;color:${tm};line-height:1.6;">${h(s.desc)}</div>
       </div>`).join('')}
@@ -7447,7 +7531,7 @@ function assistRenderQuestions(){
   const t = el('quest-presta').value;
   const list = ASSIST_KB.questionsPrestataires[t] || [];
   el('quest-result').innerHTML = `<div style="font-size:11px;color:${tl};font-style:italic;margin-bottom:10px;">Coche les questions à poser lors du rendez-vous :</div>
-    ${list.map((q,i)=>`<div class="card" style="padding:10px 12px;margin-bottom:6px;background:#fef5f8;display:flex;align-items:flex-start;gap:8px;">
+    ${list.map((q,i)=>`<div class="card" style="padding:10px 12px;margin-bottom:6px;background:${sf};display:flex;align-items:flex-start;gap:8px;">
       <span style="color:${pk};font-weight:700;flex-shrink:0;">${i+1}.</span>
       <span style="font-size:13px;color:${tx};line-height:1.5;">${h(q)}</span>
     </div>`).join('')}`;
@@ -7475,7 +7559,7 @@ function assistRenderVoeux(){
   const style = el('voeux-style').value;
   const list = ASSIST_KB.voeux[style] || [];
   el('voeux-result').innerHTML = `<div style="font-size:11px;color:${tl};font-style:italic;margin-bottom:10px;">Remplace les [crochets] par tes propres mots et anecdotes.</div>` +
-    list.map((t,i)=>`<div class="card" style="padding:14px;margin-bottom:10px;background:#fef5f8;">
+    list.map((t,i)=>`<div class="card" style="padding:14px;margin-bottom:10px;background:${sf};">
       <div style="font-size:11px;font-weight:700;color:${pk};margin-bottom:8px;">Modèle ${i+1}</div>
       <div style="font-size:13px;color:${tx};line-height:1.7;white-space:pre-line;font-family:Playfair Display,Georgia,serif;font-style:italic;">${h(t)}</div>
       <button onclick="assistCopyText(${JSON.stringify(t).replace(/"/g,'&quot;')})" class="btn-sec" style="margin-top:10px;font-size:11px;padding:6px 12px;">📋 Copier</button>
@@ -7502,7 +7586,7 @@ function assistRemerciements(cont){
 function assistRenderRemerc(){
   const type = el('remerc-type').value;
   const list = ASSIST_KB.remerciements[type] || [];
-  el('remerc-result').innerHTML = list.map((t,i)=>`<div class="card" style="padding:14px;margin-bottom:10px;background:#fef5f8;">
+  el('remerc-result').innerHTML = list.map((t,i)=>`<div class="card" style="padding:14px;margin-bottom:10px;background:${sf};">
     <div style="font-size:11px;font-weight:700;color:${pk};margin-bottom:8px;">Modèle ${i+1}</div>
     <div style="font-size:13px;color:${tx};line-height:1.7;white-space:pre-line;">${h(t)}</div>
     <button onclick="assistCopyText(${JSON.stringify(t).replace(/"/g,'&quot;')})" class="btn-sec" style="margin-top:10px;font-size:11px;padding:6px 12px;">📋 Copier</button>
@@ -7539,7 +7623,7 @@ function assistListeCadeaux(cont){
     <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">🎀 Liste de mariage / Cagnotte</div>
 
     <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;">🌐 Plateformes recommandées</div>
-    ${d['cagnotte-en-ligne'].map(p=>`<div class="card" style="padding:12px;margin-bottom:8px;background:#fef5f8;">
+    ${d['cagnotte-en-ligne'].map(p=>`<div class="card" style="padding:12px;margin-bottom:8px;background:${sf};">
       <div style="font-weight:700;color:${tx};font-size:13px;margin-bottom:4px;">${h(p.nom)}</div>
       <div style="font-size:12px;color:${tm};line-height:1.6;">${h(p.desc)}</div>
     </div>`).join('')}
@@ -7570,7 +7654,7 @@ function assistPrepCivile(cont){
     </ul>
 
     <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;">📅 Étapes & calendrier</div>
-    ${d.etapes.map((e,i)=>`<div class="card" style="padding:10px 12px;margin-bottom:6px;background:#fef5f8;display:flex;align-items:flex-start;gap:10px;">
+    ${d.etapes.map((e,i)=>`<div class="card" style="padding:10px 12px;margin-bottom:6px;background:${sf};display:flex;align-items:flex-start;gap:10px;">
       <span style="color:${pk};font-weight:700;flex-shrink:0;font-family:Playfair Display,serif;font-size:14px;">${i+1}.</span>
       <span style="font-size:13px;color:${tx};line-height:1.5;">${h(e)}</span>
     </div>`).join('')}
@@ -7645,7 +7729,7 @@ function assistEnfants(cont){
     <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">🧒 Enfants au mariage</div>
 
     <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;">🎭 Rôles à leur confier</div>
-    ${d.roles.map(r=>`<div class="card" style="padding:12px;margin-bottom:8px;background:#fef5f8;">
+    ${d.roles.map(r=>`<div class="card" style="padding:12px;margin-bottom:8px;background:${sf};">
       <div style="font-weight:700;color:${tx};font-size:13px;margin-bottom:4px;">${h(r.nom)}</div>
       <div style="font-size:12px;color:${tm};line-height:1.6;">${h(r.desc)}</div>
     </div>`).join('')}
@@ -7697,7 +7781,7 @@ function assistEmotion(cont){
   cont.innerHTML = `<div class="card" style="padding:16px;">
     <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:6px;font-weight:700;">💖 Moments-émotion</div>
     <div style="font-size:11px;color:${tl};font-style:italic;margin-bottom:14px;">10 instants à savourer pleinement pour graver le souvenir.</div>
-    ${list.map((m,i)=>`<div class="card" style="padding:12px;margin-bottom:8px;background:#fef5f8;display:flex;align-items:flex-start;gap:10px;">
+    ${list.map((m,i)=>`<div class="card" style="padding:12px;margin-bottom:8px;background:${sf};display:flex;align-items:flex-start;gap:10px;">
       <span style="color:${pk};font-weight:700;flex-shrink:0;font-family:Playfair Display,serif;font-size:14px;">${i+1}.</span>
       <div>
         <div style="font-weight:700;color:${tx};font-size:13px;margin-bottom:3px;">${h(m.nom)}</div>
@@ -7713,7 +7797,7 @@ function assistProblemes(cont){
   cont.innerHTML = `<div class="card" style="padding:16px;">
     <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:6px;font-weight:700;">🆘 Imprévus du jour J</div>
     <div style="font-size:11px;color:${tl};font-style:italic;margin-bottom:14px;">Anticiper les problèmes courants pour mieux les gérer.</div>
-    ${list.map(p=>`<div class="card" style="padding:12px;margin-bottom:8px;background:#fef5f8;">
+    ${list.map(p=>`<div class="card" style="padding:12px;margin-bottom:8px;background:${sf};">
       <div style="font-weight:700;color:${rd};font-size:13px;margin-bottom:5px;">❌ ${h(p.pb)}</div>
       <div style="font-size:12px;color:${tx};line-height:1.6;"><strong style="color:${gn};">✓ Solution :</strong> ${h(p.sol)}</div>
     </div>`).join('')}
@@ -7726,7 +7810,7 @@ function assistChecklistAvant(cont){
   cont.innerHTML = `<div class="card" style="padding:16px;">
     <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:6px;font-weight:700;">✅ Check-list 10 min avant cérémonie</div>
     <div style="font-size:11px;color:${tl};font-style:italic;margin-bottom:14px;">La dernière vérification avant le grand moment. Coche au fur et à mesure.</div>
-    ${list.map((item,i)=>`<label style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;margin-bottom:6px;background:#fef5f8;border-radius:10px;cursor:pointer;">
+    ${list.map((item,i)=>`<label style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;margin-bottom:6px;background:${sf};border-radius:10px;cursor:pointer;">
       <input type="checkbox" style="margin:3px 0 0;accent-color:${pk};width:16px;height:16px;flex-shrink:0;">
       <span style="font-size:13px;color:${tx};line-height:1.6;">${h(item)}</span>
     </label>`).join('')}
@@ -7941,7 +8025,7 @@ function assistPlaylistAmbi(cont){
     <ol style="margin:0;padding-left:24px;font-size:13px;color:${tx};line-height:1.9;">
       ${list.tracks.map(t=>t.replace(/\s*—\s*/g,' - ')).sort((a,b)=>a.localeCompare(b,'fr',{sensitivity:'base'})).map(t=>`<li>${h(t)}</li>`).join('')}
     </ol>
-    <div style="margin-top:14px;padding:10px 12px;background:#fef5f8;border-radius:8px;font-size:11px;color:${tm};font-style:italic;">
+    <div style="margin-top:14px;padding:10px 12px;background:${sf};border-radius:8px;font-size:11px;color:${tm};font-style:italic;">
       💡 Donne cette playlist à ton DJ ou crée la directement dans ton application de musique préférée.
     </div>
   </div>`;
@@ -7950,8 +8034,8 @@ function assistPlaylistAmbi(cont){
 // ── NOTES ─────────────────────────────────────────────────────────────────────
 function renderNotes(){
   el('page-9').innerHTML = `
-  <div class="card" style="padding:16px;border:1.5px solid #f0e8ec;">
-    <div style="font-family:Playfair Display,serif;font-size:20px;color:${tx};margin-bottom:12px;text-align:center;">Mes notes</div>
+  <div class="card" style="padding:16px;">
+    <div style="font-family:Playfair Display,serif;font-style:italic;font-size:20px;color:${tm};margin-bottom:12px;text-align:center;">MES NOTES</div>
     <textarea id="notes-area" style="width:100%;min-height:400px;border:none;outline:none;font-family:Lora,serif;font-size:14px;color:${tx};background:transparent;resize:vertical;line-height:1.8;" placeholder="Écrivez vos notes ici...">${h(NOTES)}</textarea>
   </div>
   `;
