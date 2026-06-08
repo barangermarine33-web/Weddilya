@@ -123,7 +123,7 @@ button,label,.tab-btn,.card{-webkit-user-select:none;user-select:none;}
       <circle cx="33" cy="18" r="13" stroke="#d4607a" stroke-width="2.5" fill="none"/>
     </svg>
   </div>
-  <div style="font-style:italic;color:#b07a90;margin-bottom:28px;font-size:15px;">Organisez le plus beau jour de votre vie</div>
+  <div style="font-style:italic;color:#b07a90;margin-bottom:28px;font-size:15px;">Créez le mariage dont vous rêvez.</div>
   <div style="background:var(--card);border-radius:18px;padding:24px;width:100%;max-width:380px;box-shadow:0 8px 32px var(--shadow);border:1px solid var(--border);">
     <div style="display:flex;background:#fef2f6;border-radius:12px;padding:4px;margin-bottom:20px;">
       <button id="tab-login" onclick="showLogin()" style="flex:1;padding:10px;border:none;border-radius:9px;font-weight:700;font-family:Lora,serif;font-size:14px;cursor:pointer;background:#fff;color:#d4607a;">Se connecter</button>
@@ -2036,8 +2036,8 @@ function renderGuests(){
     </div>
     <div style="padding:0 14px 14px;"><button class="btn" onclick="addGuest()">Ajouter</button></div>
   </div>
-  <div id="guest-table-wrap" style="overflow-x:auto;margin-top:6px;">
-    <table style="width:100%;border-collapse:separate;border-spacing:0 5px;min-width:750px;">
+  <div id="guest-table-wrap" style="margin-top:6px;">
+    <table style="width:100%;border-collapse:separate;border-spacing:0 5px;">
       <thead><tr>
         <th style="padding:6px 12px;font-family:Josefin Sans,sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:${tl};font-weight:700;text-align:left;">Invité</th>
         <th style="padding:6px 9px;font-family:Josefin Sans,sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:${tl};font-weight:700;text-align:center;">Invitation</th>
@@ -2943,7 +2943,7 @@ async function exportPlanPDF(){
     };;
 
     // ─── PAGE 1 : titre + plan visuel ───
-        drawFrame();
+            drawFrame();
     if(_wi) pdf.addImage(_wi,'PNG',pw/2-40,3,80,17.5);
     else { setText(C_PK);pdf.setFont('helvetica','normal');pdf.setFontSize(18);pdf.text('WEDDILYA',pw/2,14,{align:'center'});drawRings(pw/2,22,4); }
     setStroke(C_BD);pdf.setLineWidth(0.25);pdf.line(pw/2-35,21,pw/2+35,21);
@@ -2953,16 +2953,6 @@ async function exportPlanPDF(){
     setText(C_TL);pdf.setFont('times','normal');pdf.setFontSize(10);
     pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,40,{align:'center'});
 
-    // Ligne séparatrice
-    setStroke(C_BD); pdf.setLineWidth(0.4); pdf.line(18,28,pw-18,28);
-    // Sous-titre
-    setText(C_TL); pdf.setFont('times','italic'); pdf.setFontSize(10);
-    pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,34,{align:'center'});
-
-    // Géométrie IDENTIQUE à l'application (mêmes constantes en px, puis mise à l'échelle)
-    const RND=68, SQ=72, TW=120, TH=58, SEAT=24, GAP=10;
-    // Boîte englobante d'une table (en px app), centre de surface placé à (t.x+70, t.y+70)
-    // Bornes réelles de tout le plan, chaises comprises
     const m=18, top=48, planW=pw-2*m, planH=ph-top-14;
     let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
     TABLES.forEach(t=>{
@@ -3041,14 +3031,17 @@ async function exportPlanPDF(){
     });
 
     // ─── PAGE 2+ : liste des invités par table (toutes ensemble, en cartes) ───
-    pdf.addPage(); drawFrame();
-    setText(C_PK); pdf.setFont('helvetica','normal'); pdf.setFontSize(8);
-    pdf.text('WEDDILYA',pw/2,14,{align:'center',charSpace:3});
-    setText(C_TM); pdf.setFont('times','bold'); pdf.setFontSize(22);
-    pdf.text('Invités par table',pw/2,24,{align:'center'});
+    pdf.addPage();     pdf.addPage(); drawFrame();
+    if(_wi) pdf.addImage(_wi,'PNG',pw/2-40,3,80,17.5);
+    else { setText(C_PK);pdf.setFont('helvetica','normal');pdf.setFontSize(18);pdf.text('WEDDILYA',pw/2,14,{align:'center'});drawRings(pw/2,22,4); }
+    setStroke(C_BD);pdf.setLineWidth(0.25);pdf.line(pw/2-35,21,pw/2+35,21);
+    setText(C_TM);pdf.setFont('times','italic');pdf.setFontSize(16);
+    pdf.text('Invités par table',pw/2,29,{align:'center'});
+    setStroke(C_PK);pdf.setLineWidth(0.35);pdf.line(pw/2-16,33,pw/2+16,33);
+    setText(C_TL);pdf.setFont('times','normal');pdf.setFontSize(10);
+    pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,40,{align:'center'});
+
     setStroke(C_BD); pdf.setLineWidth(0.4); pdf.line(18,28,pw-18,28);
-    setText(C_TL); pdf.setFont('times','italic'); pdf.setFontSize(10);
-    pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,34,{align:'center'});
 
     const mm=16, yTop=48, colGap=8, nCols=3, colW=(pw-2*mm-(nCols-1)*colGap)/nCols;
     let col=0, y=yTop;
@@ -3059,11 +3052,14 @@ async function exportPlanPDF(){
       if(y+needed>ph-16){
         col++;
         if(col>=nCols){ pdf.addPage(); drawFrame();
-          setText(C_PK); pdf.setFont('helvetica','normal'); pdf.setFontSize(8);
-          pdf.text('WEDDILYA',pw/2,14,{align:'center',charSpace:3});
-          setText(C_TM); pdf.setFont('times','bold'); pdf.setFontSize(22);
-          pdf.text('Invités par table',pw/2,24,{align:'center'});
-          setStroke(C_BD); pdf.setLineWidth(0.4); pdf.line(18,28,pw-18,28);
+          if(_wi) pdf.addImage(_wi,'PNG',pw/2-40,3,80,17.5);
+          else { setText(C_PK);pdf.setFont('helvetica','normal');pdf.setFontSize(18);pdf.text('WEDDILYA',pw/2,14,{align:'center'});drawRings(pw/2,22,4); }
+          setStroke(C_BD);pdf.setLineWidth(0.25);pdf.line(pw/2-35,21,pw/2+35,21);
+          setText(C_TM);pdf.setFont('times','italic');pdf.setFontSize(16);
+          pdf.text('Invités par table',pw/2,29,{align:'center'});
+          setStroke(C_PK);pdf.setLineWidth(0.35);pdf.line(pw/2-16,33,pw/2+16,33);
+          setText(C_TL);pdf.setFont('times','normal');pdf.setFontSize(10);
+          pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,40,{align:'center'});
           col=0; }
         y=yTop;
       }
