@@ -2249,10 +2249,15 @@ function renameGuest(id){
 }
 function changeCote(id){const g=GUESTS.find(g=>g.id===id);updGuest(id,'cote',g.cote==='p1'?'p2':'p1');}
 function exportGuests(){
-  const bom='\uFEFF';
   let csv='Nom complet;Email;Côté;Rôle;Régime particulier;Uniquement au vin d\'honneur;Invitation;Présence\n';
   GUESTS.forEach(g=>{csv+=`"${g.nom}";"${g.email||''}";"${g.cote==='p1'?USER.p1:USER.p2}";"${g.role||''}";"${g.regime||''}";"${g.vinHonneur?'Oui':'Non'}";"${g.invitation}";"${g.presence}"\n`;});
-  const blob=new Blob([bom+csv],{type:'text/csv;charset=utf-8;'});
+  // BOM UTF-8 pour Excel FR + encodage correct
+  const bom = new Uint8Array([0xEF,0xBB,0xBF]);
+  const encoder = new TextEncoder();
+  const csvBytes = encoder.encode(csv);
+  const combined = new Uint8Array(bom.length + csvBytes.length);
+  combined.set(bom); combined.set(csvBytes, bom.length);
+  const blob=new Blob([combined],{type:'text/csv;charset=utf-8;'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;a.download=`invites_${USER.p1}_${USER.p2}.csv`;a.click();
   setTimeout(()=>URL.revokeObjectURL(url),1000);
@@ -2977,7 +2982,7 @@ async function resetPlacement(){
 
 // Exporte le plan de table en PDF, à la charte graphique de l'application
 async function exportPlanPDF(){
-  appAlert('Préparation du PDF en cours…', '', {icon:''});
+  appModal({title:'',icon:'',message:'Préparation du PDF en cours…',buttons:[]}).catch(()=>{});
   try{
     const jsPDF = await loadJsPDF();
     const pdf = new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
@@ -3003,22 +3008,20 @@ async function exportPlanPDF(){
 
     // Frame Weddilya avec fond rosé et logo
     const drawFrame=()=>{
-      // Dégradé rose pâle : bandes horizontales de + en + rosées vers le bas
+      // Fond blanc pur
+      setFill([255,255,255]); pdf.rect(0,0,pw,ph,'F');
+      // Bandes roses dégradées sur les côtés gauche et droit (Option C)
+      const barW=8;
       const steps=20;
       for(let i=0;i<steps;i++){
         const t=i/steps;
-        const r=Math.round(253+(255-253)*0); // reste blanc vers le haut
-        const g=Math.round(248-6*t);   // 248 → 242
-        const b=Math.round(245-9*t);   // 245 → 236
-        setFill([253,Math.round(248-6*t),Math.round(245-9*t)]);
-        pdf.rect(0,(ph/steps)*i,pw,ph/steps+0.5,'F');
+        // Gauche : rose #d4607a en haut → #f0a0b8 en bas
+        setFill([Math.round(212+38*t),Math.round(96+64*t),Math.round(122+62*t)]);
+        pdf.rect(0,(ph/steps)*i,barW,ph/steps+0.5,'F');
+        // Droite : rose #f0a0b8 en haut → #d4607a en bas (inversé)
+        setFill([Math.round(240-28*t),Math.round(160-64*t),Math.round(184-62*t)]);
+        pdf.rect(pw-barW,(ph/steps)*i,barW,ph/steps+0.5,'F');
       }
-      // Coins décorés rose léger
-      setStroke([245,213,224]); pdf.setLineWidth(0.8);
-      pdf.lines([[18,0],[0,0],[0,18]],7,7);
-      pdf.lines([[-18,0],[0,0],[0,18]],pw-7,7);
-      pdf.lines([[18,0],[0,0],[0,-18]],7,ph-7);
-      pdf.lines([[-18,0],[0,0],[0,-18]],pw-7,ph-7);
     };
     // Dessiner le logo anneaux (SVG-like en jsPDF)
     const drawRings=(x,y,r)=>{
@@ -4002,7 +4005,7 @@ async function runCategorySearch(tags, catLabel, lat, lng, radiusMeters){
       // Recherche avec viewbox autour de la position
       const delta=radiusKm/111;
       const viewbox=`${lng-delta},${lat+delta},${lng+delta},${lat-delta}`;
-      const nomUrl=`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(term)}&format=json&limit=15&viewbox=${viewbox}&bounded=0&addressdetails=1&countrycodes=fr,be,ch,lu`;
+      const nomUrl=`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(term)}&format=json&limit=50&lat=${lat}&lon=${lng}&addressdetails=1&countrycodes=fr,be,ch,lu`;
       const nomRes=await fetchT(nomUrl,8000);
       if(!nomRes.ok) continue;
       const nomData=await nomRes.json();
@@ -4252,7 +4255,7 @@ async function searchVendorsWithLocation(query,lat,lng){
       try {
         const dLat = 0.45, dLng = 0.65;
         const viewbox = `${lng-dLng},${lat+dLat},${lng+dLng},${lat-dLat}`;
-        const nurl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=30&viewbox=${viewbox}&bounded=1&countrycodes=fr,be,ch,lu`;
+        const nurl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(term)}&format=json&limit=50&lat=${lat}&lon=${lng}&addressdetails=1&countrycodes=fr,be,ch,lu`;
         const nres = await fetchWithTimeout(nurl, {headers:{'Accept-Language':'fr'}}, 8000);
         if(nres.ok){
           const ndata = await nres.json();
