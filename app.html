@@ -2248,18 +2248,18 @@ function renameGuest(id){
   inp.addEventListener('keydown',function(e){if(e.key==='Enter')inp.blur();if(e.key==='Escape'){renderGuests();}});
 }
 function changeCote(id){const g=GUESTS.find(g=>g.id===id);updGuest(id,'cote',g.cote==='p1'?'p2':'p1');}
-function exportGuests(){
+async function exportGuests(){
+  // Pop-up aux couleurs de l'app
+  const closeModal = appModal({title:'Export invités',icon:'',message:'Préparation du fichier…',buttons:[]}).catch(()=>{});
+  await new Promise(r=>setTimeout(r,300));
   let csv='Nom complet;Email;Côté;Rôle;Régime particulier;Uniquement au vin d\'honneur;Invitation;Présence\n';
   GUESTS.forEach(g=>{csv+=`"${g.nom}";"${g.email||''}";"${g.cote==='p1'?USER.p1:USER.p2}";"${g.role||''}";"${g.regime||''}";"${g.vinHonneur?'Oui':'Non'}";"${g.invitation}";"${g.presence}"\n`;});
-  // BOM UTF-8 pour Excel FR + encodage correct
-  const bom = new Uint8Array([0xEF,0xBB,0xBF]);
-  const encoder = new TextEncoder();
-  const csvBytes = encoder.encode(csv);
-  const combined = new Uint8Array(bom.length + csvBytes.length);
-  combined.set(bom); combined.set(csvBytes, bom.length);
-  const blob=new Blob([combined],{type:'text/csv;charset=utf-8;'});
+  // BOM UTF-8 (EF BB BF) pour Excel FR - méthode la plus fiable
+  const bom='\uFEFF';
+  const blob=new Blob([bom+csv],{type:'text/csv;charset=utf-8;'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;a.download=`invites_${USER.p1}_${USER.p2}.csv`;a.click();
+  setTimeout(()=>{const r=document.getElementById('app-modal-root');if(r){r.style.display='none';r.innerHTML='';}},800);
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 async function deleteAllGuests(){
@@ -3039,10 +3039,10 @@ async function exportPlanPDF(){
     // ── Séparateur ──
     setStroke(C_BD); pdf.setLineWidth(0.25); pdf.line(pw/2-40,23,pw/2+40,23);
     // ── Titre section ──
-    setText(C_TM); pdf.setFont('times','italic'); pdf.setFontSize(14);
-    pdf.text('Plan de table',pw/2,30,{align:'center'});
+    setText(C_TM); pdf.setFont('times','italic'); pdf.setFontSize(16);
+    pdf.text('Plan de table',pw/2,36,{align:'center'});
     // ── Trait rose ──
-    setStroke(C_PK); pdf.setLineWidth(0.35); pdf.line(pw/2-14,34,pw/2+14,34);
+    setStroke(C_PK); pdf.setLineWidth(0.35); pdf.line(pw/2-18,38,pw/2+18,38);
     // ── Mariés ──
     setText(C_TL); pdf.setFont('times','normal'); pdf.setFontSize(9);
     pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,55,{align:'center'});
@@ -3133,11 +3133,11 @@ async function exportPlanPDF(){
     if(_weddilyaImgSrc) pdf.addImage(_weddilyaImgSrc,'PNG',pw/2-45,3,90,16.2);
     else { setText(C_PK); pdf.setFont('helvetica','normal'); pdf.setFontSize(20); pdf.text('WEDDILYA',pw/2,16,{align:'center'}); drawRings(pw/2,24,5); }
     setStroke(C_BD); pdf.setLineWidth(0.25); pdf.line(pw/2-40,23,pw/2+40,23);
-    setText(C_TM); pdf.setFont('times','italic'); pdf.setFontSize(14);
+    setText(C_TM); pdf.setFont('times','italic'); pdf.setFontSize(16);
     pdf.text('Invités par table',pw/2,30,{align:'center'});
-    setStroke(C_PK); pdf.setLineWidth(0.35); pdf.line(pw/2-14,34,pw/2+14,34);
+    setStroke(C_PK); pdf.setLineWidth(0.35); pdf.line(pw/2-18,38,pw/2+18,38);
     setText(C_TL); pdf.setFont('times','normal'); pdf.setFontSize(9);
-    pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,40,{align:'center'});
+    pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,44,{align:'center'});
 
     const mm=16, yTop=48, colGap=8, nCols=3, colW=(pw-2*mm-(nCols-1)*colGap)/nCols;
     let col=0, y=yTop;
@@ -3151,17 +3151,17 @@ async function exportPlanPDF(){
           if(_weddilyaImgSrc) pdf.addImage(_weddilyaImgSrc,'PNG',pw/2-45,3,90,16.2);
           else { setText(C_PK); pdf.setFont('helvetica','normal'); pdf.setFontSize(20); pdf.text('WEDDILYA',pw/2,16,{align:'center'}); drawRings(pw/2,24,5); }
           setStroke(C_BD); pdf.setLineWidth(0.25); pdf.line(pw/2-40,23,pw/2+40,23);
-          setText(C_TM); pdf.setFont('times','italic'); pdf.setFontSize(14);
+          setText(C_TM); pdf.setFont('times','italic'); pdf.setFontSize(16);
           pdf.text('Invités par table',pw/2,30,{align:'center'});
-          setStroke(C_PK); pdf.setLineWidth(0.35); pdf.line(pw/2-14,34,pw/2+14,34);
+          setStroke(C_PK); pdf.setLineWidth(0.35); pdf.line(pw/2-18,38,pw/2+18,38);
           setText(C_TL); pdf.setFont('times','normal'); pdf.setFontSize(9);
-          pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,40,{align:'center'});
+          pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,44,{align:'center'});
  pdf.text('WEDDILYA',pw/2,18,{align:'center'});
           drawRings(pw/2,29,5);
           setStroke(C_BD); pdf.setLineWidth(0.25); pdf.line(pw/2-40,38,pw/2+40,38);
-          setText(C_TM); pdf.setFont('times','italic'); pdf.setFontSize(14);
+          setText(C_TM); pdf.setFont('times','italic'); pdf.setFontSize(16);
           pdf.text('Invités par table',pw/2,45,{align:'center'});
-          setStroke(C_PK); pdf.setLineWidth(0.35); pdf.line(pw/2-14,49,pw/2+14,49);
+          setStroke(C_PK); pdf.setLineWidth(0.35); pdf.line(pw/2-18,53,pw/2+18,53);
           col=0; }
         y=yTop;
       }
@@ -3200,6 +3200,7 @@ async function exportPlanPDF(){
     if(nonPlaces.length){ drawCard('Sans table', nonPlaces.map(g=>g.nom), [196,58,58]); }
 
     pdf.save(`plan_de_table_${USER.p1}_${USER.p2}.pdf`);
+    setTimeout(()=>{const r=document.getElementById('app-modal-root');if(r){r.style.display='none';r.innerHTML='';}},500);
   }catch(err){
     appAlert('Impossible de générer le PDF (une connexion internet est nécessaire la première fois). Réessaie connectée.','Export PDF');
   }
@@ -3928,6 +3929,7 @@ async function searchByCategory(catKey, catLabel){
 async function runCategorySearch(tags, catLabel, lat, lng, radiusMeters){
   const wrap = el('vnd-results-wrap');
   const radiusKm = Math.round(radiusMeters/1000);
+  if(wrap) wrap.innerHTML=`<p style="text-align:center;padding:14px;font-size:12px;color:${tl};">Recherche en cours…</p>`;
 
   function haversine(la1,lo1,la2,lo2){
     const R=6371,toRad=x=>x*Math.PI/180;
@@ -3939,86 +3941,107 @@ async function runCategorySearch(tags, catLabel, lat, lng, radiusMeters){
   async function fetchT(url, timeout=12000){
     const ctrl=new AbortController();
     const tid=setTimeout(()=>ctrl.abort(),timeout);
-    try{ return await fetch(url,{signal:ctrl.signal,headers:{'Accept-Language':'fr','User-Agent':'Weddilya/1.0'}}); }
+    try{ return await fetch(url,{signal:ctrl.signal,headers:{'Accept-Language':'fr'}}); }
     finally{ clearTimeout(tid); }
   }
-
-  if(wrap) wrap.innerHTML=`<p style="text-align:center;padding:14px;font-size:12px;color:${tl};">Recherche en cours...</p>`;
 
   let results=[];
   const seenNames=new Set();
 
-  // ── ÉTAPE 1 : Overpass API (tags OSM) ──
+  // ── SOURCE 1 : Overpass (tags OSM précis) ──
   try{
-    const filterParts=tags.filter(t=>!t.includes(';')).map(t=>{
+    const filterParts=tags.map(t=>{
       const [k,v]=t.split('=');
       return `node["${k}"="${v}"](around:${radiusMeters},${lat},${lng});`+
              `way["${k}"="${v}"](around:${radiusMeters},${lat},${lng});`;
     }).join('');
-    const overpassQ=`[out:json][timeout:12];(${filterParts});out center 50;`;
-    const overpassUrl='https://overpass-api.de/api/interpreter?data='+encodeURIComponent(overpassQ);
-    const res=await fetchT(overpassUrl,12000);
+    const q=`[out:json][timeout:15];(${filterParts});out center 50;`;
+    const res=await fetchT('https://overpass-api.de/api/interpreter?data='+encodeURIComponent(q));
     if(res.ok){
       const data=await res.json();
       for(const e of (data.elements||[]).filter(e=>e.tags&&e.tags.name)){
-        const eName=e.tags.name;
-        if(seenNames.has(eName)) continue;
-        seenNames.add(eName);
+        const name=e.tags.name;
+        if(seenNames.has(name)) continue;
+        seenNames.add(name);
         const eLat=e.lat||(e.center&&e.center.lat)||0;
         const eLng=e.lon||(e.center&&e.center.lon)||0;
-        const dist=haversine(lat,lng,eLat,eLng);
-        results.push({id:Date.now()+Math.random(),nom:eName,categorie:catLabel,
+        results.push({id:Date.now()+Math.random(),nom:name,categorie:catLabel,
           adresse:[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' ')||'',
-          lat:eLat,lng:eLng,distance:dist,tel:e.tags.phone||e.tags['contact:phone']||'',
+          lat:eLat,lng:eLng,distance:haversine(lat,lng,eLat,eLng),
+          tel:e.tags.phone||e.tags['contact:phone']||'',
           site:e.tags.website||e.tags['contact:website']||'',notes:''});
       }
     }
   }catch(e){ console.warn('Overpass:',e.message); }
 
-  // ── ÉTAPE 2 : Nominatim texte libre (toujours, pour compléter) ──
-  const nominatimTerms = {
-    salle:['salle mariage','domaine mariage','château mariage','lieu réception'],
-    traiteur:['traiteur mariage'],
-    photographe:['photographe mariage'],
-    robe:['boutique robe mariée','mariage robe'],
-    coiffeur:['coiffeur mariage','coiffure mariée'],
-    maquillage:['maquillage mariage','esthéticienne mariage'],
-    fleuriste:['fleuriste mariage'],
-    bijouterie:['bijouterie alliance','joaillerie mariage'],
-    patisserie:['pâtissier wedding cake','gâteau mariage'],
-    dj:['DJ mariage','animation musicale mariage'],
-    costume:['costume mariage','tailleur smoking'],
-    decor:['décoration mariage'],
-    videaste:['vidéaste mariage'],
-    voiture:['voiture mariage','location limousine'],
-    hebergement:['hôtel','gîte mariage'],
-    imprimeur:['imprimeur faire-part'],
-    location:['location matériel mariage'],
-    officiant:['officiant laïque cérémonie'],
+  // ── SOURCE 2 : Overpass texte libre (name~"terme") ──
+  const nameTerms={
+    robe:['mari','bridal','wedding'],salle:['mariage','réception','domaine','château'],
+    traiteur:['traiteur','catering'],photographe:['photographe','photo'],
+    coiffeur:['coiff','salon'],maquillage:['maquill','esthét'],
+    fleuriste:['fleur'],bijouterie:['bijou','joaill','alliance'],
+    patisserie:['gâteau','cake','pâtiss'],dj:['dj','music','sono'],
+    costume:['costume','smoking','tuxedo'],decor:['décor','event'],
+    videaste:['vidéo','film'],voiture:['limousine','voiture','mariage'],
+    hebergement:['hôtel','gîte','chambre'],imprimeur:['imprimer','imprimeur'],
+    location:['location','event'],officiant:['officiant','cérémonie']
   };
-  const catKey = Object.values(VND_CATEGORIES).find(c=>c.tags===tags);
-  const catKeyStr = Object.keys(VND_CATEGORIES).find(k=>VND_CATEGORIES[k].tags===tags)||'';
-  const terms = nominatimTerms[catKeyStr] || [catLabel+' mariage'];
+  const catKeyStr=Object.keys(VND_CATEGORIES).find(k=>VND_CATEGORIES[k].tags===tags)||'';
+  const nterms=nameTerms[catKeyStr]||[];
 
-  for(const term of terms.slice(0,2)){
+  for(const nterm of nterms.slice(0,2)){
     try{
-      // Recherche avec viewbox autour de la position
-      const delta=radiusKm/111;
-      const viewbox=`${lng-delta},${lat+delta},${lng+delta},${lat-delta}`;
-      const nomUrl=`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(term)}&format=json&limit=50&lat=${lat}&lon=${lng}&addressdetails=1&countrycodes=fr,be,ch,lu`;
-      const nomRes=await fetchT(nomUrl,8000);
-      if(!nomRes.ok) continue;
-      const nomData=await nomRes.json();
-      for(const e of nomData){
+      // Chercher par nom contenant le terme (insensible à la casse)
+      const q2=`[out:json][timeout:10];(node["name"~"${nterm}",i](around:${radiusMeters},${lat},${lng});way["name"~"${nterm}",i](around:${radiusMeters},${lat},${lng}););out center 30;`;
+      const res2=await fetchT('https://overpass-api.de/api/interpreter?data='+encodeURIComponent(q2));
+      if(res2.ok){
+        const data2=await res2.json();
+        for(const e of (data2.elements||[]).filter(e=>e.tags&&e.tags.name)){
+          const name=e.tags.name;
+          if(seenNames.has(name)) continue;
+          seenNames.add(name);
+          const eLat=e.lat||(e.center&&e.center.lat)||0;
+          const eLng=e.lon||(e.center&&e.center.lon)||0;
+          results.push({id:Date.now()+Math.random(),nom:name,categorie:catLabel,
+            adresse:[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' ')||'',
+            lat:eLat,lng:eLng,distance:haversine(lat,lng,eLat,eLng),
+            tel:e.tags.phone||e.tags['contact:phone']||'',
+            site:e.tags.website||e.tags['contact:website']||'',notes:''});
+        }
+      }
+    }catch(e){ console.warn('Overpass name~:',e.message); }
+  }
+
+  // ── SOURCE 3 : Nominatim (texte libre) ──
+  const nomTerms={
+    robe:['robe mariée','boutique mariage'],salle:['salle mariage','domaine mariage'],
+    traiteur:['traiteur mariage'],photographe:['photographe mariage'],
+    coiffeur:['coiffeur mariage'],maquillage:['maquillage mariage'],
+    fleuriste:['fleuriste mariage'],bijouterie:['bijouterie alliance'],
+    patisserie:['wedding cake','pâtissier mariage'],dj:['DJ mariage'],
+    costume:['costume mariage'],decor:['décoration mariage'],
+    videaste:['vidéaste mariage'],voiture:['location voiture mariage'],
+    hebergement:['hôtel'],imprimeur:['imprimeur faire-part'],
+    location:['location matériel mariage'],officiant:['officiant laïque']
+  };
+  const nterms2=nomTerms[catKeyStr]||[catLabel+' mariage'];
+
+  for(const term of nterms2.slice(0,2)){
+    try{
+      const url=`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(term)}&format=json&limit=30&lat=${lat}&lon=${lng}&addressdetails=1&countrycodes=fr,be,ch,lu`;
+      const res=await fetchT(url,8000);
+      if(!res.ok) continue;
+      const data=await res.json();
+      for(const e of data){
         if(!e.display_name||!e.lat) continue;
-        const eName=e.display_name.split(',')[0].trim();
-        if(!eName||seenNames.has(eName)||eName.length<3) continue;
-        seenNames.add(eName);
+        const name=e.display_name.split(',')[0].trim();
+        if(!name||seenNames.has(name)||name.length<3) continue;
+        seenNames.add(name);
         const eLat=parseFloat(e.lat),eLng=parseFloat(e.lon);
         const dist=haversine(lat,lng,eLat,eLng);
-        if(dist>radiusKm*1.5) continue;
-        results.push({id:Date.now()+Math.random(),nom:eName,categorie:catLabel,
-          adresse:((e.address?.road||'')+(e.address?.house_number?' '+e.address.house_number:'')+', '+(e.address?.city||e.address?.town||e.address?.village||'')).trim().replace(/^,/,''),
+        if(dist>radiusKm*2) continue;
+        results.push({id:Date.now()+Math.random(),nom:name,categorie:catLabel,
+          adresse:((e.address?.road||'')+' '+(e.address?.city||e.address?.town||'')).trim(),
           lat:eLat,lng:eLng,distance:dist,tel:'',site:'',notes:''});
       }
     }catch(e){ console.warn('Nominatim:',e.message); }
@@ -4026,23 +4049,22 @@ async function runCategorySearch(tags, catLabel, lat, lng, radiusMeters){
 
   results=results.sort((a,b)=>a.distance-b.distance).slice(0,30);
 
+  // ── Lien Google Maps toujours affiché ──
+  const cityName=el('vnd-location-status')?.textContent?.replace('Lieu défini :','').trim().split(',')[0]||'';
+  const googleMapsUrl=`https://www.google.com/maps/search/${encodeURIComponent(catLabel+' '+cityName)}/@${lat},${lng},13z`;
+
   if(!results.length){
-    // Lien Google Maps direct comme fallback ultime
-    const googleMapsUrl=`https://www.google.com/maps/search/${encodeURIComponent(catLabel+' mariage')}/@${lat},${lng},12z`;
-    const googleSearchUrl=`https://www.google.com/search?q=${encodeURIComponent(catLabel+' mariage proche')}`;
-    if(wrap) wrap.innerHTML=`
-      <div style="text-align:center;padding:16px;font-size:13px;color:${tl};">
-        <div style="margin-bottom:8px;">Aucun ${catLabel.toLowerCase()} trouvé sur OpenStreetMap dans un rayon de ${radiusKm} km.</div>
-        <div style="font-size:11px;font-style:italic;margin-bottom:14px;">OpenStreetMap est parfois incomplet. Essayez Google :</div>
-        <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
-          <a href="${googleMapsUrl}" target="_blank" rel="noopener" style="padding:10px 16px;background:${sf};border:1px solid ${br};border-radius:12px;text-decoration:none;color:${pk};font-size:13px;font-weight:700;font-family:Lora,serif;">Google Maps</a>
-          <a href="${googleSearchUrl}" target="_blank" rel="noopener" style="padding:10px 16px;background:#fff;border:1px solid ${br};border-radius:12px;text-decoration:none;color:${tl};font-size:13px;font-weight:700;font-family:Lora,serif;">Recherche Google</a>
-        </div>
-      </div>`;
+    if(wrap) wrap.innerHTML=`<div style="padding:16px;text-align:center;">
+      <p style="font-size:13px;color:${tl};margin-bottom:14px;">Aucun résultat trouvé sur OpenStreetMap.<br><span style="font-size:11px;font-style:italic;">La base OSM est parfois incomplète pour cette catégorie.</span></p>
+      <a href="${googleMapsUrl}" target="_blank" rel="noopener" style="display:block;padding:13px;background:${sf};border:1.5px solid ${br};border-radius:14px;text-decoration:none;color:${pk};font-size:14px;font-weight:700;font-family:Lora,serif;margin-bottom:8px;">Chercher sur Google Maps</a>
+      <a href="${'https://www.google.com/search?q='+encodeURIComponent(catLabel+' '+cityName)}" target="_blank" rel="noopener" style="display:block;padding:11px;background:#fdf8f5;border:1px solid #f0e8ec;border-radius:14px;text-decoration:none;color:${tl};font-size:13px;font-weight:700;font-family:Lora,serif;">Recherche Google</a>
+    </div>`;
     return;
   }
 
   window._vndResults=results;
+  // Stocker le lien Google pour renderVndResults
+  window._vndGoogleUrl=googleMapsUrl;
   renderVndResults(catLabel);
 }
 
@@ -4721,7 +4743,7 @@ function renderDecorations(){
     html += `<div class="card" style="margin-bottom:12px;overflow:hidden;">
       <div style="display:flex;align-items:center;padding:12px 16px;background:${sf};border-radius:10px 10px 0 0;">
         <div onclick="toggleDecoSection(${catIdx})" style="flex:1;cursor:pointer;">
-          <div data-deco-cat="${cat}" onclick="renameDecoCategory('${cat.replace(/'/g,"'")}',${catIdx})" style="font-family:Playfair Display,serif;font-size:15px;color:${tx};font-weight:700;cursor:pointer;" title="Appuyer pour renommer">${h(cat)}</div>
+          <div data-deco-cat="${cat}" onclick="renameDecoCategory('${cat.replace(/'/g,"'")}',${catIdx})" style="font-family:Playfair Display,serif;font-family:Lora,serif;font-size:13px;color:${tm};font-weight:700;cursor:pointer;" title="Appuyer pour renommer">${h(cat)}</div>
           <div style="font-size:11px;color:${tl};margin-top:2px;">${done}/${total} éléments</div>
         </div>
         <button onclick="removeDecoCategory('${cat.replace(/'/g,"'")}')" style="background:none;border:none;color:${br};font-size:18px;cursor:pointer;padding:0 8px;">×</button>
@@ -6903,6 +6925,11 @@ function renderAssistant(){
 function assistOpen(service){
   const cont = el('assist-content');
   if(!cont) return;
+  // Reset tous les boutons de la liste
+  document.querySelectorAll('#page-7 button[onclick^="assistOpen"]').forEach(btn=>{
+    btn.style.background='#fff';
+    btn.style.paddingLeft='6px';
+  });
   // Scroller en douceur jusqu'au contenu après le clic
   setTimeout(()=>{cont.scrollIntoView({behavior:'smooth',block:'start'});}, 50);
   if(service === 'menu')           return assistMenu(cont);
@@ -8204,12 +8231,12 @@ function assistPlaylistAmbi(cont){
 //  NOTES 
 function renderNotes(){
   el('page-9').innerHTML = `
-  <div style="padding:28px 20px 20px;background:#fff;">
+  <div style="padding:28px 20px 20px;background:#fff;border:1.5px solid #f0e8ec;border-radius:16px;margin:4px;">
     <div style="text-align:center;margin-bottom:24px;">
       <div style="font-family:Playfair Display,serif;font-size:20px;color:${tx};margin-bottom:12px;text-align:center;">Mes notes</div>
       <div style="width:40px;height:1.5px;background:linear-gradient(90deg,transparent,${pk},transparent);margin:0 auto;"></div>
     </div>
-    <textarea id="notes-area" style="width:100%;min-height:500px;border:1px solid #f0e8ec;border-radius:12px;padding:14px;outline:none;font-family:Lora,serif;font-size:15px;color:${tx};background:#fff;resize:vertical;line-height:2;box-sizing:border-box;padding:0;" placeholder="Écrivez vos notes, idées, inspirations…">${h(NOTES)}</textarea>
+    <textarea id="notes-area" style="width:100%;min-height:500px;border:none;outline:none;font-family:Lora,serif;font-size:15px;color:${tx};background:transparent;resize:vertical;line-height:2;box-sizing:border-box;padding:0;" placeholder="Écrivez vos notes, idées, inspirations…">${h(NOTES)}</textarea>
   </div>
   `;
   document.getElementById('notes-area')?.addEventListener('input', function(){
