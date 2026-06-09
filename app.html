@@ -515,6 +515,8 @@ async function loadUserDataFromFirestore(email){
       if(k.startsWith('_')) continue; // ignore metadata
       if(_isSyncKey(k) && v !== undefined && v !== null){
         try{
+          // Utiliser localStorage.setItem directement avec JSON.stringify
+          // car v est déjà désérialisé (Firestore retourne des objets JS natifs)
           localStorage.setItem(k, JSON.stringify(v));
           nLoaded++;
         }catch{}
@@ -1680,8 +1682,8 @@ function startApp(u){
     }).catch(e=>console.warn('[mariages]', e.code));
   }
   // Load all data
-  TASKS = ld(`tasks_${u.email}`, []);
-  if(TASKS.length < 50) TASKS = DEF_TASKS.map(t=>({...t, done:false}));
+  TASKS = ld(`tasks_${u.email}`, null);
+  if(!TASKS || !Array.isArray(TASKS) || TASKS.length === 0) TASKS = DEF_TASKS.map(t=>({...t, done:false}));
   BUDGET = ld(`budget_${u.email}`, null);
   if(!BUDGET || !BUDGET.length || (BUDGET[0] && BUDGET[0].real !== undefined)){
     BUDGET = DEF_BUDGET.map(b=>({...b, reel:0, paye:0}));
@@ -1932,11 +1934,8 @@ function addTask(){
 function toggleTask(id){TASKS=TASKS.map(t=>t.id===id?{...t,done:!t.done}:t);saveTasks();renderChecklist();}
 function removeTask(id){TASKS=TASKS.filter(t=>t.id!==id);saveTasks();renderChecklist();}
 async function resetTasks(){
-  if(await appConfirm('Restaurer toutes les tâches par défaut ? Les tâches par défaut seront décochées, vos tâches personnalisées seront conservées.')){
-    const custom = TASKS.filter(t=>t.month==='Personnalisé');
-    // Restaurer les tâches par défaut toutes décochées
-    const restoredDef = DEF_TASKS.map(def => ({...def, done:false}));
-    TASKS = [...restoredDef, ...custom];
+  if(await appConfirm('Réinitialiser la checklist ? Toutes les tâches seront remplacées par les tâches par défaut (décochées).')){
+    TASKS = DEF_TASKS.map(t=>({...t, done:false}));
     saveTasks();
     renderChecklist();
   }
@@ -1954,8 +1953,8 @@ function renderBudget(){
     <div class="card" style="padding:13px;text-align:center;"><div class="lbl">Budget réel total</div><div style="font-family:Playfair Display,serif;font-size:19px;font-weight:700;color:${pk}">${fmt(tR)} €</div></div>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
-    <div style="background:#f0f8f2;border-radius:14px;padding:13px;text-align:center;"><div class="lbl">Déjà payé</div><div style="font-family:Playfair Display,serif;font-size:19px;font-weight:700;color:${gn}">${fmt(tP)} €</div></div>
-    <div style="background:${reste>0?'#fff8f0':'#f0f8f2'};border-radius:14px;padding:13px;text-align:center;"><div class="lbl">Reste à payer</div><div style="font-family:Playfair Display,serif;font-size:19px;font-weight:700;color:${reste>0?am:gn}">${fmt(reste)} €</div></div>
+    <div style="background:#f0f8f2;border-radius:14px;padding:13px;text-align:center;border:1px solid #c8e6d0;"><div class="lbl">Déjà payé</div><div style="font-family:Playfair Display,serif;font-size:19px;font-weight:700;color:${gn}">${fmt(tP)} €</div></div>
+    <div style="background:#fff8f0;border-radius:14px;padding:13px;text-align:center;border:1px solid #f0d8b8;"><div class="lbl">Reste à payer</div><div style="font-family:Playfair Display,serif;font-size:19px;font-weight:700;color:${am}">${fmt(reste>0?reste:0)} €</div></div>
   </div>
   <div style="display:flex;gap:8px;margin-bottom:12px;">
     <input class="inp" id="bgt-cat" placeholder="Nouvelle catégorie" style="flex:2;background:#fff;">
@@ -2046,6 +2045,7 @@ function renderGuests(){
     <div style="padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
       <div><label class="lbl">Nom complet</label><input class="inp" id="gf-nom" placeholder="Prénom Nom"></div>
       <div><label class="lbl">Email</label><input class="inp" id="gf-email" placeholder="email@..."></div>
+      <div style="grid-column:1/-1"><label class="lbl">Adresse postale</label><input class="inp" id="gf-adresse" placeholder="N° rue, ville, code postal..."></div>
       <div><label class="lbl">Côté</label><select class="inp" id="gf-cote"><option value="p1">Côté ${h(USER.p1)}</option><option value="p2">Côté ${h(USER.p2)}</option></select></div>
       <div><label class="lbl">Rôle</label><select class="inp" id="gf-role">${ROLES.map(r=>`<option>${h(r)}</option>`).join('')}</select></div>
       <div style="grid-column:1/-1"><label class="lbl">Régime particulier</label><select class="inp" id="gf-regime">${REGIMES.map(r=>`<option>${h(r)}</option>`).join('')}</select></div>
@@ -2149,7 +2149,7 @@ let showingAdd=false;
 function toggleAddGuest(){showingAdd=!showingAdd;const f=el('guest-add-form');if(f)f.style.display=showingAdd?'block':'none';}
 function addGuest(){
   const nom=el('gf-nom').value.trim();if(!nom)return;
-  GUESTS.push({id:Date.now(),nom,email:el('gf-email').value.trim(),cote:el('gf-cote').value,invitation:'non envoyée',presence:'en attente',role:el('gf-role').value,regime:'Aucun',vinHonneur:el('gf-vh').checked,age:el('gf-age')?.value||'Adulte',seatTableId:null,seatIdx:null});
+  GUESTS.push({id:Date.now(),nom,email:el('gf-email').value.trim(),adresse:el('gf-adresse')?.value.trim()||'',cote:el('gf-cote').value,invitation:'non envoyée',presence:'en attente',role:el('gf-role').value,regime:'Aucun',vinHonneur:el('gf-vh').checked,age:el('gf-age')?.value||'Adulte',seatTableId:null,seatIdx:null});
   showingAdd=false;saveGuests();renderGuests();
 }
 function updGuest(id,f,v){GUESTS=GUESTS.map(g=>g.id===id?{...g,[f]:v}:g);saveGuests();renderGuests();}
@@ -2180,18 +2180,18 @@ function toggleInvitation(id){
 async function pickGuestInvitation(id){
   const g = GUESTS.find(x=>x.id===id); if(!g) return;
   const v = await appPicker([
-    {value:'envoyée', label:'Envoyée', icon:'', color:'#5a8a6a'},
-    {value:'non envoyée', label:'Non envoyée', icon:'', color:'#c43a3a'}
-  ], g.invitation, 'État de l\'invitation', {icon:'️'});
+    {value:'envoyée', label:'Envoyée', color:'#5a8a6a'},
+    {value:'non envoyée', label:'Non envoyée', color:'#c43a3a'}
+  ], g.invitation, 'Invitation — '+g.nom);
   if(v!==null) updGuest(id,'invitation',v);
 }
 async function pickGuestPresence(id){
   const g = GUESTS.find(x=>x.id===id); if(!g) return;
   const v = await appPicker([
-    {value:'confirmée', label:'Confirmée', icon:'', color:'#5a8a6a'},
-    {value:'en attente', label:'En attente', icon:'⏳', color:'#c47a2a'},
-    {value:'déclinée', label:'Déclinée', icon:'', color:'#c43a3a'}
-  ], g.presence, 'Présence', {icon:''});
+    {value:'confirmée', label:'Confirmée', color:'#5a8a6a'},
+    {value:'en attente', label:'En attente', color:'#c47a2a'},
+    {value:'déclinée', label:'Déclinée', color:'#c43a3a'}
+  ], g.presence, 'Présence — '+g.nom);
   if(v!==null) updGuest(id,'presence',v);
 }
 function removeGuest(id){GUESTS=GUESTS.filter(g=>g.id!==id);saveGuests();renderGuests();}
@@ -2568,9 +2568,9 @@ function setTpShape(s){
   ['round','rect','square'].forEach(v=>{
     const b=el('tp-shape-'+v);if(!b)return;
     const on=v===s;
-    b.style.background=on?'#d4607a':'#fff';
-    b.style.color=on?'#fff':'#b07a90';
-    b.style.borderColor=on?'#d4607a':'#f5d5e0';
+    b.style.background=on?`#b84060`:'';
+    b.style.color=on?'#fff':'';
+    b.style.borderColor=on?'#b84060':'';
   });
 }
 function tpTogglePan(){
@@ -2587,20 +2587,18 @@ function renderTablePlan(){
   tpScale=1;tpPanX=0;tpPanY=0;tpPanMode=false;window.tpSelectedShape='round';
   el('page-3').innerHTML=`
   <div style="padding:12px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-bottom:1px solid #f9edf2;">
-    <div style="display:flex;gap:6px;">
-      <button id="tp-shape-round" onclick="setTpShape(\'round\')" style="background:#d4607a;color:#fff;border:1.5px solid #d4607a;border-radius:9px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;font-family:Lora,serif;">⬤ Ronde</button>
-      <button id="tp-shape-rect" onclick="setTpShape(\'rect\')" style="background:#fff;color:#b07a90;border:1px solid #f0e8ec;border-radius:9px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;font-family:Lora,serif;">▬ Rect.</button>
-      <button id="tp-shape-square" onclick="setTpShape(\'square\')" style="background:#fff;color:#b07a90;border:1px solid #f0e8ec;border-radius:9px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;font-family:Lora,serif;">■ Carrée</button>
-    </div>
-    <button class="btn" onclick="addTable()" style="font-size:12px;padding:7px 12px;">+ Table</button>
-    <button class="btn" onclick="openAutoPlaceModal()" style="font-size:12px;padding:7px 12px;">Placement auto</button>
-    <button class="btn" onclick="exportPlanPDF()" style="font-size:12px;padding:7px 12px;background:#fef2f6;color:#b84060;border:1px solid #f5d5e0;">Exporter PDF</button>
-    <button class="btn-sec" onclick="resetPlacement()" style="color:#c43a3a;border-color:#c43a3a55;font-size:12px;padding:7px 12px;">↺ Réinitialiser</button>
+    <button id="tp-shape-round" onclick="setTpShape(\'round\')" class="btn-sec" style="font-size:12px;padding:6px 12px;background:${pk};color:#fff;border-color:${pk};">Ronde</button>
+    <button id="tp-shape-rect" onclick="setTpShape(\'rect\')" class="btn-sec" style="font-size:12px;padding:6px 12px;">Rect.</button>
+    <button id="tp-shape-square" onclick="setTpShape(\'square\')" class="btn-sec" style="font-size:12px;padding:6px 12px;">Carrée</button>
+    <button onclick="addTable()" class="btn" style="font-size:12px;padding:7px 12px;">+ Table</button>
+    <button onclick="openAutoPlaceModal()" class="btn-sec" style="font-size:12px;padding:7px 12px;">Placement auto</button>
+    <button onclick="exportPlanPDF()" class="btn-sec" style="font-size:12px;padding:7px 12px;">Exporter PDF</button>
+    <button onclick="resetPlacement()" class="btn-sec" style="font-size:12px;padding:7px 12px;color:#c43a3a;border-color:#c43a3a55;">Réinitialiser</button>
     <div style="display:flex;gap:6px;margin-left:auto;">
-      <button onclick="tpZoom(0.2)" style="background:#fff;border:1px solid #f0e8ec;border-radius:8px;width:34px;height:34px;cursor:pointer;font-size:18px;font-weight:700;color:${pk};">+</button>
-      <button onclick="tpZoom(-0.2)" style="background:#fff;border:1px solid #f0e8ec;border-radius:8px;width:34px;height:34px;cursor:pointer;font-size:18px;font-weight:700;color:${pk};">-</button>
-      <button onclick="tpReset()" style="background:#fff;border:1px solid #f0e8ec;border-radius:8px;padding:0 10px;height:34px;cursor:pointer;font-size:11px;font-weight:700;color:${tl};">↺</button>
-      <button id="tp-pan-btn" onclick="tpTogglePan()" title="Mode navigation" style="background:#fff;border:1px solid #f0e8ec;border-radius:8px;width:34px;height:34px;cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c47a2a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 00-4 0v5M14 10V4a2 2 0 00-4 0v6M10 10.5V6a2 2 0 00-4 0v8l-2-2a2 2 0 00-2 2l4 5h12l2-4V9a2 2 0 00-4 0v2"/></svg></button>
+      <button onclick="tpZoom(0.2)" class="btn-sec" style="width:34px;height:34px;padding:0;font-size:18px;font-weight:700;">+</button>
+      <button onclick="tpZoom(-0.2)" class="btn-sec" style="width:34px;height:34px;padding:0;font-size:18px;font-weight:700;">−</button>
+      <button onclick="tpReset()" class="btn-sec" style="height:34px;padding:0 10px;font-size:11px;">↺</button>
+      <button id="tp-pan-btn" onclick="tpTogglePan()" title="Mode navigation" class="btn-sec" style="width:34px;height:34px;padding:0;display:flex;align-items:center;justify-content:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${tl}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 00-4 0v5M14 10V4a2 2 0 00-4 0v6M10 10.5V6a2 2 0 00-4 0v8l-2-2a2 2 0 00-2 2l4 5h12l2-4V9a2 2 0 00-4 0v2"/></svg></button>
     </div>
   </div>
   <div id="tp-canvas" style="position:relative;background:#fff;border:1.5px solid #f0e8ec;border-radius:16px;height:70vh;min-height:400px;overflow:hidden;touch-action:none;user-select:none;margin:0 12px;">
@@ -3790,21 +3788,59 @@ async function runCategorySearch(tags,catLabel,lat,lng,radiusMeters){
   const wrap=el('vnd-results-wrap');const radiusKm=Math.round(radiusMeters/1000);
   if(wrap)wrap.innerHTML='<p style="text-align:center;padding:14px;font-size:12px;color:'+tl+';">Recherche en cours…</p>';
   function hav(a,b,c,d){var R=6371,t=function(x){return x*Math.PI/180;};var da=t(c-a),db=t(d-b);var x=Math.pow(Math.sin(da/2),2)+Math.cos(t(a))*Math.cos(t(c))*Math.pow(Math.sin(db/2),2);return Math.round(R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))*10)/10;}
-  function ft(url,ms){var ctrl=new AbortController();var tid=setTimeout(function(){ctrl.abort();},ms||12000);return fetch(url,{signal:ctrl.signal,headers:{'Accept-Language':'fr'}}).finally(function(){clearTimeout(tid);});}
+  function ft(url,ms){var ctrl=new AbortController();var tid=setTimeout(function(){ctrl.abort();},ms||15000);return fetch(url,{signal:ctrl.signal,headers:{'Accept-Language':'fr'}}).finally(function(){clearTimeout(tid);});}
   var results=[];var seen={};
-  try{var fp=tags.map(function(t){var kv=t.split('=');return 'node["'+kv[0]+'"="'+kv[1]+'"](around:'+radiusMeters+','+lat+','+lng+');way["'+kv[0]+'"="'+kv[1]+'"](around:'+radiusMeters+','+lat+','+lng+');';}).join('');var res=await ft('https://overpass-api.de/api/interpreter?data='+encodeURIComponent('[out:json][timeout:15];('+fp+');out center 50;'));if(res.ok){var d=await res.json();(d.elements||[]).filter(function(e){return e.tags&&e.tags.name;}).forEach(function(e){var n=e.tags.name;if(seen[n])return;seen[n]=1;var la=e.lat||(e.center&&e.center.lat)||0,lo=e.lon||(e.center&&e.center.lon)||0;results.push({id:Date.now()+Math.random(),nom:n,categorie:catLabel,adresse:[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' ')||'',lat:la,lng:lo,distance:hav(lat,lng,la,lo),tel:e.tags.phone||'',site:e.tags.website||'',notes:''});});}}catch(e){console.warn('Overpass1:',e.message);}
-  var nkw={robe:['mari','bridal','wedding'],salle:['mariage','réception','domaine'],traiteur:['traiteur'],photographe:['photographe'],coiffeur:['coiff'],maquillage:['maquill'],fleuriste:['fleur'],bijouterie:['bijou'],patisserie:['cake','pâtiss'],dj:['dj'],costume:['smoking'],decor:['décor'],videaste:['vidéo'],voiture:['limousine'],hebergement:['hôtel'],imprimeur:['imprimeur'],location:['événementiel'],officiant:['officiant']};
-  var ck=Object.keys(VND_CATEGORIES).find(function(k){return VND_CATEGORIES[k].tags===tags;})||'';
-  var kws=nkw[ck]||[];
-  for(var ki=0;ki<Math.min(kws.length,2);ki++){try{var kw=kws[ki];var res2=await ft('https://overpass-api.de/api/interpreter?data='+encodeURIComponent('[out:json][timeout:10];(node["name"~"'+kw+'",i](around:'+radiusMeters+','+lat+','+lng+');way["name"~"'+kw+'",i](around:'+radiusMeters+','+lat+','+lng+'););out center 30;'));if(res2.ok){var d2=await res2.json();(d2.elements||[]).filter(function(e){return e.tags&&e.tags.name;}).forEach(function(e){var n=e.tags.name;if(seen[n])return;seen[n]=1;var la=e.lat||(e.center&&e.center.lat)||0,lo=e.lon||(e.center&&e.center.lon)||0;results.push({id:Date.now()+Math.random(),nom:n,categorie:catLabel,adresse:[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' ')||'',lat:la,lng:lo,distance:hav(lat,lng,la,lo),tel:e.tags.phone||'',site:e.tags.website||'',notes:''});});}}catch(e){console.warn('Overpass2:',e.message);}}
-  var nt={robe:['robe mariée','boutique mariage'],salle:['salle mariage','domaine mariage'],traiteur:['traiteur mariage'],photographe:['photographe mariage'],coiffeur:['coiffeur mariage'],maquillage:['maquillage mariage'],fleuriste:['fleuriste mariage'],bijouterie:['bijouterie alliance'],patisserie:['wedding cake'],dj:['DJ mariage'],costume:['costume mariage'],decor:['décoration mariage'],videaste:['vidéaste mariage'],voiture:['location voiture mariage'],hebergement:['hôtel'],imprimeur:['imprimeur faire-part'],location:['location matériel mariage'],officiant:['officiant laïque']};
-  var terms=nt[ck]||[catLabel];
-  for(var ti=0;ti<Math.min(terms.length,2);ti++){try{var term=terms[ti];var nres=await ft('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(term)+'&format=json&limit=30&lat='+lat+'&lon='+lng+'&addressdetails=1&countrycodes=fr,be,ch,lu',8000);if(!nres.ok)continue;var nd=await nres.json();nd.forEach(function(e){if(!e.lat)return;var n=(e.display_name||'').split(',')[0].trim();if(!n||seen[n]||n.length<3)return;seen[n]=1;var la=parseFloat(e.lat),lo=parseFloat(e.lon),dist=hav(lat,lng,la,lo);if(dist>radiusKm*2)return;results.push({id:Date.now()+Math.random(),nom:n,categorie:catLabel,adresse:((e.address&&e.address.road||'')+' '+(e.address&&(e.address.city||e.address.town)||'')).trim(),lat:la,lng:lo,distance:dist,tel:'',site:'',notes:''});});}catch(e){console.warn('Nominatim:',e.message);}}
-  results=results.sort(function(a,b){return a.distance-b.distance;}).slice(0,30);
-  var city=(el('vnd-location-status')||{}).textContent;city=(city||'').replace('Lieu défini :','').trim().split(',')[0]||'';
-  var gmUrl='https://www.google.com/maps/search/'+encodeURIComponent(catLabel+' '+city)+'/@'+lat+','+lng+',13z';
+  var ck=Object.keys(VND_CATEGORIES).find(function(k){return JSON.stringify(VND_CATEGORIES[k].tags)===JSON.stringify(tags);})||'';
+
+  // ── 1) Overpass API par tags OSM (efficace pour coiffeurs, fleuristes, hôtels...) ──
+  try{
+    var fp=tags.map(function(t){var kv=t.split('=');return 'node["'+kv[0]+'"="'+kv[1]+'"](around:'+radiusMeters+','+lat+','+lng+');way["'+kv[0]+'"="'+kv[1]+'"](around:'+radiusMeters+','+lat+','+lng+');relation["'+kv[0]+'"="'+kv[1]+'"](around:'+radiusMeters+','+lat+','+lng+');';}).join('');
+    var res=await ft('https://overpass-api.de/api/interpreter?data='+encodeURIComponent('[out:json][timeout:20];('+fp+');out center 80;'));
+    if(res.ok){var d=await res.json();(d.elements||[]).filter(function(e){return e.tags&&e.tags.name;}).forEach(function(e){var n=e.tags.name;if(seen[n])return;seen[n]=1;var la=e.lat||(e.center&&e.center.lat)||0,lo=e.lon||(e.center&&e.center.lon)||0;results.push({id:Date.now()+Math.random(),nom:n,categorie:catLabel,adresse:[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' ')||'',lat:la,lng:lo,distance:hav(lat,lng,la,lo),tel:e.tags.phone||e.tags['contact:phone']||'',site:e.tags.website||e.tags['contact:website']||'',notes:''});});}
+  }catch(e){console.warn('Overpass tags:',e.message);}
+
+  // ── 2) Overpass par nom (~regex) — pour prestataires nommés explicitement ──
+  var nkw={robe:['mariage','bridal','mariée'],salle:['mariage','réception','domaine','château'],traiteur:['traiteur','catering'],photographe:['photographe','photo mariage'],coiffeur:['coiff','salon'],maquillage:['maquill','beauté'],fleuriste:['fleur'],bijou:['bijou','alliance'],patisserie:['pâtiss','cake','boulang'],dj:['dj','musique','animation'],costume:['costume','tailleur','smoking'],decor:['décor','événem'],videaste:['vidéo','vidéaste'],voiture:['limousine','prestige'],hotel:['hôtel','gîte','chambres'],imprimeur:['imprimeur','papeterie','faire-part']};
+  var kws=nkw[ck]||[catLabel.toLowerCase()];
+  for(var ki=0;ki<Math.min(kws.length,3);ki++){
+    try{
+      var kw=kws[ki];
+      var res2=await ft('https://overpass-api.de/api/interpreter?data='+encodeURIComponent('[out:json][timeout:12];(node["name"~"'+kw+'",i](around:'+radiusMeters+','+lat+','+lng+');way["name"~"'+kw+'",i](around:'+radiusMeters+','+lat+','+lng+'););out center 40;'));
+      if(res2.ok){var d2=await res2.json();(d2.elements||[]).filter(function(e){return e.tags&&e.tags.name;}).forEach(function(e){var n=e.tags.name;if(seen[n])return;seen[n]=1;var la=e.lat||(e.center&&e.center.lat)||0,lo=e.lon||(e.center&&e.center.lon)||0;results.push({id:Date.now()+Math.random(),nom:n,categorie:catLabel,adresse:[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' ')||'',lat:la,lng:lo,distance:hav(lat,lng,la,lo),tel:e.tags.phone||'',site:e.tags.website||'',notes:''});});}
+    }catch(e){console.warn('Overpass name~:',e.message);}
+  }
+
+  // ── 3) Nominatim — très large, capte les prestataires sans vitrine physique ──
+  var nt={robe:['boutique robe mariée','boutique mariage'],salle:['salle réception mariage','domaine mariage','château mariage'],traiteur:['traiteur mariage','traiteur'],photographe:['photographe mariage','studio photo'],coiffeur:['coiffeur mariage','coiffure'],maquillage:['maquillage mariage','maquilleur'],fleuriste:['fleuriste mariage','fleuriste'],bijou:['bijouterie mariage','bijouterie alliance'],patisserie:['wedding cake','pâtisserie'],dj:['DJ mariage','animation musicale'],costume:['costume mariage','tailleur'],decor:['décoration mariage','décoration événementielle'],videaste:['vidéaste mariage','vidéaste'],voiture:['location voiture mariage','limousine'],hotel:['hôtel','chambre hôtes'],imprimeur:['imprimeur faire-part','imprimerie']};
+  var terms=nt[ck]||[catLabel+' mariage',catLabel];
+  // Rayon élargi pour Nominatim (×2.5 pour capturer les prestataires itinérants)
+  var bigRadius=Math.round(radiusKm*2.5);
+  for(var ti=0;ti<Math.min(terms.length,3);ti++){
+    try{
+      var term=terms[ti];
+      var nres=await ft('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(term)+'&format=json&limit=40&lat='+lat+'&lon='+lng+'&addressdetails=1&countrycodes=fr,be,ch,lu',10000);
+      if(!nres.ok)continue;
+      var nd=await nres.json();
+      nd.forEach(function(e){
+        if(!e.lat)return;
+        var n=(e.display_name||'').split(',')[0].trim();
+        if(!n||seen[n]||n.length<3)return;
+        seen[n]=1;
+        var la=parseFloat(e.lat),lo=parseFloat(e.lon),dist=hav(lat,lng,la,lo);
+        if(dist>bigRadius)return;
+        results.push({id:Date.now()+Math.random(),nom:n,categorie:catLabel,adresse:((e.address&&(e.address.road||''))+' '+(e.address&&(e.address.city||e.address.town||e.address.village||''))).trim(),lat:la,lng:lo,distance:dist,tel:'',site:'',notes:''});
+      });
+    }catch(e){console.warn('Nominatim:',e.message);}
+  }
+
+  results=results.sort(function(a,b){return a.distance-b.distance;}).slice(0,40);
+  var city=(el('vnd-location-status')||{}).textContent||'';city=city.replace('Lieu défini :','').trim().split(',')[0]||'';
+  var gmUrl='https://www.google.com/maps/search/'+encodeURIComponent(catLabel+' mariage '+city)+'/@'+lat+','+lng+',12z';
   window._vndResults=results;window._vndGoogleUrl=gmUrl;
-  if(!results.length){if(wrap)wrap.innerHTML='<div style="padding:16px;text-align:center;"><p style="font-size:13px;color:'+tl+';margin-bottom:14px;">Aucun résultat sur OpenStreetMap.</p><a href="'+gmUrl+'" target="_blank" style="display:block;padding:12px;background:'+sf+';border:1px solid '+br+';border-radius:14px;text-decoration:none;color:'+pk+';font-size:13px;font-weight:700;font-family:Lora,serif;text-align:center;">Chercher sur Google Maps</a></div>';return;}
+  if(!results.length){
+    if(wrap)wrap.innerHTML='<div style="padding:16px;text-align:center;"><p style="font-size:13px;color:'+tl+';margin-bottom:14px;">Aucun résultat trouvé dans la zone. Essaie un rayon plus large ou une autre ville.</p><a href="'+gmUrl+'" target="_blank" style="display:block;padding:12px;background:'+sf+';border:1px solid '+br+';border-radius:14px;text-decoration:none;color:'+pk+';font-size:13px;font-weight:700;font-family:Lora,serif;text-align:center;">Chercher sur Google Maps</a></div>';
+    return;
+  }
   renderVndResults(catLabel);
 }
 
@@ -4312,11 +4348,12 @@ function renderMenu(){
       <button onclick="resetMenu()" class="btn-sec" style="font-size:11px;padding:5px 12px;color:${tl};border-color:${br};">↺ Réinitialiser le menu par défaut</button>
     </div>
     ${MENU.map((section,si)=>`
-      <div style="margin-bottom:16px;border:1px solid #f0e8ec;border-radius:12px;padding:12px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-          <span data-menu-cat="${si}" onclick="renameMenuCategory(${si})" style="font-weight:700;font-size:13px;color:${tm};text-transform:uppercase;letter-spacing:0.5px;cursor:pointer;flex:1;" title="Appuyer pour renommer">${h(section.section)}</span>
+      <div style="margin-bottom:12px;border:1px solid #f0e8ec;border-radius:12px;overflow:hidden;">
+        <div style="display:flex;align-items:center;background:${sf};padding:10px 16px;">
+          <span data-menu-cat="${si}" onclick="renameMenuCategory(${si})" style="font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:${tm};cursor:pointer;flex:1;letter-spacing:0.5px;" title="Appuyer pour renommer">${h(section.section)}</span>
           <button onclick="removeMenuCategory(${si})" style="background:none;border:none;color:${br};font-size:18px;cursor:pointer;padding:0 4px;">×</button>
         </div>
+        <div style="padding:8px 12px 12px;">
         ${section.items.map((item,ii)=>`
           <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f9edf2;">
             <input type="checkbox" ${item.done?'checked':''} onchange="toggleMenuItem(${si},${ii},this.checked)" style="accent-color:${pk};width:16px;height:16px;flex-shrink:0;cursor:pointer;">
@@ -4326,6 +4363,7 @@ function renderMenu(){
         <div style="display:flex;gap:8px;margin-top:8px;">
           <input class="inp" id="menu-add-${si}" placeholder="Ajouter un plat..." style="flex:1;font-size:12px;padding:6px 10px;">
           <button onclick="addMenuItem(${si})" class="btn" style="padding:6px 12px;font-size:12px;">+</button>
+        </div>
         </div>
       </div>`).join('')}
   </div>
@@ -7965,10 +8003,6 @@ function renderNotes(){
   <div style="font-family:Playfair Display,serif;font-size:20px;color:${tx};margin-bottom:12px;text-align:center;">Notes</div>
   <div style="width:32px;height:1.5px;background:${pk};margin:0 auto 20px;border-radius:2px;"></div>
   <div style="background:#fff;border:1px solid #f0e8ec;border-radius:16px;overflow:hidden;">
-    <div style="padding:14px 18px;border-bottom:1px solid #f9edf2;display:flex;align-items:center;gap:10px;">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${pk}" stroke-width="1.8" stroke-linecap="round"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-      <span style="font-size:12px;color:${tl};font-style:italic;">Vos notes personnelles</span>
-    </div>
     <textarea id="notes-area" style="width:100%;min-height:420px;border:none;outline:none;font-family:Lora,serif;font-size:14px;color:${tx};background:#fff;resize:vertical;line-height:1.9;padding:18px 20px;" placeholder="Idées, to-do, citations, contacts... écrivez librement.">${h(NOTES)}</textarea>
   </div>
   `;
