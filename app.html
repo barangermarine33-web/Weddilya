@@ -515,9 +515,10 @@ async function loadUserDataFromFirestore(email){
 
     // ── Partage partenaire : si ce compte est lié à un autre, charger les données du propriétaire ──
     if(data._sharedOwnerDocId){
-      const ownerSnap = await getDoc(doc(window.firebaseDB, 'userData', data._sharedOwnerDocId));
+      const ownerDocId = data._sharedOwnerDocId;
+      const ownerSnap = await getDoc(doc(window.firebaseDB, 'userData', ownerDocId));
       if(ownerSnap.exists()) data = ownerSnap.data();
-      window._activeDataDocId = data._sharedOwnerDocId;
+      window._activeDataDocId = ownerDocId;
     } else {
       window._activeDataDocId = uid;
     }
@@ -2113,8 +2114,14 @@ async function openGuestDetail(id){
   const vinBg=sf; const vinColor=tm;
   const ageBg=sf; const ageColor=tm;
   const pickRow=(label,value,color,bg,fn)=>`<div onclick="${fn}" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:${bg};border-radius:12px;cursor:pointer;"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:${tl};">${label}</span><span style="font-size:12px;font-weight:700;color:${color};">${value} ▾</span></div>`;
-  const emailRow=`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fdf8f5;border-radius:12px;"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:${tl};">Email</span><span style="font-size:12px;color:${tx};">${h(g.email||'—')}</span></div>`;
-  const adresseRow=`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fdf8f5;border-radius:12px;"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:${tl};">Adresse</span><span style="font-size:12px;color:${tx};">${h(g.adresse||'—')}</span></div>`;
+  const emailRow=`<div style="padding:10px 14px;background:#fdf8f5;border-radius:12px;">
+    <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:${tl};margin-bottom:6px;">Email</div>
+    <input class="inp" value="${h(g.email||'')}" placeholder="email@..." oninput="updGuest(${id},'email',this.value)" style="margin:0;padding:8px 12px;font-size:13px;">
+  </div>`;
+  const adresseRow=`<div style="padding:10px 14px;background:#fdf8f5;border-radius:12px;">
+    <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:${tl};margin-bottom:6px;">Adresse postale</div>
+    <input class="inp" value="${h(g.adresse||'')}" placeholder="N° rue, ville, code postal..." oninput="updGuest(${id},'adresse',this.value)" style="margin:0;padding:8px 12px;font-size:13px;">
+  </div>`;
   await new Promise(resolve=>{
     const overlay=document.createElement('div');
     overlay.style.cssText='position:fixed;inset:0;background:rgba(62,24,40,.45);backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:flex-end;justify-content:center;';
@@ -3826,80 +3833,77 @@ async function searchByCategory(catKey,catLabel){
 }
 
 async function runCategorySearch(tags,catLabel,lat,lng,radiusMeters){
-  const wrap=el('vnd-results-wrap');const radiusKm=Math.round(radiusMeters/1000);
-  if(wrap)wrap.innerHTML='<p style="text-align:center;padding:14px;font-size:12px;color:'+tl+';">Recherche en cours…</p>';
-  function hav(a,b,c,d){var R=6371,t=function(x){return x*Math.PI/180;};var da=t(c-a),db=t(d-b);var x=Math.pow(Math.sin(da/2),2)+Math.cos(t(a))*Math.cos(t(c))*Math.pow(Math.sin(db/2),2);return Math.round(R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))*10)/10;}
-  // ft() : fetch avec timeout, essaie plusieurs miroirs Overpass
-  var OVERPASS_MIRRORS=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://maps.mail.ru/osm/tools/overpass/api/interpreter'];
-  async function ftOverpass(query,ms){
-    for(var mi=0;mi<OVERPASS_MIRRORS.length;mi++){
-      try{
-        var ctrl=new AbortController();var tid=setTimeout(function(){ctrl.abort();},(ms||15000));
-        var r=await fetch(OVERPASS_MIRRORS[mi]+'?data='+encodeURIComponent(query),{signal:ctrl.signal,headers:{'Accept-Language':'fr'}});
-        clearTimeout(tid);
-        if(r.ok) return r;
-      }catch(e){console.warn('Overpass mirror '+mi+' failed:',e.message);}
-    }
-    return null;
-  }
-  function ftNominatim(url,ms){var ctrl=new AbortController();var tid=setTimeout(function(){ctrl.abort();},(ms||12000));return fetch(url,{signal:ctrl.signal,headers:{'Accept-Language':'fr'}}).finally(function(){clearTimeout(tid);});}
-  var results=[];var seen={};
+  const wrap=el('vnd-results-wrap');
+  const radiusKm=Math.round(radiusMeters/1000);
+  if(wrap)wrap.innerHTML='<p style="text-align:center;padding:20px;font-size:13px;color:'+tl+';">Recherche en cours…</p>';
+
+  function hav(a,b,c,d){var R=6371,dLat=(c-a)*Math.PI/180,dLon=(d-b)*Math.PI/180;var x=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);return Math.round(R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))*10)/10;}
+
   var ck=Object.keys(VND_CATEGORIES).find(function(k){return JSON.stringify(VND_CATEGORIES[k].tags)===JSON.stringify(tags);})||'';
+  var termMap={
+    robe:     ['boutique mariée','robe de mariée','boutique mariage'],
+    salle:    ['salle mariage','domaine mariage','château mariage','salle réception'],
+    traiteur: ['traiteur mariage','traiteur réception','traiteur'],
+    photographe:['photographe mariage','photographe'],
+    coiffeur: ['coiffeur mariage','coiffeur','salon coiffure'],
+    maquillage:['maquilleuse mariage','maquillage mariage','maquilleuse'],
+    fleuriste: ['fleuriste mariage','fleuriste'],
+    bijou:    ['bijouterie','bijouterie mariage','alliance mariage'],
+    patisserie:['pâtisserie','boulangerie','wedding cake'],
+    dj:       ['DJ mariage','animation mariage','disc jockey'],
+    costume:  ['costume mariage','smoking','tailleur mariage'],
+    decor:    ['décoration mariage','décorateur mariage'],
+    videaste: ['vidéaste mariage','vidéaste','cameraman mariage'],
+    voiture:  ['location voiture mariage','limousine mariage','voiture prestige'],
+    hotel:    ['hôtel','chambre hôtes','gîte'],
+    imprimeur:['imprimeur faire-part','imprimerie','faire-part mariage'],
+    officiant:['officiant laïque','célébrant mariage'],
+    location: ['location matériel mariage','location décoration'],
+  };
+  var terms=termMap[ck]||[catLabel+' mariage',catLabel];
+  var bigRadiusKm=Math.round(radiusKm*1.5);
+  var results=[];var seen={};
 
-  // ── 1) Overpass API par tags OSM ──
-  try{
-    var fp=tags.map(function(t){var kv=t.split('=');return 'node["'+kv[0]+'"="'+kv[1]+'"](around:'+radiusMeters+','+lat+','+lng+');way["'+kv[0]+'"="'+kv[1]+'"](around:'+radiusMeters+','+lat+','+lng+');relation["'+kv[0]+'"="'+kv[1]+'"](around:'+radiusMeters+','+lat+','+lng+');';}).join('');
-    var res=await ftOverpass('[out:json][timeout:20];('+fp+');out center 80;');
-    if(res&&res.ok){var d=await res.json();(d.elements||[]).filter(function(e){return e.tags&&e.tags.name;}).forEach(function(e){var n=e.tags.name;if(seen[n])return;seen[n]=1;var la=e.lat||(e.center&&e.center.lat)||0,lo=e.lon||(e.center&&e.center.lon)||0;results.push({id:Date.now()+Math.random(),nom:n,categorie:catLabel,adresse:[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' ')||'',lat:la,lng:lo,distance:hav(lat,lng,la,lo),tel:e.tags.phone||e.tags['contact:phone']||'',site:e.tags.website||e.tags['contact:website']||'',notes:''});});}
-  }catch(e){console.warn('Overpass tags:',e.message);}
+  // Requêtes Nominatim en parallèle (max 4 termes)
+  var queries=terms.slice(0,4).map(function(term){
+    var url='https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(term)+
+      '&format=json&limit=30&addressdetails=1&countrycodes=fr,be,ch,lu'+
+      '&viewbox='+(lng-1)+','+(lat+0.8)+','+(lng+1)+','+(lat-0.8)+'&bounded=0';
+    return fetch(url,{headers:{'Accept-Language':'fr'}})
+      .then(function(r){return r.ok?r.json():[];})
+      .catch(function(){return [];});
+  });
 
-  // ── 2) Overpass par nom (~regex) — pour prestataires nommés explicitement ──
-  var nkw={robe:['mariage','bridal','mariée'],salle:['mariage','réception','domaine','château'],traiteur:['traiteur','catering'],photographe:['photographe','photo mariage'],coiffeur:['coiff','salon'],maquillage:['maquill','beauté'],fleuriste:['fleur'],bijou:['bijou','alliance'],patisserie:['pâtiss','cake','boulang'],dj:['dj','musique','animation'],costume:['costume','tailleur','smoking'],decor:['décor','événem'],videaste:['vidéo','vidéaste'],voiture:['limousine','prestige'],hotel:['hôtel','gîte','chambres'],imprimeur:['imprimeur','papeterie','faire-part']};
-  var kws=nkw[ck]||[catLabel.toLowerCase()];
-  for(var ki=0;ki<Math.min(kws.length,3);ki++){
-    try{
-      var kw=kws[ki];
-      var res2=await ftOverpass('[out:json][timeout:12];(node["name"~"'+kw+'",i](around:'+radiusMeters+','+lat+','+lng+');way["name"~"'+kw+'",i](around:'+radiusMeters+','+lat+','+lng+'););out center 40;');
-      if(res2&&res2.ok){var d2=await res2.json();(d2.elements||[]).filter(function(e){return e.tags&&e.tags.name;}).forEach(function(e){var n=e.tags.name;if(seen[n])return;seen[n]=1;var la=e.lat||(e.center&&e.center.lat)||0,lo=e.lon||(e.center&&e.center.lon)||0;results.push({id:Date.now()+Math.random(),nom:n,categorie:catLabel,adresse:[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' ')||'',lat:la,lng:lo,distance:hav(lat,lng,la,lo),tel:e.tags.phone||'',site:e.tags.website||'',notes:''});});}
-    }catch(e){console.warn('Overpass name~:',e.message);}
-  }
-
-  // Affichage intermédiaire après Overpass (avant Nominatim)
-  if(results.length>0){
-    window._vndResults=results.slice().sort(function(a,b){return a.distance-b.distance;});
-    renderVndResults(catLabel);
-    if(wrap)wrap.insertAdjacentHTML('afterbegin','<p style="padding:6px 14px;font-size:11px;color:'+tl+';font-style:italic;">Recherche complémentaire en cours…</p>');
-  }
-
-  // ── 3) Nominatim — très large, capte les prestataires sans vitrine physique ──
-  var nt={robe:['boutique robe mariée','boutique mariage'],salle:['salle réception mariage','domaine mariage','château mariage'],traiteur:['traiteur mariage','traiteur'],photographe:['photographe mariage','studio photo'],coiffeur:['coiffeur mariage','coiffure'],maquillage:['maquillage mariage','maquilleur'],fleuriste:['fleuriste mariage','fleuriste'],bijou:['bijouterie mariage','bijouterie alliance'],patisserie:['wedding cake','pâtisserie'],dj:['DJ mariage','animation musicale'],costume:['costume mariage','tailleur'],decor:['décoration mariage','décoration événementielle'],videaste:['vidéaste mariage','vidéaste'],voiture:['location voiture mariage','limousine'],hotel:['hôtel','chambre hôtes'],imprimeur:['imprimeur faire-part','imprimerie']};
-  var terms=nt[ck]||[catLabel+' mariage',catLabel];
-  // Rayon élargi pour Nominatim (×2.5 pour capturer les prestataires itinérants)
-  var bigRadius=Math.round(radiusKm*2.5);
-  for(var ti=0;ti<Math.min(terms.length,3);ti++){
-    try{
-      var term=terms[ti];
-      var nres=await ftNominatim('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(term)+'&format=json&limit=40&lat='+lat+'&lon='+lng+'&addressdetails=1&countrycodes=fr,be,ch,lu',10000);
-      if(!nres.ok)continue;
-      var nd=await nres.json();
-      nd.forEach(function(e){
-        if(!e.lat)return;
-        var n=(e.display_name||'').split(',')[0].trim();
-        if(!n||seen[n]||n.length<3)return;
-        seen[n]=1;
-        var la=parseFloat(e.lat),lo=parseFloat(e.lon),dist=hav(lat,lng,la,lo);
-        if(dist>bigRadius)return;
-        results.push({id:Date.now()+Math.random(),nom:n,categorie:catLabel,adresse:((e.address&&(e.address.road||''))+' '+(e.address&&(e.address.city||e.address.town||e.address.village||''))).trim(),lat:la,lng:lo,distance:dist,tel:'',site:'',notes:''});
-      });
-    }catch(e){console.warn('Nominatim:',e.message);}
-  }
+  var all=await Promise.allSettled(queries);
+  all.forEach(function(r){
+    if(r.status!=='fulfilled')return;
+    (r.value||[]).forEach(function(e){
+      if(!e.lat||!e.lon)return;
+      var n=(e.display_name||'').split(',')[0].trim();
+      if(!n||seen[n]||n.length<3)return;
+      var la=parseFloat(e.lat),lo=parseFloat(e.lon);
+      var dist=hav(lat,lng,la,lo);
+      if(dist>bigRadiusKm)return;
+      seen[n]=1;
+      var ville=(e.address&&(e.address.city||e.address.town||e.address.village||e.address.municipality||''))||'';
+      var rue=(e.address&&(e.address.road||''))||'';
+      results.push({id:Date.now()+Math.random(),nom:n,categorie:catLabel,
+        adresse:(rue+' '+ville).trim(),lat:la,lng:lo,distance:dist,tel:'',site:'',notes:''});
+    });
+  });
 
   results=results.sort(function(a,b){return a.distance-b.distance;}).slice(0,40);
-  var city=(el('vnd-location-status')||{}).textContent||'';city=city.replace('Lieu défini :','').trim().split(',')[0]||'';
+  var city=(el('vnd-location-status')||{}).textContent||'';
+  city=city.replace('Lieu défini :','').trim().split(',')[0]||'';
   var gmUrl='https://www.google.com/maps/search/'+encodeURIComponent(catLabel+' mariage '+city)+'/@'+lat+','+lng+',12z';
   window._vndResults=results;window._vndGoogleUrl=gmUrl;
+
   if(!results.length){
-    if(wrap)wrap.innerHTML='<div style="padding:16px;text-align:center;"><p style="font-size:13px;color:'+tl+';margin-bottom:14px;">Aucun résultat trouvé dans la zone. Essaie un rayon plus large ou une autre ville.</p><a href="'+gmUrl+'" target="_blank" style="display:block;padding:12px;background:'+sf+';border:1px solid '+br+';border-radius:14px;text-decoration:none;color:'+pk+';font-size:13px;font-weight:700;font-family:Lora,serif;text-align:center;">Chercher sur Google Maps</a></div>';
+    if(wrap)wrap.innerHTML=
+      '<div style="padding:20px;text-align:center;">'+
+      '<p style="font-size:13px;color:'+tl+';margin-bottom:16px;">Aucun résultat dans cette zone.<br><span style="font-size:12px;">Essaie un rayon plus large ou une autre ville.</span></p>'+
+      '<a href="'+gmUrl+'" target="_blank" style="display:block;padding:14px;background:'+sf+';border:1px solid '+br+';border-radius:14px;text-decoration:none;color:'+pk+';font-size:13px;font-weight:700;font-family:Lora,serif;text-align:center;">Chercher sur Google Maps</a>'+
+      '</div>';
     return;
   }
   renderVndResults(catLabel);
@@ -4049,72 +4053,13 @@ async function searchVendorsWithLocation(query,lat,lng){
 
   // try/finally pour GARANTIR la réactivation du bouton même si une exception survient
   try{
-    if(lat&&lng&&filters){
-      // ─── ÉTAPE 1 : OVERPASS API (peut échouer ou timeout, on tolère) ───
-      try {
-        // Un seul rayon (40 km) pour aller vite et éviter les timeouts.
-        // Si Overpass est rapide on récupère assez de résultats sans retry.
-        const radius = 40000;
-        const filterParts = filters.map(f=>{
-          const [k,v]=f.split('=');
-          return `node["${k}"="${v}"](around:${radius},${lat},${lng});`+
-                 `way["${k}"="${v}"](around:${radius},${lat},${lng});`;
-        }).join('');
-
-        // Recherche par nom : si le nom contient le terme cherché
-        const mainWord = q.split(/\s+/).find(w=>w.length>=4 && !['mariage','wedding'].includes(w));
-        let nameSearch = '';
-        if(mainWord){
-          const safeWord = mainWord.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-          nameSearch = `node["name"~"${safeWord}",i](around:${radius},${lat},${lng});`+
-                       `way["name"~"${safeWord}",i](around:${radius},${lat},${lng});`;
-        }
-
-        // timeout Overpass interne court (8s), pour éviter d'attendre 25s
-        const overpassQ = `[out:json][timeout:8];(${filterParts}${nameSearch});out center 60;`;
-        const url = 'https://overpass-api.de/api/interpreter?data='+encodeURIComponent(overpassQ);
-        const res = await fetchWithTimeout(url, {}, 10000);
-        if(res.ok){
-          const data = await res.json();
-          const named = (data.elements||[]).filter(e=>(e.tags||{}).name);
-          for(const e of named){
-            const tags = e.tags||{};
-            const elat = e.lat || (e.center&&e.center.lat);
-            const elon = e.lon || (e.center&&e.center.lon);
-            if(!elat||!elon) continue;
-            const nom = tags.name;
-            const key = nom.toLowerCase().trim();
-            if(seenNames.has(key)) continue;
-            seenNames.add(key);
-            const dist = haversine(lat,lng,elat,elon);
-            const addr = [tags['addr:housenumber'],tags['addr:street'],tags['addr:postcode'],tags['addr:city']]
-              .filter(Boolean).join(' ');
-            results.push({
-              id: results.length,
-              nom: nom,
-              categorie: cat,
-              description: addr||tags['addr:city']||'Adresse non renseignée',
-              tel: tags.phone||tags['contact:phone']||'',
-              site: (tags.website||tags['contact:website']||'').replace(/^https?:\/\//,''),
-              distance: dist,
-              adresse: addr,
-              lat: elat,
-              lng: elon
-            });
-          }
-        }
-      } catch(overpassErr){
-        // Overpass timeout ou réseau → on bascule sur Nominatim, sans bloquer
-        console.warn('[search] Overpass failed:', overpassErr.message);
-      }
-
-      // ─── ÉTAPE 2 : NOMINATIM (toujours essayé, même si Overpass a marché) ───
-      // Nominatim trouve souvent des établissements moins bien taggés.
+    if(lat&&lng){
+      // ─── NOMINATIM (viewbox centré sur la position) ───
       try {
         const dLat = 0.45, dLng = 0.65;
         const viewbox = `${lng-dLng},${lat+dLat},${lng+dLng},${lat-dLat}`;
-        const nurl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=30&viewbox=${viewbox}&bounded=1&countrycodes=fr,be,ch,lu`;
-        const nres = await fetchWithTimeout(nurl, {headers:{'Accept-Language':'fr'}}, 8000);
+        const nurl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=40&viewbox=${viewbox}&bounded=0&countrycodes=fr,be,ch,lu`;
+        const nres = await fetchWithTimeout(nurl, {headers:{'Accept-Language':'fr'}}, 10000);
         if(nres.ok){
           const ndata = await nres.json();
           ndata.forEach((e,idx)=>{
@@ -4127,25 +4072,11 @@ async function searchVendorsWithLocation(query,lat,lng){
             if(isNaN(elat)||isNaN(elon)) return;
             const dist = haversine(lat,lng,elat,elon);
             const a = e.address||{};
-            const adresse = [a.house_number,a.road,a.postcode,a.city||a.town||a.village]
-              .filter(Boolean).join(' ');
-            results.push({
-              id: 10000 + idx,
-              nom: nom,
-              categorie: cat,
-              description: adresse||e.display_name,
-              tel: '',
-              site: '',
-              distance: dist,
-              adresse: adresse,
-              lat: elat,
-              lng: elon
-            });
+            const adresse = [a.house_number,a.road,a.postcode,a.city||a.town||a.village].filter(Boolean).join(' ');
+            results.push({id:idx,nom,categorie:cat,description:adresse||e.display_name,tel:'',site:'',distance:dist,adresse,lat:elat,lng:elon});
           });
         }
-      } catch(nomErr){
-        console.warn('[search] Nominatim geo failed:', nomErr.message);
-      }
+      } catch(err){ console.warn('[search] Nominatim failed:', err.message); }
 
       results = results.sort((a,b)=>a.distance-b.distance).slice(0,25);
 
