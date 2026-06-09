@@ -735,27 +735,26 @@ function appPicker(options, currentValue, title, opts){
     if(!root){
       root = document.createElement('div');
       root.id = 'app-modal-root';
-      root.style.cssText = 'position:fixed;inset:0;z-index:99999;display:none;align-items:flex-end;justify-content:center;background:rgba(45,10,24,0.45);backdrop-filter:blur(4px);';
+      root.style.cssText = 'position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;background:rgba(45,10,24,0.45);backdrop-filter:blur(4px);padding:20px;';
       document.body.appendChild(root);
     }
     root.innerHTML = `
-      <div style="background:#fff;border-radius:22px 22px 0 0;width:100%;max-width:480px;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 -8px 40px rgba(45,10,24,0.18);animation:appModalIn .2s ease-out;overflow:hidden;">
-        <div style="display:flex;justify-content:center;padding:10px 0 0;"><div style="width:36px;height:4px;background:#f0e0e8;border-radius:2px;"></div></div>
-        <div style="padding:14px 20px 10px;border-bottom:1px solid #f5eaf0;">
+      <div style="background:#fff;border-radius:18px;width:100%;max-width:400px;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(45,10,24,0.22);animation:appModalIn .18s ease-out;overflow:hidden;">
+        <div style="padding:18px 20px 12px;border-bottom:1px solid #f5eaf0;">
           <div style="font-family:'Playfair Display',serif;font-size:17px;color:#2d0a18;">${title || 'Choisir'}</div>
         </div>
         <div style="overflow-y:auto;padding:10px 14px 6px;flex:1;">
           ${opts2.map((o,i)=>{
             const selected = String(o.value) === String(currentValue);
             const accentCol = o.color || '#b84060';
-            return `<button data-i="${i}" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:14px 16px;margin-bottom:6px;border-radius:14px;border:none;background:${selected?'#fce8ef':'#faf5f7'};cursor:pointer;text-align:left;transition:background .12s;">
+            return `<button data-i="${i}" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:13px 16px;margin-bottom:6px;border-radius:12px;border:none;background:${selected?'#fce8ef':'#faf5f7'};cursor:pointer;text-align:left;transition:background .12s;">
               <span style="font-family:Lora,serif;font-size:14px;font-weight:${selected?'700':'500'};color:${selected?accentCol:'#2d0a18'};">${o.label}</span>
               ${selected?`<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="9" fill="${accentCol}"/><path d="M5 9l3 3 5-5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`:''}
             </button>`;
           }).join('')}
         </div>
-        <div style="padding:10px 14px 28px;">
-          <button data-cancel style="width:100%;background:#faf5f7;border:none;border-radius:14px;padding:14px;font-family:Lora,serif;font-size:14px;font-weight:600;color:#8a4a60;cursor:pointer;">Annuler</button>
+        <div style="padding:10px 14px 16px;">
+          <button data-cancel style="width:100%;background:#faf5f7;border:none;border-radius:12px;padding:13px;font-family:Lora,serif;font-size:14px;font-weight:600;color:#8a4a60;cursor:pointer;">Annuler</button>
         </div>
       </div>`;
     root.style.display = 'flex';
@@ -3834,79 +3833,29 @@ async function searchByCategory(catKey,catLabel){
 
 async function runCategorySearch(tags,catLabel,lat,lng,radiusMeters){
   const wrap=el('vnd-results-wrap');
-  const radiusKm=Math.round(radiusMeters/1000);
-  if(wrap)wrap.innerHTML='<p style="text-align:center;padding:20px;font-size:13px;color:'+tl+';">Recherche en cours…</p>';
+  if(!wrap) return;
 
-  function hav(a,b,c,d){var R=6371,dLat=(c-a)*Math.PI/180,dLon=(d-b)*Math.PI/180;var x=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);return Math.round(R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))*10)/10;}
+  // Google Maps Search URL pour cette catégorie et position
+  const gmQuery = encodeURIComponent(catLabel + ' mariage');
+  const gmUrl = `https://www.google.com/maps/search/${gmQuery}/@${lat},${lng},13z`;
+  const gmEmbed = `https://www.google.com/maps/embed/v1/search?key=AIzaSyC8Hn86vWDfrMLQAS_lTMFNt-SUdoTi_ic&q=${gmQuery}&center=${lat},${lng}&zoom=12&language=fr`;
 
-  var ck=Object.keys(VND_CATEGORIES).find(function(k){return JSON.stringify(VND_CATEGORIES[k].tags)===JSON.stringify(tags);})||'';
-  var termMap={
-    robe:     ['boutique mariée','robe de mariée','boutique mariage'],
-    salle:    ['salle mariage','domaine mariage','château mariage','salle réception'],
-    traiteur: ['traiteur mariage','traiteur réception','traiteur'],
-    photographe:['photographe mariage','photographe'],
-    coiffeur: ['coiffeur mariage','coiffeur','salon coiffure'],
-    maquillage:['maquilleuse mariage','maquillage mariage','maquilleuse'],
-    fleuriste: ['fleuriste mariage','fleuriste'],
-    bijou:    ['bijouterie','bijouterie mariage','alliance mariage'],
-    patisserie:['pâtisserie','boulangerie','wedding cake'],
-    dj:       ['DJ mariage','animation mariage','disc jockey'],
-    costume:  ['costume mariage','smoking','tailleur mariage'],
-    decor:    ['décoration mariage','décorateur mariage'],
-    videaste: ['vidéaste mariage','vidéaste','cameraman mariage'],
-    voiture:  ['location voiture mariage','limousine mariage','voiture prestige'],
-    hotel:    ['hôtel','chambre hôtes','gîte'],
-    imprimeur:['imprimeur faire-part','imprimerie','faire-part mariage'],
-    officiant:['officiant laïque','célébrant mariage'],
-    location: ['location matériel mariage','location décoration'],
-  };
-  var terms=termMap[ck]||[catLabel+' mariage',catLabel];
-  var bigRadiusKm=Math.round(radiusKm*1.5);
-  var results=[];var seen={};
-
-  // Requêtes Nominatim en parallèle (max 4 termes)
-  var queries=terms.slice(0,4).map(function(term){
-    var url='https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(term)+
-      '&format=json&limit=30&addressdetails=1&countrycodes=fr,be,ch,lu'+
-      '&viewbox='+(lng-1)+','+(lat+0.8)+','+(lng+1)+','+(lat-0.8)+'&bounded=0';
-    return fetch(url,{headers:{'Accept-Language':'fr'}})
-      .then(function(r){return r.ok?r.json():[];})
-      .catch(function(){return [];});
-  });
-
-  var all=await Promise.allSettled(queries);
-  all.forEach(function(r){
-    if(r.status!=='fulfilled')return;
-    (r.value||[]).forEach(function(e){
-      if(!e.lat||!e.lon)return;
-      var n=(e.display_name||'').split(',')[0].trim();
-      if(!n||seen[n]||n.length<3)return;
-      var la=parseFloat(e.lat),lo=parseFloat(e.lon);
-      var dist=hav(lat,lng,la,lo);
-      if(dist>bigRadiusKm)return;
-      seen[n]=1;
-      var ville=(e.address&&(e.address.city||e.address.town||e.address.village||e.address.municipality||''))||'';
-      var rue=(e.address&&(e.address.road||''))||'';
-      results.push({id:Date.now()+Math.random(),nom:n,categorie:catLabel,
-        adresse:(rue+' '+ville).trim(),lat:la,lng:lo,distance:dist,tel:'',site:'',notes:''});
-    });
-  });
-
-  results=results.sort(function(a,b){return a.distance-b.distance;}).slice(0,40);
-  var city=(el('vnd-location-status')||{}).textContent||'';
-  city=city.replace('Lieu défini :','').trim().split(',')[0]||'';
-  var gmUrl='https://www.google.com/maps/search/'+encodeURIComponent(catLabel+' mariage '+city)+'/@'+lat+','+lng+',12z';
-  window._vndResults=results;window._vndGoogleUrl=gmUrl;
-
-  if(!results.length){
-    if(wrap)wrap.innerHTML=
-      '<div style="padding:20px;text-align:center;">'+
-      '<p style="font-size:13px;color:'+tl+';margin-bottom:16px;">Aucun résultat dans cette zone.<br><span style="font-size:12px;">Essaie un rayon plus large ou une autre ville.</span></p>'+
-      '<a href="'+gmUrl+'" target="_blank" style="display:block;padding:14px;background:'+sf+';border:1px solid '+br+';border-radius:14px;text-decoration:none;color:'+pk+';font-size:13px;font-weight:700;font-family:Lora,serif;text-align:center;">Chercher sur Google Maps</a>'+
-      '</div>';
-    return;
-  }
-  renderVndResults(catLabel);
+  wrap.innerHTML = `
+    <div style="margin-bottom:10px;">
+      <iframe
+        src="${gmEmbed}"
+        width="100%" height="400"
+        style="border:0;border-radius:14px;display:block;"
+        allowfullscreen loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade">
+      </iframe>
+    </div>
+    <a href="${gmUrl}" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;background:${sf};border:1px solid ${br};border-radius:14px;text-decoration:none;color:${pk};font-size:13px;font-weight:700;font-family:Lora,serif;margin-bottom:6px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+      Ouvrir dans Google Maps
+    </a>
+    <p style="font-size:11px;color:${tl};text-align:center;font-style:italic;">Cliquez sur un résultat pour voir les détails, puis ajoutez-le manuellement.</p>
+  `;
 }
 
 async function searchVendorsWithLocation(query,lat,lng){
