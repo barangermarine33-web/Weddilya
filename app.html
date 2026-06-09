@@ -535,6 +535,15 @@ async function loadUserDataFromFirestore(email){
       if(data.p2) window.USER.p2 = data.p2;
       if(data.wDate) window.USER.wDate = data.wDate;
     }
+    // ── Sauvegarder p1/p2/wDate dans u_email pour le prochain startApp ──
+    if(data.p1 || data.p2 || data.wDate){
+      const uStored = ld('u_'+email, {email}) || {email};
+      let changed = false;
+      if(data.p1 && uStored.p1 !== data.p1){ uStored.p1 = data.p1; changed = true; }
+      if(data.p2 && uStored.p2 !== data.p2){ uStored.p2 = data.p2; changed = true; }
+      if(data.wDate && uStored.wDate !== data.wDate){ uStored.wDate = data.wDate; changed = true; }
+      if(changed) try{ localStorage.setItem('u_'+email, JSON.stringify(uStored)); }catch{}
+    }
 
     console.log('[sync] ' + nLoaded + ' clés chargées depuis Firestore (UID:' + uid + ')');
     return nLoaded > 0;
@@ -1005,8 +1014,15 @@ async function doLogin(){
       if(btn){btn.textContent='Se connecter';btn.disabled=false;}
       sv('rem_e',email);sv('rem_p',pass);
       sv('sess',email);
-      // Charger depuis Firestore sans bloquer si offline
-      try { await loadUserDataFromFirestore(email); } catch(e){ console.warn('Firestore offline, démarrage sans sync:', e); }
+      // Charger depuis Firestore (migration + localStorage)
+      try { await loadUserDataFromFirestore(email); } catch(e){ console.warn('Firestore offline:', e); }
+      // Récupérer p1/p2/wDate depuis u_email s'ils ont été mis à jour par la migration
+      const uSaved = ld('u_'+email, null);
+      if(uSaved){
+        if(uSaved.p1) u.p1 = uSaved.p1;
+        if(uSaved.p2) u.p2 = uSaved.p2;
+        if(uSaved.wDate) u.wDate = uSaved.wDate;
+      }
       startApp(u);
       return;
     } catch(authErr){
@@ -2110,18 +2126,12 @@ async function openGuestDetail(id){
         <button id="gd-x" style="background:none;border:none;font-size:22px;color:#b07a90;cursor:pointer;">×</button>
       </div>
       <div style="padding:16px 20px;display:flex;flex-direction:column;gap:10px;">
-        ${pickRow('Côté', g.cote==='p1'?(USER.p1||'Côté 1'):(USER.p2||'Côté 2'), coteTxt, coteColor, `pickGuestCote(${id});setTimeout(()=>{overlay.remove();resolve();openGuestDetail(${id});},400);`)}
-        ${pickRow('Rôle', g.role||'Invité·e', rôleColor, rôleBg, `pickGuestRole(${id});setTimeout(()=>{overlay.remove();resolve();openGuestDetail(${id});},400);`)}
-        ${pickRow('Âge', g.age||'Adulte', ageColor, ageBg, `pickGuestAge(${id});setTimeout(()=>{overlay.remove();resolve();openGuestDetail(${id});},400);`)}
-        ${pickRow("Vin d'honneur", vinLabel, vinColor, vinBg, `pickGuestVin(${id});setTimeout(()=>{overlay.remove();resolve();openGuestDetail(${id});},400);`)}
-        <div onclick="pickGuestInvitation(${id});setTimeout(()=>{overlay.remove();resolve();openGuestDetail(${id});},400);" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fdf8f5;border-radius:12px;cursor:pointer;">
-          <span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:${tl};">Invitation</span>
-          <span style="font-size:12px;font-weight:700;color:${invColor};">${invLabel} ▾</span>
-        </div>
-        <div onclick="pickGuestPresence(${id});setTimeout(()=>{overlay.remove();resolve();openGuestDetail(${id});},400);" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fdf8f5;border-radius:12px;cursor:pointer;">
-          <span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:${tl};">Présence</span>
-          <span style="font-size:12px;font-weight:700;color:${presColor};">${presLabel} ▾</span>
-        </div>
+        <div data-pick="cote" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:${coteColor};border-radius:12px;cursor:pointer;"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:${tl};">Côté</span><span style="font-size:12px;font-weight:700;color:${coteTxt};">${g.cote==='p1'?(USER.p1||'Côté 1'):(USER.p2||'Côté 2')} ▾</span></div>
+        <div data-pick="role" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:${sf};border-radius:12px;cursor:pointer;"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:${tl};">Rôle</span><span style="font-size:12px;font-weight:700;color:${tm};">${g.role||'Invité·e'} ▾</span></div>
+        <div data-pick="age" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:${sf};border-radius:12px;cursor:pointer;"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:${tl};">Âge</span><span style="font-size:12px;font-weight:700;color:${tm};">${g.age||'Adulte'} ▾</span></div>
+        <div data-pick="vin" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:${sf};border-radius:12px;cursor:pointer;"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:${tl};">Vin d'honneur</span><span style="font-size:12px;font-weight:700;color:${tm};">${vinLabel} ▾</span></div>
+        <div data-pick="invitation" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fdf8f5;border-radius:12px;cursor:pointer;"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:${tl};">Invitation</span><span style="font-size:12px;font-weight:700;color:${invColor};">${invLabel} ▾</span></div>
+        <div data-pick="presence" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fdf8f5;border-radius:12px;cursor:pointer;"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:${tl};">Présence</span><span style="font-size:12px;font-weight:700;color:${presColor};">${presLabel} ▾</span></div>
         ${emailRow}${adresseRow}
       </div>
       <div style="padding:12px 20px 28px;display:flex;gap:8px;">
@@ -2130,6 +2140,24 @@ async function openGuestDetail(id){
       </div>`;
     overlay.appendChild(box);document.body.appendChild(overlay);
     const close=()=>{overlay.remove();resolve();};
+
+    // Pickers : fermer l'overlay d'abord pour que appPicker soit visible, puis rouvrir
+    const pickerFns = {
+      cote: ()=>pickGuestCote(id),
+      role: ()=>pickGuestRole(id),
+      age: ()=>pickGuestAge(id),
+      vin: ()=>pickGuestVin(id),
+      invitation: ()=>pickGuestInvitation(id),
+      presence: ()=>pickGuestPresence(id)
+    };
+    box.querySelectorAll('[data-pick]').forEach(el=>{
+      el.addEventListener('click', async ()=>{
+        const key = el.getAttribute('data-pick');
+        overlay.remove(); resolve();
+        await pickerFns[key]();
+        openGuestDetail(id);
+      });
+    });
     box.querySelector('#gd-x').onclick=close;
     box.querySelector('#gd-close').onclick=close;
     box.querySelector('#gd-del').onclick=()=>{removeGuest(id);close();};
@@ -3799,15 +3827,28 @@ async function runCategorySearch(tags,catLabel,lat,lng,radiusMeters){
   const wrap=el('vnd-results-wrap');const radiusKm=Math.round(radiusMeters/1000);
   if(wrap)wrap.innerHTML='<p style="text-align:center;padding:14px;font-size:12px;color:'+tl+';">Recherche en cours…</p>';
   function hav(a,b,c,d){var R=6371,t=function(x){return x*Math.PI/180;};var da=t(c-a),db=t(d-b);var x=Math.pow(Math.sin(da/2),2)+Math.cos(t(a))*Math.cos(t(c))*Math.pow(Math.sin(db/2),2);return Math.round(R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))*10)/10;}
-  function ft(url,ms){var ctrl=new AbortController();var tid=setTimeout(function(){ctrl.abort();},ms||15000);return fetch(url,{signal:ctrl.signal,headers:{'Accept-Language':'fr'}}).finally(function(){clearTimeout(tid);});}
+  // ft() : fetch avec timeout, essaie plusieurs miroirs Overpass
+  var OVERPASS_MIRRORS=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://maps.mail.ru/osm/tools/overpass/api/interpreter'];
+  async function ftOverpass(query,ms){
+    for(var mi=0;mi<OVERPASS_MIRRORS.length;mi++){
+      try{
+        var ctrl=new AbortController();var tid=setTimeout(function(){ctrl.abort();},(ms||15000));
+        var r=await fetch(OVERPASS_MIRRORS[mi]+'?data='+encodeURIComponent(query),{signal:ctrl.signal,headers:{'Accept-Language':'fr','User-Agent':'Weddilya/1.0 (contact@weddilya.fr)'}});
+        clearTimeout(tid);
+        if(r.ok) return r;
+      }catch(e){console.warn('Overpass mirror '+mi+' failed:',e.message);}
+    }
+    return null;
+  }
+  function ftNominatim(url,ms){var ctrl=new AbortController();var tid=setTimeout(function(){ctrl.abort();},(ms||12000));return fetch(url,{signal:ctrl.signal,headers:{'Accept-Language':'fr','User-Agent':'Weddilya/1.0 (contact@weddilya.fr)'}}).finally(function(){clearTimeout(tid);});}
   var results=[];var seen={};
   var ck=Object.keys(VND_CATEGORIES).find(function(k){return JSON.stringify(VND_CATEGORIES[k].tags)===JSON.stringify(tags);})||'';
 
-  // ── 1) Overpass API par tags OSM (efficace pour coiffeurs, fleuristes, hôtels...) ──
+  // ── 1) Overpass API par tags OSM ──
   try{
     var fp=tags.map(function(t){var kv=t.split('=');return 'node["'+kv[0]+'"="'+kv[1]+'"](around:'+radiusMeters+','+lat+','+lng+');way["'+kv[0]+'"="'+kv[1]+'"](around:'+radiusMeters+','+lat+','+lng+');relation["'+kv[0]+'"="'+kv[1]+'"](around:'+radiusMeters+','+lat+','+lng+');';}).join('');
-    var res=await ft('https://overpass-api.de/api/interpreter?data='+encodeURIComponent('[out:json][timeout:20];('+fp+');out center 80;'));
-    if(res.ok){var d=await res.json();(d.elements||[]).filter(function(e){return e.tags&&e.tags.name;}).forEach(function(e){var n=e.tags.name;if(seen[n])return;seen[n]=1;var la=e.lat||(e.center&&e.center.lat)||0,lo=e.lon||(e.center&&e.center.lon)||0;results.push({id:Date.now()+Math.random(),nom:n,categorie:catLabel,adresse:[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' ')||'',lat:la,lng:lo,distance:hav(lat,lng,la,lo),tel:e.tags.phone||e.tags['contact:phone']||'',site:e.tags.website||e.tags['contact:website']||'',notes:''});});}
+    var res=await ftOverpass('[out:json][timeout:20];('+fp+');out center 80;');
+    if(res&&res.ok){var d=await res.json();(d.elements||[]).filter(function(e){return e.tags&&e.tags.name;}).forEach(function(e){var n=e.tags.name;if(seen[n])return;seen[n]=1;var la=e.lat||(e.center&&e.center.lat)||0,lo=e.lon||(e.center&&e.center.lon)||0;results.push({id:Date.now()+Math.random(),nom:n,categorie:catLabel,adresse:[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' ')||'',lat:la,lng:lo,distance:hav(lat,lng,la,lo),tel:e.tags.phone||e.tags['contact:phone']||'',site:e.tags.website||e.tags['contact:website']||'',notes:''});});}
   }catch(e){console.warn('Overpass tags:',e.message);}
 
   // ── 2) Overpass par nom (~regex) — pour prestataires nommés explicitement ──
@@ -3816,8 +3857,8 @@ async function runCategorySearch(tags,catLabel,lat,lng,radiusMeters){
   for(var ki=0;ki<Math.min(kws.length,3);ki++){
     try{
       var kw=kws[ki];
-      var res2=await ft('https://overpass-api.de/api/interpreter?data='+encodeURIComponent('[out:json][timeout:12];(node["name"~"'+kw+'",i](around:'+radiusMeters+','+lat+','+lng+');way["name"~"'+kw+'",i](around:'+radiusMeters+','+lat+','+lng+'););out center 40;'));
-      if(res2.ok){var d2=await res2.json();(d2.elements||[]).filter(function(e){return e.tags&&e.tags.name;}).forEach(function(e){var n=e.tags.name;if(seen[n])return;seen[n]=1;var la=e.lat||(e.center&&e.center.lat)||0,lo=e.lon||(e.center&&e.center.lon)||0;results.push({id:Date.now()+Math.random(),nom:n,categorie:catLabel,adresse:[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' ')||'',lat:la,lng:lo,distance:hav(lat,lng,la,lo),tel:e.tags.phone||'',site:e.tags.website||'',notes:''});});}
+      var res2=await ftOverpass('[out:json][timeout:12];(node["name"~"'+kw+'",i](around:'+radiusMeters+','+lat+','+lng+');way["name"~"'+kw+'",i](around:'+radiusMeters+','+lat+','+lng+'););out center 40;');
+      if(res2&&res2.ok){var d2=await res2.json();(d2.elements||[]).filter(function(e){return e.tags&&e.tags.name;}).forEach(function(e){var n=e.tags.name;if(seen[n])return;seen[n]=1;var la=e.lat||(e.center&&e.center.lat)||0,lo=e.lon||(e.center&&e.center.lon)||0;results.push({id:Date.now()+Math.random(),nom:n,categorie:catLabel,adresse:[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' ')||'',lat:la,lng:lo,distance:hav(lat,lng,la,lo),tel:e.tags.phone||'',site:e.tags.website||'',notes:''});});}
     }catch(e){console.warn('Overpass name~:',e.message);}
   }
 
@@ -3829,7 +3870,7 @@ async function runCategorySearch(tags,catLabel,lat,lng,radiusMeters){
   for(var ti=0;ti<Math.min(terms.length,3);ti++){
     try{
       var term=terms[ti];
-      var nres=await ft('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(term)+'&format=json&limit=40&lat='+lat+'&lon='+lng+'&addressdetails=1&countrycodes=fr,be,ch,lu',10000);
+      var nres=await ftNominatim('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(term)+'&format=json&limit=40&lat='+lat+'&lon='+lng+'&addressdetails=1&countrycodes=fr,be,ch,lu',10000);
       if(!nres.ok)continue;
       var nd=await nres.json();
       nd.forEach(function(e){
