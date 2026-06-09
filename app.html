@@ -494,6 +494,7 @@ async function loadUserDataFromFirestore(email){
     // ── Lire le doc UID ──
     let snap = await getDoc(doc(window.firebaseDB, 'userData', uid));
     let data = snap.exists() ? snap.data() : {};
+    console.log('[sync] Doc UID existe:', snap.exists(), '| Clés:', Object.keys(data).join(', ') || '(vide)');
 
     // ── Migration : si doc UID vide, chercher l'ancien doc email ──
     const hasRealData = Object.keys(data).some(k => _isSyncKey(k));
@@ -503,10 +504,11 @@ async function loadUserDataFromFirestore(email){
       const oldSnap = await getDoc(doc(window.firebaseDB, 'userData', oldDocId));
       if(oldSnap.exists()){
         data = oldSnap.data();
+        console.log('[sync] Ancien doc trouvé, clés:', Object.keys(data).join(', '));
         await setDoc(doc(window.firebaseDB, 'userData', uid), data, {merge:true});
         console.log('[sync] Migration OK depuis', oldDocId);
       } else {
-        console.warn('[sync] Aucun doc trouvé pour', email, '/ UID:', uid);
+        console.warn('[sync] Aucun doc trouvé ni UID ni ancien email pour', email);
         return false;
       }
     }
@@ -545,7 +547,8 @@ async function loadUserDataFromFirestore(email){
       if(changed) try{ localStorage.setItem('u_'+email, JSON.stringify(uStored)); }catch{}
     }
 
-    console.log('[sync] ' + nLoaded + ' clés chargées depuis Firestore (UID:' + uid + ')');
+    console.log('[sync] ' + nLoaded + ' clés chargées depuis Firestore (UID:' + uid + ') | hasRealData was: ' + hasRealData);
+    console.log('[sync] Clés chargées en localStorage:', Object.keys(data).filter(k=>_isSyncKey(k)).join(', ') || '(aucune)');
     return nLoaded > 0;
   } catch(e){
     console.warn('[sync] loadUserDataFromFirestore failed:', e.code||e.message);
@@ -725,37 +728,36 @@ function appPrompt(message, defaultValue, title, opts){
 // Retourne une Promise résolue avec la valeur choisie, ou null si annulé.
 function appPicker(options, currentValue, title, opts){
   opts = opts || {};
-  // Normaliser : si options est un tableau de chaînes, le convertir
   const opts2 = options.map(o => typeof o === 'string' ? {value:o, label:o} : o);
   return new Promise((resolve)=>{
     let root = document.getElementById('app-modal-root');
     if(!root){
       root = document.createElement('div');
       root.id = 'app-modal-root';
-      root.style.cssText = 'position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;background:rgba(45,10,24,0.55);backdrop-filter:blur(6px);padding:18px;';
+      root.style.cssText = 'position:fixed;inset:0;z-index:99999;display:none;align-items:flex-end;justify-content:center;background:rgba(45,10,24,0.45);backdrop-filter:blur(4px);';
       document.body.appendChild(root);
     }
     root.innerHTML = `
-      <div style="background:#fff;border-radius:18px;max-width:380px;width:100%;max-height:75vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(154,40,72,0.35);animation:appModalIn .22s cubic-bezier(.34,1.56,.64,1);overflow:hidden;">
-        <div style="background:linear-gradient(135deg,#b84060,#9a2848);padding:16px 18px;color:#fff;display:flex;align-items:center;gap:10px;">
-          <span style="font-size:20px;">${opts.icon || ''}</span>
-          <div style="font-family:Playfair Display,Georgia,serif;font-size:16px;font-weight:700;flex:1;">${title || 'Choisir une option'}</div>
+      <div style="background:#fff;border-radius:22px 22px 0 0;width:100%;max-width:480px;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 -8px 40px rgba(45,10,24,0.18);animation:appModalIn .2s ease-out;overflow:hidden;">
+        <div style="display:flex;justify-content:center;padding:10px 0 0;"><div style="width:36px;height:4px;background:#f0e0e8;border-radius:2px;"></div></div>
+        <div style="padding:14px 20px 10px;border-bottom:1px solid #f5eaf0;">
+          <div style="font-family:'Playfair Display',serif;font-size:17px;color:#2d0a18;">${title || 'Choisir'}</div>
         </div>
-        <div style="overflow-y:auto;padding:10px;flex:1;">
+        <div style="overflow-y:auto;padding:10px 14px 6px;flex:1;">
           ${opts2.map((o,i)=>{
-            const selected = o.value === currentValue;
+            const selected = String(o.value) === String(currentValue);
             const accentCol = o.color || '#b84060';
-            return `<button data-i="${i}" style="display:flex;align-items:center;gap:10px;width:100%;padding:12px 14px;margin-bottom:6px;border-radius:11px;border:1.5px solid ${selected?accentCol:'#d8a0b8'};background:${selected?'#fbe6ee':'#fff'};color:#2d0a18;font-family:Lora,Georgia,serif;font-size:14px;font-weight:${selected?'700':'600'};cursor:pointer;text-align:left;transition:all .15s;">
-              ${o.icon?`<span style="font-size:16px;">${o.icon}</span>`:''}
-              <span style="flex:1;color:${selected?accentCol:'#2d0a18'};">${o.label}</span>
-              ${selected?`<span style="color:${accentCol};font-weight:700;"></span>`:''}
+            return `<button data-i="${i}" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:14px 16px;margin-bottom:6px;border-radius:14px;border:none;background:${selected?'#fce8ef':'#faf5f7'};cursor:pointer;text-align:left;transition:background .12s;">
+              <span style="font-family:Lora,serif;font-size:14px;font-weight:${selected?'700':'500'};color:${selected?accentCol:'#2d0a18'};">${o.label}</span>
+              ${selected?`<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="9" fill="${accentCol}"/><path d="M5 9l3 3 5-5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`:''}
             </button>`;
           }).join('')}
         </div>
-        <div style="padding:10px 14px;background:#fbe6ee;border-top:1px solid #d8a0b8;text-align:right;">
-          <button data-cancel style="background:none;border:1.5px solid #d8a0b8;color:#5a1a30;border-radius:9px;padding:8px 16px;font-family:Lora,serif;font-size:13px;font-weight:700;cursor:pointer;">Annuler</button>
+        <div style="padding:10px 14px 28px;">
+          <button data-cancel style="width:100%;background:#faf5f7;border:none;border-radius:14px;padding:14px;font-family:Lora,serif;font-size:14px;font-weight:600;color:#8a4a60;cursor:pointer;">Annuler</button>
         </div>
       </div>`;
+    root.style.display = 'flex';
     root.style.display = 'flex';
     const close = (val)=>{
       root.style.display = 'none';
@@ -2761,7 +2763,7 @@ function addTableEl(table){
   // Poignée de déplacement (en haut à gauche) — zone dédiée au glissement, fiable au doigt
   const handle=document.createElement('div');
   handle.className='tp-drag-handle';
-  handle.innerHTML='<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 1v12M1 7h12M7 1L5 3M7 1L9 3M7 13L5 11M7 13L9 11M1 7L3 5M1 7L3 9M13 7L11 5M13 7L11 9" stroke="#d4607a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  handle.innerHTML='<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 1v12M1 7h12M7 1L5 3M7 1L9 3M7 13L5 11M7 13L9 11M1 7L3 5M1 7L3 9M13 7L11 5M13 7L11 9" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   handle.title='Glisser pour déplacer la table';
   handle.style.cssText=`position:absolute;top:-8px;left:-8px;width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,${pk},${tm});color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:move;z-index:15;box-shadow:0 2px 6px rgba(154,40,72,.4);touch-action:none;user-select:none;`;
   div.appendChild(handle);
@@ -3833,14 +3835,14 @@ async function runCategorySearch(tags,catLabel,lat,lng,radiusMeters){
     for(var mi=0;mi<OVERPASS_MIRRORS.length;mi++){
       try{
         var ctrl=new AbortController();var tid=setTimeout(function(){ctrl.abort();},(ms||15000));
-        var r=await fetch(OVERPASS_MIRRORS[mi]+'?data='+encodeURIComponent(query),{signal:ctrl.signal,headers:{'Accept-Language':'fr','User-Agent':'Weddilya/1.0 (contact@weddilya.fr)'}});
+        var r=await fetch(OVERPASS_MIRRORS[mi]+'?data='+encodeURIComponent(query),{signal:ctrl.signal,headers:{'Accept-Language':'fr'}});
         clearTimeout(tid);
         if(r.ok) return r;
       }catch(e){console.warn('Overpass mirror '+mi+' failed:',e.message);}
     }
     return null;
   }
-  function ftNominatim(url,ms){var ctrl=new AbortController();var tid=setTimeout(function(){ctrl.abort();},(ms||12000));return fetch(url,{signal:ctrl.signal,headers:{'Accept-Language':'fr','User-Agent':'Weddilya/1.0 (contact@weddilya.fr)'}}).finally(function(){clearTimeout(tid);});}
+  function ftNominatim(url,ms){var ctrl=new AbortController();var tid=setTimeout(function(){ctrl.abort();},(ms||12000));return fetch(url,{signal:ctrl.signal,headers:{'Accept-Language':'fr'}}).finally(function(){clearTimeout(tid);});}
   var results=[];var seen={};
   var ck=Object.keys(VND_CATEGORIES).find(function(k){return JSON.stringify(VND_CATEGORIES[k].tags)===JSON.stringify(tags);})||'';
 
@@ -3860,6 +3862,13 @@ async function runCategorySearch(tags,catLabel,lat,lng,radiusMeters){
       var res2=await ftOverpass('[out:json][timeout:12];(node["name"~"'+kw+'",i](around:'+radiusMeters+','+lat+','+lng+');way["name"~"'+kw+'",i](around:'+radiusMeters+','+lat+','+lng+'););out center 40;');
       if(res2&&res2.ok){var d2=await res2.json();(d2.elements||[]).filter(function(e){return e.tags&&e.tags.name;}).forEach(function(e){var n=e.tags.name;if(seen[n])return;seen[n]=1;var la=e.lat||(e.center&&e.center.lat)||0,lo=e.lon||(e.center&&e.center.lon)||0;results.push({id:Date.now()+Math.random(),nom:n,categorie:catLabel,adresse:[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' ')||'',lat:la,lng:lo,distance:hav(lat,lng,la,lo),tel:e.tags.phone||'',site:e.tags.website||'',notes:''});});}
     }catch(e){console.warn('Overpass name~:',e.message);}
+  }
+
+  // Affichage intermédiaire après Overpass (avant Nominatim)
+  if(results.length>0){
+    window._vndResults=results.slice().sort(function(a,b){return a.distance-b.distance;});
+    renderVndResults(catLabel);
+    if(wrap)wrap.insertAdjacentHTML('afterbegin','<p style="padding:6px 14px;font-size:11px;color:'+tl+';font-style:italic;">Recherche complémentaire en cours…</p>');
   }
 
   // ── 3) Nominatim — très large, capte les prestataires sans vitrine physique ──
