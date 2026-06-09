@@ -3833,7 +3833,8 @@ async function searchByCategory(catKey,catLabel){
   await runCategorySearch(cat.tags,catLabel,lat,lng,radiusKm*1000);
 }
 
-const FSQ_KEY = 'fsq3e0v6USFYHZUiCh+m/FBSaTa/LO5s8g49mRN5KOLwimo=';
+const FSQ_CLIENT_ID = 'SB3KYBFL41K4IDMSSDM1R3DSEFPM1FLFSDQXXOFWJUGWU2F2';
+const FSQ_CLIENT_SECRET = 'TXX4PBQBMW2L3G0KNR45FYDQ2SEKSOIDPNY23EGMLA42014D';
 
 async function runCategorySearch(tags,catLabel,lat,lng,radiusMeters){
   const wrap = el('vnd-results-wrap');
@@ -3856,14 +3857,15 @@ async function runCategorySearch(tags,catLabel,lat,lng,radiusMeters){
   const radius = Math.min(radiusMeters,50000);
 
   try {
-    const url = `https://api.foursquare.com/v3/places/search?query=${encodeURIComponent(query)}&ll=${lat},${lng}&radius=${radius}&limit=20&language=fr&fields=name,location,tel,website,distance,geocodes`;
-    const res = await fetch(url,{headers:{'Authorization':FSQ_KEY,'Accept':'application/json'}});
-    if(!res.ok) throw new Error('FSQ HTTP '+res.status);
+    const v = '20231001';
+    const url = `https://api.foursquare.com/v2/venues/search?client_id=${FSQ_CLIENT_ID}&client_secret=${FSQ_CLIENT_SECRET}&v=${v}&ll=${lat},${lng}&radius=${radius}&query=${encodeURIComponent(query)}&limit=20&locale=fr`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('FSQ '+res.status);
     const data = await res.json();
-    const places = data.results||[];
+    const places = data.response?.venues||[];
 
     if(!places.length){
-      wrap.innerHTML = `<div style="padding:20px;text-align:center;"><p style="font-size:13px;color:${tl};margin-bottom:16px;">Aucun r\u00e9sultat dans cette zone.</p><a href="https://www.google.com/maps/search/${encodeURIComponent(catLabel+' mariage')}/@${lat},${lng},13z" target="_blank" style="display:block;padding:13px;background:${sf};border:1px solid ${br};border-radius:14px;text-decoration:none;color:${pk};font-size:13px;font-weight:700;font-family:Lora,serif;text-align:center;">Chercher sur Google Maps</a></div>`;
+      wrap.innerHTML = `<div style="padding:20px;text-align:center;"><p style="font-size:13px;color:${tl};margin-bottom:16px;">Aucun résultat dans cette zone.</p><a href="https://www.google.com/maps/search/${encodeURIComponent(catLabel+' mariage')}/@${lat},${lng},13z" target="_blank" style="display:block;padding:13px;background:${sf};border:1px solid ${br};border-radius:14px;text-decoration:none;color:${pk};font-size:13px;font-weight:700;font-family:Lora,serif;text-align:center;">Chercher sur Google Maps</a></div>`;
       return;
     }
 
@@ -3871,12 +3873,12 @@ async function runCategorySearch(tags,catLabel,lat,lng,radiusMeters){
       id: Date.now()+Math.random(),
       nom: p.name,
       categorie: catLabel,
-      adresse: [p.location?.address,p.location?.postcode,p.location?.locality].filter(Boolean).join(', '),
-      tel: p.tel||'',
-      site: p.website||'',
-      distance: p.distance ? Math.round(p.distance/100)/10 : null,
-      lat: p.geocodes?.main?.latitude||lat,
-      lng: p.geocodes?.main?.longitude||lng,
+      adresse: [p.location?.address, p.location?.postalCode, p.location?.city].filter(Boolean).join(', '),
+      tel: p.contact?.phone||'',
+      site: p.url||'',
+      distance: p.location?.distance ? Math.round(p.location.distance/100)/10 : null,
+      lat: p.location?.lat||lat,
+      lng: p.location?.lng||lng,
       notes: ''
     }));
     renderVndResults(catLabel);
