@@ -2633,6 +2633,8 @@ function tpApplyTransform(){
 function renderTablePlan(){
   tpScale=1;tpPanX=0;tpPanY=0;tpPanMode=false;window.tpSelectedShape='round';
   el('page-3').innerHTML=`
+  <div style="font-family:'Playfair Display',serif;font-size:20px;color:${tx};margin-bottom:12px;text-align:center;">Plan de table</div>
+  <div style="width:32px;height:1.5px;background:${pk};margin:0 auto 16px;border-radius:2px;"></div>
   <div style="padding:12px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-bottom:1px solid #f9edf2;">
     <button id="tp-shape-round" onclick="setTpShape(\'round\')" class="btn-sec" style="font-size:12px;padding:6px 12px;background:${pk};color:#fff;border-color:${pk};">Ronde</button>
     <button id="tp-shape-rect" onclick="setTpShape(\'rect\')" class="btn-sec" style="font-size:12px;padding:6px 12px;">Rect.</button>
@@ -3843,7 +3845,7 @@ async function runCategorySearch(tags,catLabel,lat,lng,radiusMeters){
   const gmUrl   = `https://www.google.com/maps/search/${q}/@${lat},${lng},13z`;
   const pjUrl   = `https://www.pagesjaunes.fr/recherche/${encodeURIComponent(catLabel+' mariage')}/${encodeURIComponent(cityName||'France')}`;
   const googleUrl = `https://www.google.com/search?q=${qCity}`;
-  const mariageUrl = `https://www.mariages.net/trouver-prestataire.htm?what=${encodeURIComponent(catLabel)}&where=${encodeURIComponent(cityName)}`;
+  const mariageUrl = `https://www.leboncoin.fr/recherche?category=&text=${encodeURIComponent(catLabel+' mariage '+cityName)}`;
 
   wrap.innerHTML = `
     <div style="background:#fff;border:1px solid #f0e8ec;border-radius:16px;padding:18px;margin-bottom:10px;">
@@ -3862,7 +3864,7 @@ async function runCategorySearch(tags,catLabel,lat,lng,radiusMeters){
         </a>
         <a href="${mariageUrl}" target="_blank" style="display:flex;align-items:center;gap:12px;padding:13px 16px;background:#faf5f7;border:1px solid #f0e8ec;border-radius:12px;text-decoration:none;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#d4607a"/></svg>
-          <div><div style="font-size:13px;font-weight:700;color:${tx};font-family:Lora,serif;">Mariages.net</div><div style="font-size:11px;color:${tl};">Spécialiste du mariage</div></div>
+          <div><div style="font-size:13px;font-weight:700;color:${tx};font-family:Lora,serif;">Le Bon Coin</div><div style="font-size:11px;color:${tl};">Petites annonces</div></div>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${tl}" stroke-width="2" stroke-linecap="round" style="margin-left:auto;"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
         </a>
         <a href="${googleUrl}" target="_blank" style="display:flex;align-items:center;gap:12px;padding:13px 16px;background:#faf5f7;border:1px solid #f0e8ec;border-radius:12px;text-decoration:none;">
@@ -4574,7 +4576,7 @@ function renameDecoItem(cat, i){
 function renderAlbum(){
   const driveUrl = ld('drive_url_'+USER.email, '');
   const qrUrl = driveUrl
-    ? `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(driveUrl)}&color=2d0a18&bgcolor=ffffff&margin=8`
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(driveUrl)}&color=d4607a&bgcolor=ffffff&margin=8`
     : '';
 
   el('page-8').innerHTML = `
