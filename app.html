@@ -207,7 +207,7 @@ button,label,.tab-btn,.card{-webkit-user-select:none;user-select:none;}
 <input type="hidden" id="set-date">
 <div class="inp" id="set-date-display" onclick="openDatePicker()" style="margin-bottom:10px;cursor:pointer;color:#3e1828;display:flex;align-items:center;justify-content:space-between;">
   <span id="set-date-label" style="color:#b07a90;">Choisir une date</span>
-  <span style="color:#d4607a;font-size:16px;">📅</span>
+  <span style="color:#d4607a;font-size:16px;"></span>
 </div>
     <label class="lbl">Nouveau mot de passe</label>
     <input class="inp" id="set-pass" type="password" placeholder="Laisser vide pour ne pas changer" style="margin-bottom:10px;">
@@ -219,7 +219,7 @@ button,label,.tab-btn,.card{-webkit-user-select:none;user-select:none;}
     </div>
     <hr style="border:none;border-top:1px solid var(--border);margin:12px 0;">
     <div style="margin-bottom:12px;">
-      <div style="font-size:13px;font-weight:700;color:#3e1828;font-family:Lora,serif;margin-bottom:10px;">👫 Partenaire</div>
+      <div style="font-size:13px;font-weight:700;color:#3e1828;font-family:Lora,serif;margin-bottom:10px;"> Partenaire</div>
       <div id="partner-status" style="font-size:12px;color:#8a4a60;margin-bottom:10px;font-family:Lora,serif;font-style:italic;">Chargement...</div>
       <div id="partner-invite-wrap">
         <p style="font-size:12px;color:#8a4a60;font-family:Lora,serif;font-style:italic;margin-bottom:10px;">Générez un lien à partager à votre partenaire.</p>
@@ -230,7 +230,7 @@ button,label,.tab-btn,.card{-webkit-user-select:none;user-select:none;}
             <input id="partner-link-input" readonly style="flex:1;border:1px solid #f0e8ec;border-radius:10px;padding:8px 10px;font-family:Lora,serif;font-size:11px;color:#3e1828;background:#fdf8f5;outline:none;" value="">
             <button onclick="copyPartnerLink()" style="background:#fef2f6;color:#b84060;border:1px solid #f5d5e0;border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:Lora,serif;white-space:nowrap;">Copier</button>
           </div>
-          <div id="partner-copy-ok" style="display:none;font-size:11px;color:#5a8a6a;font-family:Lora,serif;margin-top:4px;">✓ Lien copié !</div>
+          <div id="partner-copy-ok" style="display:none;font-size:11px;color:#5a8a6a;font-family:Lora,serif;margin-top:4px;"> Lien copié !</div>
           <p style="font-size:11px;color:#b07a90;font-family:Lora,serif;font-style:italic;margin-top:6px;">Ce lien expire dans 7 jours.</p>
         </div>
         <div id="partner-err" style="display:none;padding:8px 12px;border-radius:8px;font-size:12px;font-family:Lora,serif;margin-top:8px;border:1px solid;"></div>
@@ -241,7 +241,7 @@ button,label,.tab-btn,.card{-webkit-user-select:none;user-select:none;}
     </div>
     <hr style="border:none;border-top:1px solid var(--border);margin:12px 0;">
     <button onclick="doLogout()" style="width:100%;background:var(--bg2);color:var(--accent);border:1.5px solid var(--border);border-radius:11px;padding:12px;cursor:pointer;font-size:13px;font-weight:700;font-family:Lora,serif;margin-bottom:8px;">
-      🔓 Se déconnecter
+       Se déconnecter
     </button>
     <hr style="border:none;border-top:1px solid var(--border);margin:12px 0;">
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -250,9 +250,9 @@ button,label,.tab-btn,.card{-webkit-user-select:none;user-select:none;}
       <button onclick="openRGPD('cookies')" style="flex:1;background:none;border:none;font-family:Lora,serif;font-size:11px;color:var(--text3);cursor:pointer;text-decoration:underline;padding:4px;">Cookies</button>
     </div>
     <hr style="border:none;border-top:1px solid var(--border);margin:12px 0;">
-    <div style="font-size:12px;color:var(--text3);margin-bottom:8px;line-height:1.5;">⚠️ La suppression de compte est définitive. Toutes vos données seront effacées.</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:8px;line-height:1.5;">️ La suppression de compte est définitive. Toutes vos données seront effacées.</div>
     <button onclick="confirmDeleteAccount()" style="width:100%;background:#fff0f0;color:#c43a3a;border:1.5px solid #ffccd0;border-radius:11px;padding:12px;cursor:pointer;font-size:13px;font-weight:700;font-family:Lora,serif;">
-      🗑️ Supprimer mon compte
+      ️ Supprimer mon compte
     </button>
   </div>
 </div>
@@ -272,7 +272,7 @@ button,label,.tab-btn,.card{-webkit-user-select:none;user-select:none;}
 <!-- Bannière cookies -->
 <div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#3e1828;color:#fdf8f5;padding:14px 18px;z-index:2000;font-family:Lora,serif;font-size:12px;line-height:1.5;">
   <div style="max-width:600px;margin:0 auto;">
-    <div style="margin-bottom:10px;">🍪 Weddilya utilise des cookies essentiels pour fonctionner et Firebase (Google) pour stocker vos données de façon sécurisée. <button onclick="openRGPD('cookies')" style="background:none;border:none;color:#f0c0d0;text-decoration:underline;cursor:pointer;font-family:Lora,serif;font-size:12px;">En savoir plus</button></div>
+    <div style="margin-bottom:10px;"> Weddilya utilise des cookies essentiels pour fonctionner et Firebase (Google) pour stocker vos données de façon sécurisée. <button onclick="openRGPD('cookies')" style="background:none;border:none;color:#f0c0d0;text-decoration:underline;cursor:pointer;font-family:Lora,serif;font-size:12px;">En savoir plus</button></div>
     <div style="display:flex;gap:8px;">
       <button onclick="acceptCookies()" style="background:#d4607a;color:#fff;border:none;border-radius:8px;padding:8px 18px;cursor:pointer;font-family:Lora,serif;font-size:12px;font-weight:700;">Accepter</button>
       <button onclick="refuseCookies()" style="background:transparent;color:#f0c0d0;border:1px solid #f0c0d0;border-radius:8px;padding:8px 18px;cursor:pointer;font-family:Lora,serif;font-size:12px;">Refuser les non-essentiels</button>
@@ -369,7 +369,7 @@ button,label,.tab-btn,.card{-webkit-user-select:none;user-select:none;}
     onAuthStateChanged
   };
 
-  console.log("Firebase + Auth initialisés ✓");
+  console.log("Firebase + Auth initialisés ");
   // Signaler que Firebase est prêt
   window._firebaseReady = true;
   document.dispatchEvent(new Event('firebase-ready'));
@@ -665,7 +665,7 @@ function appConfirm(message, title, opts){
   opts = opts || {};
   return appModal({
     title: title || 'Confirmation',
-    icon: opts.icon || (opts.danger ? '⚠️' : '💬'),
+    icon: opts.icon || (opts.danger ? '️' : ''),
     message: String(message||''),
     danger: !!opts.danger,
     buttons: [
@@ -678,7 +678,7 @@ function appPrompt(message, defaultValue, title, opts){
   opts = opts || {};
   return appModal({
     title: title || 'Saisie',
-    icon: opts.icon || '✏️',
+    icon: opts.icon || '️',
     message: String(message||''),
     input: {value: defaultValue||'', placeholder: opts.placeholder||''},
     buttons: [
@@ -709,7 +709,7 @@ function appPicker(options, currentValue, title, opts){
     root.innerHTML = `
       <div style="background:#fff;border-radius:18px;max-width:380px;width:100%;max-height:75vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(154,40,72,0.35);animation:appModalIn .22s cubic-bezier(.34,1.56,.64,1);overflow:hidden;">
         <div style="background:linear-gradient(135deg,#b84060,#9a2848);padding:16px 18px;color:#fff;display:flex;align-items:center;gap:10px;">
-          <span style="font-size:20px;">${opts.icon || '📋'}</span>
+          <span style="font-size:20px;">${opts.icon || ''}</span>
           <div style="font-family:Playfair Display,Georgia,serif;font-size:16px;font-weight:700;flex:1;">${title || 'Choisir une option'}</div>
         </div>
         <div style="overflow-y:auto;padding:10px;flex:1;">
@@ -719,7 +719,7 @@ function appPicker(options, currentValue, title, opts){
             return `<button data-i="${i}" style="display:flex;align-items:center;gap:10px;width:100%;padding:12px 14px;margin-bottom:6px;border-radius:11px;border:1.5px solid ${selected?accentCol:'#d8a0b8'};background:${selected?'#fbe6ee':'#fff'};color:#2d0a18;font-family:Lora,Georgia,serif;font-size:14px;font-weight:${selected?'700':'600'};cursor:pointer;text-align:left;transition:all .15s;">
               ${o.icon?`<span style="font-size:16px;">${o.icon}</span>`:''}
               <span style="flex:1;color:${selected?accentCol:'#2d0a18'};">${o.label}</span>
-              ${selected?`<span style="color:${accentCol};font-weight:700;">✓</span>`:''}
+              ${selected?`<span style="color:${accentCol};font-weight:700;"></span>`:''}
             </button>`;
           }).join('')}
         </div>
@@ -994,7 +994,7 @@ async function doLogin(){
               try{
                 const {createUserWithEmailAndPassword}=window.firebaseAuthLib;
                 await createUserWithEmailAndPassword(window.firebaseAuth, email, pass);
-                console.log('Compte legacy migré vers Firebase Auth ✓');
+                console.log('Compte legacy migré vers Firebase Auth ');
               } catch(migrateErr){
                 console.warn('Migration impossible (compte déjà en Auth ?):', migrateErr.code);
               }
@@ -1133,7 +1133,7 @@ async function doForgotPassword(){
     await sendPasswordResetEmail(window.firebaseAuth, email, actionCodeSettings);
     console.log('[doForgotPassword] sendPasswordResetEmail OK (Firebase accepted)');
     err.style.background='#f0fff0';err.style.borderColor='#c8e6c9';err.style.color='#2e7d32';
-    err.innerHTML='✓ Email envoyé, vérifie dans tes spams.';
+    err.innerHTML=' Email envoyé, vérifie dans tes spams.';
     err.style.display='block';
   } catch(e){
     console.error('[doForgotPassword] code:', e.code, '| message:', e.message);
@@ -1226,7 +1226,7 @@ async function _processInviteToken(email){
     // Marquer l'invitation comme acceptée
     await setDoc(doc(window.firebaseDB, 'invitations', token), {status:'accepted'}, {merge:true});
     window._activeDataDocId = inv.ownerDocId;
-    await appAlert('✅ Invitation acceptée ! Vous accédez maintenant à l\'espace partagé.');
+    await appAlert(' Invitation acceptée ! Vous accédez maintenant à l\'espace partagé.');
   } catch(e){ console.error('_processInviteToken:', e); }
 }
 
@@ -1250,7 +1250,7 @@ async function loadPartnerStatus(){
     const partnerEmail = data._partnerEmail || null;
     const pendingEmail = data._pendingPartnerEmail || null;
     if(partnerEmail){
-      statusEl.innerHTML = '✅ <b>'+partnerEmail+'</b> a accès à votre espace.';
+      statusEl.innerHTML = ' <b>'+partnerEmail+'</b> a accès à votre espace.';
       inviteWrap.style.display = 'none';
       revokeWrap.style.display = 'block';
     } else if(pendingEmail){
@@ -1414,7 +1414,7 @@ async function doConfirmReset(oobCode){
     const {confirmPasswordReset} = window.firebaseAuthLib;
     await confirmPasswordReset(window.firebaseAuth, oobCode, p1);
     msg.style.background='#f0fff0';msg.style.borderColor='#c8e6c9';msg.style.color='#2e7d32';
-    msg.textContent='✓ Mot de passe mis à jour ! Tu peux te connecter.';msg.style.display='block';
+    msg.textContent=' Mot de passe mis à jour ! Tu peux te connecter.';msg.style.display='block';
     setTimeout(()=>{ window.location.href='https://weddilya.fr/'; }, 2000);
   } catch(e){
     console.error('confirmPasswordReset:', e.code, e.message);
@@ -1714,8 +1714,8 @@ function startApp(u){
         wDate: USER.wDate||'',
         _lastLogin: Date.now()
       }, {merge:true})
-      .then(()=>console.log('✅ Firestore sync OK, UID:', user.uid))
-      .catch(e=>console.error('❌ Firestore erreur:', e.code, e.message));
+      .then(()=>console.log(' Firestore sync OK, UID:', user.uid))
+      .catch(e=>console.error(' Firestore erreur:', e.code, e.message));
     });
   });
   startCountdown();
@@ -1760,7 +1760,7 @@ function startCountdown(){
   const tick=()=>{
     const diff=new Date(USER.wDate)-new Date();
     const w=el('countdown-wrap'); if(!w)return;
-    if(diff<=0){w.innerHTML=`<div style="color:${gd};font-family:Playfair Display,serif;font-size:16px;padding:6px 0;">🎊 C'est le grand jour !</div>`;return;}
+    if(diff<=0){w.innerHTML=`<div style="color:${gd};font-family:Playfair Display,serif;font-size:16px;padding:6px 0;"> C'est le grand jour !</div>`;return;}
     const d=Math.floor(diff/86400000),hh=Math.floor((diff%86400000)/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);
     w.innerHTML=[['d',d,'Jours'],['h',hh,'Heures'],['m',m,'Min'],['s',s,'Sec']].map(([,v,l])=>`<div style="text-align:center;padding:4px 10px;min-width:48px;"><div style="font-family:Playfair Display,serif;font-size:22px;font-weight:700;color:${pk};line-height:1">${String(v).padStart(2,'0')}</div><div style="font-size:9px;color:${tl};letter-spacing:1.5px;text-transform:uppercase;margin-top:1px">${l}</div></div>`).join('');
   };
@@ -1901,7 +1901,7 @@ function renderChecklist(){
       <div id="chk-tasks-${safeId}" style="display:${collapsed?'none':'block'};">
         ${grouped[month].map(t=>`
           <div onclick="toggleTask(${t.id})" style="display:flex;align-items:center;gap:11px;background:#fff;border:none;border-bottom:1px solid #f9edf2;border-radius:0;padding:10px 4px;cursor:pointer;">
-            <div style="width:20px;height:20px;border-radius:50%;border:2px solid ${t.done?pk:br};background:${t.done?pk:'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">${t.done?'<span style="color:#fff;font-size:11px;font-weight:bold;">✓</span>':''}</div>
+            <div style="width:20px;height:20px;border-radius:50%;border:2px solid ${t.done?pk:br};background:${t.done?pk:'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">${t.done?'<span style="color:#fff;font-size:11px;font-weight:bold;"></span>':''}</div>
             <span style="flex:1;font-size:13px;color:${t.done?tl:tx};text-decoration:${t.done?'line-through':'none'}">${h(t.text)}</span>
             <button onclick="event.stopPropagation();removeTask(${t.id})" style="background:none;border:none;cursor:pointer;color:${br};font-size:16px;">×</button>
           </div>`).join('')}
@@ -2028,9 +2028,9 @@ function renderGuests(){
   <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
     <button class="btn" onclick="toggleAddGuest()">+ Ajouter un invité</button>
     <a href="https://www.canva.com/fr_fr/" target="_blank" class="btn-sec" style="text-decoration:none;display:inline-block;">Créer mes invitations</a>
-    <button class="btn-sec" onclick="el('guest-file').click()">📥 Importer</button>
-    <button class="btn-sec" onclick="exportGuests()">📤 Exporter</button>
-    <button class="btn-sec" onclick="deleteAllGuests()" style="color:#c43a3a;border-color:#c43a3a55;">🗑 Tout supprimer</button>
+    <button class="btn-sec" onclick="el('guest-file').click()"> Importer</button>
+    <button class="btn-sec" onclick="exportGuests()"> Exporter</button>
+    <button class="btn-sec" onclick="deleteAllGuests()" style="color:#c43a3a;border-color:#c43a3a55;"> Tout supprimer</button>
     <input type="file" id="guest-file" style="display:none" onchange="importGuests(event)">
   </div>
   <div id="import-msg" style="display:none;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:600;margin-bottom:10px;"></div>
@@ -2057,13 +2057,13 @@ function renderGuests(){
       </tr></thead>      <tbody>${GUESTS.map(g=>guestRow(g)).join('')}</tbody>
     </table>
   </div>
-  <p style="font-size:11px;color:${tl};font-style:italic;margin-top:10px;text-align:center;">💡 Import : un fichier Excel ou CSV avec au minimum une colonne "Nom"</p>`;
+  <p style="font-size:11px;color:${tl};font-style:italic;margin-top:10px;text-align:center;"> Import : un fichier Excel ou CSV avec au minimum une colonne "Nom"</p>`;
   requestAnimationFrame(()=>{const tw=document.getElementById('guest-table-wrap');if(tw)tw.scrollLeft=prevTableScroll;});
 }
 function guestRow(g){
   const sc={'confirmée':gn,'déclinée':rd,'en attente':am};
-  const presLabel=g.presence==='confirmée'?'✓ Confirmée':g.presence==='déclinée'?'✗ Déclinée':'En attente';
-  const invLabel=g.invitation==='envoyée'?'✓ Envoyée':'Non envoyée';
+  const presLabel=g.presence==='confirmée'?' Confirmée':g.presence==='déclinée'?' Déclinée':'En attente';
+  const invLabel=g.invitation==='envoyée'?' Envoyée':'Non envoyée';
   const invColor=g.invitation==='envoyée'?gn:tl;
   const presColor=sc[g.presence]||tl;
   return `<tr onclick="openGuestDetail(${g.id})" style="cursor:pointer;">
@@ -2087,9 +2087,9 @@ async function openGuestDetail(id){
   const sc={'confirmée':gn,'déclinée':rd,'en attente':am};
   const coteColor=g.cote==='p1'?'#fce8ef':'#e8f0fc';
   const coteTxt=g.cote==='p1'?'#a0485e':'#485ea0';
-  const presLabel=g.presence==='confirmée'?'✓ Confirmée':g.presence==='déclinée'?'✗ Déclinée':'En attente';
+  const presLabel=g.presence==='confirmée'?' Confirmée':g.presence==='déclinée'?' Déclinée':'En attente';
   const presColor=sc[g.presence]||tl;
-  const invLabel=g.invitation==='envoyée'?'✓ Envoyée':'✗ Non envoyée';
+  const invLabel=g.invitation==='envoyée'?' Envoyée':' Non envoyée';
   const invColor=g.invitation==='envoyée'?gn:rd;
   const vinLabel=g.vinHonneur?"Uniquement vin d'honneur":'Toute la réception';
   const emailRow=g.email?`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fdf8f5;border-radius:12px;"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#8a4a60;">Email</span><span style="font-size:12px;color:#3e1828;">${h(g.email)}</span></div>`:'';
@@ -2149,8 +2149,8 @@ function updGuest(id,f,v){GUESTS=GUESTS.map(g=>g.id===id?{...g,[f]:v}:g);saveGue
 // Pickers custom (aux couleurs de l'app) qui remplacent les <select> natifs gris
 async function pickGuestRole(id){
   const g = GUESTS.find(x=>x.id===id); if(!g) return;
-  const opts = ROLES.map(r=>({value:r, label:r, icon: r==='Témoin'?'⭐':r.includes('Demoiselle')?'👰':r.includes('Garçon')?'🤵':'👤'}));
-  const v = await appPicker(opts, g.role, 'Rôle de '+g.nom, {icon:'👥'});
+  const opts = ROLES.map(r=>({value:r, label:r, icon: r==='Témoin'?'⭐':r.includes('Demoiselle')?'':r.includes('Garçon')?'':''}));
+  const v = await appPicker(opts, g.role, 'Rôle de '+g.nom, {icon:''});
   if(v!==null) updGuest(id,'role',v);
 }
 function toggleAge(id){
@@ -2160,9 +2160,9 @@ function toggleAge(id){
 async function pickGuestAge(id){
   const g = GUESTS.find(x=>x.id===id); if(!g) return;
   const v = await appPicker([
-    {value:'Adulte', label:'Adulte', icon:'🧑'},
-    {value:'Enfant', label:'Enfant', icon:'🧒'}
-  ], g.age||'Adulte', 'Catégorie d\'âge', {icon:'🎂'});
+    {value:'Adulte', label:'Adulte', icon:''},
+    {value:'Enfant', label:'Enfant', icon:''}
+  ], g.age||'Adulte', 'Catégorie d\'âge', {icon:''});
   if(v!==null) updGuest(id,'age',v);
 }
 function toggleInvitation(id){
@@ -2172,18 +2172,18 @@ function toggleInvitation(id){
 async function pickGuestInvitation(id){
   const g = GUESTS.find(x=>x.id===id); if(!g) return;
   const v = await appPicker([
-    {value:'envoyée', label:'Envoyée', icon:'✓', color:'#5a8a6a'},
-    {value:'non envoyée', label:'Non envoyée', icon:'✗', color:'#c43a3a'}
-  ], g.invitation, 'État de l\'invitation', {icon:'✉️'});
+    {value:'envoyée', label:'Envoyée', icon:'', color:'#5a8a6a'},
+    {value:'non envoyée', label:'Non envoyée', icon:'', color:'#c43a3a'}
+  ], g.invitation, 'État de l\'invitation', {icon:'️'});
   if(v!==null) updGuest(id,'invitation',v);
 }
 async function pickGuestPresence(id){
   const g = GUESTS.find(x=>x.id===id); if(!g) return;
   const v = await appPicker([
-    {value:'confirmée', label:'Confirmée', icon:'✓', color:'#5a8a6a'},
+    {value:'confirmée', label:'Confirmée', icon:'', color:'#5a8a6a'},
     {value:'en attente', label:'En attente', icon:'⏳', color:'#c47a2a'},
-    {value:'déclinée', label:'Déclinée', icon:'✗', color:'#c43a3a'}
-  ], g.presence, 'Présence', {icon:'📋'});
+    {value:'déclinée', label:'Déclinée', icon:'', color:'#c43a3a'}
+  ], g.presence, 'Présence', {icon:''});
   if(v!==null) updGuest(id,'presence',v);
 }
 function removeGuest(id){GUESTS=GUESTS.filter(g=>g.id!==id);saveGuests();renderGuests();}
@@ -2227,7 +2227,7 @@ function importGuests(e){
   // Formats explicitement refusés (pas des listes d'invités)
   const refuses=['.pdf','.doc','.docx','.ppt','.pptx','.jpg','.jpeg','.png','.gif','.heic','.zip','.mp4','.mp3','.pages','.key'];
   if(refuses.some(ext=>name.endsWith(ext))){
-    showImportMsg('❌ Ce type de fichier n\'est pas une liste d\'invités. Utilise un fichier Excel (.xlsx) ou CSV avec les noms en colonne.','err');
+    showImportMsg(' Ce type de fichier n\'est pas une liste d\'invités. Utilise un fichier Excel (.xlsx) ou CSV avec les noms en colonne.','err');
     return;
   }
   // CSV / TSV / TXT : lecture texte directe (rapide, offline)
@@ -2236,7 +2236,7 @@ function importGuests(e){
   } else if(name.endsWith('.xlsx')||name.endsWith('.xls')||name.endsWith('.xlsm')||name.endsWith('.xlsb')||name.endsWith('.ods')){
     importGuestsExcel(file);
   } else {
-    showImportMsg('❌ Format non reconnu. Enregistre ta liste en Excel (.xlsx) ou CSV, avec les noms dans la 1re colonne.','err');
+    showImportMsg(' Format non reconnu. Enregistre ta liste en Excel (.xlsx) ou CSV, avec les noms dans la 1re colonne.','err');
   }
 }
 
@@ -2259,10 +2259,10 @@ function looksLikeName(s){
 
 // Transforme une matrice de lignes (tableau de tableaux) en invités
 function rowsToGuests(rows){
-  if(!rows || rows.length<1){showImportMsg('⚠️ Fichier vide ou sans données.','err');return;}
+  if(!rows || rows.length<1){showImportMsg('️ Fichier vide ou sans données.','err');return;}
   // Nettoyer : retirer les lignes entièrement vides
   rows = rows.filter(r => r && r.some(c => String(c==null?'':c).trim()));
-  if(rows.length<1){showImportMsg('⚠️ Fichier vide.','err');return;}
+  if(rows.length<1){showImportMsg('️ Fichier vide.','err');return;}
 
   // Détecter l'en-tête
   const header = rows[0].map(c=>String(c||'').trim().toLowerCase());
@@ -2316,15 +2316,15 @@ function rowsToGuests(rows){
   // Si la grande majorité des lignes a été rejetée, c'est que le fichier n'est pas une liste d'invités
   const totalLignes = rows.length - startRow;
   if(imported.length===0){
-    showImportMsg('❌ Aucun nom valide trouvé. Vérifie que ton fichier contient une colonne avec les noms des invités (ce n\'était peut-être pas le bon fichier).','err');
+    showImportMsg(' Aucun nom valide trouvé. Vérifie que ton fichier contient une colonne avec les noms des invités (ce n\'était peut-être pas le bon fichier).','err');
     return;
   }
   if(totalLignes>=5 && imported.length < totalLignes*0.3){
-    showImportMsg('❌ Ce fichier ne ressemble pas à une liste d\'invités (trop de contenu non reconnu). Import annulé.','err');
+    showImportMsg(' Ce fichier ne ressemble pas à une liste d\'invités (trop de contenu non reconnu). Import annulé.','err');
     return;
   }
   GUESTS=[...GUESTS,...imported];saveGuests();renderGuests();
-  let msg=`✓ ${imported.length} invité(s) importé(s) !`;
+  let msg=` ${imported.length} invité(s) importé(s) !`;
   if(rejets>0) msg+=` (${rejets} ligne(s) ignorée(s))`;
   showImportMsg(msg,'ok');
 }
@@ -2335,7 +2335,7 @@ function importGuestsCSV(file){
     try{
       const text=ev.target.result;
       const lines=text.split(/\r?\n/).filter(l=>l.trim());
-      if(!lines.length){showImportMsg('⚠️ Fichier vide.','err');return;}
+      if(!lines.length){showImportMsg('️ Fichier vide.','err');return;}
       // Détecter le séparateur : tabulation, point-virgule ou virgule
       const first=lines[0];
       let sep=',';
@@ -2349,7 +2349,7 @@ function importGuestsCSV(file){
         return cols.map(c=>c.replace(/^"|"$/g,'').trim());
       });
       rowsToGuests(rows);
-    }catch(err){showImportMsg('❌ Erreur lors de l\'import CSV.','err');}
+    }catch(err){showImportMsg(' Erreur lors de l\'import CSV.','err');}
   };
   reader.readAsText(file,'UTF-8');
 }
@@ -2374,9 +2374,9 @@ function importGuestsExcel(file){
         const ws=wb.Sheets[wb.SheetNames[0]];
         const rows=XLSX.utils.sheet_to_json(ws,{header:1,blankrows:false,defval:''});
         rowsToGuests(rows);
-      }catch(err){showImportMsg('❌ Impossible de lire ce fichier. Essaie de l\'enregistrer au format CSV.','err');}
+      }catch(err){showImportMsg(' Impossible de lire ce fichier. Essaie de l\'enregistrer au format CSV.','err');}
     }).catch(()=>{
-      showImportMsg('❌ Lecture impossible hors-ligne pour ce format. Dans Google Sheets ou Excel : Fichier → Télécharger → CSV, puis réimporte le CSV.','err');
+      showImportMsg(' Lecture impossible hors-ligne pour ce format. Dans Google Sheets ou Excel : Fichier → Télécharger → CSV, puis réimporte le CSV.','err');
     });
   };
   reader.readAsArrayBuffer(file);
@@ -2586,14 +2586,14 @@ function renderTablePlan(){
     </div>
     <button class="btn" onclick="addTable()" style="font-size:12px;padding:7px 12px;">+ Table</button>
     <button class="btn" onclick="exportPlanPDF()" style="padding:6px 12px;background:#fef2f6;color:#b84060;border:1px solid #f5d5e0;border-radius:10px;font-size:12px;font-weight:700;font-family:Lora,serif;cursor:pointer;">Exporter en PDF</button>
-      <button onclick="openAutoPlaceModal()" style="background:linear-gradient(135deg,#d4607a,#8a4a60);font-size:12px;padding:7px 12px;">✨ Placement auto</button>
+      <button onclick="openAutoPlaceModal()" style="background:linear-gradient(135deg,#d4607a,#8a4a60);font-size:12px;padding:7px 12px;"> Placement auto</button>
     <button class="btn-sec" onclick="resetPlacement()" style="color:#c43a3a;border-color:#c43a3a55;font-size:12px;padding:7px 12px;">↺ Réinitialiser</button>
     <button class="btn-sec" onclick="exportPlanPDF()" style="font-size:12px;padding:7px 12px;">PDF</button>
     <div style="display:flex;gap:6px;margin-left:auto;">
       <button onclick="tpZoom(0.2)" style="background:#fff;border:1px solid #f0e8ec;border-radius:8px;width:34px;height:34px;cursor:pointer;font-size:18px;font-weight:700;color:${pk};">+</button>
       <button onclick="tpZoom(-0.2)" style="background:#fff;border:1px solid #f0e8ec;border-radius:8px;width:34px;height:34px;cursor:pointer;font-size:18px;font-weight:700;color:${pk};">-</button>
       <button onclick="tpReset()" style="background:#fff;border:1px solid #f0e8ec;border-radius:8px;padding:0 10px;height:34px;cursor:pointer;font-size:11px;font-weight:700;color:${tl};">↺</button>
-      <button id="tp-pan-btn" onclick="tpTogglePan()" title="Activer navigation" style="background:#fff;border:1px solid #f0e8ec;border-radius:8px;width:34px;height:34px;cursor:pointer;font-size:16px;color:#c47a2a;" title="Mode navigation (2 doigts=zoom, 1 doigt=déplacer)">✋</button>
+      <button id="tp-pan-btn" onclick="tpTogglePan()" title="Activer navigation" style="background:#fff;border:1px solid #f0e8ec;border-radius:8px;width:34px;height:34px;cursor:pointer;font-size:16px;color:#c47a2a;" title="Mode navigation"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c47a2a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 00-4 0v5M14 10V4a2 2 0 00-4 0v6M10 10.5V6a2 2 0 00-4 0v8l-2-2a2 2 0 00-2 2l4 5h12l2-4V9a2 2 0 00-4 0v2"/></svg></button>
     </div>
   </div>
   <div id="tp-canvas" style="position:relative;background:#fff;border:1.5px solid #f0e8ec;border-radius:16px;height:70vh;min-height:400px;overflow:hidden;touch-action:none;user-select:none;margin:0 12px;">
@@ -2827,7 +2827,7 @@ function addTableEl(table){
 
   // Drag — déplacement de la table au doigt (touch) ou souris.
   // On utilise les événements touch/mouse au niveau DOCUMENT (les plus fiables).
-  // Le déplacement se déclenche depuis la POIGNÉE (✥) ou la surface de la table.
+  // Le déplacement se déclenche depuis la POIGNÉE () ou la surface de la table.
   let dragStarted=false, downPt=null, dragging=false;
 
   const isInteractive=tgt=>(
@@ -3154,7 +3154,7 @@ function openTableGuestsModal(tableId){
   root.innerHTML=`
     <div style="background:#fff;border-radius:18px;max-width:400px;width:100%;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(154,40,72,0.35);overflow:hidden;">
       <div style="background:linear-gradient(135deg,${pk},${tm});padding:14px 18px;color:#fff;display:flex;align-items:center;gap:10px;">
-        <span style="font-size:20px;">🪑</span>
+        <span style="font-size:20px;"></span>
         <div style="flex:1;font-family:Playfair Display,Georgia,serif;font-size:16px;font-weight:700;">${h(table.nom)}</div>
         <div style="font-size:12px;opacity:.9;">${placed.length}/${Math.min(table.seats,12)}</div>
       </div>
@@ -3207,14 +3207,14 @@ function openAutoPlaceModal(){
   root.innerHTML = `
     <div style="background:#fff;border-radius:20px;max-width:440px;width:100%;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(62,24,40,0.18);overflow:hidden;animation:appModalIn .18s ease-out;">
       <div style="padding:20px 20px 12px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #f5e8ee;">
-        <span style="font-size:20px;">✨</span>
+        <span style="font-size:20px;"></span>
         <div style="font-family:Playfair Display,serif;font-size:17px;font-weight:700;color:#3e1828;flex:1;">Placement automatique</div>
       </div>
       <div style="overflow-y:auto;padding:16px;flex:1;">
         <div style="font-size:13px;color:${tx};line-height:1.6;margin-bottom:14px;">
           ${conf.length} invité${conf.length>1?'s':''} confirmé${conf.length>1?'s':''} · ${totalSeats} place${totalSeats>1?'s':''} disponible${totalSeats>1?'s':''} sur ${TABLES.length} table${TABLES.length>1?'s':''}.
         </div>
-        ${totalSeats < conf.length ? `<div style="background:#fff5f5;border:1px solid ${rd}40;border-radius:10px;padding:10px 12px;font-size:12px;color:${rd};margin-bottom:14px;">⚠️ Pas assez de places (${totalSeats}) pour tous les invités (${conf.length}). Ajoute des tables ou des chaises.</div>` : ''}
+        ${totalSeats < conf.length ? `<div style="background:#fff5f5;border:1px solid ${rd}40;border-radius:10px;padding:10px 12px;font-size:12px;color:${rd};margin-bottom:14px;">️ Pas assez de places (${totalSeats}) pour tous les invités (${conf.length}). Ajoute des tables ou des chaises.</div>` : ''}
 
         <div style="background:${sf};border-radius:10px;padding:12px;margin-bottom:14px;">
           <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:${tx};font-weight:600;margin-bottom:8px;">
@@ -3229,7 +3229,7 @@ function openAutoPlaceModal(){
 
         <div style="margin-bottom:14px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-            <div style="font-size:12px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;">🚫 Invités à ne pas placer ensemble</div>
+            <div style="font-size:12px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;"> Invités à ne pas placer ensemble</div>
             <button onclick="addIncompatPair()" style="background:${sf};border:1.5px solid ${br};color:${pk};border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;">+ Ajouter</button>
           </div>
           <div id="incompat-list">${renderIncompatList(incompat, conf)}</div>
@@ -3237,7 +3237,7 @@ function openAutoPlaceModal(){
       </div>
       <div style="padding:12px 16px;background:${sf};border-top:1px solid ${br};display:flex;gap:8px;">
         <button data-cancel style="flex:1;background:none;border:1.5px solid ${br};color:${tm};border-radius:9px;padding:10px;font-family:Lora,serif;font-size:13px;font-weight:700;cursor:pointer;">Annuler</button>
-        <button data-run style="flex:2;background:linear-gradient(135deg,${pk},${tm});color:#fff;border:none;border-radius:9px;padding:10px;font-family:Lora,serif;font-size:13px;font-weight:700;cursor:pointer;">✨ Lancer le placement</button>
+        <button data-run style="flex:2;background:linear-gradient(135deg,${pk},${tm});color:#fff;border:none;border-radius:9px;padding:10px;font-family:Lora,serif;font-size:13px;font-weight:700;cursor:pointer;"> Lancer le placement</button>
       </div>
     </div>`;
   root.style.display = 'flex';
@@ -3263,7 +3263,7 @@ function renderIncompatList(incompat, conf){
     const g2 = GUESTS.find(g=>g.id===pair[1]);
     if(!g1||!g2) return '';
     return `<div style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid ${br};border-radius:8px;padding:8px 10px;margin-bottom:6px;">
-      <span style="flex:1;font-size:12px;color:${tx};">${h(g1.nom)} <span style="color:${rd};">✗</span> ${h(g2.nom)}</span>
+      <span style="flex:1;font-size:12px;color:${tx};">${h(g1.nom)} <span style="color:${rd};"></span> ${h(g2.nom)}</span>
       <button onclick="removeIncompatPair(${idx})" style="background:none;border:none;color:${tl};font-size:18px;cursor:pointer;padding:0 4px;">×</button>
     </div>`;
   }).join('');
@@ -3274,10 +3274,10 @@ async function addIncompatPair(){
   const conf = GUESTS.filter(g=>g.presence==='confirmée');
   if(conf.length < 2){ appAlert('Il faut au moins 2 invités confirmés.', 'Incompatibilité'); return; }
   const opts = conf.map(g=>({value:String(g.id), label:g.nom}));
-  const v1 = await appPicker(opts, null, 'Premier invité', {icon:'🚫'});
+  const v1 = await appPicker(opts, null, 'Premier invité', {icon:''});
   if(v1===null) return;
   const opts2 = conf.filter(g=>String(g.id)!==v1).map(g=>({value:String(g.id), label:g.nom}));
-  const v2 = await appPicker(opts2, null, 'Ne doit pas être avec...', {icon:'🚫'});
+  const v2 = await appPicker(opts2, null, 'Ne doit pas être avec...', {icon:''});
   if(v2===null) return;
   const incompat = getIncompat();
   // Éviter doublons
@@ -3377,7 +3377,7 @@ function runAutoPlace(byCote, erase){
       nonPlaces.map(g=>'• '+g.nom).join('\n') +
       `\n\nAjoute des tables/chaises ou réduis les incompatibilités.`;
   }
-  appAlert(msg, '✨ Placement terminé');
+  appAlert(msg, ' Placement terminé');
 }
 
 function openSeatModal(tid, si){
@@ -3406,7 +3406,7 @@ function openSeatModal(tid, si){
           <div style="font-weight:700;">${h(g.nom)}</div>
           ${placedLabel?`<div style="font-size:10px;color:${tl};">${h(placedLabel)}</div>`:''}
         </div>
-        ${a?`<span style="color:${pk};font-weight:700;font-size:16px;">✓</span>`:''}
+        ${a?`<span style="color:${pk};font-weight:700;font-size:16px;"></span>`:''}
       </button>`;
     };
 
@@ -3425,7 +3425,7 @@ function openSeatModal(tid, si){
     }
 
     // Section À PLACER
-    bodyHtml += `<div style="font-size:10px;font-weight:700;color:${gn};text-transform:uppercase;letter-spacing:0.5px;margin:12px 0 6px;">✓ À placer (${aPlacer.length})</div>`;
+    bodyHtml += `<div style="font-size:10px;font-weight:700;color:${gn};text-transform:uppercase;letter-spacing:0.5px;margin:12px 0 6px;"> À placer (${aPlacer.length})</div>`;
     bodyHtml += aPlacer.length ? aPlacer.map(guestCard).join('')
       : `<div style="font-size:12px;color:${tl};font-style:italic;padding:4px 0 8px;">Tous les invités confirmés sont déjà placés.</div>`;
 
@@ -3441,9 +3441,9 @@ function openSeatModal(tid, si){
   // Actions supplémentaires
   let actionsHtml = `<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">`;
   if(currentG){
-    actionsHtml += `<button data-action="remove" style="flex:1;min-width:130px;background:#fff5f5;color:${rd};border:1.5px solid ${rd}40;border-radius:9px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:Lora,serif;">🚫 Retirer l'invité</button>`;
+    actionsHtml += `<button data-action="remove" style="flex:1;min-width:130px;background:#fff5f5;color:${rd};border:1.5px solid ${rd}40;border-radius:9px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:Lora,serif;"> Retirer l'invité</button>`;
   }
-  actionsHtml += `<button data-action="hide" style="flex:1;min-width:130px;background:#fff;color:${tm};border:1.5px solid ${br};border-radius:9px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:Lora,serif;">${hidden?'👁️ Afficher chaise':'🙈 Masquer chaise'}</button>`;
+  actionsHtml += `<button data-action="hide" style="flex:1;min-width:130px;background:#fff;color:${tm};border:1.5px solid ${br};border-radius:9px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:Lora,serif;">${hidden?'️ Afficher chaise':' Masquer chaise'}</button>`;
   actionsHtml += `</div>`;
 
   // Ouvre la modale via le système appModal existant (couleurs de l'app)
@@ -3457,7 +3457,7 @@ function openSeatModal(tid, si){
   root.innerHTML = `
     <div style="background:#fff;border-radius:18px;max-width:420px;width:100%;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(154,40,72,0.35);animation:appModalIn .22s cubic-bezier(.34,1.56,.64,1);overflow:hidden;">
       <div style="background:linear-gradient(135deg,${pk},${tm});padding:14px 18px;color:#fff;display:flex;align-items:center;gap:10px;">
-        <span style="font-size:20px;">🪑</span>
+        <span style="font-size:20px;"></span>
         <div style="font-family:Playfair Display,Georgia,serif;font-size:16px;font-weight:700;flex:1;">Chaise ${si+1} — ${h(tbl?.nom||'Table')}</div>
       </div>
       <div style="overflow-y:auto;padding:14px;flex:1;">
@@ -3555,7 +3555,7 @@ function addManualVendor(zone){
   root.innerHTML=`
     <div style="background:#fff;border-radius:18px;max-width:400px;width:100%;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(154,40,72,0.35);overflow:hidden;">
       <div style="background:linear-gradient(135deg,${pk},${tm});padding:14px 18px;color:#fff;display:flex;align-items:center;gap:10px;">
-        <span style="font-size:20px;">🏷️</span>
+        <span style="font-size:20px;">️</span>
         <div style="flex:1;font-family:Playfair Display,Georgia,serif;font-size:16px;font-weight:700;">${titre}</div>
       </div>
       <div style="overflow-y:auto;padding:16px;flex:1;display:flex;flex-direction:column;gap:10px;">
@@ -3608,21 +3608,21 @@ function renderVendors(){
     <!-- Grille de boutons catégories : chaque clic lance une recherche par TAG OSM précis -->
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:6px;margin-bottom:12px;">
       ${[
-        {key:'salle',label:'Salle / Domaine',icon:'🏛'},
-        {key:'traiteur',label:'Traiteur',icon:'🍽'},
-        {key:'photographe',label:'Photographe',icon:'📷'},
-        {key:'videaste',label:'Vidéaste',icon:'🎥'},
+        {key:'salle',label:'Salle / Domaine',icon:''},
+        {key:'traiteur',label:'Traiteur',icon:''},
+        {key:'photographe',label:'Photographe',icon:''},
+        {key:'videaste',label:'Vidéaste',icon:''},
         {key:'dj',label:'DJ / Musique',icon:''},
         {key:'fleuriste',label:'Fleuriste',icon:''},
         {key:'patisserie',label:'Pâtisserie',icon:''},
-        {key:'robe',label:'Robe mariée',icon:'👰'},
-        {key:'costume',label:'Costume',icon:'🤵'},
-        {key:'coiffeur',label:'Coiffeur',icon:'💇'},
-        {key:'beaute',label:'Maquillage',icon:'💄'},
+        {key:'robe',label:'Robe mariée',icon:''},
+        {key:'costume',label:'Costume',icon:''},
+        {key:'coiffeur',label:'Coiffeur',icon:''},
+        {key:'beaute',label:'Maquillage',icon:''},
         {key:'bijou',label:'Bijouterie',icon:''},
-        {key:'imprimeur',label:'Imprimeur',icon:'📜'},
-        {key:'voiture',label:'Voiture',icon:'🚗'},
-        {key:'hotel',label:'Hébergement',icon:'🏨'},
+        {key:'imprimeur',label:'Imprimeur',icon:''},
+        {key:'voiture',label:'Voiture',icon:''},
+        {key:'hotel',label:'Hébergement',icon:''},
         {key:'decor',label:'Décoration',icon:''}
       ].map(c=>`<button onclick="searchByCategory('${c.key}','${c.label}')" class="vnd-cat-btn" style="background:#fdf8f5;color:${tx};border:1px solid #f0e8ec;border-radius:10px;padding:8px 10px;cursor:pointer;font-size:11px;font-weight:600;font-family:Lora,serif;text-align:left;display:flex;align-items:center;gap:6px;transition:all .15s;">
         <span style="font-size:14px;">${c.icon}</span><span>${c.label}</span>
@@ -3652,7 +3652,7 @@ function renderVendors(){
       </div>
     </details>
 
-    <p style="font-size:11px;color:${tl};font-style:italic;margin-top:10px;">📍 Données OpenStreetMap, triées par distance autour de votre position.</p>
+    <p style="font-size:11px;color:${tl};font-style:italic;margin-top:10px;"> Données OpenStreetMap, triées par distance autour de votre position.</p>
   </div>
   <div id="vnd-results-wrap" style="margin-bottom:16px;"></div>
   <div style="margin-bottom:18px;">
@@ -3678,16 +3678,16 @@ function renderVendors(){
 
 async function geoSearch(){
   if(!navigator.geolocation){await appAlert('Géolocalisation non disponible.');return;}
-  const btn=el('vnd-geo-btn');btn.textContent='📍 Localisation...';btn.disabled=true;
+  const btn=el('vnd-geo-btn');btn.textContent=' Localisation...';btn.disabled=true;
   navigator.geolocation.getCurrentPosition(
     pos=>{
       window._userLat=pos.coords.latitude;
       window._userLng=pos.coords.longitude;
-      btn.textContent='📍 Autour de moi';btn.disabled=false;
+      btn.textContent=' Autour de moi';btn.disabled=false;
       const query=el('vnd-loc')?.value.trim()||'prestataire mariage';
       searchVendorsWithLocation(query,pos.coords.latitude,pos.coords.longitude);
     },
-    err=>{btn.textContent='📍 Autour de moi';btn.disabled=false;appAlert('Impossible d\'obtenir votre position. Vérifiez les permissions.');}
+    err=>{btn.textContent=' Autour de moi';btn.disabled=false;appAlert('Impossible d\'obtenir votre position. Vérifiez les permissions.');}
   );
 }
 
@@ -3757,7 +3757,7 @@ async function searchByCategory(catKey, catLabel){
   const radiusKm = parseInt(el('vnd-radius')?.value || '20', 10);
 
   const wrap = el('vnd-results-wrap');
-  if(wrap) wrap.innerHTML = `<p style="text-align:center;padding:14px;font-size:12px;color:${tl};">🔍 Recherche des ${catLabel.toLowerCase()}s dans un rayon de ${radiusKm} km...</p>`;
+  if(wrap) wrap.innerHTML = `<p style="text-align:center;padding:14px;font-size:12px;color:${tl};"> Recherche des ${catLabel.toLowerCase()}s dans un rayon de ${radiusKm} km...</p>`;
 
   // Géoloc nécessaire : sans position, on ne peut pas filtrer par rayon
   let lat = window._userLat, lng = window._userLng;
@@ -3766,7 +3766,7 @@ async function searchByCategory(catKey, catLabel){
       if(wrap) wrap.innerHTML = `<p style="text-align:center;padding:14px;font-size:13px;color:${rd};">Géolocalisation non disponible.</p>`;
       return;
     }
-    if(wrap) wrap.innerHTML = `<p style="text-align:center;padding:14px;font-size:12px;color:${tl};">📍 Demande de localisation...</p>`;
+    if(wrap) wrap.innerHTML = `<p style="text-align:center;padding:14px;font-size:12px;color:${tl};"> Demande de localisation...</p>`;
     try {
       const pos = await new Promise((resolve,reject)=>{
         navigator.geolocation.getCurrentPosition(resolve, reject, {timeout:10000, maximumAge:300000});
@@ -3849,7 +3849,7 @@ async function runCategorySearch(tags,catLabel,lat,lng,radiusMeters){
 async function searchVendorsWithLocation(query,lat,lng){
   const btn=el('vnd-btn');btn.textContent='Recherche...';btn.disabled=true;
   const wrap=el('vnd-results-wrap');
-  if(wrap)wrap.innerHTML=`<p style="text-align:center;padding:14px;font-size:12px;color:${tl};">🔍 Recherche en cours...</p>`;
+  if(wrap)wrap.innerHTML=`<p style="text-align:center;padding:14px;font-size:12px;color:${tl};"> Recherche en cours...</p>`;
 
   // ─── RECHERCHE RÉELLE VIA OPENSTREETMAP ───
   // Si on a une position : Overpass API (rayon autour du point)
@@ -4136,7 +4136,7 @@ async function searchVendorsWithLocation(query,lat,lng){
         <div style="margin-bottom:8px;">Aucun résultat trouvé pour "${h(query)}" sur OpenStreetMap.</div>
         <div style="font-size:11px;font-style:italic;margin-bottom:14px;">OpenStreetMap est une base collaborative ; certains prestataires n'y sont pas répertoriés.</div>
         <a href="${googleUrl}" target="_blank" rel="noopener" style="display:inline-block;padding:10px 18px;background:linear-gradient(135deg,#fff8ec,#fef5e0);border:1.5px solid ${gd}50;border-radius:12px;text-decoration:none;color:${tx};font-size:13px;font-weight:700;font-family:Lora,serif;">
-          🔎 Chercher sur Google
+           Chercher sur Google
         </a>
       </div>`;
     return;
@@ -4158,7 +4158,7 @@ function renderVndResults(query){
   const fewResults = r.length < 8;
 
   wrap.innerHTML=`<div style="font-family:Playfair Display,serif;font-size:15px;color:${tx};margin-bottom:6px;">${r.length} résultat${r.length>1?'s':''} pour "${h(query)}"</div>`+
-  `<div style="font-size:11px;color:${tl};margin-bottom:10px;font-style:italic;">📍 Données OpenStreetMap — triées par distance${fewResults?' · OSM est incomplet, voir Google Maps en bas pour plus de résultats':''}</div>`+
+  `<div style="font-size:11px;color:${tl};margin-bottom:10px;font-style:italic;"> Données OpenStreetMap — triées par distance${fewResults?' · OSM est incomplet, voir Google Maps en bas pour plus de résultats':''}</div>`+
   r.map((v,i)=>{
     const c=VCOLS[v.categorie]||pk;
     const mapsUrl=v.lat&&v.lng?`https://www.google.com/maps/search/?api=1&query=${v.lat},${v.lng}`:'';
@@ -4166,27 +4166,27 @@ function renderVndResults(query){
       <div onclick="toggleVndResult(${i})" style="padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;background:linear-gradient(135deg,${sf},#fff);">
         <span style="background:${c}20;color:${c};font-size:10px;border-radius:20px;padding:3px 10px;font-weight:700;flex-shrink:0;">${h(v.categorie)}</span>
         <span style="font-family:Playfair Display,serif;font-size:14px;font-weight:700;color:${tx};flex:1;">${h(v.nom)}</span>
-        ${v.distance!=null?`<span style="background:#f0f8f0;color:${gn};border-radius:8px;padding:3px 8px;font-size:11px;font-weight:700;flex-shrink:0;">📍 ${v.distance} km</span>`:''}
+        ${v.distance!=null?`<span style="background:#f0f8f0;color:${gn};border-radius:8px;padding:3px 8px;font-size:11px;font-weight:700;flex-shrink:0;"> ${v.distance} km</span>`:''}
         <span style="font-size:13px;color:${tl};">▼</span>
       </div>
       <div id="vnd-detail-${i}" style="display:none;padding:12px 14px;border-top:1px solid ${br};">
-        ${v.adresse?`<div style="font-size:12px;color:${tl};margin-bottom:8px;line-height:1.5;">📍 ${h(v.adresse)}</div>`:''}
+        ${v.adresse?`<div style="font-size:12px;color:${tl};margin-bottom:8px;line-height:1.5;"> ${h(v.adresse)}</div>`:''}
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-          ${v.tel?`<a href="tel:${v.tel}" style="background:${sf};color:${pk};border-radius:8px;padding:6px 10px;font-size:11px;text-decoration:none;font-weight:700;">📞 ${h(v.tel)}</a>`:''}
+          ${v.tel?`<a href="tel:${v.tel}" style="background:${sf};color:${pk};border-radius:8px;padding:6px 10px;font-size:11px;text-decoration:none;font-weight:700;"> ${h(v.tel)}</a>`:''}
           ${v.site
-            ? `<a href="https://${v.site.replace(/^https?:\/\//,'')}" target="_blank" rel="noopener" style="background:${sf};color:${pk};border-radius:8px;padding:6px 10px;font-size:11px;text-decoration:none;font-weight:700;">🌐 Site web</a>`
-            : `<a href="https://www.google.com/search?q=${encodeURIComponent(v.nom+' '+(v.categorie||'')+' '+(v.adresse||''))}" target="_blank" rel="noopener" style="background:${sf};color:${pk};border-radius:8px;padding:6px 10px;font-size:11px;text-decoration:none;font-weight:700;">🌐 Trouver le site</a>`}
-          ${mapsUrl?`<a href="${mapsUrl}" target="_blank" rel="noopener" style="background:#f0f8f0;color:${gn};border-radius:8px;padding:6px 10px;font-size:11px;text-decoration:none;font-weight:700;">🗺️ Itinéraire</a>`:''}
+            ? `<a href="https://${v.site.replace(/^https?:\/\//,'')}" target="_blank" rel="noopener" style="background:${sf};color:${pk};border-radius:8px;padding:6px 10px;font-size:11px;text-decoration:none;font-weight:700;"> Site web</a>`
+            : `<a href="https://www.google.com/search?q=${encodeURIComponent(v.nom+' '+(v.categorie||'')+' '+(v.adresse||''))}" target="_blank" rel="noopener" style="background:${sf};color:${pk};border-radius:8px;padding:6px 10px;font-size:11px;text-decoration:none;font-weight:700;"> Trouver le site</a>`}
+          ${mapsUrl?`<a href="${mapsUrl}" target="_blank" rel="noopener" style="background:#f0f8f0;color:${gn};border-radius:8px;padding:6px 10px;font-size:11px;text-decoration:none;font-weight:700;">️ Itinéraire</a>`:''}
         </div>
         <button onclick="addToFav(${i})" style="width:100%;background:${VENDORS_FAV.find(f=>f.nom===v.nom)?'#f0f8f0':'linear-gradient(135deg,'+pk+',#b84060)'};color:${VENDORS_FAV.find(f=>f.nom===v.nom)?gn:'#fff'};border:none;border-radius:9px;padding:9px;cursor:pointer;font-size:13px;font-weight:700;font-family:Lora,serif;">
-          ${VENDORS_FAV.find(f=>f.nom===v.nom)?'✓ Déjà dans les favoris':'+ Ajouter aux favoris'}
+          ${VENDORS_FAV.find(f=>f.nom===v.nom)?' Déjà dans les favoris':'+ Ajouter aux favoris'}
         </button>
       </div>
     </div>`;
   }).join('')+
   // Lien Google Maps en bas pour compléter (OSM est incomplet sur certains commerces)
   `<a href="${googleSearchUrl}" target="_blank" rel="noopener" style="display:block;margin-top:14px;padding:12px;background:linear-gradient(135deg,#fff8ec,#fef5e0);border:1.5px solid ${gd}50;border-radius:12px;text-align:center;text-decoration:none;color:${tx};font-size:13px;font-weight:700;font-family:Lora,serif;">
-    🔎 Voir plus de résultats sur Google
+     Voir plus de résultats sur Google
     <div style="font-size:10px;color:${tl};font-weight:400;margin-top:3px;font-style:italic;">Google a souvent plus de prestataires qu'OpenStreetMap</div>
   </a>`;
 }
@@ -4208,12 +4208,12 @@ function vndMiniCard(v,zone){
       <button onclick="${removeFn}(${v.id})" title="Supprimer" style="background:none;border:none;cursor:pointer;color:${tl};font-size:20px;line-height:1;padding:4px 8px;font-weight:700;">×</button>
     </div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px;">
-      ${v.tel?`<a href="tel:${v.tel}" style="font-size:11px;color:${pk};font-weight:700;text-decoration:none;">📞 ${h(v.tel)}</a>`:''}
-      ${v.site?`<a href="https://${v.site.replace(/^https?:\/\//,'')}" target="_blank" rel="noopener" style="font-size:11px;color:${pk};font-weight:700;text-decoration:none;">🌐 Site</a>`:''}
-      ${v.distance!=null?`<span style="font-size:11px;color:${gn};font-weight:600;">📍 ${v.distance} km</span>`:''}
+      ${v.tel?`<a href="tel:${v.tel}" style="font-size:11px;color:${pk};font-weight:700;text-decoration:none;"> ${h(v.tel)}</a>`:''}
+      ${v.site?`<a href="https://${v.site.replace(/^https?:\/\//,'')}" target="_blank" rel="noopener" style="font-size:11px;color:${pk};font-weight:700;text-decoration:none;"> Site</a>`:''}
+      ${v.distance!=null?`<span style="font-size:11px;color:${gn};font-weight:600;"> ${v.distance} km</span>`:''}
     </div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-      <span style="font-size:11px;color:${tl};font-weight:600;flex-shrink:0;">💰 Prix négocié :</span>
+      <span style="font-size:11px;color:${tl};font-weight:600;flex-shrink:0;"> Prix négocié :</span>
       <input type="text" value="${v.prix_perso||''}" placeholder="Indiquer le prix..." onchange="updVndPrice(${v.id},'${zone}',this.value)" style="flex:1;border:1px solid ${br};border-radius:7px;padding:5px 9px;font-size:12px;outline:none;background:#fffafc;">
     </div>
     ${zone==='fav'?
@@ -4307,15 +4307,15 @@ function renderMenu(){
     <div style="font-family:Playfair Display,serif;font-size:16px;color:${tx};margin-bottom:14px;">Estimation des boissons</div>
     ${[
       {nom:' Champagne', calc: Math.ceil(total/3), unit:'bouteilles', note:'1 bouteille / 3 invités (principalement vin d\'honneur)'},
-      {nom:'🍹 Cocktails', calc: total*2, unit:'verres', note:'2 verres / invité (principalement vin d\'honneur)'},
-      {nom:'🍺 Bières', calc: total, unit:'bouteilles', note:'1 bouteille / invité (principalement vin d\'honneur)'},
-      {nom:'🥃 Spiritueux', calc: Math.ceil(total/13), unit:'bouteilles', note:'1 bouteille / 13 invités'},
-      {nom:'🍾 Vin blanc', calc: Math.ceil(r_count/4), unit:'bouteilles', note:'1 bouteille / 4 invités (principalement pour le repas)'},
-      {nom:'🍷 Vin rouge', calc: Math.ceil(r_count/3), unit:'bouteilles', note:'1 bouteille / 3 invités (principalement pour le repas)'},
+      {nom:' Cocktails', calc: total*2, unit:'verres', note:'2 verres / invité (principalement vin d\'honneur)'},
+      {nom:' Bières', calc: total, unit:'bouteilles', note:'1 bouteille / invité (principalement vin d\'honneur)'},
+      {nom:' Spiritueux', calc: Math.ceil(total/13), unit:'bouteilles', note:'1 bouteille / 13 invités'},
+      {nom:' Vin blanc', calc: Math.ceil(r_count/4), unit:'bouteilles', note:'1 bouteille / 4 invités (principalement pour le repas)'},
+      {nom:' Vin rouge', calc: Math.ceil(r_count/3), unit:'bouteilles', note:'1 bouteille / 3 invités (principalement pour le repas)'},
       {nom:' Vin rosé', calc: Math.ceil(r_count/4), unit:'bouteilles', note:'1 bouteille / 4 invités (principalement pour le repas)'},
-      {nom:'💧 Eau plate', calc: (total*0.5).toFixed(1), unit:'litres', note:'50cl / invité'},
-      {nom:'💧 Eau gazeuse', calc: (total*0.5).toFixed(1), unit:'litres', note:'50cl / invité'},
-      {nom:'🥤 Softs (sodas, jus)', calc: (total/3).toFixed(1), unit:'litres', note:'1L / 3 invités'},
+      {nom:' Eau plate', calc: (total*0.5).toFixed(1), unit:'litres', note:'50cl / invité'},
+      {nom:' Eau gazeuse', calc: (total*0.5).toFixed(1), unit:'litres', note:'50cl / invité'},
+      {nom:' Softs (sodas, jus)', calc: (total/3).toFixed(1), unit:'litres', note:'1L / 3 invités'},
     ].map(b=>`
       <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid ${br};">
         <div>
@@ -4341,7 +4341,7 @@ function renderMenu(){
   </div>
 
   <div class="card" style="padding:14px;margin-top:14px;">
-    <div style="font-family:Playfair Display,serif;font-size:16px;color:${tx};margin-bottom:12px;">🍽 Menu</div>
+    <div style="font-family:Playfair Display,serif;font-size:16px;color:${tx};margin-bottom:12px;"> Menu</div>
     <div style="display:flex;gap:8px;margin-bottom:8px;">
       <input class="inp" id="menu-new-cat" placeholder="Nouvelle catégorie..." style="flex:1;font-size:13px;">
       <button onclick="addMenuCategory()" class="btn" style="padding:8px 14px;">+</button>
@@ -4523,7 +4523,7 @@ function renderDecorations(){
     html += `<div class="card" style="margin-bottom:12px;overflow:hidden;">
       <div style="display:flex;align-items:center;padding:12px 16px;background:${sf};border-radius:10px 10px 0 0;">
         <div onclick="toggleDecoSection(${catIdx})" style="flex:1;cursor:pointer;">
-          <div data-deco-cat="${cat}" onclick="renameDecoCategory('${cat.replace(/'/g,"'")}',${catIdx})" style="font-family:Playfair Display,serif;font-size:15px;color:${tx};font-weight:700;cursor:pointer;" title="Appuyer pour renommer">${h(cat)}</div>
+          <div data-deco-cat="${cat}" onclick="renameDecoCategory('${cat.replace(/'/g,"'")}',${catIdx})" style="font-family:Lora,serif;font-size:13px;color:${tm};font-weight:700;cursor:pointer;" title="Appuyer pour renommer">${h(cat)}</div>
           <div style="font-size:11px;color:${tl};margin-top:2px;">${done}/${total} éléments</div>
         </div>
         <button onclick="removeDecoCategory('${cat.replace(/'/g,"'")}')" style="background:none;border:none;color:${br};font-size:18px;cursor:pointer;padding:0 8px;">×</button>
@@ -4623,7 +4623,7 @@ function renderAlbum(){
 
   <div style="font-family:Playfair Display,serif;font-size:20px;color:${tx};margin-bottom:12px;text-align:center;">Album photo</div>
   <div style="width:32px;height:1.5px;background:${pk};margin:0 auto 16px;border-radius:2px;"></div>  <div class="card" style="padding:16px;margin-bottom:16px;background:linear-gradient(135deg,${sf},#fff);">
-    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tx};margin-bottom:12px;">📸 Album partagé</div>
+    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tx};margin-bottom:12px;"> Album partagé</div>
     <p style="font-size:13px;color:${tl};margin-bottom:14px;">Partagez votre album <strong>Google Photos</strong> avec vos invités.</p>
     <div style="margin-bottom:16px;">
       <label class="lbl">Lien de votre album Google Photos</label>
@@ -4635,9 +4635,9 @@ function renderAlbum(){
     ${driveUrl ? `
     <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:16px;;padding:20px 16px;background:#fdf8f5;border-radius:14px;">
       <img src="${qrUrl}" style="border-radius:12px;box-shadow:0 2px 12px rgba(180,100,130,0.2);" alt="QR Code">
-      <button class="btn" onclick="shareCurrentDriveUrl()" style="width:100%;">📤 Partager le lien</button>
-      <button class="btn-sec" onclick="copyCurrentDriveUrl()" style="width:100%;">📋 Copier le lien</button>
-      <a id="drive-open-link" href="${driveUrl}" target="_blank" class="btn" style="width:100%;text-align:center;text-decoration:none;display:block;">📂 Ouvrir mon album Google Photos</a>
+      <button class="btn" onclick="shareCurrentDriveUrl()" style="width:100%;"> Partager le lien</button>
+      <button class="btn-sec" onclick="copyCurrentDriveUrl()" style="width:100%;"> Copier le lien</button>
+      <a id="drive-open-link" href="${driveUrl}" target="_blank" class="btn" style="width:100%;text-align:center;text-decoration:none;display:block;"> Ouvrir mon album Google Photos</a>
     </div>
     ` : `
     <div style="background:${sf};border:2px dashed ${br};border-radius:12px;padding:20px;text-align:center;color:${tl};font-size:13px;font-style:italic;">
@@ -4656,7 +4656,7 @@ function renderAlbum(){
       <div>Copiez le lien et collez-le ci-dessus</div>
     </div>
     <div style="margin-top:12px;background:#fff8f0;border-radius:10px;padding:10px 12px;font-size:12px;color:#a07820;">
-      💡 Un compte Google est nécessaire pour que vos invités puissent ajouter des photos.
+       Un compte Google est nécessaire pour que vos invités puissent ajouter des photos.
     </div>
   </div>
   `;
@@ -5598,7 +5598,7 @@ const ASSIST_KB = {
       '[Prénom 1] et [Prénom 2] sont heureux de vous annoncer leur mariage qui sera célébré le [date] à [heure] à [lieu].\n\nUn cocktail dînatoire suivra à [lieu réception] à partir de [heure cocktail].\n\nRSVP avant le [date].'
     ],
     'boheme': [
-      'Sous le grand ciel, parmi les fleurs sauvages, nous voulons vous dire OUI. Rejoignez-nous le [date] à [lieu] pour célébrer notre amour, partager un verre, danser jusqu\'au bout de la nuit.\n\n[Prénom 1] ♡ [Prénom 2]',
+      'Sous le grand ciel, parmi les fleurs sauvages, nous voulons vous dire OUI. Rejoignez-nous le [date] à [lieu] pour célébrer notre amour, partager un verre, danser jusqu\'au bout de la nuit.\n\n[Prénom 1]  [Prénom 2]',
       'On a choisi un endroit qu\'on aime, des gens qu\'on aime, et un jour à ne pas oublier. Le [date], on se dit oui à [lieu]. Venez les pieds dans l\'herbe, le cœur léger.\n\n[Prénom 1] & [Prénom 2]'
     ],
     'humoristique': [
@@ -5607,7 +5607,7 @@ const ASSIST_KB = {
     ],
     'court': [
       '[Prénom 1] & [Prénom 2]\nse marient\nle [date] à [lieu]\n[Heure]',
-      'Save the date\n[Prénom 1] ♡ [Prénom 2]\n[Date] — [Lieu]'
+      'Save the date\n[Prénom 1]  [Prénom 2]\n[Date] — [Lieu]'
     ]
   },
 
@@ -5673,30 +5673,30 @@ const ASSIST_KB = {
       }
       // Décalages (en minutes) calqués sur le modèle où la mairie est à 14h00
       return [
-        {time:tt(cer-360), action:'🌅 Réveil & petit-déjeuner calme. Petit-déjeuner léger, hydratation, playlist agréable, ambiance détendue.'},
-        {time:tt(cer-330), action:'💄 Début coiffure / maquillage de la mariée. Prévoir large : cela prend souvent plus de temps que prévu.'},
-        {time:tt(cer-300), action:'📸 Arrivée du photographe / vidéaste (optionnel). Photos des détails : robe, alliances, papeterie, parfum, chaussures, bouquet.'},
-        {time:tt(cer-240), action:'🤵 Préparatifs du marié. Habillage et photos avec les témoins.'},
-        {time:tt(cer-150), action:'👰 Habillage de la mariée. Moment robe + photos avec les proches.'},
-        {time:tt(cer-120), action:'💑 First look (optionnel). Découverte des mariés avant la cérémonie + photos de couple pour gagner du temps.'},
-        {time:tt(cer-90), action:'🥪 Pause déjeuner légère.'},
-        {time:tt(cer-30), action:'🚗 Départ vers '+lieuCer+'.'},
-        {time:tt(cer), action:'🏛️ Cérémonie civile à la mairie (20 à 40 min en général).'},
-        {time:tt(cer+60), action:'📷 Déplacements + photos de groupe rapides.'},
-        {time:tt(cer+120), action:'⛪ Cérémonie laïque ou religieuse (30 min à 1h selon le format).'},
-        {time:tt(cer+180), action:'🥂 Vin d\'honneur / cocktail à '+lieuRecep+'. Boissons, animations et photos avec les invités (photos de groupe, livre d\'or, photobooth, jeux, photos de couple au coucher du soleil).'},
-        {time:tt(cer+270), action:'🍽️ Ouverture de la salle pour le dîner. Les invités prennent place.'},
-        {time:tt(cer+300), action:'✨ Entrée des mariés.'},
-        {time:tt(cer+315), action:'🍴 Début du repas — entrée.'},
-        {time:tt(cer+360), action:'🎤 Animation / discours.'},
-        {time:tt(cer+390), action:'🍖 Plat principal.'},
-        {time:tt(cer+435), action:'🎁 Animations / surprises.'},
-        {time:tt(cer+480), action:'🧀 Fromage / dessert.'},
-        {time:tt(cer+510), action:'🎂 Pièce montée ou wedding cake. Moment photos + champagne.'},
-        {time:tt(cer+540), action:'💃 Ouverture du bal.'},
-        {time:tt(cer+570), action:'🪩 Soirée dansante.'},
-        {time:tt(cer+630), action:'🌭 Snack de nuit (optionnel) : mini-burgers, pizza, bar à crêpes, hot-dogs…'},
-        {time:tt(cer+750), action:'🌙 Fin de soirée (selon le lieu, entre 2h et 4h du matin).'}
+        {time:tt(cer-360), action:' Réveil & petit-déjeuner calme. Petit-déjeuner léger, hydratation, playlist agréable, ambiance détendue.'},
+        {time:tt(cer-330), action:' Début coiffure / maquillage de la mariée. Prévoir large : cela prend souvent plus de temps que prévu.'},
+        {time:tt(cer-300), action:' Arrivée du photographe / vidéaste (optionnel). Photos des détails : robe, alliances, papeterie, parfum, chaussures, bouquet.'},
+        {time:tt(cer-240), action:' Préparatifs du marié. Habillage et photos avec les témoins.'},
+        {time:tt(cer-150), action:' Habillage de la mariée. Moment robe + photos avec les proches.'},
+        {time:tt(cer-120), action:' First look (optionnel). Découverte des mariés avant la cérémonie + photos de couple pour gagner du temps.'},
+        {time:tt(cer-90), action:' Pause déjeuner légère.'},
+        {time:tt(cer-30), action:' Départ vers '+lieuCer+'.'},
+        {time:tt(cer), action:'️ Cérémonie civile à la mairie (20 à 40 min en général).'},
+        {time:tt(cer+60), action:' Déplacements + photos de groupe rapides.'},
+        {time:tt(cer+120), action:' Cérémonie laïque ou religieuse (30 min à 1h selon le format).'},
+        {time:tt(cer+180), action:' Vin d\'honneur / cocktail à '+lieuRecep+'. Boissons, animations et photos avec les invités (photos de groupe, livre d\'or, photobooth, jeux, photos de couple au coucher du soleil).'},
+        {time:tt(cer+270), action:'️ Ouverture de la salle pour le dîner. Les invités prennent place.'},
+        {time:tt(cer+300), action:' Entrée des mariés.'},
+        {time:tt(cer+315), action:' Début du repas — entrée.'},
+        {time:tt(cer+360), action:' Animation / discours.'},
+        {time:tt(cer+390), action:' Plat principal.'},
+        {time:tt(cer+435), action:' Animations / surprises.'},
+        {time:tt(cer+480), action:' Fromage / dessert.'},
+        {time:tt(cer+510), action:' Pièce montée ou wedding cake. Moment photos + champagne.'},
+        {time:tt(cer+540), action:' Ouverture du bal.'},
+        {time:tt(cer+570), action:' Soirée dansante.'},
+        {time:tt(cer+630), action:' Snack de nuit (optionnel) : mini-burgers, pizza, bar à crêpes, hot-dogs…'},
+        {time:tt(cer+750), action:' Fin de soirée (selon le lieu, entre 2h et 4h du matin).'}
       ];
     }
   },
@@ -6746,7 +6746,7 @@ function assistMenu(cont){
   const savedInvites = gv('invites',80);
   cont.innerHTML = `
     <div class="card" style="padding:16px;">
-      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:4px;font-weight:700;">🍽️ Menu personnalisé</div>
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:4px;font-weight:700;">️ Menu personnalisé</div>
       <div style="font-size:11px;color:${tl};font-style:italic;margin-bottom:14px;">Des menus composés avec les produits de saison, adaptés à ton budget et à ton format de réception.</div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
@@ -6789,7 +6789,7 @@ function assistMenu(cont){
         </div>
       </div>
 
-      <button class="btn" onclick="assistGenerateMenu()" style="width:100%;">✨ Générer un menu</button>
+      <button class="btn" onclick="assistGenerateMenu()" style="width:100%;"> Générer un menu</button>
       <div id="menu-result" style="margin-top:16px;"></div>
     </div>
   `;
@@ -6913,8 +6913,8 @@ function assistGenerateMenu(){
       <div style="margin:14px 0;">${sectionsHtml}</div>
 
       <div style="display:flex;gap:8px;">
-        <button onclick="assistGenerateMenu()" class="btn-sec" style="flex:1;font-size:12px;">🔄 Autre proposition</button>
-        <button onclick="assistCopyMenu()" class="btn" style="flex:1;font-size:12px;">📋 Copier</button>
+        <button onclick="assistGenerateMenu()" class="btn-sec" style="flex:1;font-size:12px;"> Autre proposition</button>
+        <button onclick="assistCopyMenu()" class="btn" style="flex:1;font-size:12px;"> Copier</button>
       </div>
       <div style="font-size:10px;color:${tl};font-style:italic;text-align:center;margin-top:8px;">Chaque génération propose une variante différente, avec des produits de saison.</div>
     </div>
@@ -6943,7 +6943,7 @@ function assistFairepart(cont){
   const savedStyle = ld('assist_fp_style', 'romantique');
   cont.innerHTML = `
     <div class="card" style="padding:16px;">
-      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">✉️ Faire-part de mariage</div>
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">️ Faire-part de mariage</div>
       <div style="margin-bottom:14px;">
         <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Style</label>
         <select id="fp-style" class="inp" style="margin-top:4px;">
@@ -6970,7 +6970,7 @@ function assistGenerateFairepart(){
     modeles.map((t, i) => `<div class="card" style="padding:14px;margin-bottom:10px;background:${sf};">
       <div style="font-size:11px;font-weight:700;color:${pk};margin-bottom:8px;">Modèle ${i+1}</div>
       <div style="font-size:13px;color:${tx};line-height:1.7;white-space:pre-line;font-family:Playfair Display,Georgia,serif;font-style:italic;">${h(t)}</div>
-      <button onclick="assistCopyText(${JSON.stringify(t).replace(/"/g,'&quot;')})" class="btn-sec" style="margin-top:10px;font-size:11px;padding:6px 12px;">📋 Copier ce modèle</button>
+      <button onclick="assistCopyText(${JSON.stringify(t).replace(/"/g,'&quot;')})" class="btn-sec" style="margin-top:10px;font-size:11px;padding:6px 12px;"> Copier ce modèle</button>
     </div>`).join('');
 }
 
@@ -6983,7 +6983,7 @@ async function assistCopyText(text){
 function assistDiscours(cont){
   cont.innerHTML = `
     <div class="card" style="padding:16px;">
-      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">🎤 Discours de mariage</div>
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Discours de mariage</div>
       <div style="margin-bottom:14px;">
         <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Type de discours</label>
         <select id="disc-type" class="inp" style="margin-top:4px;">
@@ -7006,7 +7006,7 @@ function assistGenerateDiscours(){
     trames.map((t, i) => `<div class="card" style="padding:14px;margin-bottom:10px;background:${sf};">
       <div style="font-size:11px;font-weight:700;color:${pk};margin-bottom:8px;">Trame ${i+1}</div>
       <div style="font-size:13px;color:${tx};line-height:1.7;white-space:pre-line;">${h(t)}</div>
-      <button onclick="assistCopyText(${JSON.stringify(t).replace(/"/g,'&quot;')})" class="btn-sec" style="margin-top:10px;font-size:11px;padding:6px 12px;">📋 Copier cette trame</button>
+      <button onclick="assistCopyText(${JSON.stringify(t).replace(/"/g,'&quot;')})" class="btn-sec" style="margin-top:10px;font-size:11px;padding:6px 12px;"> Copier cette trame</button>
     </div>`).join('');
 }
 
@@ -7016,7 +7016,7 @@ function assistBudget(cont){
   const savedInvites = ld('assist_invites', 80);
   cont.innerHTML = `
     <div class="card" style="padding:16px;">
-      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">💰 Conseils budget</div>
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Conseils budget</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
         <div>
           <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Budget total (€)</label>
@@ -7053,7 +7053,7 @@ function assistGenerateBudget(){
       </div>`).join('')}
 
       <div style="margin-top:16px;padding:14px;background:linear-gradient(135deg,#fff8ec,#fef5e0);border-radius:12px;border:1px solid ${gd}40;">
-        <div style="font-family:Playfair Display,serif;font-size:14px;color:${tm};margin-bottom:10px;font-weight:700;">💡 10 astuces pour économiser</div>
+        <div style="font-family:Playfair Display,serif;font-size:14px;color:${tm};margin-bottom:10px;font-weight:700;"> 10 astuces pour économiser</div>
         <ul style="margin:0;padding-left:18px;font-size:12px;color:${tx};line-height:1.7;">
           ${ASSIST_KB.budget.astuces.map(a => `<li>${h(a)}</li>`).join('')}
         </ul>
@@ -7112,7 +7112,7 @@ function assistDecoration(cont){
   const savedSaison = ld('assist_deco_saison', 'printemps');
   cont.innerHTML = `
     <div class="card" style="padding:16px;">
-      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">🎀 Idées de décoration</div>
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Idées de décoration</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
         <div>
           <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Style</label>
@@ -7153,22 +7153,22 @@ function assistGenerateDeco(){
     <div style="font-family:Playfair Display,serif;font-style:italic;font-size:16px;color:${tm};margin-bottom:14px;text-align:center;">${h(d.title)}</div>
 
     <div style="background:${sf};padding:12px;border-radius:10px;margin-bottom:10px;">
-      <div style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">🎨 Palette de couleurs</div>
+      <div style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;"> Palette de couleurs</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;">${d.couleurs.map(c=>`<span style="background:#fff;padding:4px 10px;border-radius:14px;font-size:11px;color:${tx};border:1px solid ${br};font-weight:600;">${h(c)}</span>`).join('')}</div>
     </div>
 
-    <div style="margin-bottom:10px;"><span style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;">💐 Fleurs recommandées</span><div style="font-size:13px;color:${tx};margin-top:4px;line-height:1.6;">${h(d.fleurs)}</div></div>
+    <div style="margin-bottom:10px;"><span style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;"> Fleurs recommandées</span><div style="font-size:13px;color:${tx};margin-top:4px;line-height:1.6;">${h(d.fleurs)}</div></div>
 
-    <div style="margin-bottom:10px;"><span style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;">🪑 Tables</span><div style="font-size:13px;color:${tx};margin-top:4px;line-height:1.6;">${h(d.tables)}</div></div>
+    <div style="margin-bottom:10px;"><span style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;"> Tables</span><div style="font-size:13px;color:${tx};margin-top:4px;line-height:1.6;">${h(d.tables)}</div></div>
 
-    <div style="margin-bottom:10px;"><span style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;">🍽️ Vaisselle</span><div style="font-size:13px;color:${tx};margin-top:4px;line-height:1.6;">${h(d.vaisselle)}</div></div>
+    <div style="margin-bottom:10px;"><span style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;">️ Vaisselle</span><div style="font-size:13px;color:${tx};margin-top:4px;line-height:1.6;">${h(d.vaisselle)}</div></div>
 
-    <div style="margin-bottom:10px;"><span style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;">✨ Ambiance générale</span><div style="font-size:13px;color:${tx};margin-top:4px;line-height:1.6;">${h(d.ambiance)}</div></div>
+    <div style="margin-bottom:10px;"><span style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;"> Ambiance générale</span><div style="font-size:13px;color:${tx};margin-top:4px;line-height:1.6;">${h(d.ambiance)}</div></div>
 
-    <div style="margin-bottom:10px;"><span style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;">🌿 Arche de cérémonie</span><div style="font-size:13px;color:${tx};margin-top:4px;line-height:1.6;">${h(d.arche)}</div></div>
+    <div style="margin-bottom:10px;"><span style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;"> Arche de cérémonie</span><div style="font-size:13px;color:${tx};margin-top:4px;line-height:1.6;">${h(d.arche)}</div></div>
 
     <a href="${pinterestUrl(d.title)}" target="_blank" rel="noopener" style="display:inline-block;margin-top:14px;padding:10px 16px;background:linear-gradient(135deg,#fff8ec,#fef5e0);border:1.5px solid ${gd}50;border-radius:10px;text-decoration:none;color:${tx};font-size:12px;font-weight:700;font-family:Lora,serif;">
-      📌 Voir des inspirations sur Pinterest
+       Voir des inspirations sur Pinterest
     </a>
   </div>`;
 }
@@ -7181,7 +7181,7 @@ function assistWeddingCake(cont){
   const current = cats[saved] || cats[catKeys[0]];
   cont.innerHTML = `
     <div class="card" style="padding:16px;">
-      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:6px;font-weight:700;">🎂 Wedding cake — styles & inspirations</div>
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:6px;font-weight:700;"> Wedding cake — styles & inspirations</div>
       <div style="font-size:11px;color:${tl};font-style:italic;margin-bottom:14px;">Choisis une famille de styles, puis ouvre Pinterest pour chaque inspiration.</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;">
         ${catKeys.map(k=>`<button onclick="sv('assist_cake_cat','${k}');assistWeddingCake(el('assist-content'));" class="btn-sec" style="font-size:11px;padding:7px 12px;${saved===k?'background:'+pk+';color:#fff;border-color:'+pk+';':''}">${h(cats[k].label)}</button>`).join('')}
@@ -7190,7 +7190,7 @@ function assistWeddingCake(cont){
       <div style="display:grid;gap:8px;">
         ${current.items.map(it=>`<div style="display:flex;align-items:center;gap:10px;background:${sf};border-radius:10px;padding:11px 12px;">
           <span style="flex:1;font-size:13px;color:${tx};font-weight:600;line-height:1.4;">${h(it.nom)}</span>
-          <a href="${pinterestUrl(it.pin)}" target="_blank" rel="noopener" style="flex-shrink:0;padding:6px 11px;background:#fff;border:1.5px solid ${gd}50;border-radius:8px;text-decoration:none;color:${tx};font-size:11px;font-weight:700;font-family:Lora,serif;white-space:nowrap;">📌 Pinterest</a>
+          <a href="${pinterestUrl(it.pin)}" target="_blank" rel="noopener" style="flex-shrink:0;padding:6px 11px;background:#fff;border:1.5px solid ${gd}50;border-radius:8px;text-decoration:none;color:${tx};font-size:11px;font-weight:700;font-family:Lora,serif;white-space:nowrap;"> Pinterest</a>
         </div>`).join('')}
       </div>
     </div>
@@ -7202,7 +7202,7 @@ function assistAnimations(cont){
   const saved = ld('assist_anim_cat', 'classique');
   cont.innerHTML = `
     <div class="card" style="padding:16px;">
-      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">🎉 Animations pour la soirée</div>
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Animations pour la soirée</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
         ${[
           {k:'classique',l:'Classiques'},{k:'fun',l:'Fun & originales'},
@@ -7231,11 +7231,11 @@ function assistVoyageNoces(cont){
   const saved = ld('assist_voyage_cat', 'plage');
   cont.innerHTML = `
     <div class="card" style="padding:16px;">
-      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">✈️ Voyage de noces</div>
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">️ Voyage de noces</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
         ${[
-          {k:'plage',l:'🏖️ Plage'},{k:'culture',l:'🏛️ Culture'},
-          {k:'aventure',l:'⛰️ Aventure'},{k:'romantique-europe',l:'💕 Europe romantique'}
+          {k:'plage',l:'️ Plage'},{k:'culture',l:'️ Culture'},
+          {k:'aventure',l:'️ Aventure'},{k:'romantique-europe',l:' Europe romantique'}
         ].map(c=>`<button onclick="sv('assist_voyage_cat','${c.k}');assistVoyageNoces(el('assist-content'));" class="btn-sec" style="font-size:11px;padding:7px 12px;${saved===c.k?'background:'+pk+';color:#fff;border-color:'+pk+';':''}">${c.l}</button>`).join('')}
       </div>
       <div id="voyage-result"></div>
@@ -7257,7 +7257,7 @@ function assistCadeauxInvites(cont){
   const saved = ld('assist_cadeau_cat', 'petit-budget');
   cont.innerHTML = `
     <div class="card" style="padding:16px;">
-      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">🎁 Cadeaux pour les invités</div>
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Cadeaux pour les invités</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
         ${[
           {k:'petit-budget',l:'Petit budget (1-3€)'},
@@ -7284,19 +7284,19 @@ function assistTenueMariee(cont){
   const d = ASSIST_KB.tenueMariee;
   cont.innerHTML = `
     <div class="card" style="padding:16px;">
-      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">👰 Robe de mariée</div>
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Robe de mariée</div>
 
-      <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;">🧍 Conseils selon morphologie</div>
+      <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;"> Conseils selon morphologie</div>
       ${Object.entries(d.morphologies).map(([k,v])=>`<div class="card" style="padding:12px;margin-bottom:8px;background:${sf};">
         <div style="font-weight:700;color:${tx};font-size:13px;text-transform:capitalize;margin-bottom:4px;">Morphologie en ${h(k)}</div>
         <div style="font-size:12px;color:${tm};line-height:1.6;">${h(v)}</div>
       </div>`).join('')}
 
-      <div style="font-size:13px;font-weight:700;color:${pk};margin:18px 0 8px;">👗 Styles de robe</div>
+      <div style="font-size:13px;font-weight:700;color:${pk};margin:18px 0 8px;"> Styles de robe</div>
       ${d.styles.map(s=>`<div class="card" style="padding:12px;margin-bottom:8px;background:${sf};">
         <div style="font-weight:700;color:${tx};font-size:13px;margin-bottom:4px;">${h(s.nom)}</div>
         <div style="font-size:12px;color:${tm};line-height:1.6;margin-bottom:8px;">${h(s.desc)}</div>
-        <a href="${pinterestUrl(s.pin || ('robe de mariée '+s.nom))}" target="_blank" rel="noopener" style="display:inline-block;padding:5px 11px;background:#fff;border:1.5px solid ${gd}50;border-radius:8px;text-decoration:none;color:${tx};font-size:11px;font-weight:700;font-family:Lora,serif;">📌 Voir sur Pinterest</a>
+        <a href="${pinterestUrl(s.pin || ('robe de mariée '+s.nom))}" target="_blank" rel="noopener" style="display:inline-block;padding:5px 11px;background:#fff;border:1.5px solid ${gd}50;border-radius:8px;text-decoration:none;color:${tx};font-size:11px;font-weight:700;font-family:Lora,serif;"> Voir sur Pinterest</a>
       </div>`).join('')}
     </div>
   `;
@@ -7307,22 +7307,22 @@ function assistTenueMarie(cont){
   const d = ASSIST_KB.tenueMarie;
   cont.innerHTML = `
     <div class="card" style="padding:16px;">
-      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">🤵 Costume</div>
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Costume</div>
 
-      <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;">👔 Styles de costume</div>
+      <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;"> Styles de costume</div>
       ${d.styles.map(s=>`<div class="card" style="padding:12px;margin-bottom:8px;background:${sf};">
         <div style="font-weight:700;color:${tx};font-size:13px;margin-bottom:4px;">${h(s.nom)}</div>
         <div style="font-size:12px;color:${tm};line-height:1.6;margin-bottom:8px;">${h(s.desc)}</div>
-        <a href="${pinterestUrl('costume marié '+s.nom)}" target="_blank" rel="noopener" style="display:inline-block;padding:5px 11px;background:#fff;border:1.5px solid ${gd}50;border-radius:8px;text-decoration:none;color:${tx};font-size:11px;font-weight:700;font-family:Lora,serif;">📌 Voir sur Pinterest</a>
+        <a href="${pinterestUrl('costume marié '+s.nom)}" target="_blank" rel="noopener" style="display:inline-block;padding:5px 11px;background:#fff;border:1.5px solid ${gd}50;border-radius:8px;text-decoration:none;color:${tx};font-size:11px;font-weight:700;font-family:Lora,serif;"> Voir sur Pinterest</a>
       </div>`).join('')}
 
-      <div style="font-size:13px;font-weight:700;color:${pk};margin:18px 0 8px;">🎩 Accessoires essentiels</div>
+      <div style="font-size:13px;font-weight:700;color:${pk};margin:18px 0 8px;"> Accessoires essentiels</div>
       <ul style="margin:0;padding-left:18px;font-size:13px;color:${tx};line-height:1.8;">
         ${d.accessoires.map(a=>`<li>${h(a)}</li>`).join('')}
       </ul>
 
       <div style="background:${sf};padding:12px;border-radius:10px;margin-top:14px;">
-        <div style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">🎨 Choix des couleurs</div>
+        <div style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;"> Choix des couleurs</div>
         <div style="font-size:13px;color:${tx};line-height:1.6;">${h(d.couleurs)}</div>
       </div>
     </div>
@@ -7334,9 +7334,9 @@ function assistBijouxMariee(cont){
   const d = ASSIST_KB.bijouxMariee;
   cont.innerHTML = `
     <div class="card" style="padding:16px;">
-      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">💍 Bijoux de la mariée</div>
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Bijoux de la mariée</div>
 
-      <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;">👗 Selon le décolleté / style de robe</div>
+      <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;"> Selon le décolleté / style de robe</div>
       ${Object.entries(d.selonRobe).map(([k,v])=>{
         const labels = {decollete:'Décolleté plongeant',bustier:'Bustier sans bretelles','col-haut':'Col haut','dos-nu':'Dos-nu',simple:'Robe minimaliste'};
         return `<div class="card" style="padding:12px;margin-bottom:8px;background:${sf};">
@@ -7346,17 +7346,17 @@ function assistBijouxMariee(cont){
       }).join('')}
 
       <div style="background:${sf};padding:12px;border-radius:10px;margin-top:14px;margin-bottom:10px;">
-        <div style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">👰 Coordination avec le voile</div>
+        <div style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;"> Coordination avec le voile</div>
         <div style="font-size:13px;color:${tx};line-height:1.6;">${h(d.voile)}</div>
       </div>
 
       <div style="background:${sf};padding:12px;border-radius:10px;margin-bottom:10px;">
-        <div style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">💇 Selon la coiffure</div>
+        <div style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;"> Selon la coiffure</div>
         <div style="font-size:13px;color:${tx};line-height:1.6;">${h(d.coiffure)}</div>
       </div>
 
       <div style="background:${sf};padding:12px;border-radius:10px;">
-        <div style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">💐 Coordination avec le bouquet</div>
+        <div style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;"> Coordination avec le bouquet</div>
         <div style="font-size:13px;color:${tx};line-height:1.6;">${h(d.bouquet)}</div>
       </div>
     </div>
@@ -7367,16 +7367,16 @@ function assistBijouxMariee(cont){
 function assistMusiqueCer(cont){
   const saved = ld('assist_musique_moment', 'entree-moderne');
   const moments = [
-    {k:'entree-classique',l:'🎼 Entrée — Classique'},
-    {k:'entree-moderne',l:'🎵 Entrée — Moderne'},
-    {k:'voeux',l:'💕 Pendant les vœux'},
-    {k:'sortie',l:'🎉 Sortie'},
-    {k:'premiere-danse',l:'💃 Première danse'},
-    {k:'soiree-ambiance',l:'🪩 Ambiance soirée'}
+    {k:'entree-classique',l:' Entrée — Classique'},
+    {k:'entree-moderne',l:' Entrée — Moderne'},
+    {k:'voeux',l:' Pendant les vœux'},
+    {k:'sortie',l:' Sortie'},
+    {k:'premiere-danse',l:' Première danse'},
+    {k:'soiree-ambiance',l:' Ambiance soirée'}
   ];
   cont.innerHTML = `
     <div class="card" style="padding:16px;">
-      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">🎵 Musique pour la cérémonie</div>
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Musique pour la cérémonie</div>
       <div style="margin-bottom:14px;">
         <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Moment du mariage</label>
         <select id="musique-moment" class="inp" style="margin-top:4px;" onchange="sv('assist_musique_moment',this.value);assistRenderMusique();">
@@ -7400,16 +7400,16 @@ function assistRenderMusique(){
 function assistPhotos(cont){
   const d = ASSIST_KB.photosAneFairePas;
   const sections = [
-    {k:'preparatifs-mariee',l:'👰 Préparatifs mariée'},
-    {k:'preparatifs-marie',l:'🤵 Préparatifs marié'},
-    {k:'ceremonie',l:'💒 Cérémonie'},
-    {k:'cocktail-reception',l:'🥂 Vin d\'honneur'},
-    {k:'reception',l:'🍽️ Réception / Soirée'},
-    {k:'couple',l:'💕 Photos de couple'}
+    {k:'preparatifs-mariee',l:' Préparatifs mariée'},
+    {k:'preparatifs-marie',l:' Préparatifs marié'},
+    {k:'ceremonie',l:' Cérémonie'},
+    {k:'cocktail-reception',l:' Vin d\'honneur'},
+    {k:'reception',l:'️ Réception / Soirée'},
+    {k:'couple',l:' Photos de couple'}
   ];
   cont.innerHTML = `
     <div class="card" style="padding:16px;">
-      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:6px;font-weight:700;">📸 Photos à ne pas manquer</div>
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:6px;font-weight:700;"> Photos à ne pas manquer</div>
       <div style="font-size:11px;color:${tl};font-style:italic;margin-bottom:14px;">Donne cette checklist à ton photographe pour ne rien oublier.</div>
       ${sections.map(s=>`<div style="margin-bottom:14px;">
         <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;">${s.l}</div>
@@ -7425,13 +7425,13 @@ function assistPhotos(cont){
 function assistStress(cont){
   const saved = ld('assist_stress_cat', 'avant');
   const cats = [
-    {k:'avant',l:'📅 Avant le mariage'},
+    {k:'avant',l:' Avant le mariage'},
     {k:'jour-j',l:'⭐ Le jour J'},
-    {k:'apres',l:'🌅 Après le mariage'}
+    {k:'apres',l:' Après le mariage'}
   ];
   cont.innerHTML = `
     <div class="card" style="padding:16px;">
-      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">🧘 Gestion du stress</div>
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Gestion du stress</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
         ${cats.map(c=>`<button onclick="sv('assist_stress_cat','${c.k}');assistStress(el('assist-content'));" class="btn-sec" style="font-size:11px;padding:7px 12px;${saved===c.k?'background:'+pk+';color:#fff;border-color:'+pk+';':''}">${c.l}</button>`).join('')}
       </div>
@@ -7453,7 +7453,7 @@ function assistBelleFamille(cont){
   const d = ASSIST_KB.belleFamille;
   cont.innerHTML = `
     <div class="card" style="padding:16px;">
-      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">👨‍👩‍👧 Belle-famille & situations délicates</div>
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">‍‍ Belle-famille & situations délicates</div>
 
       <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;">Situations courantes</div>
       ${d.situations.map(s=>`<div class="card" style="padding:12px;margin-bottom:8px;background:${sf};">
@@ -7462,7 +7462,7 @@ function assistBelleFamille(cont){
       </div>`).join('')}
 
       <div style="background:linear-gradient(135deg,#fff8ec,#fef5e0);padding:14px;border-radius:12px;border:1px solid ${gd}40;margin-top:14px;">
-        <div style="font-family:Playfair Display,serif;font-size:14px;color:${tm};margin-bottom:10px;font-weight:700;">💡 6 astuces générales</div>
+        <div style="font-family:Playfair Display,serif;font-size:14px;color:${tm};margin-bottom:10px;font-weight:700;"> 6 astuces générales</div>
         <ul style="margin:0;padding-left:18px;font-size:12px;color:${tx};line-height:1.7;">
           ${d.astuces.map(a=>`<li>${h(a)}</li>`).join('')}
         </ul>
@@ -7475,15 +7475,15 @@ function assistBelleFamille(cont){
 function assistQuestions(cont){
   const saved = ld('assist_quest_presta', 'lieu');
   const types = [
-    {k:'lieu',l:'🏛️ Lieu de réception'},
-    {k:'traiteur',l:'🍽️ Traiteur'},
-    {k:'photographe',l:'📷 Photographe'},
-    {k:'dj',l:'🎵 DJ / Musique'},
-    {k:'fleuriste',l:'💐 Fleuriste'}
+    {k:'lieu',l:'️ Lieu de réception'},
+    {k:'traiteur',l:'️ Traiteur'},
+    {k:'photographe',l:' Photographe'},
+    {k:'dj',l:' DJ / Musique'},
+    {k:'fleuriste',l:' Fleuriste'}
   ];
   cont.innerHTML = `
     <div class="card" style="padding:16px;">
-      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">❓ Questions aux prestataires</div>
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Questions aux prestataires</div>
       <div style="margin-bottom:14px;">
         <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Type de prestataire</label>
         <select id="quest-presta" class="inp" style="margin-top:4px;" onchange="sv('assist_quest_presta',this.value);assistRenderQuestions();">
@@ -7509,7 +7509,7 @@ function assistRenderQuestions(){
 function assistVoeux(cont){
   const saved = ld('assist_voeux_style','romantique');
   cont.innerHTML = `<div class="card" style="padding:16px;">
-    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">💞 Vœux personnalisés</div>
+    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Vœux personnalisés</div>
     <div style="margin-bottom:14px;">
       <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Style</label>
       <select id="voeux-style" class="inp" style="margin-top:4px;" onchange="sv('assist_voeux_style',this.value);assistRenderVoeux();">
@@ -7530,7 +7530,7 @@ function assistRenderVoeux(){
     list.map((t,i)=>`<div class="card" style="padding:14px;margin-bottom:10px;background:${sf};">
       <div style="font-size:11px;font-weight:700;color:${pk};margin-bottom:8px;">Modèle ${i+1}</div>
       <div style="font-size:13px;color:${tx};line-height:1.7;white-space:pre-line;font-family:Playfair Display,Georgia,serif;font-style:italic;">${h(t)}</div>
-      <button onclick="assistCopyText(${JSON.stringify(t).replace(/"/g,'&quot;')})" class="btn-sec" style="margin-top:10px;font-size:11px;padding:6px 12px;">📋 Copier</button>
+      <button onclick="assistCopyText(${JSON.stringify(t).replace(/"/g,'&quot;')})" class="btn-sec" style="margin-top:10px;font-size:11px;padding:6px 12px;"> Copier</button>
     </div>`).join('');
 }
 
@@ -7538,7 +7538,7 @@ function assistRenderVoeux(){
 function assistRemerciements(cont){
   const saved = ld('assist_remerciement_type','classique');
   cont.innerHTML = `<div class="card" style="padding:16px;">
-    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">💌 Cartes de remerciement</div>
+    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Cartes de remerciement</div>
     <div style="margin-bottom:14px;">
       <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Type</label>
       <select id="remerc-type" class="inp" style="margin-top:4px;" onchange="sv('assist_remerciement_type',this.value);assistRenderRemerc();">
@@ -7557,7 +7557,7 @@ function assistRenderRemerc(){
   el('remerc-result').innerHTML = list.map((t,i)=>`<div class="card" style="padding:14px;margin-bottom:10px;background:${sf};">
     <div style="font-size:11px;font-weight:700;color:${pk};margin-bottom:8px;">Modèle ${i+1}</div>
     <div style="font-size:13px;color:${tx};line-height:1.7;white-space:pre-line;">${h(t)}</div>
-    <button onclick="assistCopyText(${JSON.stringify(t).replace(/"/g,'&quot;')})" class="btn-sec" style="margin-top:10px;font-size:11px;padding:6px 12px;">📋 Copier</button>
+    <button onclick="assistCopyText(${JSON.stringify(t).replace(/"/g,'&quot;')})" class="btn-sec" style="margin-top:10px;font-size:11px;padding:6px 12px;"> Copier</button>
   </div>`).join('');
 }
 
@@ -7565,19 +7565,19 @@ function assistRenderRemerc(){
 function assistInvitesLoin(cont){
   const d = ASSIST_KB.invitesLoin;
   cont.innerHTML = `<div class="card" style="padding:16px;">
-    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">🧳 Invités venant de loin</div>
+    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Invités venant de loin</div>
 
-    <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;">🏨 Logement</div>
+    <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;"> Logement</div>
     <ul style="margin:0 0 16px;padding-left:18px;font-size:13px;color:${tx};line-height:1.8;">
       ${d.logement.map(x=>`<li>${h(x)}</li>`).join('')}
     </ul>
 
-    <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;">✉️ Communication</div>
+    <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;">️ Communication</div>
     <ul style="margin:0 0 16px;padding-left:18px;font-size:13px;color:${tx};line-height:1.8;">
       ${d.invitations.map(x=>`<li>${h(x)}</li>`).join('')}
     </ul>
 
-    <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;">💝 Petites attentions</div>
+    <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;"> Petites attentions</div>
     <ul style="margin:0;padding-left:18px;font-size:13px;color:${tx};line-height:1.8;">
       ${d.attentions.map(x=>`<li>${h(x)}</li>`).join('')}
     </ul>
@@ -7588,21 +7588,21 @@ function assistInvitesLoin(cont){
 function assistListeCadeaux(cont){
   const d = ASSIST_KB.listeCadeaux;
   cont.innerHTML = `<div class="card" style="padding:16px;">
-    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">🎀 Liste de mariage / Cagnotte</div>
+    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Liste de mariage / Cagnotte</div>
 
-    <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;">🌐 Plateformes recommandées</div>
+    <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;"> Plateformes recommandées</div>
     ${d['cagnotte-en-ligne'].map(p=>`<div class="card" style="padding:12px;margin-bottom:8px;background:${sf};">
       <div style="font-weight:700;color:${tx};font-size:13px;margin-bottom:4px;">${h(p.nom)}</div>
       <div style="font-size:12px;color:${tm};line-height:1.6;">${h(p.desc)}</div>
     </div>`).join('')}
 
-    <div style="font-size:13px;font-weight:700;color:${pk};margin:18px 0 8px;">💡 Idées de listes</div>
+    <div style="font-size:13px;font-weight:700;color:${pk};margin:18px 0 8px;"> Idées de listes</div>
     <ul style="margin:0 0 16px;padding-left:18px;font-size:13px;color:${tx};line-height:1.8;">
       ${d.idees.map(x=>`<li>${h(x)}</li>`).join('')}
     </ul>
 
     <div style="background:linear-gradient(135deg,#fff8ec,#fef5e0);padding:14px;border-radius:12px;border:1px solid ${gd}40;">
-      <div style="font-family:Playfair Display,serif;font-size:14px;color:${tm};margin-bottom:10px;font-weight:700;">💎 Conseils pratiques</div>
+      <div style="font-family:Playfair Display,serif;font-size:14px;color:${tm};margin-bottom:10px;font-weight:700;"> Conseils pratiques</div>
       <ul style="margin:0;padding-left:18px;font-size:12px;color:${tx};line-height:1.7;">
         ${d.tips.map(x=>`<li>${h(x)}</li>`).join('')}
       </ul>
@@ -7614,21 +7614,21 @@ function assistListeCadeaux(cont){
 function assistPrepCivile(cont){
   const d = ASSIST_KB.prepCivile;
   cont.innerHTML = `<div class="card" style="padding:16px;">
-    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">🏛️ Préparation civile (mairie)</div>
+    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">️ Préparation civile (mairie)</div>
 
-    <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;">📄 Documents à fournir</div>
+    <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;"> Documents à fournir</div>
     <ul style="margin:0 0 16px;padding-left:18px;font-size:13px;color:${tx};line-height:1.8;">
       ${d.documents.map(x=>`<li>${h(x)}</li>`).join('')}
     </ul>
 
-    <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;">📅 Étapes & calendrier</div>
+    <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;"> Étapes & calendrier</div>
     ${d.etapes.map((e,i)=>`<div class="card" style="padding:10px 12px;margin-bottom:6px;background:${sf};display:flex;align-items:flex-start;gap:10px;">
       <span style="color:${pk};font-weight:700;flex-shrink:0;font-family:Playfair Display,serif;font-size:14px;">${i+1}.</span>
       <span style="font-size:13px;color:${tx};line-height:1.5;">${h(e)}</span>
     </div>`).join('')}
 
     <div style="background:linear-gradient(135deg,#fff8ec,#fef5e0);padding:14px;border-radius:12px;border:1px solid ${gd}40;margin-top:14px;">
-      <div style="font-family:Playfair Display,serif;font-size:14px;color:${tm};margin-bottom:10px;font-weight:700;">🎤 L'audition à la mairie</div>
+      <div style="font-family:Playfair Display,serif;font-size:14px;color:${tm};margin-bottom:10px;font-weight:700;"> L'audition à la mairie</div>
       <ul style="margin:0;padding-left:18px;font-size:12px;color:${tx};line-height:1.7;">
         ${d['questions-officier'].map(x=>`<li>${h(x)}</li>`).join('')}
       </ul>
@@ -7640,14 +7640,14 @@ function assistPrepCivile(cont){
 function assistPrepReligieuse(cont){
   const saved = ld('assist_religion','catholique');
   const types = [
-    {k:'catholique',l:'⛪ Catholique'},
-    {k:'protestant',l:'✝️ Protestant'},
-    {k:'juif',l:'✡️ Juif'},
-    {k:'musulman',l:'☪️ Musulman'},
-    {k:'orthodoxe',l:'☦️ Orthodoxe'}
+    {k:'catholique',l:' Catholique'},
+    {k:'protestant',l:'️ Protestant'},
+    {k:'juif',l:'️ Juif'},
+    {k:'musulman',l:'️ Musulman'},
+    {k:'orthodoxe',l:'️ Orthodoxe'}
   ];
   cont.innerHTML = `<div class="card" style="padding:16px;">
-    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">⛪ Préparation religieuse</div>
+    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Préparation religieuse</div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
       ${types.map(t=>`<button onclick="sv('assist_religion','${t.k}');assistPrepReligieuse(el('assist-content'));" class="btn-sec" style="font-size:11px;padding:7px 12px;${saved===t.k?'background:'+pk+';color:#fff;border-color:'+pk+';':''}">${t.l}</button>`).join('')}
     </div>
@@ -7668,10 +7668,10 @@ function assistWeddingDay(cont){
   const d = ASSIST_KB.weddingDay;
   const saved = ld('assist_wday_phase','reveil');
   const phases = [
-    {k:'reveil',l:'☀️ Réveil & matin'},
-    {k:'preparatifs',l:'💄 Préparatifs'},
-    {k:'arrivee',l:'🚗 Arrivée cérémonie'},
-    {k:'apres',l:'🌅 Après le mariage'}
+    {k:'reveil',l:'️ Réveil & matin'},
+    {k:'preparatifs',l:' Préparatifs'},
+    {k:'arrivee',l:' Arrivée cérémonie'},
+    {k:'apres',l:' Après le mariage'}
   ];
   cont.innerHTML = `<div class="card" style="padding:16px;">
     <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">⭐ Conseils du jour J</div>
@@ -7694,21 +7694,21 @@ function assistRenderWday(){
 function assistEnfants(cont){
   const d = ASSIST_KB.enfants;
   cont.innerHTML = `<div class="card" style="padding:16px;">
-    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">🧒 Enfants au mariage</div>
+    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Enfants au mariage</div>
 
-    <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;">🎭 Rôles à leur confier</div>
+    <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;"> Rôles à leur confier</div>
     ${d.roles.map(r=>`<div class="card" style="padding:12px;margin-bottom:8px;background:${sf};">
       <div style="font-weight:700;color:${tx};font-size:13px;margin-bottom:4px;">${h(r.nom)}</div>
       <div style="font-size:12px;color:${tm};line-height:1.6;">${h(r.desc)}</div>
     </div>`).join('')}
 
-    <div style="font-size:13px;font-weight:700;color:${pk};margin:18px 0 8px;">🎨 Comment les occuper</div>
+    <div style="font-size:13px;font-weight:700;color:${pk};margin:18px 0 8px;"> Comment les occuper</div>
     <ul style="margin:0 0 16px;padding-left:18px;font-size:13px;color:${tx};line-height:1.8;">
       ${d.occuper.map(x=>`<li>${h(x)}</li>`).join('')}
     </ul>
 
     <div style="background:linear-gradient(135deg,#fff8ec,#fef5e0);padding:14px;border-radius:12px;border:1px solid ${gd}40;">
-      <div style="font-family:Playfair Display,serif;font-size:14px;color:${tm};margin-bottom:10px;font-weight:700;">💡 Conseils pratiques</div>
+      <div style="font-family:Playfair Display,serif;font-size:14px;color:${tm};margin-bottom:10px;font-weight:700;"> Conseils pratiques</div>
       <ul style="margin:0;padding-left:18px;font-size:12px;color:${tx};line-height:1.7;">
         ${d.tips.map(x=>`<li>${h(x)}</li>`).join('')}
       </ul>
@@ -7720,14 +7720,14 @@ function assistEnfants(cont){
 function assistTraditions(cont){
   const saved = ld('assist_region','sud-ouest');
   const regions = [
-    {k:'sud-ouest',l:'🦆 Sud-Ouest'},
-    {k:'bretagne',l:'🦀 Bretagne'},
-    {k:'provence',l:'🌿 Provence'},
-    {k:'alsace',l:'🍷 Alsace'},
-    {k:'corse',l:'🌊 Corse'}
+    {k:'sud-ouest',l:' Sud-Ouest'},
+    {k:'bretagne',l:' Bretagne'},
+    {k:'provence',l:' Provence'},
+    {k:'alsace',l:' Alsace'},
+    {k:'corse',l:' Corse'}
   ];
   cont.innerHTML = `<div class="card" style="padding:16px;">
-    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">🗺️ Traditions régionales</div>
+    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">️ Traditions régionales</div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
       ${regions.map(r=>`<button onclick="sv('assist_region','${r.k}');assistTraditions(el('assist-content'));" class="btn-sec" style="font-size:11px;padding:7px 12px;${saved===r.k?'background:'+pk+';color:#fff;border-color:'+pk+';':''}">${r.l}</button>`).join('')}
     </div>
@@ -7747,7 +7747,7 @@ function assistRenderRegion(){
 function assistEmotion(cont){
   const list = ASSIST_KB.emotion;
   cont.innerHTML = `<div class="card" style="padding:16px;">
-    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:6px;font-weight:700;">💖 Moments-émotion</div>
+    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:6px;font-weight:700;"> Moments-émotion</div>
     <div style="font-size:11px;color:${tl};font-style:italic;margin-bottom:14px;">10 instants à savourer pleinement pour graver le souvenir.</div>
     ${list.map((m,i)=>`<div class="card" style="padding:12px;margin-bottom:8px;background:${sf};display:flex;align-items:flex-start;gap:10px;">
       <span style="color:${pk};font-weight:700;flex-shrink:0;font-family:Playfair Display,serif;font-size:14px;">${i+1}.</span>
@@ -7766,8 +7766,8 @@ function assistProblemes(cont){
     <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:6px;font-weight:700;">🆘 Imprévus du jour J</div>
     <div style="font-size:11px;color:${tl};font-style:italic;margin-bottom:14px;">Anticiper les problèmes courants pour mieux les gérer.</div>
     ${list.map(p=>`<div class="card" style="padding:12px;margin-bottom:8px;background:${sf};">
-      <div style="font-weight:700;color:${rd};font-size:13px;margin-bottom:5px;">❌ ${h(p.pb)}</div>
-      <div style="font-size:12px;color:${tx};line-height:1.6;"><strong style="color:${gn};">✓ Solution :</strong> ${h(p.sol)}</div>
+      <div style="font-weight:700;color:${rd};font-size:13px;margin-bottom:5px;"> ${h(p.pb)}</div>
+      <div style="font-size:12px;color:${tx};line-height:1.6;"><strong style="color:${gn};"> Solution :</strong> ${h(p.sol)}</div>
     </div>`).join('')}
   </div>`;
 }
@@ -7776,14 +7776,14 @@ function assistProblemes(cont){
 function assistChecklistAvant(cont){
   const list = ASSIST_KB.checklistAvant;
   cont.innerHTML = `<div class="card" style="padding:16px;">
-    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:6px;font-weight:700;">✅ Check-list 10 min avant cérémonie</div>
+    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:6px;font-weight:700;"> Check-list 10 min avant cérémonie</div>
     <div style="font-size:11px;color:${tl};font-style:italic;margin-bottom:14px;">La dernière vérification avant le grand moment. Coche au fur et à mesure.</div>
     ${list.map((item,i)=>`<label style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;margin-bottom:6px;background:${sf};border-radius:10px;cursor:pointer;">
       <input type="checkbox" style="margin:3px 0 0;accent-color:${pk};width:16px;height:16px;flex-shrink:0;">
       <span style="font-size:13px;color:${tx};line-height:1.6;">${h(item)}</span>
     </label>`).join('')}
     <div style="margin-top:16px;text-align:center;padding:14px;background:linear-gradient(135deg,#fff8ec,#fef5e0);border-radius:12px;border:1px solid ${gd}40;font-family:Playfair Display,serif;font-style:italic;color:${tm};font-size:14px;">
-      ✨ Profite de cet instant. Tout est prêt.
+       Profite de cet instant. Tout est prêt.
     </div>
   </div>`;
 }
@@ -7970,21 +7970,21 @@ const PLAYLIST_KB = {
 function assistPlaylistAmbi(cont){
   const saved = ld('assist_playlist_moment','cocktail-chill');
   const moments = [
-    {k:'ceremonie-entree',l:'💒 Entrée mariée'},
-    {k:'ceremonie-voeux',l:'💍 Vœux / signature'},
-    {k:'ceremonie-sortie',l:'🎊 Sortie cérémonie'},
-    {k:'cocktail-chill',l:'🥂 Cocktail Chill'},
-    {k:'cocktail-festif',l:'🎉 Cocktail Festif'},
-    {k:'diner',l:'🍽️ Dîner feutré'},
-    {k:'ouverture-bal',l:'💃 Ouverture de bal'},
-    {k:'soiree-dancefloor',l:'🪩 Dancefloor'},
-    {k:'soiree-annees80',l:'🕺 Années 80'},
+    {k:'ceremonie-entree',l:' Entrée mariée'},
+    {k:'ceremonie-voeux',l:' Vœux / signature'},
+    {k:'ceremonie-sortie',l:' Sortie cérémonie'},
+    {k:'cocktail-chill',l:' Cocktail Chill'},
+    {k:'cocktail-festif',l:' Cocktail Festif'},
+    {k:'diner',l:'️ Dîner feutré'},
+    {k:'ouverture-bal',l:' Ouverture de bal'},
+    {k:'soiree-dancefloor',l:' Dancefloor'},
+    {k:'soiree-annees80',l:' Années 80'},
     {k:'soiree-francaise',l:'🇫🇷 Française'},
-    {k:'fin-soiree',l:'🌙 Fin de soirée'}
+    {k:'fin-soiree',l:' Fin de soirée'}
   ];
   const list = PLAYLIST_KB[saved] || PLAYLIST_KB['cocktail-chill'];
   cont.innerHTML = `<div class="card" style="padding:16px;">
-    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">🎶 Playlist par ambiance</div>
+    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Playlist par ambiance</div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
       ${moments.map(m=>`<button onclick="sv('assist_playlist_moment','${m.k}');assistPlaylistAmbi(el('assist-content'));" class="btn-sec" style="font-size:11px;padding:7px 12px;${saved===m.k?'background:'+pk+';color:#fff;border-color:'+pk+';':''}">${m.l}</button>`).join('')}
     </div>
@@ -7994,7 +7994,7 @@ function assistPlaylistAmbi(cont){
       ${list.tracks.map(t=>t.replace(/\s*—\s*/g,' - ')).sort((a,b)=>a.localeCompare(b,'fr',{sensitivity:'base'})).map(t=>`<li>${h(t)}</li>`).join('')}
     </ol>
     <div style="margin-top:14px;padding:10px 12px;background:${sf};border-radius:8px;font-size:11px;color:${tm};font-style:italic;">
-      💡 Donne cette playlist à ton DJ ou crée la directement dans ton application de musique préférée.
+       Donne cette playlist à ton DJ ou crée la directement dans ton application de musique préférée.
     </div>
   </div>`;
 }
@@ -8051,7 +8051,7 @@ window.addEventListener('load', async function(){
           </div>
           <div style="background:#fff;border-radius:18px;padding:24px;width:100%;max-width:380px;box-shadow:0 4px 24px rgba(154,40,72,0.12);margin-top:8px;">
             <div style="background:#f0f8ff;border:1px solid #b0d4f0;border-radius:8px;padding:10px 14px;font-family:Lora,serif;font-size:13px;color:#1a5a8a;margin-bottom:16px;text-align:center;">
-              💌 Tu as été invité(e) à rejoindre un espace Weddilya
+               Tu as été invité(e) à rejoindre un espace Weddilya
             </div>
             <label class="lbl">EMAIL</label>
             <input class="inp" id="inv-email" type="email" placeholder="votre@email.com" value="${partnerEmail}" style="margin-bottom:10px;">
@@ -8329,7 +8329,7 @@ function updateCakeEtages(n){
 // Each SVG is a realistic 100x100 illustration used as a Three.js billboard texture
 const DECO_SVG = {
 
-// ── 🌸 FLEURS ─────────────────────────────────────────────────────────────────
+// ──  FLEURS ─────────────────────────────────────────────────────────────────
 'fleurs-fraiches': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
 <defs>
 <radialGradient id="a" cx="38%" cy="30%" r="70%"><stop offset="0%" stop-color="#FFF0F8"/><stop offset="50%" stop-color="#F4A8C0"/><stop offset="100%" stop-color="#C85880"/></radialGradient>
@@ -8413,7 +8413,7 @@ const DECO_SVG = {
 <circle cx="50" cy="88" r="4" fill="#F0B0C8"/>
 </svg>`,
 
-// ── 🍓 FRUITS ────────────────────────────────────────────────────────────────
+// ──  FRUITS ────────────────────────────────────────────────────────────────
 'fruits-rouges': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
 <defs>
 <radialGradient id="fr1" cx="32%" cy="28%" r="68%"><stop offset="0%" stop-color="#FF7070"/><stop offset="60%" stop-color="#DD1020"/><stop offset="100%" stop-color="#990010"/></radialGradient>
@@ -8482,7 +8482,7 @@ const DECO_SVG = {
 <ellipse cx="57" cy="54" rx="6" ry="4" fill="white" opacity="0.22"/>
 </svg>`,
 
-// ── 🍬 PÂTISSERIE ─────────────────────────────────────────────────────────────
+// ──  PÂTISSERIE ─────────────────────────────────────────────────────────────
 'macarons': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
 <defs>
 <radialGradient id="m1" cx="35%" cy="28%" r="65%"><stop offset="0%" stop-color="#FFE0EC"/><stop offset="50%" stop-color="#F0A8C8"/><stop offset="100%" stop-color="#C87098"/></radialGradient>
@@ -8559,7 +8559,7 @@ const DECO_SVG = {
 <circle cx="86" cy="57" r="2.5" fill="white" opacity="0.72"/>
 </svg>`,
 
-// ── 🎀 ACCESSOIRES ─────────────────────────────────────────────────────────────
+// ──  ACCESSOIRES ─────────────────────────────────────────────────────────────
 'ruban': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
 <defs>
 <linearGradient id="r1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FFD0E0"/><stop offset="40%" stop-color="#F090B0"/><stop offset="100%" stop-color="#C85080"/></linearGradient>
@@ -8628,7 +8628,7 @@ const DECO_SVG = {
 // ── DECO CATALOG (grouped categories) ─────────────────────────────────────────
 const DECO_CATALOG = [
   {
-    cat: '🌸 Fleurs', items: [
+    cat: ' Fleurs', items: [
       {id:'rose-rouge',  label:'Rose rouge'},
       {id:'rose-rose',   label:'Rose rosée'},
       {id:'rose-blanche',label:'Rose blanche'},
@@ -8645,7 +8645,7 @@ const DECO_CATALOG = [
     ]
   },
   {
-    cat: '🍓 Fruits', items: [
+    cat: ' Fruits', items: [
       {id:'fraise',        label:'Fraise'},
       {id:'fruits-rouges', label:'Fruits rouges'},
       {id:'figues',        label:'Figues'},
@@ -8653,14 +8653,14 @@ const DECO_CATALOG = [
     ]
   },
   {
-    cat: '🍬 Pâtisserie', items: [
+    cat: ' Pâtisserie', items: [
       {id:'macarons',  label:'Macarons'},
       {id:'meringues', label:'Meringues'},
       {id:'perles',    label:'Perles'},
     ]
   },
   {
-    cat: '🎀 Accessoires', items: [
+    cat: ' Accessoires', items: [
       {id:'ruban',      label:'Ruban'},
       {id:'dentelle',   label:'Dentelle'},
       {id:'feuille-or', label:'Feuille d\'or'},
@@ -9789,7 +9789,7 @@ function buildCake3D(data){
 
   // ── REALISTIC 3D DECORATIONS ─────────────────────────────────────────────────
   // All decos built UPRIGHT: spread in XY plane, depth on +Z axis
-  // So when rotation.y=ang, they face outward from cylinder ✓
+  // So when rotation.y=ang, they face outward from cylinder 
 
   function _petal(T,col,scaleX,scaleY,scaleZ,px,py,pz,rx,ry,rz){
     // px/py/pz = position, rx/ry/rz = local rotation
@@ -10395,7 +10395,7 @@ function toggleHandMode3D(){
   if(btn){
     btn.style.background=_3handMode?'linear-gradient(135deg,#a060c0,#7040a0)':'#fff';
     btn.style.color=_3handMode?'#fff':'#7040a0';
-    btn.textContent=_3handMode?'✋ Main ON':'✋ Main';
+    btn.textContent=_3handMode?' Main ON':' Main';
   }
   // En mode main, désactiver l'auto-rotation
   if(_3handMode)_3auto=false;
@@ -10410,29 +10410,29 @@ function resetPan3D(){
 const _decoTextureCache={};
 // Map deco IDs to emoji sequences (for ultra-realistic native rendering)
 const DECO_EMOJI={
-  'rose-rouge':'🌹',
-  'rose-rose':'🌷',
-  'rose-blanche':'🤍',
-  'pivoine':'🌸',
-  'eucalyptus':'🌿',
-  'lagurus':'🌾',
-  'hortensia':'💐',
-  'orchidee':'🌺',
-  'gypsophile':'🤍',
-  'renoncule':'🌼',
-  'camelia':'🌷',
-  'lavande':'💜',
-  'dahlia':'🌻',
-  'fraise':'🍓',
-  'fruits-rouges':'🫐',
-  'figues':'🟣',
-  'agrumes':'🍋',
-  'macarons':'🧁',
-  'meringues':'🍦',
-  'perles':'⚪',
-  'ruban':'🎀',
-  'dentelle':'🤍',
-  'feuille-or':'🟡'
+  'rose-rouge':'',
+  'rose-rose':'',
+  'rose-blanche':'',
+  'pivoine':'',
+  'eucalyptus':'',
+  'lagurus':'',
+  'hortensia':'',
+  'orchidee':'',
+  'gypsophile':'',
+  'renoncule':'',
+  'camelia':'',
+  'lavande':'',
+  'dahlia':'',
+  'fraise':'',
+  'fruits-rouges':'',
+  'figues':'',
+  'agrumes':'',
+  'macarons':'',
+  'meringues':'',
+  'perles':'',
+  'ruban':'',
+  'dentelle':'',
+  'feuille-or':''
 };
 
 function _getDecoTexture(T,svgId){
@@ -13214,7 +13214,7 @@ function _highlightDeco(idx){
 // ─────────────────────────────────────────────────────────────────────────
 // INLINE OPTIONS PANEL — affiché sur le canvas 3D au-dessus de la déco
 // sélectionnée, contient taille / orientation / couleur / inclinaison.
-// Le menu du bas n'affiche plus que le nom + bouton ✎ pour éditer.
+// Le menu du bas n'affiche plus que le nom + bouton  pour éditer.
 // ─────────────────────────────────────────────────────────────────────────
 function _ensureDecoInlinePanel(){
   let panel = document.getElementById('deco-inline-panel');
@@ -13255,7 +13255,7 @@ function showDecoInlinePanel(idx){
   if(!panel) return;
   const allItems = DECO_CATALOG.flatMap(c=>c.items);
   const item = allItems.find(x=>x.id===d.id)||{label:d.id};
-  const emo = DECO_EMOJI[d.id]||'🌸';
+  const emo = DECO_EMOJI[d.id]||'';
   const colCfg = DECO_COLOR_KEYS[d.id];
 
   // Construction du HTML : entête, couleur (optionnel), 2 sliders compacts
@@ -13271,7 +13271,7 @@ function showDecoInlinePanel(idx){
     const curCol = d[colCfg.key] || colCfg.def;
     html +=
       '<div style="display:flex;align-items:center;gap:5px;margin-bottom:6px;background:#fef9ff;border:1px solid #ecd6e6;border-radius:7px;padding:4px 6px;">'+
-        '<span style="font-size:10px;color:#7a3a52;font-weight:600;flex:1;">🎨 Couleur</span>'+
+        '<span style="font-size:10px;color:#7a3a52;font-weight:600;flex:1;"> Couleur</span>'+
         '<input type="color" value="'+curCol+'" oninput="updateDecoProp('+idx+',\''+colCfg.key+'\',this.value);_refreshDecoInlinePanelLabels('+idx+');" style="width:28px;height:22px;border:1.5px solid #e8c0d0;border-radius:5px;cursor:pointer;padding:0;">'+
       '</div>';
   }
@@ -13290,13 +13290,13 @@ function showDecoInlinePanel(idx){
   // Uniquement Taille (zoom) et Rotation propre (spin). Position autour du gâteau,
   // hauteur, inclinaison et étage se manipulent à la main directement sur le gâteau.
   html += _slider('⊕','Taille','scale',0.4,2.5,0.05, d.scale||1.0, v=>Math.round(v*100)+'%','#a060c0');
-  html += _slider('⟳','Rotation','spin',-180,180,5, d.spin||0, v=>Math.round(v)+'°','#c060a0');
+  html += _slider('','Rotation','spin',-180,180,5, d.spin||0, v=>Math.round(v)+'°','#c060a0');
 
   // Boutons d'action
   html +=
     '<div style="display:flex;gap:5px;margin-top:7px;padding-top:6px;border-top:1px solid #f0d8e0;">'+
-      '<button onclick="removeDecoCake('+idx+');hideDecoInlinePanel();" style="flex:1;background:#fff0f0;color:#c43a3a;border:1px solid #ffccd0;border-radius:7px;padding:5px;font-size:10px;cursor:pointer;font-family:Lora,serif;font-weight:600;">🗑️</button>'+
-      '<button onclick="hideDecoInlinePanel()" style="flex:1;background:linear-gradient(135deg,#c9a84c,#a8872e);color:#fff;border:none;border-radius:7px;padding:5px;font-size:10px;cursor:pointer;font-family:Lora,serif;font-weight:700;">✓ OK</button>'+
+      '<button onclick="removeDecoCake('+idx+');hideDecoInlinePanel();" style="flex:1;background:#fff0f0;color:#c43a3a;border:1px solid #ffccd0;border-radius:7px;padding:5px;font-size:10px;cursor:pointer;font-family:Lora,serif;font-weight:600;">️</button>'+
+      '<button onclick="hideDecoInlinePanel()" style="flex:1;background:linear-gradient(135deg,#c9a84c,#a8872e);color:#fff;border:none;border-radius:7px;padding:5px;font-size:10px;cursor:pointer;font-family:Lora,serif;font-weight:700;"> OK</button>'+
     '</div>';
 
   panel.innerHTML = html;
@@ -13601,7 +13601,7 @@ function initDecoInteraction(canvas){
       _3isDragging=true;
       canvas.style.outline='3px solid #c9a84c';
       const hint=document.getElementById('deco-drag-hint');
-      if(hint){hint.style.display='block';hint.textContent='✦ Glisse sur le gâteau pour placer';}
+      if(hint){hint.style.display='block';hint.textContent=' Glisse sur le gâteau pour placer';}
       // Cacher le panel inline pendant le drag
       hideDecoInlinePanel();
       _highlightDeco(_3dragDecoIdx);
@@ -13682,7 +13682,7 @@ function initDecoInteraction(canvas){
       canvas.style.cursor='crosshair';
       canvas.style.outline='3px solid #c9a84c';
       const hint=document.getElementById('deco-drag-hint');
-      if(hint){hint.style.display='block';hint.textContent='✦ Glisse sur le gâteau pour placer';}
+      if(hint){hint.style.display='block';hint.textContent=' Glisse sur le gâteau pour placer';}
       hideDecoInlinePanel();
     }
     if(_3dragDecoIdx===null)return;
@@ -13720,7 +13720,7 @@ function startDragDeco(idx){
   const canvas=document.getElementById('cake-canvas');
   if(canvas){canvas.style.cursor='crosshair';canvas.style.outline='3px solid #c9a84c';}
   const hint=document.getElementById('deco-drag-hint');
-  if(hint){hint.style.display='block';hint.textContent='✦ Touche ou glisse sur le gâteau pour placer';}
+  if(hint){hint.style.display='block';hint.textContent=' Touche ou glisse sur le gâteau pour placer';}
   // Scroll up to canvas
   canvas&&canvas.scrollIntoView({behavior:'smooth',block:'center'});
 }
@@ -13748,7 +13748,7 @@ function setup3DScene(data){
       console.error('Three.js error:',err);
       const msg=document.createElement('div');
       msg.style.cssText='color:#c9a84c;text-align:center;padding:20px;font-size:13px;font-family:Lora,serif;';
-      msg.innerHTML='⚠️ Erreur 3D: '+err.message;
+      msg.innerHTML='️ Erreur 3D: '+err.message;
       if(canvas.parentNode)canvas.parentNode.insertBefore(msg,canvas.nextSibling);
     }
   };
@@ -14121,7 +14121,7 @@ function renderCake(){
 
     <!-- CONTRÔLES -->
     <div class="card" style="padding:14px;margin-bottom:14px;">
-      <div style="font-size:13px;color:${tm};margin-bottom:12px;font-weight:700;border-bottom:1.5px solid ${br};padding-bottom:6px;">🎂 Forme du gâteau</div>
+      <div style="font-size:13px;color:${tm};margin-bottom:12px;font-weight:700;border-bottom:1.5px solid ${br};padding-bottom:6px;"> Forme du gâteau</div>
 
       ${row('Nombre d\'étages',
         `<div style="display:flex;gap:6px;">
@@ -14148,7 +14148,7 @@ function renderCake(){
     </div>
 
     <div class="card" style="padding:14px;margin-bottom:14px;">
-      <div style="font-size:13px;color:${tm};margin-bottom:12px;font-weight:700;border-bottom:1.5px solid ${br};padding-bottom:6px;">💐 Décorations</div>
+      <div style="font-size:13px;color:${tm};margin-bottom:12px;font-weight:700;border-bottom:1.5px solid ${br};padding-bottom:6px;"> Décorations</div>
 
       ${row('Fleurs',
         `<select class="inp" onchange="updCakeCfg('fleur',this.value)">
@@ -14175,7 +14175,7 @@ function renderCake(){
     </div>
 
     <div class="card" style="padding:14px;margin-bottom:14px;">
-      <div style="font-size:13px;color:${tm};margin-bottom:12px;font-weight:700;border-bottom:1.5px solid ${br};padding-bottom:6px;">🍰 Intérieur & finitions</div>
+      <div style="font-size:13px;color:${tm};margin-bottom:12px;font-weight:700;border-bottom:1.5px solid ${br};padding-bottom:6px;"> Intérieur & finitions</div>
 
       ${row('Intérieur du gâteau',
         `<select class="inp" onchange="updCakeCfg('interieur',this.value)">
@@ -14189,7 +14189,7 @@ function renderCake(){
     </div>
 
     <div class="card" style="padding:12px 14px;background:linear-gradient(135deg,${sf},#fff);font-size:11px;color:${tl};font-style:italic;line-height:1.5;">
-      💡 <strong>Astuce :</strong> Tu peux montrer cet aperçu à ton pâtissier pour qu'il puisse réaliser ton gâteau de mariage. Toute la configuration est sauvegardée automatiquement.
+       <strong>Astuce :</strong> Tu peux montrer cet aperçu à ton pâtissier pour qu'il puisse réaliser ton gâteau de mariage. Toute la configuration est sauvegardée automatiquement.
     </div>
   `;
 }
@@ -14217,7 +14217,7 @@ function renderCake3D(){
   const eOpts=[1,2,3,4,5].map(n=>'<option value="'+n+'" '+(data.etages===n?'selected':'')+'>'+n+' étage'+(n>1?'s':'')+'</option>').join('');
   const fOpts=FORMES_CAKE.map(f=>'<option value="'+f.id+'" '+(data.forme===f.id?'selected':'')+'>'+f.nom+'</option>').join('');
   const hOpts=HAUTEURS_CAKE.map(h=>'<option value="'+h.id+'" '+((data.hauteur||'standard')===h.id?'selected':'')+'>'+h.nom+'</option>').join('');
-  const tOpts=[{v:'aucun',l:'Aucun'},{v:'initiales',l:'💍 Initiales'},{v:'silhouettes',l:'👫 Silhouettes'},{v:'chiffres',l:'📅 Date'}].map(o=>'<option value="'+o.v+'" '+(data.topper===o.v?'selected':'')+'>'+o.l+'</option>').join('');
+  const tOpts=[{v:'aucun',l:'Aucun'},{v:'initiales',l:' Initiales'},{v:'silhouettes',l:' Silhouettes'},{v:'chiffres',l:' Date'}].map(o=>'<option value="'+o.v+'" '+(data.topper===o.v?'selected':'')+'>'+o.l+'</option>').join('');
   const texOpts=TEXTURES_CAKE.map(t=>'<option value="'+t.id+'" '+((data.texture||'lisse')===t.id?'selected':'')+'>'+t.nom+'</option>').join('');
   const dripOpts=DRIP_COLS.map(d=>'<option value="'+d.id+'" '+((data.drip||'aucun')===d.id?'selected':'')+'>'+d.nom+'</option>').join('');
   const effetOpts=EFFETS_CAKE.map(e=>'<option value="'+e.id+'" '+((data.effet||'aucun')===e.id?'selected':'')+'>'+e.nom+'</option>').join('');
@@ -14231,7 +14231,7 @@ function renderCake3D(){
       '<div style="font-size:11px;font-weight:700;color:#b07a90;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">'+cat.cat+'</div>'+
       '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
     cat.items.forEach(item=>{
-      const emo=DECO_EMOJI[item.id]||'🌸';
+      const emo=DECO_EMOJI[item.id]||'';
       decoPickerHTML+='<div onclick="addDecoCake(\''+item.id+'\')" style="display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:8px 6px;border:1.5px solid #f5d5e0;border-radius:10px;background:#fff;min-width:58px;transition:transform .12s;" '+
         'ontouchstart="this.style.transform=\'scale(0.92)\';this.style.background=\'#fef8fa\'" ontouchend="this.style.transform=\'\';this.style.background=\'#fff\'">'+
         '<span style="font-size:32px;line-height:1;">'+emo+'</span>'+
@@ -14248,12 +14248,12 @@ function renderCake3D(){
   if(decos.length>0){
     decoListHTML='<div style="margin-top:12px;display:flex;flex-direction:column;gap:6px;">'+
       '<div style="font-size:11px;color:#a07090;font-style:italic;margin-bottom:2px;">'+
-      '💡 Touche une décoration sur le gâteau pour ouvrir ses options'+
+      ' Touche une décoration sur le gâteau pour ouvrir ses options'+
       '</div>';
     decos.forEach((d,idx)=>{
       const allItems=DECO_CATALOG.flatMap(c=>c.items);
       const item=allItems.find(x=>x.id===d.id)||{label:d.id};
-      const emoI=DECO_EMOJI[d.id]||'🌸';
+      const emoI=DECO_EMOJI[d.id]||'';
       const tierLabel = data.etages>1 ? (' · E'+((d.tier||0)+1)) : '';
       decoListHTML+=
         '<div style="background:#fef9ff;border:1.5px solid #e8d0e8;border-radius:10px;padding:6px 8px;display:flex;align-items:center;gap:8px;">'+
@@ -14265,12 +14265,12 @@ function renderCake3D(){
             '</div>'+
           '</div>'+
           '<button onclick="_highlightDeco('+idx+');showDecoInlinePanel('+idx+');document.getElementById(\'cake-canvas\').scrollIntoView({behavior:\'smooth\',block:\'center\'});" '+
-            'style="background:#fdf6e3;border:1.5px solid #c9a84c;color:#8a6010;border-radius:8px;padding:5px 9px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;">✎ Modifier</button>'+
+            'style="background:#fdf6e3;border:1.5px solid #c9a84c;color:#8a6010;border-radius:8px;padding:5px 9px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;"> Modifier</button>'+
           '<button onclick="removeDecoCake('+idx+')" '+
-            'style="background:#fff0f0;border:1px solid #ffccd0;color:#c43a3a;border-radius:8px;padding:5px 9px;font-size:13px;cursor:pointer;">✕</button>'+
+            'style="background:#fff0f0;border:1px solid #ffccd0;color:#c43a3a;border-radius:8px;padding:5px 9px;font-size:13px;cursor:pointer;"></button>'+
         '</div>';
     });
-    decoListHTML+='<button onclick="clearDecosCake()" style="background:#fff0f0;color:#c43a3a;border:1.5px solid #ffccd0;border-radius:10px;padding:7px;font-size:12px;cursor:pointer;width:100%;margin-top:4px;">🗑️ Tout effacer</button></div>';
+    decoListHTML+='<button onclick="clearDecosCake()" style="background:#fff0f0;color:#c43a3a;border:1.5px solid #ffccd0;border-radius:10px;padding:7px;font-size:12px;cursor:pointer;width:100%;margin-top:4px;">️ Tout effacer</button></div>';
   }
 
   // ── LAYERS HTML (étages) ──────────────────────────────────────────────────────
@@ -14301,28 +14301,28 @@ function renderCake3D(){
 
   // ── PAGE HTML ────────────────────────────────────────────────────────────────
   page.innerHTML=
-    '<div style="font-family:Playfair Display,serif;font-size:19px;color:#3e1828;text-align:center;margin-bottom:14px;font-style:italic;">✨ Personnalise ton gâteau de mariage</div>'+
+    '<div style="font-family:Playfair Display,serif;font-size:19px;color:#3e1828;text-align:center;margin-bottom:14px;font-style:italic;"> Personnalise ton gâteau de mariage</div>'+
 
     // 3D Canvas
     '<div style="background:linear-gradient(160deg,#f8f4f0,#fff5f0);border-radius:20px;margin-bottom:14px;overflow:hidden;box-shadow:0 4px 24px rgba(180,120,100,0.15);border:1.5px solid #f0e0d8;position:relative;">'+
       '<canvas id="cake-canvas" style="width:100%;height:370px;display:block;touch-action:none;cursor:grab;"></canvas>'+
       '<div id="deco-drag-hint" style="display:none;position:absolute;bottom:36px;left:10px;max-width:62%;background:rgba(201,168,76,0.94);color:#fff;padding:7px 11px;border-radius:10px;font-size:11px;font-family:Lora,serif;pointer-events:none;box-shadow:0 3px 12px rgba(120,80,40,0.25);line-height:1.3;"></div>'+
-      '<div style="position:absolute;bottom:10px;left:0;right:0;text-align:center;font-size:11px;color:rgba(201,168,76,0.75);pointer-events:none;font-family:Lora,serif;font-style:italic;">✦ Glisse pour tourner · Pince pour zoomer</div>'+
+      '<div style="position:absolute;bottom:10px;left:0;right:0;text-align:center;font-size:11px;color:rgba(201,168,76,0.75);pointer-events:none;font-family:Lora,serif;font-style:italic;"> Glisse pour tourner · Pince pour zoomer</div>'+
       '<div style="position:absolute;top:10px;right:10px;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;max-width:240px;">'+
         '<button onclick="toggleAutoRot3D()" id="btn-autorot" style="background:linear-gradient(135deg,#c9a84c,#a8872e);border:none;border-radius:20px;color:#fff;padding:5px 11px;font-size:10px;font-family:Lora,serif;cursor:pointer;box-shadow:0 2px 8px rgba(180,140,40,0.3);">⏸ Rotation</button>'+
-        '<button onclick="toggleHandMode3D()" id="btn-hand" style="background:#fff;border:1.5px solid #a060c0;border-radius:20px;color:#7040a0;padding:5px 11px;font-size:10px;font-family:Lora,serif;cursor:pointer;font-weight:700;">✋ Main</button>'+
-        '<button onclick="exportCakePNG()" style="background:linear-gradient(135deg,#c9a84c,#a8872e);border:none;border-radius:20px;color:#fff;padding:5px 11px;font-size:10px;font-family:Lora,serif;cursor:pointer;box-shadow:0 2px 8px rgba(180,140,40,0.3);">📸 PNG</button>'+
-        '<button onclick="newCakeDesign()" style="background:#fff;border:1.5px solid #c9a84c;border-radius:20px;color:#8a6010;padding:5px 11px;font-size:10px;font-family:Lora,serif;cursor:pointer;font-weight:700;">✨ Nouveau</button>'+
-        '<button onclick="promptSaveCakeSlot()" style="background:linear-gradient(135deg,#d4607a,#b04060);border:none;border-radius:20px;color:#fff;padding:5px 11px;font-size:10px;font-family:Lora,serif;cursor:pointer;font-weight:700;box-shadow:0 2px 8px rgba(180,60,100,0.3);">💾 Sauver</button>'+
+        '<button onclick="toggleHandMode3D()" id="btn-hand" style="background:#fff;border:1.5px solid #a060c0;border-radius:20px;color:#7040a0;padding:5px 11px;font-size:10px;font-family:Lora,serif;cursor:pointer;font-weight:700;"> Main</button>'+
+        '<button onclick="exportCakePNG()" style="background:linear-gradient(135deg,#c9a84c,#a8872e);border:none;border-radius:20px;color:#fff;padding:5px 11px;font-size:10px;font-family:Lora,serif;cursor:pointer;box-shadow:0 2px 8px rgba(180,140,40,0.3);"> PNG</button>'+
+        '<button onclick="newCakeDesign()" style="background:#fff;border:1.5px solid #c9a84c;border-radius:20px;color:#8a6010;padding:5px 11px;font-size:10px;font-family:Lora,serif;cursor:pointer;font-weight:700;"> Nouveau</button>'+
+        '<button onclick="promptSaveCakeSlot()" style="background:linear-gradient(135deg,#d4607a,#b04060);border:none;border-radius:20px;color:#fff;padding:5px 11px;font-size:10px;font-family:Lora,serif;cursor:pointer;font-weight:700;box-shadow:0 2px 8px rgba(180,60,100,0.3);"> Sauver</button>'+
       '</div>'+
     '</div>'+
 
     // Décorations
     '<div class="card" style="padding:14px;margin-bottom:10px;">'+
-      '<div style="font-family:Playfair Display,serif;font-size:16px;color:#3e1828;margin-bottom:8px;">🎨 Décorations — Clique pour ajouter, puis glisse sur le gâteau</div>'+
+      '<div style="font-family:Playfair Display,serif;font-size:16px;color:#3e1828;margin-bottom:8px;"> Décorations — Clique pour ajouter, puis glisse sur le gâteau</div>'+
       '<div style="background:#fff8f0;border:1.5px solid #f0d8c8;border-radius:10px;padding:8px;margin-bottom:8px;font-size:11px;color:#a07060;line-height:1.5;">'+
-      '👆 <b>Ajouter</b> : clique sur une décoration ci-dessous<br>'+
-      '🖱️ <b>Placer</b> : glisse la décoration directement sur le gâteau 3D'+
+      ' <b>Ajouter</b> : clique sur une décoration ci-dessous<br>'+
+      '️ <b>Placer</b> : glisse la décoration directement sur le gâteau 3D'+
       '</div>'+
       '<div style="display:flex;flex-wrap:wrap;gap:6px;">'+decoPickerHTML+'</div>'+
       decoListHTML+
@@ -14330,7 +14330,7 @@ function renderCake3D(){
 
     // Structure
     '<div class="card" style="padding:14px;margin-bottom:10px;">'+
-      '<div style="font-family:Playfair Display,serif;font-size:16px;color:#3e1828;margin-bottom:12px;">🎂 Structure</div>'+
+      '<div style="font-family:Playfair Display,serif;font-size:16px;color:#3e1828;margin-bottom:12px;"> Structure</div>'+
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px;">'+
         '<div><label class="lbl">Nombre d\'étages</label><select class="inp" onchange="updateCakeEtages(this.value)">'+eOpts+'</select></div>'+
         '<div><label class="lbl">Forme</label><select class="inp" onchange="updateCakeProp(\'forme\',this.value)">'+fOpts+'</select></div>'+
@@ -14341,7 +14341,7 @@ function renderCake3D(){
 
     // Finitions & effets — boutons visuels avec contraintes texture/effet
     '<div class="card" style="padding:14px;margin-bottom:10px;">'+
-      '<div style="font-family:Playfair Display,serif;font-size:16px;color:#3e1828;margin-bottom:12px;">✨ Finitions & effets</div>'+
+      '<div style="font-family:Playfair Display,serif;font-size:16px;color:#3e1828;margin-bottom:12px;"> Finitions & effets</div>'+
 
       // Textures du glaçage
       '<div style="margin-bottom:14px;">'+
@@ -14388,7 +14388,7 @@ function renderCake3D(){
 
       // Drip cake
       '<div>'+
-      '<label class="lbl">🍫 Drip cake (coulures)</label>'+
+      '<label class="lbl"> Drip cake (coulures)</label>'+
       '<div style="display:flex;flex-wrap:wrap;gap:6px;">'+
       DRIP_COLS.map(function(d){
         const sel=(data.drip||'aucun')===d.id;
@@ -14417,7 +14417,7 @@ function renderCake3D(){
       if(tt==='initiales'){placeholder='Ex: M & J';labelText='Initiales';showText=true;}
       else if(tt==='chiffres'){placeholder='Ex: 2027';labelText='Date';showText=true;}
       return '<div class="card" style="padding:14px;margin-bottom:10px;">'+
-        '<div style="font-family:Playfair Display,serif;font-size:16px;color:#3e1828;margin-bottom:12px;">💍 Topper</div>'+
+        '<div style="font-family:Playfair Display,serif;font-size:16px;color:#3e1828;margin-bottom:12px;"> Topper</div>'+
         '<div style="margin-bottom:'+(showText?'8':'0')+'px;"><label class="lbl">Type</label><select class="inp" onchange="updateCakeProp(\'topper\',this.value)">'+tOpts+'</select></div>'+
         (showText?('<div><label class="lbl">'+labelText+'</label><input class="inp" type="text" value="'+h(data.topperText)+'" placeholder="'+placeholder+'" oninput="updateCakeTopperText(this.value)"></div>'):'')+
       '</div>';
@@ -14425,7 +14425,7 @@ function renderCake3D(){
 
     // Taille & portions
     '<div class="card" style="padding:14px;margin-bottom:10px;">'+
-      '<div style="font-family:Playfair Display,serif;font-size:16px;color:#3e1828;margin-bottom:12px;">📏 Taille & Portions</div>'+
+      '<div style="font-family:Playfair Display,serif;font-size:16px;color:#3e1828;margin-bottom:12px;"> Taille & Portions</div>'+
       '<div style="margin-bottom:8px;"><label class="lbl">Nombre d\'invités</label>'+
       '<input class="inp" type="number" min="10" max="500" value="'+(data.invites||80)+'" oninput="updateCakeProp(\'invites\',parseInt(this.value)||80)"></div>'+
       '<div style="background:linear-gradient(135deg,#fef9f0,#fdf4e8);border:1.5px solid #e8c97a;border-radius:12px;padding:12px;text-align:center;">'+
@@ -14447,7 +14447,7 @@ function renderCake3D(){
       const formeLabel=data.forme==='ronde'?'Ronde':data.forme==='carree'?'Carrée':data.forme==='hexa'?'Hexagonale':data.forme||'Ronde';
       const hauteurLabel=data.hauteur==='haut'?'Haut':data.hauteur==='mini'?'Mini':'Standard';
       let recapHtml='<div class="card" style="padding:14px;margin-bottom:10px;">'+
-        '<div style="font-family:Playfair Display,serif;font-size:16px;color:#3e1828;margin-bottom:8px;">📋 Récapitulatif</div>';
+        '<div style="font-family:Playfair Display,serif;font-size:16px;color:#3e1828;margin-bottom:8px;"> Récapitulatif</div>';
 
       // Forme + nombre étages + hauteur
       recapHtml+='<div style="background:#fdf8f4;border:1px solid #f0e0d0;border-radius:10px;padding:10px;margin-bottom:10px;font-size:12px;color:#6e3a52;line-height:1.7;">'+
@@ -14471,7 +14471,7 @@ function renderCake3D(){
 
       // Finitions
       recapHtml+='<div style="background:#fef9ff;border:1px solid #e8d0e8;border-radius:10px;padding:10px;margin-top:10px;font-size:12px;color:#6e3a52;line-height:1.7;">'+
-        '<div style="font-weight:700;color:#a060a0;margin-bottom:4px;">✨ Finitions & effets</div>'+
+        '<div style="font-weight:700;color:#a060a0;margin-bottom:4px;"> Finitions & effets</div>'+
         '<div><b>Texture :</b> '+(texInf?texInf.nom:'Lisse')+'</div>'+
         '<div><b>Effet :</b> '+(efInf?efInf.nom:'Aucun')+
          ((data.effet&&data.effet!=='aucun')?(' <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+(data.couleurEffet||'#7E3FAA')+';vertical-align:middle;margin-left:4px;border:1px solid rgba(0,0,0,0.15);"></span>'):'')+'</div>'+
@@ -14481,7 +14481,7 @@ function renderCake3D(){
 
       // Topper
       recapHtml+='<div style="background:#fdf8f0;border:1px solid #f0e0c0;border-radius:10px;padding:10px;margin-top:8px;font-size:12px;color:#6e3a52;line-height:1.7;">'+
-        '<div style="font-weight:700;color:#8a6010;margin-bottom:4px;">💍 Topper</div>'+
+        '<div style="font-weight:700;color:#8a6010;margin-bottom:4px;"> Topper</div>'+
         '<div>'+topperLabel+'</div>'+
         '</div>';
 
@@ -14497,7 +14497,7 @@ function renderCake3D(){
         decoNames.forEach(n=>{counts[n]=(counts[n]||0)+1;});
         const decoSummary=Object.keys(counts).map(n=>n+(counts[n]>1?' ×'+counts[n]:'')).join(', ');
         recapHtml+='<div style="background:#fef0f4;border:1px solid #f0c8d4;border-radius:10px;padding:10px;margin-top:8px;font-size:12px;color:#6e3a52;line-height:1.7;">'+
-          '<div style="font-weight:700;color:#c43a6e;margin-bottom:4px;">🌸 Décorations ('+decoCount+')</div>'+
+          '<div style="font-weight:700;color:#c43a6e;margin-bottom:4px;"> Décorations ('+decoCount+')</div>'+
           '<div>'+decoSummary+'</div>'+
           '</div>';
       }
@@ -14508,15 +14508,15 @@ function renderCake3D(){
 
     // ── DESSINS SAUVEGARDÉS ─────────────────────────────────────────────────────
     '<div class="card" style="padding:14px;margin-bottom:10px;">'+
-      '<div style="font-family:Playfair Display,serif;font-size:16px;color:#3e1828;margin-bottom:4px;">🎨 Dessins sauvegardés</div>'+
-      '<div style="font-size:11px;color:#b07a90;margin-bottom:12px;">Jusqu\'à 3 designs · Appuie sur 💾 Sauver pour enregistrer</div>'+
+      '<div style="font-family:Playfair Display,serif;font-size:16px;color:#3e1828;margin-bottom:4px;"> Dessins sauvegardés</div>'+
+      '<div style="font-size:11px;color:#b07a90;margin-bottom:12px;">Jusqu\'à 3 designs · Appuie sur  Sauver pour enregistrer</div>'+
       [0,1,2].map(function(i){
         const s=slots[i];
         if(!s){
           return '<div style="border:1.5px dashed #f0d5de;border-radius:14px;padding:16px;text-align:center;margin-bottom:8px;background:#fefbfc;">'+
-            '<div style="font-size:28px;margin-bottom:6px;">🎂</div>'+
+            '<div style="font-size:28px;margin-bottom:6px;"></div>'+
             '<div style="font-size:12px;color:#c9a0b0;margin-bottom:10px;">Emplacement '+(i+1)+' — vide</div>'+
-            '<button onclick="saveCakeSlot('+i+')" style="background:linear-gradient(135deg,#c9a84c,#a8872e);color:#fff;border:none;border-radius:10px;padding:8px 18px;font-size:12px;cursor:pointer;font-family:Lora,serif;font-weight:700;">💾 Sauver le design actuel</button>'+
+            '<button onclick="saveCakeSlot('+i+')" style="background:linear-gradient(135deg,#c9a84c,#a8872e);color:#fff;border:none;border-radius:10px;padding:8px 18px;font-size:12px;cursor:pointer;font-family:Lora,serif;font-weight:700;"> Sauver le design actuel</button>'+
           '</div>';
         }
         // Slot has data — show rich preview
@@ -14549,7 +14549,7 @@ function renderCake3D(){
           '</div>'+
           '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;">'+
             '<button onclick="loadCakeSlot('+i+')" style="background:linear-gradient(135deg,#d4607a,#b04060);color:#fff;border:none;border-radius:10px;padding:9px;font-size:12px;cursor:pointer;font-family:Lora,serif;font-weight:700;">↩ Charger</button>'+
-            '<button onclick="deleteCakeSlot('+i+')" style="background:#fff;color:#c43a3a;border:1.5px solid #f0c0c0;border-radius:10px;padding:9px;font-size:12px;cursor:pointer;font-family:Lora,serif;font-weight:700;">🗑️ Supprimer</button>'+
+            '<button onclick="deleteCakeSlot('+i+')" style="background:#fff;color:#c43a3a;border:1.5px solid #f0c0c0;border-radius:10px;padding:9px;font-size:12px;cursor:pointer;font-family:Lora,serif;font-weight:700;">️ Supprimer</button>'+
           '</div>'+
         '</div>';
       }).join('')+
@@ -14557,14 +14557,14 @@ function renderCake3D(){
 
     // Commande pâtissier
     '<div class="card" style="padding:14px;margin-bottom:10px;">'+
-      '<div style="font-family:Playfair Display,serif;font-size:16px;color:#3e1828;margin-bottom:12px;">📩 Envoyer au pâtissier</div>'+
+      '<div style="font-family:Playfair Display,serif;font-size:16px;color:#3e1828;margin-bottom:12px;"> Envoyer au pâtissier</div>'+
       '<div style="margin-bottom:8px;"><label class="lbl">Votre nom</label><input class="inp" type="text" id="order-name" value="'+(data.orderName||'')+'" placeholder="Marine Dupont" oninput="updateCakeProp(\'orderName\',this.value)"></div>'+
       '<div style="margin-bottom:8px;"><label class="lbl">Date du mariage</label><input class="inp" type="date" id="order-date" value="'+(data.orderDate||'')+'" oninput="updateCakeProp(\'orderDate\',this.value)"></div>'+
       '<div style="margin-bottom:12px;"><label class="lbl">Lieu de réception</label><input class="inp" type="text" id="order-lieu" value="'+(data.orderLieu||'')+'" placeholder="Château de Fontainebleau" oninput="updateCakeProp(\'orderLieu\',this.value)"></div>'+
-      '<button onclick="sendCakeOrder()" style="background:linear-gradient(135deg,#d4607a,#b04060);color:#fff;border:none;border-radius:14px;padding:14px;font-size:14px;font-weight:700;font-family:Playfair Display,serif;cursor:pointer;width:100%;box-shadow:0 4px 15px rgba(180,60,100,0.3);">💌 Envoyer au pâtissier</button>'+
+      '<button onclick="sendCakeOrder()" style="background:linear-gradient(135deg,#d4607a,#b04060);color:#fff;border:none;border-radius:14px;padding:14px;font-size:14px;font-weight:700;font-family:Playfair Display,serif;cursor:pointer;width:100%;box-shadow:0 4px 15px rgba(180,60,100,0.3);"> Envoyer au pâtissier</button>'+
       '<div style="text-align:center;margin-top:10px;">'+
-      '<button onclick="shareCake(\'whatsapp\')" style="background:#25D366;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:12px;cursor:pointer;margin:0 4px;font-family:Lora,serif;">📱 WhatsApp</button>'+
-      '<button onclick="shareCake(\'email\')" style="background:#4A90D9;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:12px;cursor:pointer;margin:0 4px;font-family:Lora,serif;">📧 Email</button>'+
+      '<button onclick="shareCake(\'whatsapp\')" style="background:#25D366;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:12px;cursor:pointer;margin:0 4px;font-family:Lora,serif;"> WhatsApp</button>'+
+      '<button onclick="shareCake(\'email\')" style="background:#4A90D9;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:12px;cursor:pointer;margin:0 4px;font-family:Lora,serif;"> Email</button>'+
       '</div>'+
     '</div>';
 
@@ -14575,7 +14575,7 @@ function renderCake3D(){
     function tryLoad(urls,i){
       if(i>=urls.length){
         const c=document.getElementById('cake-canvas');
-        if(c)c.insertAdjacentHTML('afterend','<div style="color:#c9a84c;text-align:center;padding:20px;font-size:13px;font-family:Lora,serif;">⚠️ Three.js ne peut pas se charger en local.<br>Héberge le fichier sur <strong>GitHub Pages</strong> ou <strong>Netlify</strong>.</div>');
+        if(c)c.insertAdjacentHTML('afterend','<div style="color:#c9a84c;text-align:center;padding:20px;font-size:13px;font-family:Lora,serif;">️ Three.js ne peut pas se charger en local.<br>Héberge le fichier sur <strong>GitHub Pages</strong> ou <strong>Netlify</strong>.</div>');
         return;
       }
       const s=document.createElement('script');
@@ -14688,13 +14688,13 @@ function sendCakeOrder(){
   const date=data.orderDate||'Non renseignée';
   const lieu=data.orderLieu||'Non renseigné';
   const tiers=data.layers.slice(0,data.etages).map((l,i)=>`Étage ${i+1}: ${l.parfum||'Vanille'} - ${l.garniture||'Ganache'}`+(l.regime&&l.regime!=='Aucun'?' ('+l.regime+')':'')).join('%0A');
-  const body=`Bonjour,%0A%0AJe souhaite commander mon gâteau de mariage :%0A%0A👤 Nom : ${encodeURIComponent(name)}%0A📅 Date : ${date}%0A📍 Lieu : ${encodeURIComponent(lieu)}%0A%0A🎂 ${data.etages} étage${data.etages>1?'s':''} - Forme : ${data.forme||'Rond'}%0A${tiers}%0AFinition : ${data.texture||'Lisse'}%0AInvités : ${data.invites||80}%0A%0ACordialement,`;
+  const body=`Bonjour,%0A%0AJe souhaite commander mon gâteau de mariage :%0A%0A Nom : ${encodeURIComponent(name)}%0A Date : ${date}%0A Lieu : ${encodeURIComponent(lieu)}%0A%0A ${data.etages} étage${data.etages>1?'s':''} - Forme : ${data.forme||'Rond'}%0A${tiers}%0AFinition : ${data.texture||'Lisse'}%0AInvités : ${data.invites||80}%0A%0ACordialement,`;
   window.location.href=`mailto:?subject=${encodeURIComponent('Commande gâteau mariage - '+name)}&body=${body}`;
 }
 
 function shareCake(via){
   const data=getCakeData();
-  const txt=`🎂 Mon gâteau de mariage : ${data.etages} étage${data.etages>1?'s':''} ${data.forme||'rond'}, ${(data.layers[0]||{}).parfum||'Vanille'} - créé avec Weddilya ✨`;
+  const txt=` Mon gâteau de mariage : ${data.etages} étage${data.etages>1?'s':''} ${data.forme||'rond'}, ${(data.layers[0]||{}).parfum||'Vanille'} - créé avec Weddilya `;
   if(via==='whatsapp'){window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');}
   else if(via==='email'){window.location.href='mailto:?subject='+encodeURIComponent('Mon gâteau de mariage')+'&body='+encodeURIComponent(txt);}
 }
