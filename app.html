@@ -101,6 +101,10 @@ body{background:#fdf8f5;font-family:Lora,serif;color:#3e1828;min-height:100vh;}
 .inp:focus{border-color:var(--accent);}
 .lbl{display:block;font-size:11px;font-weight:700;letter-spacing:0.8px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;}
 .card{background:var(--card);border:1px solid #f5e8ee;border-radius:14px;margin-bottom:12px;}
+.assist-card{background:#fce8ef;border:none;border-radius:18px;padding:14px 16px;margin-bottom:10px;}
+.assist-card-title{font-family:Lora,serif;font-size:14px;font-weight:700;color:#3e1828;margin-bottom:5px;}
+.assist-card-body{font-size:13px;color:#5a1a30;line-height:1.65;}
+.assist-section-title{font-size:11px;font-weight:700;color:#b84060;text-transform:uppercase;letter-spacing:0.8px;margin:14px 0 8px;}
 .tab-btn{border:none;border-bottom:2px solid transparent;border-radius:0;padding:7px 14px 6px;font-size:12px;font-weight:700;font-family:Lora,serif;cursor:pointer;white-space:nowrap;color:#c8809a;background:transparent !important;transition:all .2s;min-height:36px;}
 .tab-btn.active{background:transparent !important;color:#b84060 !important;border-bottom:2px solid #b84060 !important;box-shadow:none !important;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
@@ -482,49 +486,58 @@ async function loadUserDataFromFirestore(email){
   if(!window.firebaseDB || !window.firebaseLib || !email) return false;
   try{
     const {doc, getDoc, setDoc} = window.firebaseLib;
-    // Utiliser currentUser OU _currentUID stocké
     const uid = (window.firebaseAuth && window.firebaseAuth.currentUser)
       ? window.firebaseAuth.currentUser.uid
       : (window._currentUID || localStorage.getItem('_uid'));
-    if(!uid) return false;
-    const oldDocId = (email||'').toLowerCase().replace(/[^a-z0-9]/gi,'_');
+    if(!uid){ console.warn('[sync] pas d\'UID disponible'); return false; }
 
-    // ── MIGRATION : si doc UID existe mais sans données, chercher l'ancien doc email ──
-    const uidSnap = await getDoc(doc(window.firebaseDB, 'userData', uid));
-    const uidData = uidSnap.exists() ? uidSnap.data() : {};
-    const hasRealData = Object.keys(uidData).some(k => _isSyncKey(k));
+    // ── Lire le doc UID ──
+    let snap = await getDoc(doc(window.firebaseDB, 'userData', uid));
+    let data = snap.exists() ? snap.data() : {};
+
+    // ── Migration : si doc UID vide, chercher l'ancien doc email ──
+    const hasRealData = Object.keys(data).some(k => _isSyncKey(k));
     if(!hasRealData){
+      const oldDocId = (email||'').toLowerCase().replace(/[^a-z0-9]/gi,'_');
+      console.log('[sync] Doc UID vide, tentative migration depuis', oldDocId);
       const oldSnap = await getDoc(doc(window.firebaseDB, 'userData', oldDocId));
       if(oldSnap.exists()){
-        await setDoc(doc(window.firebaseDB, 'userData', uid), oldSnap.data(), {merge:true});
-        console.log('[Migration] Données migrées de', oldDocId, 'vers', uid);
+        data = oldSnap.data();
+        await setDoc(doc(window.firebaseDB, 'userData', uid), data, {merge:true});
+        console.log('[sync] Migration OK depuis', oldDocId);
+      } else {
+        console.warn('[sync] Aucun doc trouvé pour', email, '/ UID:', uid);
+        return false;
       }
     }
 
-    let docId = uid;
-    // Vérifier si cet utilisateur est un partenaire lié à un autre compte
-    const mySnap = await getDoc(doc(window.firebaseDB, 'userData', docId));
-    if(mySnap.exists() && mySnap.data()._sharedOwnerDocId){
-      docId = mySnap.data()._sharedOwnerDocId;
+    // ── Partage partenaire : si ce compte est lié à un autre, charger les données du propriétaire ──
+    if(data._sharedOwnerDocId){
+      const ownerSnap = await getDoc(doc(window.firebaseDB, 'userData', data._sharedOwnerDocId));
+      if(ownerSnap.exists()) data = ownerSnap.data();
+      window._activeDataDocId = data._sharedOwnerDocId;
+    } else {
+      window._activeDataDocId = uid;
     }
-    window._activeDataDocId = docId;
-    const snap = await getDoc(doc(window.firebaseDB, 'userData', docId));
-    if(!snap.exists()) return false;
-    const data = snap.data() || {};
+
+    // ── Charger toutes les clés reconnues en localStorage ──
     let nLoaded = 0;
     for(const [k, v] of Object.entries(data)){
-      if(k.startsWith('_')) continue; // ignore metadata
+      if(k.startsWith('_')) continue;
       if(_isSyncKey(k) && v !== undefined && v !== null){
-        try{
-          // Utiliser localStorage.setItem directement avec JSON.stringify
-          // car v est déjà désérialisé (Firestore retourne des objets JS natifs)
-          localStorage.setItem(k, JSON.stringify(v));
-          nLoaded++;
-        }catch{}
+        try{ localStorage.setItem(k, JSON.stringify(v)); nLoaded++; }catch{}
       }
     }
-    console.log('[sync] '+nLoaded+' clés chargées depuis Firestore pour '+email);
-    return true;
+
+    // ── Mettre à jour USER si les champs profil sont présents ──
+    if(window.USER){
+      if(data.p1) window.USER.p1 = data.p1;
+      if(data.p2) window.USER.p2 = data.p2;
+      if(data.wDate) window.USER.wDate = data.wDate;
+    }
+
+    console.log('[sync] ' + nLoaded + ' clés chargées depuis Firestore (UID:' + uid + ')');
+    return nLoaded > 0;
   } catch(e){
     console.warn('[sync] loadUserDataFromFirestore failed:', e.code||e.message);
     return false;
@@ -945,6 +958,9 @@ async function doLogin(){
     }
     // Charge les données Firestore pour avoir la version la plus récente
     try { await loadUserDataFromFirestore(email); } catch(_){}
+    // Recharger u avec les données Firestore si disponibles
+    const uFresh = ld('u_'+email, null);
+    if(uFresh && (uFresh.p1 || uFresh.p2 || uFresh.wDate)) u = uFresh;
     startApp(u);
     return;
   }
@@ -1909,7 +1925,7 @@ function addTask(){
 function toggleTask(id){TASKS=TASKS.map(t=>t.id===id?{...t,done:!t.done}:t);saveTasks();renderChecklist();}
 function removeTask(id){TASKS=TASKS.filter(t=>t.id!==id);saveTasks();renderChecklist();}
 async function resetTasks(){
-  if(await appConfirm('Réinitialiser la Checklist ? Les tâches personnalisées seront supprimées et tout sera décoché.')){
+  if(await appConfirm('Réinitialiser les tâches par défaut ? Vos modifications seront perdues.')){
     TASKS = DEF_TASKS.map(t=>({...t, done:false}));
     saveTasks();
     renderChecklist();
@@ -2075,8 +2091,12 @@ async function openGuestDetail(id){
   const invLabel=g.invitation==='envoyée'?' Envoyée':' Non envoyée';
   const invColor=g.invitation==='envoyée'?gn:rd;
   const vinLabel=g.vinHonneur?"Uniquement vin d'honneur":'Toute la réception';
-  const emailRow=g.email?`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fdf8f5;border-radius:12px;"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#8a4a60;">Email</span><span style="font-size:12px;color:#3e1828;">${h(g.email)}</span></div>`:'';
-  const adresseRow=g.adresse?`<div style="padding:10px 14px;background:#fdf8f5;border-radius:12px;"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#8a4a60;display:block;margin-bottom:4px;">Adresse</span><span style="font-size:12px;color:#3e1828;">${h(g.adresse)}</span></div>`:'';
+  const rôleColor=tm; const rôleBg=sf;
+  const vinBg=sf; const vinColor=tm;
+  const ageBg=sf; const ageColor=tm;
+  const pickRow=(label,value,color,bg,fn)=>`<div onclick="${fn}" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:${bg};border-radius:12px;cursor:pointer;"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:${tl};">${label}</span><span style="font-size:12px;font-weight:700;color:${color};">${value} ▾</span></div>`;
+  const emailRow=`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fdf8f5;border-radius:12px;"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:${tl};">Email</span><span style="font-size:12px;color:${tx};">${h(g.email||'—')}</span></div>`;
+  const adresseRow=`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fdf8f5;border-radius:12px;"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:${tl};">Adresse</span><span style="font-size:12px;color:${tx};">${h(g.adresse||'—')}</span></div>`;
   await new Promise(resolve=>{
     const overlay=document.createElement('div');
     overlay.style.cssText='position:fixed;inset:0;background:rgba(62,24,40,.45);backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:flex-end;justify-content:center;';
@@ -2090,16 +2110,16 @@ async function openGuestDetail(id){
         <button id="gd-x" style="background:none;border:none;font-size:22px;color:#b07a90;cursor:pointer;">×</button>
       </div>
       <div style="padding:16px 20px;display:flex;flex-direction:column;gap:10px;">
-        ${row('Côté',`<select onchange="updGuest(${id},'cote',this.value);" style="border:1px solid ${br};background:${coteColor};color:${coteTxt};border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;cursor:pointer;outline:none;font-family:Lora,serif;"><option value="p1" ${g.cote==='p1'?'selected':''}>${h(USER.p1||'Côté 1')}</option><option value="p2" ${g.cote==='p2'?'selected':''}>${h(USER.p2||'Côté 2')}</option></select>`)}
-        ${row('Rôle',`<select onchange="updGuest(${id},'role',this.value);" style="border:1px solid ${br};background:${sf};color:${tm};border-radius:10px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;outline:none;font-family:Lora,serif;"><option ${(g.role||'Invité·e')==='Invité·e'?'selected':''}>Invité·e</option><option ${g.role==='Témoin'?'selected':''}>Témoin</option><option ${g.role==="Demoiselle d'honneur"?'selected':''}>Demoiselle d'honneur</option><option ${g.role==="Garçon d'honneur"?'selected':''}>Garçon d'honneur</option><option ${g.role==='Famille'?'selected':''}>Famille</option></select>`)}
-        ${row('Âge',`<select onchange="updGuest(${id},'age',this.value);" style="border:1px solid ${br};background:${sf};color:${tm};border-radius:10px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;outline:none;font-family:Lora,serif;"><option ${g.age!=='Enfant'?'selected':''}>Adulte</option><option ${g.age==='Enfant'?'selected':''}>Enfant</option></select>`)}
-        ${row("Vin d'honneur",`<select onchange="updGuest(${id},'vinHonneur',this.value==='oui');" style="border:1px solid ${br};background:${sf};color:${tm};border-radius:10px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;outline:none;font-family:Lora,serif;"><option value="non" ${!g.vinHonneur?'selected':''}>Toute la réception</option><option value="oui" ${g.vinHonneur?'selected':''}>Uniquement vin d'honneur</option></select>`)}
+        ${pickRow('Côté', g.cote==='p1'?(USER.p1||'Côté 1'):(USER.p2||'Côté 2'), coteTxt, coteColor, `pickGuestCote(${id});setTimeout(()=>{overlay.remove();resolve();openGuestDetail(${id});},400);`)}
+        ${pickRow('Rôle', g.role||'Invité·e', rôleColor, rôleBg, `pickGuestRole(${id});setTimeout(()=>{overlay.remove();resolve();openGuestDetail(${id});},400);`)}
+        ${pickRow('Âge', g.age||'Adulte', ageColor, ageBg, `pickGuestAge(${id});setTimeout(()=>{overlay.remove();resolve();openGuestDetail(${id});},400);`)}
+        ${pickRow("Vin d'honneur", vinLabel, vinColor, vinBg, `pickGuestVin(${id});setTimeout(()=>{overlay.remove();resolve();openGuestDetail(${id});},400);`)}
         <div onclick="pickGuestInvitation(${id});setTimeout(()=>{overlay.remove();resolve();openGuestDetail(${id});},400);" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fdf8f5;border-radius:12px;cursor:pointer;">
-          <span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#8a4a60;">Invitation</span>
+          <span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:${tl};">Invitation</span>
           <span style="font-size:12px;font-weight:700;color:${invColor};">${invLabel} ▾</span>
         </div>
         <div onclick="pickGuestPresence(${id});setTimeout(()=>{overlay.remove();resolve();openGuestDetail(${id});},400);" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fdf8f5;border-radius:12px;cursor:pointer;">
-          <span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#8a4a60;">Présence</span>
+          <span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:${tl};">Présence</span>
           <span style="font-size:12px;font-weight:700;color:${presColor};">${presLabel} ▾</span>
         </div>
         ${emailRow}${adresseRow}
@@ -2130,6 +2150,22 @@ function addGuest(){
 function updGuest(id,f,v){GUESTS=GUESTS.map(g=>g.id===id?{...g,[f]:v}:g);saveGuests();renderGuests();}
 
 // Pickers custom (aux couleurs de l'app) qui remplacent les <select> natifs gris
+async function pickGuestCote(id){
+  const g = GUESTS.find(x=>x.id===id); if(!g) return;
+  const v = await appPicker([
+    {value:'p1', label:USER.p1||'Côté 1', color:'#a0485e'},
+    {value:'p2', label:USER.p2||'Côté 2', color:'#485ea0'}
+  ], g.cote, 'Côté — '+g.nom);
+  if(v!==null) updGuest(id,'cote',v);
+}
+async function pickGuestVin(id){
+  const g = GUESTS.find(x=>x.id===id); if(!g) return;
+  const v = await appPicker([
+    {value:false, label:'Toute la réception'},
+    {value:true,  label:"Uniquement vin d'honneur"}
+  ], g.vinHonneur, "Participation — "+g.nom);
+  if(v!==null) updGuest(id,'vinHonneur',v);
+}
 async function pickGuestRole(id){
   const g = GUESTS.find(x=>x.id===id); if(!g) return;
   const opts = ROLES.map(r=>({value:r, label:r, icon: r==='Témoin'?'⭐':r.includes('Demoiselle')?'':r.includes('Garçon')?'':''}));
@@ -2931,10 +2967,10 @@ async function exportPlanPDF(){
       if(_wi) pdf.addImage(_wi,'PNG',pw/2-36,4,72,16);
       else { setText(C_PK);pdf.setFont('helvetica','normal');pdf.setFontSize(18);pdf.text('WEDDILYA',pw/2,13,{align:'center',charSpace:3}); }
       setText(C_TM);pdf.setFont('times','italic');pdf.setFontSize(16);
-      pdf.text(subtitle,pw/2,27,{align:'center'});
-      setStroke(C_PK);pdf.setLineWidth(0.5);pdf.line(pw/2-30,31,pw/2+30,31);
+      pdf.text(subtitle,pw/2,31,{align:'center'});
+      setStroke(C_PK);pdf.setLineWidth(0.5);pdf.line(pw/2-30,35,pw/2+30,35);
       setText(C_TL);pdf.setFont('times','normal');pdf.setFontSize(10);
-      pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,38,{align:'center'});
+      pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,42,{align:'center'});
     };
 
     // ─── PAGE 1 : titre + plan visuel ───
@@ -3026,7 +3062,7 @@ async function exportPlanPDF(){
     pdf.addPage(); drawFrame();
     drawPageHeader('Invités par table');
 
-    const mm=16, yTop=47, colGap=8, nCols=3, colW=(pw-2*mm-(nCols-1)*colGap)/nCols;
+    const mm=16, yTop=52, colGap=8, nCols=3, colW=(pw-2*mm-(nCols-1)*colGap)/nCols;
     let col=0, y=yTop;
     const lineH=6.4;
 
@@ -7124,8 +7160,8 @@ function assistGenerateDeco(){
   r.innerHTML = `<div style="border-top:1.5px solid ${br};padding-top:14px;">
     <div style="font-family:Playfair Display,serif;font-style:italic;font-size:16px;color:${tm};margin-bottom:14px;text-align:center;">${h(d.title)}</div>
 
-    <div style="background:${sf};padding:12px;border-radius:10px;margin-bottom:10px;">
-      <div style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;"> Palette de couleurs</div>
+    <div class="assist-card">
+      <div class="assist-section-title"> Palette de couleurs</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;">${d.couleurs.map(c=>`<span style="background:#fff;padding:4px 10px;border-radius:14px;font-size:11px;color:${tx};border:1px solid ${br};font-weight:600;">${h(c)}</span>`).join('')}</div>
     </div>
 
@@ -7191,7 +7227,7 @@ function assistRenderAnim(){
   const list = ASSIST_KB.animations[cat] || [];
   el('anim-result').innerHTML = list.map(a=>`<div class="card" style="padding:14px;margin-bottom:8px;background:${sf};">
     <div style="font-weight:700;color:${tx};font-size:14px;margin-bottom:5px;">${h(a.nom)}</div>
-    <div style="font-size:12px;color:${tm};line-height:1.6;">${h(a.desc)}</div>
+    <div class="assist-card-body">${h(a.desc)}</div>
   </div>`).join('');
   // Refresh boutons actifs
   const buttons = document.querySelectorAll('#assist-content .btn-sec');
@@ -7220,7 +7256,7 @@ function assistRenderVoyage(){
   const list = ASSIST_KB.voyageNoces[cat] || [];
   el('voyage-result').innerHTML = list.map(d=>`<div class="card" style="padding:14px;margin-bottom:8px;background:${sf};">
     <div style="font-weight:700;color:${tx};font-size:14px;margin-bottom:5px;">${h(d.dest)}</div>
-    <div style="font-size:12px;color:${tm};line-height:1.6;">${h(d.desc)}</div>
+    <div class="assist-card-body">${h(d.desc)}</div>
   </div>`).join('');
 }
 
@@ -7247,7 +7283,7 @@ function assistRenderCadeau(){
   const list = ASSIST_KB.cadeauxInvites[cat] || [];
   el('cadeau-result').innerHTML = list.map(c=>`<div class="card" style="padding:14px;margin-bottom:8px;background:${sf};">
     <div style="font-weight:700;color:${tx};font-size:14px;margin-bottom:5px;">${h(c.nom)}</div>
-    <div style="font-size:12px;color:${tm};line-height:1.6;">${h(c.desc)}</div>
+    <div class="assist-card-body">${h(c.desc)}</div>
   </div>`).join('');
 }
 
@@ -7259,14 +7295,14 @@ function assistTenueMariee(cont){
       <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Robe de mariée</div>
 
       <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;"> Conseils selon morphologie</div>
-      ${Object.entries(d.morphologies).map(([k,v])=>`<div class="card" style="padding:12px;margin-bottom:8px;background:${sf};">
+      ${Object.entries(d.morphologies).map(([k,v])=>`<div class="assist-card">
         <div style="font-weight:700;color:${tx};font-size:13px;text-transform:capitalize;margin-bottom:4px;">Morphologie en ${h(k)}</div>
-        <div style="font-size:12px;color:${tm};line-height:1.6;">${h(v)}</div>
+        <div class="assist-card-body">${h(v)}</div>
       </div>`).join('')}
 
       <div style="font-size:13px;font-weight:700;color:${pk};margin:18px 0 8px;"> Styles de robe</div>
-      ${d.styles.map(s=>`<div class="card" style="padding:12px;margin-bottom:8px;background:${sf};">
-        <div style="font-weight:700;color:${tx};font-size:13px;margin-bottom:4px;">${h(s.nom)}</div>
+      ${d.styles.map(s=>`<div class="assist-card">
+        <div class="assist-card-title">${h(s.nom)}</div>
         <div style="font-size:12px;color:${tm};line-height:1.6;margin-bottom:8px;">${h(s.desc)}</div>
         <a href="${pinterestUrl(s.pin || ('robe de mariée '+s.nom))}" target="_blank" rel="noopener" style="display:inline-block;padding:5px 11px;background:#fff;border:1.5px solid ${gd}50;border-radius:8px;text-decoration:none;color:${tx};font-size:11px;font-weight:700;font-family:Lora,serif;"> Voir sur Pinterest</a>
       </div>`).join('')}
@@ -7282,8 +7318,8 @@ function assistTenueMarie(cont){
       <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Costume</div>
 
       <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;"> Styles de costume</div>
-      ${d.styles.map(s=>`<div class="card" style="padding:12px;margin-bottom:8px;background:${sf};">
-        <div style="font-weight:700;color:${tx};font-size:13px;margin-bottom:4px;">${h(s.nom)}</div>
+      ${d.styles.map(s=>`<div class="assist-card">
+        <div class="assist-card-title">${h(s.nom)}</div>
         <div style="font-size:12px;color:${tm};line-height:1.6;margin-bottom:8px;">${h(s.desc)}</div>
         <a href="${pinterestUrl('costume marié '+s.nom)}" target="_blank" rel="noopener" style="display:inline-block;padding:5px 11px;background:#fff;border:1.5px solid ${gd}50;border-radius:8px;text-decoration:none;color:${tx};font-size:11px;font-weight:700;font-family:Lora,serif;"> Voir sur Pinterest</a>
       </div>`).join('')}
@@ -7294,8 +7330,8 @@ function assistTenueMarie(cont){
       </ul>
 
       <div style="background:${sf};padding:12px;border-radius:10px;margin-top:14px;">
-        <div style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;"> Choix des couleurs</div>
-        <div style="font-size:13px;color:${tx};line-height:1.6;">${h(d.couleurs)}</div>
+        <div class="assist-section-title"> Choix des couleurs</div>
+        <div class="assist-card-body">${h(d.couleurs)}</div>
       </div>
     </div>
   `;
@@ -7306,31 +7342,21 @@ function assistBijouxMariee(cont){
   const d = ASSIST_KB.bijouxMariee;
   cont.innerHTML = `
     <div class="card" style="padding:16px;">
-      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Bijoux de la mariée</div>
-
-      <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;"> Selon le décolleté / style de robe</div>
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;">Bijoux de la mariée</div>
+      <div class="assist-section-title">Selon le décolleté / style de robe</div>
       ${Object.entries(d.selonRobe).map(([k,v])=>{
         const labels = {decollete:'Décolleté plongeant',bustier:'Bustier sans bretelles','col-haut':'Col haut','dos-nu':'Dos-nu',simple:'Robe minimaliste'};
-        return `<div class="card" style="padding:12px;margin-bottom:8px;background:${sf};">
-          <div style="font-weight:700;color:${tx};font-size:13px;margin-bottom:4px;">${labels[k]||k}</div>
-          <div style="font-size:12px;color:${tm};line-height:1.6;">${h(v)}</div>
+        return `<div class="assist-card">
+          <div class="assist-card-title">${labels[k]||k}</div>
+          <div class="assist-card-body">${h(v)}</div>
         </div>`;
       }).join('')}
-
-      <div style="background:${sf};padding:12px;border-radius:10px;margin-top:14px;margin-bottom:10px;">
-        <div style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;"> Coordination avec le voile</div>
-        <div style="font-size:13px;color:${tx};line-height:1.6;">${h(d.voile)}</div>
-      </div>
-
-      <div style="background:${sf};padding:12px;border-radius:10px;margin-bottom:10px;">
-        <div style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;"> Selon la coiffure</div>
-        <div style="font-size:13px;color:${tx};line-height:1.6;">${h(d.coiffure)}</div>
-      </div>
-
-      <div style="background:${sf};padding:12px;border-radius:10px;">
-        <div style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;"> Coordination avec le bouquet</div>
-        <div style="font-size:13px;color:${tx};line-height:1.6;">${h(d.bouquet)}</div>
-      </div>
+      <div class="assist-section-title">Coordination avec le voile</div>
+      <div class="assist-card"><div class="assist-card-body">${h(d.voile)}</div></div>
+      <div class="assist-section-title">Selon la coiffure</div>
+      <div class="assist-card"><div class="assist-card-body">${h(d.coiffure)}</div></div>
+      <div class="assist-section-title">Coordination avec le bouquet</div>
+      <div class="assist-card"><div class="assist-card-body">${h(d.bouquet)}</div></div>
     </div>
   `;
 }
@@ -7428,9 +7454,9 @@ function assistBelleFamille(cont){
       <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">‍‍ Belle-famille & situations délicates</div>
 
       <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;">Situations courantes</div>
-      ${d.situations.map(s=>`<div class="card" style="padding:12px;margin-bottom:8px;background:${sf};">
-        <div style="font-weight:700;color:${tx};font-size:13px;margin-bottom:4px;">${h(s.nom)}</div>
-        <div style="font-size:12px;color:${tm};line-height:1.6;">${h(s.desc)}</div>
+      ${d.situations.map(s=>`<div class="assist-card">
+        <div class="assist-card-title">${h(s.nom)}</div>
+        <div class="assist-card-body">${h(s.desc)}</div>
       </div>`).join('')}
 
       <div style="background:linear-gradient(135deg,#fff8ec,#fef5e0);padding:14px;border-radius:12px;border:1px solid ${gd}40;margin-top:14px;">
@@ -7563,9 +7589,9 @@ function assistListeCadeaux(cont){
     <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Liste de mariage / Cagnotte</div>
 
     <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;"> Plateformes recommandées</div>
-    ${d['cagnotte-en-ligne'].map(p=>`<div class="card" style="padding:12px;margin-bottom:8px;background:${sf};">
-      <div style="font-weight:700;color:${tx};font-size:13px;margin-bottom:4px;">${h(p.nom)}</div>
-      <div style="font-size:12px;color:${tm};line-height:1.6;">${h(p.desc)}</div>
+    ${d['cagnotte-en-ligne'].map(p=>`<div class="assist-card">
+      <div class="assist-card-title">${h(p.nom)}</div>
+      <div class="assist-card-body">${h(p.desc)}</div>
     </div>`).join('')}
 
     <div style="font-size:13px;font-weight:700;color:${pk};margin:18px 0 8px;"> Idées de listes</div>
@@ -7669,9 +7695,9 @@ function assistEnfants(cont){
     <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Enfants au mariage</div>
 
     <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;"> Rôles à leur confier</div>
-    ${d.roles.map(r=>`<div class="card" style="padding:12px;margin-bottom:8px;background:${sf};">
-      <div style="font-weight:700;color:${tx};font-size:13px;margin-bottom:4px;">${h(r.nom)}</div>
-      <div style="font-size:12px;color:${tm};line-height:1.6;">${h(r.desc)}</div>
+    ${d.roles.map(r=>`<div class="assist-card">
+      <div class="assist-card-title">${h(r.nom)}</div>
+      <div class="assist-card-body">${h(r.desc)}</div>
     </div>`).join('')}
 
     <div style="font-size:13px;font-weight:700;color:${pk};margin:18px 0 8px;"> Comment les occuper</div>
@@ -7725,7 +7751,7 @@ function assistEmotion(cont){
       <span style="color:${pk};font-weight:700;flex-shrink:0;font-family:Playfair Display,serif;font-size:14px;">${i+1}.</span>
       <div>
         <div style="font-weight:700;color:${tx};font-size:13px;margin-bottom:3px;">${h(m.nom)}</div>
-        <div style="font-size:12px;color:${tm};line-height:1.6;">${h(m.desc)}</div>
+        <div class="assist-card-body">${h(m.desc)}</div>
       </div>
     </div>`).join('')}
   </div>`;
@@ -7737,7 +7763,7 @@ function assistProblemes(cont){
   cont.innerHTML = `<div class="card" style="padding:16px;">
     <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:6px;font-weight:700;">🆘 Imprévus du jour J</div>
     <div style="font-size:11px;color:${tl};font-style:italic;margin-bottom:14px;">Anticiper les problèmes courants pour mieux les gérer.</div>
-    ${list.map(p=>`<div class="card" style="padding:12px;margin-bottom:8px;background:${sf};">
+    ${list.map(p=>`<div class="assist-card">
       <div style="font-weight:700;color:${rd};font-size:13px;margin-bottom:5px;"> ${h(p.pb)}</div>
       <div style="font-size:12px;color:${tx};line-height:1.6;"><strong style="color:${gn};"> Solution :</strong> ${h(p.sol)}</div>
     </div>`).join('')}
