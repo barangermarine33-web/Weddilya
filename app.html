@@ -489,13 +489,14 @@ async function loadUserDataFromFirestore(email){
     if(!uid) return false;
     const oldDocId = (email||'').toLowerCase().replace(/[^a-z0-9]/gi,'_');
 
-    // ── MIGRATION : si données existent sous l'ancien ID email, les copier sous l'UID ──
+    // ── MIGRATION : si doc UID existe mais sans données, chercher l'ancien doc email ──
     const uidSnap = await getDoc(doc(window.firebaseDB, 'userData', uid));
-    if(!uidSnap.exists()){
+    const uidData = uidSnap.exists() ? uidSnap.data() : {};
+    const hasRealData = Object.keys(uidData).some(k => _isSyncKey(k));
+    if(!hasRealData){
       const oldSnap = await getDoc(doc(window.firebaseDB, 'userData', oldDocId));
       if(oldSnap.exists()){
-        // Copier les données sous le nouvel ID (UID)
-        await setDoc(doc(window.firebaseDB, 'userData', uid), oldSnap.data());
+        await setDoc(doc(window.firebaseDB, 'userData', uid), oldSnap.data(), {merge:true});
         console.log('[Migration] Données migrées de', oldDocId, 'vers', uid);
       }
     }
@@ -1713,7 +1714,7 @@ function startApp(u){
   el('app').style.display='block';
   updateHeader();
 
-  // ── SYNC FIRESTORE — attendre que Firebase soit prêt ──
+  // ── SYNC FIRESTORE — mettre à jour _lastLogin uniquement, sans écraser les données ──
   _onFirebaseReady(function(){
     if(!window.firebaseDB || !window.firebaseLib || !window.firebaseAuth) return;
     const {onAuthStateChanged} = window.firebaseAuthLib;
@@ -1721,44 +1722,18 @@ function startApp(u){
       if(!user) return;
       window._activeDataDocId = user.uid;
       const {doc, setDoc} = window.firebaseLib;
-      setDoc(doc(window.firebaseDB, 'userData', user.uid), {
-        email: u.email,
-        p1: USER.p1||'',
-        p2: USER.p2||'',
-        wDate: USER.wDate||'',
-        _lastLogin: Date.now()
-      }, {merge:true})
-      .then(()=>console.log(' Firestore sync OK, UID:', user.uid))
-      .catch(e=>console.error(' Firestore erreur:', e.code, e.message));
+      // Ne mettre à jour que _lastLogin et les champs non-vides (pour ne pas écraser)
+      const update = { email: u.email, _lastLogin: Date.now() };
+      if(USER.p1) update.p1 = USER.p1;
+      if(USER.p2) update.p2 = USER.p2;
+      if(USER.wDate) update.wDate = USER.wDate;
+      setDoc(doc(window.firebaseDB, 'userData', user.uid), update, {merge:true})
+      .catch(e=>console.warn('[sync] lastLogin:', e.code));
     });
   });
   startCountdown();
   buildTabs();
   renderTab(0);
-
-  // ── Forcer la sync Firestore au démarrage ──────────────────────────────────
-  // Écrire toutes les données localStorage dans Firestore sous l'UID
-  if(window.firebaseDB && window.firebaseLib && window.firebaseAuth && window.firebaseAuth.currentUser){
-    const uid = window.firebaseAuth.currentUser.uid;
-    window._activeDataDocId = uid;
-    const {doc, setDoc} = window.firebaseLib;
-    const dataToSync = {
-      email: u.email,
-      p1: u.p1||'', p2: u.p2||'', wDate: u.wDate||'',
-      albumCode: u.albumCode||'',
-      tasks: ld(`tasks_${u.email}`, []),
-      budget: ld(`budget_${u.email}`, []),
-      guests: ld(`guests_${u.email}`, []),
-      tables: ld(`tables_${u.email}`, []),
-      notes: ld(`notes_${u.email}`, ''),
-      menu: ld(`menu_${u.email}`, []),
-      vendorsFav: ld(`vfav_${u.email}`, []),
-      vendorsCho: ld(`vcho_${u.email}`, []),
-    };
-    setDoc(doc(window.firebaseDB, 'userData', uid), dataToSync, {merge:true})
-      .then(()=>console.log('[startApp] Données synchronisées dans Firestore sous UID:', uid))
-      .catch(e=>console.error('[startApp] Erreur sync:', e));
-  }
 }
 
 function updateHeader(){
@@ -1934,7 +1909,7 @@ function addTask(){
 function toggleTask(id){TASKS=TASKS.map(t=>t.id===id?{...t,done:!t.done}:t);saveTasks();renderChecklist();}
 function removeTask(id){TASKS=TASKS.filter(t=>t.id!==id);saveTasks();renderChecklist();}
 async function resetTasks(){
-  if(await appConfirm('Réinitialiser la checklist ? Toutes les tâches seront remplacées par les tâches par défaut (décochées).')){
+  if(await appConfirm('Réinitialiser la Checklist ? Les tâches personnalisées seront supprimées et tout sera décoché.')){
     TASKS = DEF_TASKS.map(t=>({...t, done:false}));
     saveTasks();
     renderChecklist();
@@ -2953,13 +2928,13 @@ async function exportPlanPDF(){
 
     // ── Fonction header commune à toutes les pages ──
     const drawPageHeader=(subtitle)=>{
-      if(_wi) pdf.addImage(_wi,'PNG',pw/2-36,3,72,16);
-      else { setText(C_PK);pdf.setFont('helvetica','normal');pdf.setFontSize(18);pdf.text('WEDDILYA',pw/2,12,{align:'center',charSpace:3}); }
+      if(_wi) pdf.addImage(_wi,'PNG',pw/2-36,4,72,16);
+      else { setText(C_PK);pdf.setFont('helvetica','normal');pdf.setFontSize(18);pdf.text('WEDDILYA',pw/2,13,{align:'center',charSpace:3}); }
       setText(C_TM);pdf.setFont('times','italic');pdf.setFontSize(16);
-      pdf.text(subtitle,pw/2,22,{align:'center'});
-      setStroke(C_PK);pdf.setLineWidth(0.5);pdf.line(pw/2-30,26,pw/2+30,26);
+      pdf.text(subtitle,pw/2,27,{align:'center'});
+      setStroke(C_PK);pdf.setLineWidth(0.5);pdf.line(pw/2-30,31,pw/2+30,31);
       setText(C_TL);pdf.setFont('times','normal');pdf.setFontSize(10);
-      pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,33,{align:'center'});
+      pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,38,{align:'center'});
     };
 
     // ─── PAGE 1 : titre + plan visuel ───
@@ -3051,7 +3026,7 @@ async function exportPlanPDF(){
     pdf.addPage(); drawFrame();
     drawPageHeader('Invités par table');
 
-    const mm=16, yTop=42, colGap=8, nCols=3, colW=(pw-2*mm-(nCols-1)*colGap)/nCols;
+    const mm=16, yTop=47, colGap=8, nCols=3, colW=(pw-2*mm-(nCols-1)*colGap)/nCols;
     let col=0, y=yTop;
     const lineH=6.4;
 
@@ -3617,8 +3592,8 @@ function renderVendors(){
         {key:'voiture',label:'Voiture',icon:''},
         {key:'hotel',label:'Hébergement',icon:''},
         {key:'decor',label:'Décoration',icon:''}
-      ].map(c=>`<button onclick="searchByCategory('${c.key}','${c.label}')" data-catkey="${c.key}" class="vnd-cat-btn" style="background:#fdf8f5;color:${tx};border:1px solid #f0e8ec;border-radius:10px;padding:8px 10px;cursor:pointer;font-size:11px;font-weight:600;font-family:Lora,serif;text-align:left;display:flex;align-items:center;gap:6px;transition:all .15s;">
-        <span style="font-size:14px;">${c.icon}</span><span>${c.label}</span>
+      ].map(c=>`<button onclick="searchByCategory('${c.key}','${c.label}')" data-catkey="${c.key}" class="vnd-cat-btn" style="background:#fdf8f5;color:${tx};border:1px solid #f0e8ec;border-radius:10px;padding:8px 10px;cursor:pointer;font-size:12px;font-weight:600;font-family:Lora,serif;text-align:left;display:flex;align-items:center;gap:6px;transition:all .15s;">
+        <span style="font-size:16px;">${c.icon}</span><span>${c.label}</span>
       </button>`).join('')}
     </div>
 
@@ -4283,7 +4258,7 @@ function renderMenu(){
   </div>
 
   <div class="card" style="padding:14px;margin-bottom:14px;">
-    <div style="font-family:Playfair Display,serif;font-size:16px;color:${tx};margin-bottom:12px;">Répartition des invités</div>
+    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tx};margin-bottom:12px;text-align:center;">Répartition des invités</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;">
       <div style="display:flex;flex-direction:column;">
         <label class="lbl" style="min-height:28px;display:flex;align-items:flex-end;">Vin d'honneur uniquement</label>
@@ -4302,7 +4277,7 @@ function renderMenu(){
   </div>
 
   <div class="card" style="padding:14px;margin-bottom:14px;">
-    <div style="font-family:Playfair Display,serif;font-size:16px;color:${tx};margin-bottom:14px;">Estimation des boissons</div>
+    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tx};margin-bottom:14px;text-align:center;">Estimation des boissons</div>
     ${[
       {nom:' Champagne', calc: Math.ceil(total/3), unit:'bouteilles', note:'1 bouteille / 3 invités (principalement vin d\'honneur)'},
       {nom:' Cocktails', calc: total*2, unit:'verres', note:'2 verres / invité (principalement vin d\'honneur)'},
@@ -4328,7 +4303,7 @@ function renderMenu(){
   </div>
 
   <div class="card" style="padding:14px;">
-    <div style="font-family:Playfair Display,serif;font-size:16px;color:${tx};margin-bottom:10px;">Régimes particuliers</div>
+    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tx};margin-bottom:10px;text-align:center;">Régimes particuliers</div>
     ${conf.filter(g=>g.regime&&g.regime!=='Aucun').length===0
       ? `<p style="color:${tl};font-style:italic;font-size:13px;">Aucun régime particulier renseigné.</p>`
       : conf.filter(g=>g.regime&&g.regime!=='Aucun').map(g=>`
@@ -4339,7 +4314,7 @@ function renderMenu(){
   </div>
 
   <div class="card" style="padding:14px;margin-top:14px;">
-    <div style="font-family:Playfair Display,serif;font-size:16px;color:${tx};margin-bottom:12px;"> Menu</div>
+    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tx};margin-bottom:12px;text-align:center;"> Menu</div>
     <div style="display:flex;gap:8px;margin-bottom:8px;">
       <input class="inp" id="menu-new-cat" placeholder="Nouvelle catégorie..." style="flex:1;font-size:13px;">
       <button onclick="addMenuCategory()" class="btn" style="padding:8px 14px;">+</button>
@@ -4355,9 +4330,8 @@ function renderMenu(){
         </div>
         <div style="padding:8px 12px 12px;">
         ${section.items.map((item,ii)=>`
-          <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f9edf2;">
-            <input type="checkbox" ${item.done?'checked':''} onchange="toggleMenuItem(${si},${ii},this.checked)" style="accent-color:${pk};width:16px;height:16px;flex-shrink:0;cursor:pointer;">
-            <span data-menu="${si}-${ii}" onclick="renameMenuItem(${si},${ii})" style="flex:1;font-size:13px;color:${item.done?tl:tx};text-decoration:${item.done?'line-through':'none'};cursor:pointer;" title="Appuyer pour renommer">${h(item.text)}</span>
+          <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f9edf2;">
+            <span data-menu="${si}-${ii}" onclick="renameMenuItem(${si},${ii})" style="flex:1;font-size:13px;color:${tx};cursor:pointer;font-family:Lora,serif;" title="Appuyer pour renommer">${h(item.text)}</span>
             <button onclick="removeMenuItem(${si},${ii})" style="background:none;border:none;color:${br};font-size:16px;cursor:pointer;">×</button>
           </div>`).join('')}
         <div style="display:flex;gap:8px;margin-top:8px;">
@@ -6682,7 +6656,7 @@ function renderAssistant(){
         {key:'voeux',label:'Vœux personnalisés',desc:'Modèles à adapter'},
         {key:'voyageNoces',label:'Voyage de noces',desc:'Idées de destinations'},
         {key:'weddingCake',label:'Wedding cake',desc:'Styles et inspirations'}
-      ].map(s=>`<button onclick="assistOpen('${s.key}')" id="assist-btn-${s.key}" style="display:flex;align-items:center;gap:14px;width:100%;background:#fff;border:none;border-bottom:1px solid #f5eaef;padding:14px 6px;cursor:pointer;font-family:Lora,serif;text-align:left;transition:all .15s;box-sizing:border-box;" onmouseover="this.style.background='#fef8fb'" onmouseout="if(!this.classList.contains('active'))this.style.background='#fff'">
+      ].map(s=>`<button onclick="assistOpen('${s.key}')" id="assist-btn-${s.key}" style="display:flex;align-items:center;gap:14px;width:100%;background:#fff;border:1px solid #f0e8ec;border-radius:14px;padding:14px;margin-bottom:8px;cursor:pointer;font-family:Lora,serif;text-align:left;transition:all .15s;box-sizing:border-box;" onmouseover="this.style.background='#fef8fb'" onmouseout="if(!this.classList.contains('active'))this.style.background='#fff'">
         <div style="width:3px;height:32px;border-radius:2px;background:linear-gradient(180deg,${pk},#f0a0b8);flex-shrink:0;"></div>
         <div style="flex:1;">
           <div style="font-size:14px;font-weight:700;color:${tx};margin-bottom:2px;">${s.label}</div>
