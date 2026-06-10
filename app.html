@@ -3920,7 +3920,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
 
   async function srcAnnuaire(){
     const qMap={
-      salle:       ['salle polyvalente','salle des fêtes','domaine','château','salle réception','manoir'],
+      salle:       ['salle polyvalente','salle des fêtes','salle réception','domaine','château','manoir'],
       traiteur:    ['traiteur'],
       photographe: ['photographe'],
       videaste:    ['vidéaste','videaste'],
@@ -3933,7 +3933,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
       beaute:      ['maquillage','esthétique','esthetique'],
       bijou:       ['bijouterie','joaillerie','orfèvrerie'],
       imprimeur:   ['faire-part','imprimerie','papeterie'],
-      voiture:     ['limousine','voiture mariage','location voiture'],
+      voiture:     ['limousine','voiture','location voiture','véhicule','transport mariage'],
       hotel:       ['hôtel','hotel','gîte','gite','hébergement','chambre hôte'],
       decor:       ['décoration','événementiel','wedding planner','floral']
     };
@@ -3970,8 +3970,8 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
           beaute:      ['maquillage','esthétique','esthetique'],
           bijou:       ['bijouterie','joaillerie','orfèvrerie','orfevrerie'],
           imprimeur:   ['faire-part','imprimerie','papeterie'],
-          voiture:     ['limousine','voiture mariage','location voiture','véhicule mariage'],
-          hotel:       ['hôtel','hotel','gîte','gite','hébergement','hebergement','chambre hôte'],
+          voiture:     ['limousine','voiture','location voiture','véhicule','transport mariage'],
+          hotel:       ['hôtel','hotel','gîte','gite','hébergement','hebergement','chambre','logis'],
           decor:       ['décoration','decorat','wedding','événementiel','evenementiel','floral']
         };
         const filters=catFilters[catKey]||[];
@@ -3985,7 +3985,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
             const nomLower=nomDisplay.toLowerCase();
             if(!filters.some(f=>nomLower.includes(f)))return;
           }
-          const matching=(e.matching_etablissements||[]).filter(m=>m.etat_administratif==='A');
+          const matching=(e.matching_etablissements||[]);
           const siege=e.siege||{};
           if(matching.length>0){
             matching.forEach(m=>{
@@ -4334,14 +4334,14 @@ function movToFav(id){const v=VENDORS_CHO.find(c=>c.id===id);if(!v)return;VENDOR
 function renderFavs(){
   const d=el('vnd-favs');if(!d)return;
   d.innerHTML=VENDORS_FAV.length===0
-    ?`<div style="background:${sf};border:2px dashed ${br};border-radius:12px;padding:20px;text-align:center;color:${tl};font-size:13px;font-style:italic;">Glissez ici vos prestataires ou déplacez-les</div>`
+    ?`<div style="background:${sf};border:2px dashed ${br};border-radius:12px;padding:20px;text-align:center;color:${tl};font-size:13px;font-style:italic;">Ajoutez vos prestataires favoris ici</div>`
     :vSort(VENDORS_FAV,sortFav).map(v=>vndMiniCard(v,'fav')).join('');
   const cnt=el('fav-cnt');if(cnt)cnt.textContent=VENDORS_FAV.length;
 }
 function renderChosen(){
   const d=el('vnd-chosen');if(!d)return;
   d.innerHTML=VENDORS_CHO.length===0
-    ?`<div style="background:${sf};border:2px dashed ${br};border-radius:12px;padding:20px;text-align:center;color:${tl};font-size:13px;font-style:italic;">Glissez ici vos prestataires ou déplacez-les</div>`
+    ?`<div style="background:${sf};border:2px dashed ${br};border-radius:12px;padding:20px;text-align:center;color:${tl};font-size:13px;font-style:italic;">Ajoutez vos prestataires favoris ici</div>`
     :vSort(VENDORS_CHO,sortCho).map(v=>vndMiniCard(v,'cho')).join('');
   const cnt=el('cho-cnt');if(cnt)cnt.textContent=VENDORS_CHO.length;
 }
