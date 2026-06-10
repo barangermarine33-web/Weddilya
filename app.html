@@ -3920,7 +3920,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
 
   async function srcAnnuaire(){
     const qMap={
-      salle:       ['salle','domaine','château','manoir','prieuré'],
+      salle:       ['domaine','château','salle polyvalente','salle des fêtes','manoir','prieuré'],
       traiteur:    ['traiteur'],
       photographe: ['photographe'],
       videaste:    ['vidéaste','videaste'],
@@ -3928,12 +3928,12 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
       fleuriste:   ['fleuriste','fleurs'],
       patisserie:  ['pâtisserie','patisserie','boulangerie','confiserie'],
       robe:        ['mariage','mariée','nuptiale','noces','bridal','wedding','robe','couture'],
-      costume:     ['costume','smoking','location vêtement','location costume'],
+      costume:     ['smoking','costume','costumier','déguisement','location tenue'],
       coiffeur:    ['coiffeur','coiffure'],
       beaute:      ['maquillage','esthétique','esthetique'],
       bijou:       ['bijouterie','joaillerie','orfèvrerie'],
       imprimeur:   ['faire-part','imprimerie','papeterie'],
-      voiture:     ['limousine','voiture de location','location voiture','véhicule mariage'],
+      voiture:     ['limousine','location voiture','voiture mariage'],
       hotel:       ['hôtel','hotel','gîte','gite','hébergement','chambre hôtes','logis'],
       decor:       ['décoration','événementiel','wedding planner','floral']
     };
@@ -3957,7 +3957,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
         const EXCL_NAF=['64','65','66','68','69','70','84','85','86','87','88','91','92','94','99'];
         // Filtres spécifiques à chaque catégorie
         const catFilters={
-          salle:       ['salle','domaine','château','manoir','prieuré','abbaye','réception'],
+          salle:       ['domaine','château','salle polyvalente','salle des fêtes','manoir','prieuré','abbaye','réception'],
           traiteur:    ['traiteur'],
           photographe: ['photographe'],
           videaste:    ['vidéaste','videaste'],
@@ -3965,13 +3965,13 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
           fleuriste:   ['fleuriste','fleurs'],
           patisserie:  ['pâtisserie','patisserie','boulangerie','confiserie','chocolat','cake'],
           robe:        ['mariage','mariée','mariee','nuptiale','nuptial','noces','bridal','wedding','couture','robe'],
-          costume:     ['costume','smoking','location vêtement','location costume'],
+          costume:     ['smoking','costume','costumier','déguisement','location tenue'],
           coiffeur:    ['coiffeur','coiffure','coiff'],
           beaute:      ['maquillage','esthétique','esthetique'],
           bijou:       ['bijouterie','joaillerie','orfèvrerie','orfevrerie'],
           imprimeur:   ['faire-part','imprimerie','papeterie'],
-          voiture:     ['limousine','voiture de location','location voiture','véhicule mariage'],
-          hotel:       ['hôtel','hotel','gîte','gite','hébergement','hebergement','chambre hôtes','logis'],
+          voiture:     ['limousine','location voiture','voiture mariage'],
+          hotel:       ['hôtel','hotel','gîte','gite','hébergement','hebergement','chambre','logis','auberge'],
           decor:       ['décoration','decorat','wedding','événementiel','evenementiel','floral']
         };
         const filters=catFilters[catKey]||[];
