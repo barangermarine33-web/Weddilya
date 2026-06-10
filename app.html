@@ -3920,7 +3920,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
 
   async function srcAnnuaire(){
     const qMap={
-      salle:       ['domaine','château','salle réception','manoir','prieuré'],
+      salle:       ['domaine','château','salle réception','salle','manoir','prieuré'],
       traiteur:    ['traiteur'],
       photographe: ['photographe'],
       videaste:    ['vidéaste','videaste'],
@@ -3957,7 +3957,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
         const EXCL_NAF=['64','65','66','68','69','70','84','85','86','87','88','91','92','94','99'];
         // Filtres spécifiques à chaque catégorie
         const catFilters={
-          salle:       ['domaine','château','manoir','prieuré','abbaye','réception','salle de fête','salle des fêtes'],
+          salle:       ['domaine','château','manoir','prieuré','abbaye','réception','salle de fête','salle des fêtes','salle '],
           traiteur:    ['traiteur'],
           photographe: ['photographe'],
           videaste:    ['vidéaste','videaste'],
