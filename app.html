@@ -3892,7 +3892,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
     }));
   }
 
-  async function srcSirene(){
+  async function srcAnnuaire(){
     const nafMap={
       salle:'8230Z',traiteur:'5621Z',photographe:'7420Z',videaste:'7420Z',
       dj:'9001Z',fleuriste:'4776Z',patisserie:'1071C',robe:'4771Z',
@@ -3900,44 +3900,41 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
       imprimeur:'1812Z',voiture:'7711A',hotel:'5510Z',decor:'8230Z'
     };
     const naf=nafMap[catKey];
-    if(!naf){log('Sirene: pas de code NAF pour '+catKey);return;}
+    if(!naf){log('Annuaire: pas de NAF pour '+catKey);return;}
 
-    // Extraire les départements couverts par le rayon
-    // On prend le département du point central + départements voisins si rayon > 30km
-    const postalEl = el('vnd-postal');
-    const postalVal = postalEl?.value?.trim()||'';
-    const dept = postalVal.length>=2 ? postalVal.substring(0,2) : '';
+    const postalVal=(el('vnd-postal')?.value||'').trim();
+    const dept=postalVal.length>=2?postalVal.substring(0,2):'';
 
-    // Construire la liste des départements à couvrir selon le rayon
-    const deptList = new Set();
-    if(dept) deptList.add(dept);
-    // Ajouter départements voisins approximatifs si rayon > 30km
-    if(radiusKm > 30 && dept){
-      const deptNum = parseInt(dept);
-      [-1,0,1].forEach(d=>{ const n=String(deptNum+d).padStart(2,'0'); deptList.add(n); });
+    // Construire liste des départements à couvrir
+    const depts=new Set();
+    if(dept){
+      const n=parseInt(dept);
+      const range=radiusKm>50?2:radiusKm>30?1:0;
+      for(let i=-range;i<=range;i++) depts.add(String(n+i).padStart(2,'0'));
     }
+    if(!depts.size){log('Annuaire: pas de département');return;}
 
-    for(const d of deptList){
+    await Promise.allSettled([...depts].map(async d=>{
       try{
-        const c=new AbortController();setTimeout(()=>c.abort(),15000);
-        const r=await fetch(`${FSQ_PROXY}?naf=${naf}&lat=${lat}&lng=${lng}&radius=${radiusMeters}&dept=${d}`,{signal:c.signal});
-        if(!r.ok){log('Sirene HTTP '+r.status+' dept:'+d);continue;}
+        const c=new AbortController();setTimeout(()=>c.abort(),10000);
+        const url=`https://recherche-entreprises.api.gouv.fr/search?activite_principale=${naf}&departement=${d}&per_page=25&page=1`;
+        const r=await fetch(url,{signal:c.signal,headers:{'Accept':'application/json'}});
+        if(!r.ok){log('Annuaire dept '+d+' HTTP '+r.status);return;}
         const data=await r.json();
-        const etabs=data.etablissements||[];
-        log('Sirene dept '+d+': '+etabs.length+' (total:'+data.total+')');
-        etabs.forEach(e=>{
-          const ul=e.uniteLegale||{};
-          const ad=e.adresseEtablissement||{};
-          const nom=e.enseigne1Etablissement||ul.denominationUniteLegale||ul.nomUniteLegale||'';
-          const adresse=[ad.numeroVoieEtablissement,ad.typeVoieEtablissement,ad.libelleVoieEtablissement,ad.codePostalEtablissement,ad.libelleCommuneEtablissement].filter(Boolean).join(' ');
-          addPlace(nom,adresse,'','',e.latitude,e.longitude);
+        const total=data.total_results||0;
+        log('Annuaire dept '+d+': '+total+' entreprises');
+        (data.results||[]).forEach(e=>{
+          const siege=e.siege||{};
+          const nom=e.nom_complet||e.nom_raison_sociale||'';
+          const adresse=[siege.numero_voie,siege.type_voie,siege.libelle_voie,siege.code_postal,siege.commune].filter(Boolean).join(' ');
+          addPlace(nom,adresse,'','',siege.latitude,siege.longitude);
         });
-      }catch(e){log('Sirene ERR dept '+d+': '+e.message);}
-    }
-    log('Sirene total après filtre: '+results.length);
+        log('Annuaire dept '+d+' après filtre: '+results.length);
+      }catch(e){log('Annuaire dept '+d+' ERR: '+e.message);}
+    }));
   }
 
-  await Promise.allSettled([srcOverpassTags(), srcOverpassName(), srcNominatim(), srcSirene()]);
+  await Promise.allSettled([srcOverpassTags(), srcOverpassName(), srcNominatim(), srcAnnuaire()]);
 
   // ── Affichage ──
   const sorted = results.sort((a,b)=>a.distance-b.distance).slice(0,40);
