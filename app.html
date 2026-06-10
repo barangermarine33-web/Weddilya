@@ -3955,7 +3955,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
         const data=await r.json();
         log('Annuaire "'+term+'": '+(data.total_results||0));
         // Garder uniquement les entreprises dont le nom contient un des termes mariage
-        const WEDDING_TERMS=['mariage','mariée','mariee','nuptial','noces','bridal','wedding','traiteur','photographe','fleuriste','coiffeur','maquillage','bijouterie','patisserie','pâtisserie','décoration','videaste','animation','limousine','faire-part','domaine','château','reception'];
+        const WEDDING_TERMS=['mariage','mariée','mariee','nuptial','nuptiale','noces','bridal','wedding','traiteur','photographe','fleuriste','coiffeur','maquillage','bijouterie','patisserie','pâtisserie','décoration','decoration','videaste','vidéaste','animation','limousine','faire-part','domaine','château','chateau','reception','réception','alliance','couture','robe','smoking','tailleur','bouquet','salle','domaine','prestataire','evenement','événement'];
         const EXCL_NAF=['64','65','66','68','69','70','84','85','86','87','88','91','92','94','99'];
         (data.results||[]).forEach(e=>{
           const naf=(e.activite_principale||e.siege?.activite_principale||'').substring(0,2);
