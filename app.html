@@ -3954,23 +3954,27 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
         if(!r.ok){log('Annuaire "'+term+'" HTTP '+r.status);return;}
         const data=await r.json();
         log('Annuaire "'+term+'": '+(data.total_results||0));
-        // Exclure les secteurs hors mariage (immobilier, banque, juridique, admin...)
+        // Garder uniquement les entreprises dont le nom contient un des termes mariage
+        const WEDDING_TERMS=['mariage','mariée','mariee','nuptial','noces','bridal','wedding','traiteur','photographe','fleuriste','coiffeur','maquillage','bijouterie','patisserie','pâtisserie','décoration','videaste','animation','limousine','faire-part','domaine','château','reception'];
         const EXCL_NAF=['64','65','66','68','69','70','84','85','86','87','88','91','92','94','99'];
         (data.results||[]).forEach(e=>{
           const naf=(e.activite_principale||e.siege?.activite_principale||'').substring(0,2);
           if(EXCL_NAF.includes(naf))return;
           const siege=e.siege||{};
-          const nom=e.nom_complet||e.nom_raison_sociale||'';
+          const nom=(e.nom_complet||e.nom_raison_sociale||'').toLowerCase();
+          // Vérifier que le nom contient au moins un terme lié au mariage
+          if(!WEDDING_TERMS.some(t=>nom.includes(t)))return;
+          const nomDisplay=e.nom_complet||e.nom_raison_sociale||'';
           const adresse=siege.adresse||[siege.code_postal,siege.commune].filter(Boolean).join(' ');
           const coords=(siege.coordonnees||'').split(',');
-          addPlace(nom,adresse,'','',coords[0],coords[1]);
+          addPlace(nomDisplay,adresse,'','',coords[0],coords[1]);
         });
         log('Annuaire "'+term+'" filtre: '+results.length);
       }catch(e){log('Annuaire "'+term+'" ERR: '+e.message);}
     }));
   }
 
-  await Promise.allSettled([srcOverpassTags(), srcOverpassName(), srcNominatim(), srcAnnuaire()]);
+  await Promise.allSettled([srcNominatim(), srcAnnuaire()]);
 
   const sorted=results.sort((a,b)=>(a.distance||999)-(b.distance||999)).slice(0,40);
   window._vndResults=sorted;
