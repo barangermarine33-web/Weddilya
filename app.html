@@ -3920,22 +3920,22 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
 
   async function srcAnnuaire(){
     const qMap={
-      salle:       ['domaine','château','salle polyvalente','salle des fêtes','manoir','prieuré'],
+      salle:       ['salle polyvalente','salle des fêtes','salle réception','château','manoir','prieuré','domaine de','domaine du','domaine les','domaine la'],
       traiteur:    ['traiteur'],
       photographe: ['photographe'],
       videaste:    ['vidéaste','videaste'],
-      dj:          ['dj','disc jockey','sonorisation','animation musicale'],
+      dj:          ['dj mariage','dj soirée','dj animation','dj événement','disc jockey','sonorisation mariage'],
       fleuriste:   ['fleuriste','fleurs'],
-      patisserie:  ['pâtisserie','patisserie','boulangerie','confiserie'],
+      patisserie:  ['pâtisserie','patisserie','pâtissier','patissier'],
       robe:        ['mariage','mariée','nuptiale','noces','bridal','wedding','robe','couture'],
       costume:     ['smoking','costume','costumier','location tenue'],
       coiffeur:    ['coiffeur','coiffure'],
       beaute:      ['maquillage','esthétique','esthetique'],
       bijou:       ['bijouterie','joaillerie','orfèvrerie'],
       imprimeur:   ['faire-part','imprimerie','papeterie'],
-      voiture:     ['limousine','location voiture','voiture mariage'],
+      voiture:     ['limousine','voiture mariage','location voiture mariage'],
       hotel:       ['hôtel','hotel','gîte','gite','hébergement','chambre hôtes','logis'],
-      decor:       ['décoration','événementiel','wedding planner','floral']
+      decor:       ['décoration','decoration']
     };
     const terms=(qMap[catKey]||[catLabel+' mariage']).slice(0,4);
     const postalVal=(el('vnd-postal')?.value||'').trim();
@@ -3956,22 +3956,22 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
         log('Annuaire "'+term+'": '+(data.total_results||0));
         const EXCL_NAF=['64','65','66','68','69','70','84','85','86','87','88','91','92','94','99'];
         const catFilters={
-          salle:       ['domaine','château','salle polyvalente','salle des fêtes','manoir','prieuré','abbaye','réception'],
+          salle:       ['salle polyvalente','salle des fêtes','salle réception','château','manoir','prieuré','abbaye','domaine de','domaine du','domaine les','domaine la'],
           traiteur:    ['traiteur'],
           photographe: ['photographe'],
           videaste:    ['vidéaste','videaste'],
-          dj:          ['dj','disc jockey','sonorisation','animation'],
+          dj:          ['dj mariage','dj soirée','dj animation','dj événement','disc jockey','sonorisation mariage'],
           fleuriste:   ['fleuriste','fleurs'],
-          patisserie:  ['pâtisserie','patisserie','boulangerie','confiserie','chocolat','cake'],
+          patisserie:  ['pâtisserie','patisserie','pâtissier','patissier'],
           robe:        ['mariage','mariée','mariee','nuptiale','nuptial','noces','bridal','wedding','couture','robe'],
           costume:     ['smoking','costume','costumier','location tenue'],
           coiffeur:    ['coiffeur','coiffure','coiff'],
           beaute:      ['maquillage','esthétique','esthetique'],
           bijou:       ['bijouterie','joaillerie','orfèvrerie','orfevrerie'],
           imprimeur:   ['faire-part','imprimerie','papeterie'],
-          voiture:     ['limousine','location voiture','voiture mariage'],
+          voiture:     ['limousine','voiture mariage','location voiture mariage'],
           hotel:       ['hôtel','hotel','gîte','gite','hébergement','hebergement','chambre','logis','auberge'],
-          decor:       ['décoration','decorat','wedding','événementiel','evenementiel','floral']
+          decor:       ['décoration','decoration']
         };
         const filters=catFilters[catKey]||[];
         (data.results||[]).forEach(e=>{
