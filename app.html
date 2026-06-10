@@ -3927,7 +3927,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
       dj:['DJ mariage','animation mariage'],
       fleuriste:['fleuriste mariage'],
       patisserie:['pâtisserie mariage','wedding cake'],
-      robe:['mariage','nuptiale','noces','mariée','bridal'],
+      robe:['robe mariée','robe nuptiale','robe noces','robe mariage','boutique mariage','mariage mode'],
       costume:['smoking mariage','tailleur mariage'],
       coiffeur:['coiffeur mariage'],
       beaute:['maquillage mariage'],
@@ -3937,7 +3937,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
       hotel:['hôtel mariage'],
       decor:['décoration mariage','wedding planner']
     };
-    const terms=(qMap[catKey]||[catLabel+' mariage']).slice(0,3);
+    const terms=(qMap[catKey]||[catLabel+' mariage']).slice(0,4);
     const postalVal=(el('vnd-postal')?.value||'').trim();
     const dept=postalVal.length>=2?postalVal.substring(0,2):'';
     if(!dept){log('Annuaire: pas de département');return;}
