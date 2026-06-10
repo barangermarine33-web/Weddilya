@@ -3892,21 +3892,34 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
     }));
   }
 
-  async function srcFSQ(){
-    const ft={salle:'wedding venue salle reception',traiteur:'catering traiteur',photographe:'photographer photographe',videaste:'videographer',dj:'DJ music entertainment',fleuriste:'florist fleuriste',patisserie:'bakery patisserie cake',robe:'wedding dress bridal',costume:'suit tuxedo',coiffeur:'hair salon coiffeur',beaute:'makeup beauty',bijou:'jewelry bijouterie',imprimeur:'print stationery',voiture:'car rental limousine',hotel:'hotel',decor:'wedding decor event'};
+  async function srcSirene(){
+    const nafMap={
+      salle:'8230Z',traiteur:'5621Z',photographe:'7420Z',videaste:'7420Z',
+      dj:'9001Z',fleuriste:'4776Z',patisserie:'1071C',robe:'4771Z',
+      costume:'4771Z',coiffeur:'9602A',beaute:'9602B',bijou:'4777Z',
+      imprimeur:'1812Z',voiture:'7711A',hotel:'5510Z',decor:'8230Z'
+    };
+    const naf=nafMap[catKey];
+    if(!naf){log('Sirene: pas de code NAF pour '+catKey);return;}
     try{
-      const c=new AbortController();setTimeout(()=>c.abort(),12000);
-      const r=await fetch(`${FSQ_PROXY}?query=${encodeURIComponent(ft[catKey]||catLabel)}&ll=${lat},${lng}&radius=${radiusMeters}&limit=20`,{signal:c.signal});
-      if(!r.ok){log('FSQ HTTP '+r.status);return;}
+      const c=new AbortController();setTimeout(()=>c.abort(),15000);
+      const r=await fetch(`${FSQ_PROXY}?naf=${naf}&lat=${lat}&lng=${lng}&radius=${radiusMeters}`,{signal:c.signal});
+      if(!r.ok){log('Sirene HTTP '+r.status);return;}
       const d=await r.json();
-      const places=d.results||d.response?.venues||[];
-      log('FSQ brut: '+places.length);
-      places.forEach(p=>{addPlace(p.name,[p.location?.address,p.location?.postcode||p.location?.postalCode,p.location?.locality||p.location?.city].filter(Boolean).join(', '),p.tel||p.contact?.phone,p.website||p.url,p.geocodes?.main?.latitude||p.location?.lat,p.geocodes?.main?.longitude||p.location?.lng);});
-      log('FSQ après filtre: '+results.length);
-    }catch(e){log('FSQ ERR: '+e.message);}
+      const etabs=d.etablissements||[];
+      log('Sirene brut: '+etabs.length);
+      etabs.forEach(e=>{
+        const ul=e.uniteLegale||{};
+        const ad=e.adresseEtablissement||{};
+        const nom=e.enseigne1Etablissement||ul.denominationUniteLegale||ul.nomUniteLegale||'';
+        const adresse=[ad.numeroVoieEtablissement,ad.typeVoieEtablissement,ad.libelleVoieEtablissement,ad.codePostalEtablissement,ad.libelleCommuneEtablissement].filter(Boolean).join(' ');
+        addPlace(nom,adresse,'','',e.latitude,e.longitude);
+      });
+      log('Sirene après filtre: '+results.length);
+    }catch(e){log('Sirene ERR: '+e.message);}
   }
 
-  await Promise.allSettled([srcOverpassTags(), srcOverpassName(), srcNominatim(), srcFSQ()]);
+  await Promise.allSettled([srcOverpassTags(), srcOverpassName(), srcNominatim(), srcSirene()]);
 
   // ── Affichage ──
   const sorted = results.sort((a,b)=>a.distance-b.distance).slice(0,40);
