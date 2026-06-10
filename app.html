@@ -3901,22 +3901,40 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
     };
     const naf=nafMap[catKey];
     if(!naf){log('Sirene: pas de code NAF pour '+catKey);return;}
-    try{
-      const c=new AbortController();setTimeout(()=>c.abort(),15000);
-      const r=await fetch(`${FSQ_PROXY}?naf=${naf}&lat=${lat}&lng=${lng}&radius=${radiusMeters}`,{signal:c.signal});
-      if(!r.ok){log('Sirene HTTP '+r.status);return;}
-      const d=await r.json();
-      const etabs=d.etablissements||[];
-      log('Sirene brut: '+etabs.length);
-      etabs.forEach(e=>{
-        const ul=e.uniteLegale||{};
-        const ad=e.adresseEtablissement||{};
-        const nom=e.enseigne1Etablissement||ul.denominationUniteLegale||ul.nomUniteLegale||'';
-        const adresse=[ad.numeroVoieEtablissement,ad.typeVoieEtablissement,ad.libelleVoieEtablissement,ad.codePostalEtablissement,ad.libelleCommuneEtablissement].filter(Boolean).join(' ');
-        addPlace(nom,adresse,'','',e.latitude,e.longitude);
-      });
-      log('Sirene après filtre: '+results.length);
-    }catch(e){log('Sirene ERR: '+e.message);}
+
+    // Extraire les départements couverts par le rayon
+    // On prend le département du point central + départements voisins si rayon > 30km
+    const postalEl = el('vnd-postal');
+    const postalVal = postalEl?.value?.trim()||'';
+    const dept = postalVal.length>=2 ? postalVal.substring(0,2) : '';
+
+    // Construire la liste des départements à couvrir selon le rayon
+    const deptList = new Set();
+    if(dept) deptList.add(dept);
+    // Ajouter départements voisins approximatifs si rayon > 30km
+    if(radiusKm > 30 && dept){
+      const deptNum = parseInt(dept);
+      [-1,0,1].forEach(d=>{ const n=String(deptNum+d).padStart(2,'0'); deptList.add(n); });
+    }
+
+    for(const d of deptList){
+      try{
+        const c=new AbortController();setTimeout(()=>c.abort(),15000);
+        const r=await fetch(`${FSQ_PROXY}?naf=${naf}&lat=${lat}&lng=${lng}&radius=${radiusMeters}&dept=${d}`,{signal:c.signal});
+        if(!r.ok){log('Sirene HTTP '+r.status+' dept:'+d);continue;}
+        const data=await r.json();
+        const etabs=data.etablissements||[];
+        log('Sirene dept '+d+': '+etabs.length+' (total:'+data.total+')');
+        etabs.forEach(e=>{
+          const ul=e.uniteLegale||{};
+          const ad=e.adresseEtablissement||{};
+          const nom=e.enseigne1Etablissement||ul.denominationUniteLegale||ul.nomUniteLegale||'';
+          const adresse=[ad.numeroVoieEtablissement,ad.typeVoieEtablissement,ad.libelleVoieEtablissement,ad.codePostalEtablissement,ad.libelleCommuneEtablissement].filter(Boolean).join(' ');
+          addPlace(nom,adresse,'','',e.latitude,e.longitude);
+        });
+      }catch(e){log('Sirene ERR dept '+d+': '+e.message);}
+    }
+    log('Sirene total après filtre: '+results.length);
   }
 
   await Promise.allSettled([srcOverpassTags(), srcOverpassName(), srcNominatim(), srcSirene()]);
