@@ -3833,8 +3833,7 @@ async function searchByCategory(catKey,catLabel){
   await runCategorySearch(cat.tags,catLabel,lat,lng,radiusKm*1000);
 }
 
-const FSQ_CLIENT_ID = 'SB3KYBFL41K4IDMSSDM1R3DSEFPM1FLFSDQXXOFWJUGWU2F2';
-const FSQ_CLIENT_SECRET = 'TXX4PBQBMW2L3G0KNR45FYDQ2SEKSOIDPNY23EGMLA42014D';
+const FSQ_PROXY = 'https://weddilya-proxy.baranger-marine.workers.dev';
 
 async function runCategorySearch(tags,catLabel,lat,lng,radiusMeters){
   const wrap = el('vnd-results-wrap');
@@ -3857,8 +3856,7 @@ async function runCategorySearch(tags,catLabel,lat,lng,radiusMeters){
   const radius = Math.min(radiusMeters,50000);
 
   try {
-    const v = '20231001';
-    const url = `https://api.foursquare.com/v2/venues/search?client_id=${FSQ_CLIENT_ID}&client_secret=${FSQ_CLIENT_SECRET}&v=${v}&ll=${lat},${lng}&radius=${radius}&query=${encodeURIComponent(query)}&limit=20&locale=fr`;
+    const url = `${FSQ_PROXY}?query=${encodeURIComponent(query)}&ll=${lat},${lng}&radius=${radius}&limit=20`;
     const res = await fetch(url);
     if(!res.ok) throw new Error('FSQ '+res.status);
     const data = await res.json();
