@@ -3920,7 +3920,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
 
   async function srcAnnuaire(){
     const qMap={
-      salle:       ['salle polyvalente','salle des fêtes','salle réception','domaine','château','manoir'],
+      salle:       ['salle','domaine','château','manoir','prieuré'],
       traiteur:    ['traiteur'],
       photographe: ['photographe'],
       videaste:    ['vidéaste','videaste'],
@@ -3928,13 +3928,13 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
       fleuriste:   ['fleuriste','fleurs'],
       patisserie:  ['pâtisserie','patisserie','boulangerie','confiserie'],
       robe:        ['mariage','mariée','nuptiale','noces','bridal','wedding','robe','couture'],
-      costume:     ['costume','smoking','habit mariage','location costume'],
+      costume:     ['costume','smoking','location vêtement','location costume'],
       coiffeur:    ['coiffeur','coiffure'],
       beaute:      ['maquillage','esthétique','esthetique'],
       bijou:       ['bijouterie','joaillerie','orfèvrerie'],
       imprimeur:   ['faire-part','imprimerie','papeterie'],
-      voiture:     ['limousine','voiture','location voiture','véhicule','transport mariage'],
-      hotel:       ['hôtel','hotel','gîte','gite','hébergement','chambre hôte'],
+      voiture:     ['limousine','voiture de location','location voiture','véhicule mariage'],
+      hotel:       ['hôtel','hotel','gîte','gite','hébergement','chambre hôtes','logis'],
       decor:       ['décoration','événementiel','wedding planner','floral']
     };
     const terms=(qMap[catKey]||[catLabel+' mariage']).slice(0,4);
@@ -3957,7 +3957,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
         const EXCL_NAF=['64','65','66','68','69','70','84','85','86','87','88','91','92','94','99'];
         // Filtres spécifiques à chaque catégorie
         const catFilters={
-          salle:       ['salle polyvalente','salle des fêtes','domaine','château','manoir','prieuré','abbaye','réception'],
+          salle:       ['salle','domaine','château','manoir','prieuré','abbaye','réception'],
           traiteur:    ['traiteur'],
           photographe: ['photographe'],
           videaste:    ['vidéaste','videaste'],
@@ -3965,13 +3965,13 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
           fleuriste:   ['fleuriste','fleurs'],
           patisserie:  ['pâtisserie','patisserie','boulangerie','confiserie','chocolat','cake'],
           robe:        ['mariage','mariée','mariee','nuptiale','nuptial','noces','bridal','wedding','couture','robe'],
-          costume:     ['costume','smoking','habit mariage','location costume'],
+          costume:     ['costume','smoking','location vêtement','location costume'],
           coiffeur:    ['coiffeur','coiffure','coiff'],
           beaute:      ['maquillage','esthétique','esthetique'],
           bijou:       ['bijouterie','joaillerie','orfèvrerie','orfevrerie'],
           imprimeur:   ['faire-part','imprimerie','papeterie'],
-          voiture:     ['limousine','voiture','location voiture','véhicule','transport mariage'],
-          hotel:       ['hôtel','hotel','gîte','gite','hébergement','hebergement','chambre','logis'],
+          voiture:     ['limousine','voiture de location','location voiture','véhicule mariage'],
+          hotel:       ['hôtel','hotel','gîte','gite','hébergement','hebergement','chambre hôtes','logis'],
           decor:       ['décoration','decorat','wedding','événementiel','evenementiel','floral']
         };
         const filters=catFilters[catKey]||[];
@@ -3987,6 +3987,8 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
           }
           const matching=(e.matching_etablissements||[]);
           const siege=e.siege||{};
+          // Utiliser les établissements locaux si disponibles, sinon le siège
+          // Pour le siège sans coordonnées locales, on force l'ajout sans filtre distance
           if(matching.length>0){
             matching.forEach(m=>{
               const coords=(m.coordonnees||siege.coordonnees||'').split(',');
@@ -3994,9 +3996,16 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
               addPlace(nomDisplay,adresse,'','',coords[0],coords[1]);
             });
           } else {
+            // Pas de matching local : forcer l'ajout avec coords du siège
+            // mais mettre distance=null pour ne pas filtrer par rayon
             const coords=(siege.coordonnees||'').split(',');
             const adresse=siege.adresse||[siege.code_postal,siege.commune].filter(Boolean).join(' ');
-            addPlace(nomDisplay,adresse,'','',coords[0],coords[1]);
+            const la=parseFloat(coords[0]), lo=parseFloat(coords[1]);
+            const key=nomDisplay.toLowerCase().trim();
+            if(nomDisplay.length>=2 && !seen.has(key)){
+              seen.add(key);
+              results.push({id:Date.now()+Math.random(),nom:nomDisplay,categorie:catLabel,adresse,tel:'',site:'',distance:null,lat:la||lat,lng:lo||lng,notes:''});
+            }
           }
         });
         log('Annuaire "'+term+'" filtre: '+results.length);
