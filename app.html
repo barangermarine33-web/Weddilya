@@ -3830,61 +3830,134 @@ async function searchByCategory(catKey,catLabel){
     try{const pos=await new Promise((res,rej)=>{navigator.geolocation.getCurrentPosition(res,rej,{timeout:8000,maximumAge:300000});});window._userLat=lat=pos.coords.latitude;window._userLng=lng=pos.coords.longitude;}
     catch(geoErr){if(wrap)wrap.innerHTML='<p style="text-align:center;padding:14px;font-size:13px;color:'+rd+';">Géolocalisation refusée. Entrez un code postal.</p>';return;}
   }
-  await runCategorySearch(cat.tags,catLabel,lat,lng,radiusKm*1000);
+  await runCategorySearch(catKey,catLabel,lat,lng,radiusKm*1000);
 }
 
 const FSQ_PROXY = 'https://weddilya-proxy.baranger-marine.workers.dev';
 
-async function runCategorySearch(tags,catLabel,lat,lng,radiusMeters){
+async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
   const wrap = el('vnd-results-wrap');
   if(!wrap) return;
   wrap.innerHTML = `<p style="text-align:center;padding:20px;font-size:13px;color:${tl};">Recherche en cours…</p>`;
 
-  const queryMap = {
-    salle:'salle mariage domaine reception',traiteur:'traiteur mariage',
-    photographe:'photographe mariage',videaste:'videaste mariage',
-    dj:'DJ animation mariage',fleuriste:'fleuriste mariage',
-    patisserie:'patisserie wedding cake',robe:'boutique robe mariee',
-    costume:'costume smoking mariage',coiffeur:'coiffeur mariage',
-    maquillage:'maquillage mariage',bijou:'bijouterie alliance',
-    imprimeur:'imprimerie faire-part',voiture:'location voiture mariage',
-    hotel:'hotel',decor:'decoration mariage',
-    officiant:'officiant laique',location:'location materiel mariage'
-  };
-  const ck = Object.keys(VND_CATEGORIES).find(k=>JSON.stringify(VND_CATEGORIES[k].tags)===JSON.stringify(tags))||'';
-  const query = queryMap[ck]||catLabel;
-  const radius = Math.min(radiusMeters,50000);
+  const radiusKm = Math.round(radiusMeters/1000);
+  const results = []; const seen = new Set();
 
-  try {
-    const url = `${FSQ_PROXY}?query=${encodeURIComponent(query)}&ll=${lat},${lng}&radius=${radius}&limit=20`;
-    const res = await fetch(url);
-    if(!res.ok) throw new Error('FSQ '+res.status);
-    const data = await res.json();
-    const places = data.response?.venues||[];
-
-    if(!places.length){
-      wrap.innerHTML = `<div style="padding:20px;text-align:center;"><p style="font-size:13px;color:${tl};margin-bottom:16px;">Aucun résultat dans cette zone.</p><a href="https://www.google.com/maps/search/${encodeURIComponent(catLabel+' mariage')}/@${lat},${lng},13z" target="_blank" style="display:block;padding:13px;background:${sf};border:1px solid ${br};border-radius:14px;text-decoration:none;color:${pk};font-size:13px;font-weight:700;font-family:Lora,serif;text-align:center;">Chercher sur Google Maps</a></div>`;
-      return;
-    }
-
-    window._vndResults = places.map(p=>({
-      id: Date.now()+Math.random(),
-      nom: p.name,
-      categorie: catLabel,
-      adresse: [p.location?.address, p.location?.postalCode, p.location?.city].filter(Boolean).join(', '),
-      tel: p.contact?.phone||'',
-      site: p.url||'',
-      distance: p.location?.distance ? Math.round(p.location.distance/100)/10 : null,
-      lat: p.location?.lat||lat,
-      lng: p.location?.lng||lng,
-      notes: ''
-    }));
-    renderVndResults(catLabel);
-
-  } catch(e){
-    console.warn('[FSQ]',e.message);
-    wrap.innerHTML = `<div style="padding:16px;text-align:center;"><p style="font-size:13px;color:${tl};margin-bottom:14px;">Recherche indisponible (${e.message})</p><a href="https://www.google.com/maps/search/${encodeURIComponent(catLabel+' mariage')}/@${lat},${lng},13z" target="_blank" style="display:block;padding:13px;background:${sf};border:1px solid ${br};border-radius:14px;text-decoration:none;color:${pk};font-size:13px;font-weight:700;text-align:center;">Chercher sur Google Maps</a></div>`;
+  function hav(a,b,c,d){const R=6371,dLat=(c-a)*Math.PI/180,dLon=(d-b)*Math.PI/180,x=Math.sin(dLat/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dLon/2)**2;return Math.round(R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))*10)/10;}
+  function addPlace(nom,adresse,tel,site,plat,plng){
+    const key=nom.toLowerCase().trim();
+    if(!nom||nom.length<3||seen.has(key))return;
+    seen.add(key);
+    const dist=hav(lat,lng,plat||lat,plng||lng);
+    if(dist>radiusKm*1.5)return;
+    results.push({id:Date.now()+Math.random(),nom,categorie:catLabel,adresse:adresse||'',tel:tel||'',site:site||'',distance:dist,lat:plat||lat,lng:plng||lng,notes:''});
   }
+
+  // ── 1) OVERPASS — tags OSM directs (3 miroirs en cascade) ──
+  const MIRRORS = ['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://overpass.openstreetmap.fr/api/interpreter'];
+  const cat = VND_CATEGORIES[catKey];
+  if(cat){
+    const fp = cat.tags.map(t=>{const[k,v]=t.split('=');return `node["${k}"="${v}"](around:${radiusMeters},${lat},${lng});way["${k}"="${v}"](around:${radiusMeters},${lat},${lng});`;}).join('');
+    const oq = `[out:json][timeout:15];(${fp});out center 60;`;
+    for(const mirror of MIRRORS){
+      try{
+        const ctrl=new AbortController(); setTimeout(()=>ctrl.abort(),10000);
+        const r=await fetch(`${mirror}?data=${encodeURIComponent(oq)}`,{signal:ctrl.signal});
+        if(!r.ok)continue;
+        const d=await r.json();
+        (d.elements||[]).filter(e=>e.tags?.name).forEach(e=>{
+          const la=e.lat||(e.center?.lat)||0, lo=e.lon||(e.center?.lon)||0;
+          addPlace(e.tags.name,[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' '),e.tags.phone||e.tags['contact:phone'],e.tags.website||e.tags['contact:website'],la,lo);
+        });
+        break; // succès, pas besoin d'essayer les autres miroirs
+      }catch(e){console.warn('Overpass',mirror,e.message);}
+    }
+  }
+
+  // ── 2) OVERPASS — recherche par nom (mots-clés métier) ──
+  const nameKw = {
+    salle:['mariage','réception','domaine','château','salle des fêtes'],
+    traiteur:['traiteur'],photographe:['photographe'],videaste:['vidéaste','videaste'],
+    dj:['dj','animation'],fleuriste:['fleur'],patisserie:['pâtisserie','patisserie','cake'],
+    robe:['mariée','mariee','bridal','wedding'],costume:['smoking','tailleur'],
+    coiffeur:['coiff'],beaute:['maquill','beauté'],bijou:['bijou','alliance'],
+    imprimeur:['imprim','faire-part'],voiture:['limousine','prestige'],
+    hotel:['hôtel','hotel','gîte','gite'],decor:['décor','event']
+  };
+  for(const kw of (nameKw[catKey]||[]).slice(0,2)){
+    for(const mirror of MIRRORS.slice(0,2)){
+      try{
+        const ctrl=new AbortController(); setTimeout(()=>ctrl.abort(),8000);
+        const nq=`[out:json][timeout:10];(node["name"~"${kw}",i](around:${radiusMeters},${lat},${lng});way["name"~"${kw}",i](around:${radiusMeters},${lat},${lng}););out center 30;`;
+        const r=await fetch(`${mirror}?data=${encodeURIComponent(nq)}`,{signal:ctrl.signal});
+        if(!r.ok)continue;
+        const d=await r.json();
+        (d.elements||[]).filter(e=>e.tags?.name).forEach(e=>{
+          const la=e.lat||(e.center?.lat)||0, lo=e.lon||(e.center?.lon)||0;
+          addPlace(e.tags.name,[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' '),e.tags.phone,e.tags.website,la,lo);
+        });
+        break;
+      }catch(e){console.warn('Overpass name',kw,e.message);}
+    }
+  }
+
+  // ── 3) NOMINATIM — recherche textuelle ──
+  const nomTerms = {
+    salle:['salle mariage','domaine mariage','château mariage'],
+    traiteur:['traiteur mariage'],photographe:['photographe mariage'],
+    videaste:['vidéaste mariage'],dj:['DJ mariage','animation mariage'],
+    fleuriste:['fleuriste mariage'],patisserie:['pâtisserie','wedding cake'],
+    robe:['boutique robe mariée','boutique mariage'],costume:['costume mariage'],
+    coiffeur:['coiffeur mariage'],beaute:['maquillage mariage'],
+    bijou:['bijouterie alliance'],imprimeur:['imprimerie faire-part'],
+    voiture:['location voiture mariage'],hotel:['hôtel'],decor:['décoration mariage']
+  };
+  for(const term of (nomTerms[catKey]||[catLabel+' mariage']).slice(0,2)){
+    try{
+      const ctrl=new AbortController(); setTimeout(()=>ctrl.abort(),8000);
+      const nurl=`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(term)}&format=json&limit=20&addressdetails=1&countrycodes=fr,be,ch,lu&viewbox=${lng-0.8},${lat+0.6},${lng+0.8},${lat-0.6}&bounded=0`;
+      const r=await fetch(nurl,{signal:ctrl.signal,headers:{'Accept-Language':'fr'}});
+      if(!r.ok)continue;
+      const d=await r.json();
+      d.forEach(e=>{
+        const la=parseFloat(e.lat),lo=parseFloat(e.lon);
+        if(isNaN(la))return;
+        const nom=(e.display_name||'').split(',')[0].trim();
+        const a=e.address||{};
+        addPlace(nom,[a.road,a.postcode,a.city||a.town||a.village].filter(Boolean).join(' '),'','',la,lo);
+      });
+    }catch(e){console.warn('Nominatim',e.message);}
+  }
+
+  // ── 4) FOURSQUARE proxy ──
+  try{
+    const fsqTerms={salle:'salle reception mariage',traiteur:'traiteur mariage',photographe:'photographe mariage',videaste:'videaste mariage',dj:'DJ mariage',fleuriste:'fleuriste',patisserie:'patisserie',robe:'boutique mariage',costume:'costume mariage',coiffeur:'coiffeur',beaute:'maquillage mariage',bijou:'bijouterie',imprimeur:'imprimerie',voiture:'location voiture',hotel:'hotel',decor:'decoration mariage'};
+    const fq=fsqTerms[catKey]||catLabel;
+    const ctrl=new AbortController(); setTimeout(()=>ctrl.abort(),10000);
+    const r=await fetch(`${FSQ_PROXY}?query=${encodeURIComponent(fq)}&ll=${lat},${lng}&radius=${Math.min(radiusMeters,50000)}&limit=20`,{signal:ctrl.signal});
+    if(r.ok){
+      const d=await r.json();
+      (d.results||d.response?.venues||[]).forEach(p=>{
+        const la=p.geocodes?.main?.latitude||p.location?.lat;
+        const lo=p.geocodes?.main?.longitude||p.location?.lng;
+        addPlace(p.name,[p.location?.address,p.location?.postcode||p.location?.postalCode,p.location?.locality||p.location?.city].filter(Boolean).join(', '),p.tel||p.contact?.phone,p.website||p.url,la,lo);
+      });
+    }
+  }catch(e){console.warn('FSQ',e.message);}
+
+  // ── Affichage ──
+  const sorted = results.sort((a,b)=>a.distance-b.distance).slice(0,40);
+  window._vndResults = sorted;
+
+  if(!sorted.length){
+    const gmUrl=`https://www.google.com/maps/search/${encodeURIComponent(catLabel+' mariage')}/@${lat},${lng},12z`;
+    wrap.innerHTML=`<div style="padding:20px;text-align:center;">
+      <p style="font-size:13px;color:${tl};margin-bottom:16px;">Aucun résultat trouvé.<br><span style="font-size:11px;">Essaie un rayon plus large ou un autre code postal.</span></p>
+      <a href="${gmUrl}" target="_blank" style="display:block;padding:13px;background:${sf};border:1px solid ${br};border-radius:14px;text-decoration:none;color:${pk};font-size:13px;font-weight:700;font-family:Lora,serif;text-align:center;">Chercher sur Google Maps</a>
+    </div>`;
+    return;
+  }
+  renderVndResults(catLabel);
 }
 
 
