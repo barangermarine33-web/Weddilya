@@ -3917,7 +3917,8 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
     await Promise.allSettled([...depts].map(async d=>{
       try{
         const c=new AbortController();setTimeout(()=>c.abort(),10000);
-        const url=`https://recherche-entreprises.api.gouv.fr/search?activite_principale=${naf}&departement=${d}&per_page=25&page=1`;
+        const nafLower=naf.toLowerCase();
+        const url=`https://recherche-entreprises.api.gouv.fr/search?activite_principale=${nafLower}&departement=${d}&per_page=25`;
         const r=await fetch(url,{signal:c.signal,headers:{'Accept':'application/json'}});
         if(!r.ok){log('Annuaire dept '+d+' HTTP '+r.status);return;}
         const data=await r.json();
