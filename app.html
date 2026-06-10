@@ -3928,7 +3928,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
       fleuriste:   ['fleuriste','fleurs'],
       patisserie:  ['pâtisserie','patisserie','boulangerie','confiserie'],
       robe:        ['mariage','mariée','nuptiale','noces','bridal','wedding','robe','couture'],
-      costume:     ['smoking','costume','costumier','déguisement','location tenue'],
+      costume:     ['smoking','costume','costumier','location tenue'],
       coiffeur:    ['coiffeur','coiffure'],
       beaute:      ['maquillage','esthétique','esthetique'],
       bijou:       ['bijouterie','joaillerie','orfèvrerie'],
@@ -3955,58 +3955,24 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
         const data=await r.json();
         log('Annuaire "'+term+'": '+(data.total_results||0));
         const EXCL_NAF=['64','65','66','68','69','70','84','85','86','87','88','91','92','94','99'];
-        // Filtres spécifiques à chaque catégorie
-        const catFilters={
-          salle:       ['domaine','château','salle polyvalente','salle des fêtes','manoir','prieuré','abbaye','réception'],
-          traiteur:    ['traiteur'],
-          photographe: ['photographe'],
-          videaste:    ['vidéaste','videaste'],
-          dj:          ['dj','disc jockey','sonorisation','animation'],
-          fleuriste:   ['fleuriste','fleurs'],
-          patisserie:  ['pâtisserie','patisserie','boulangerie','confiserie','chocolat','cake'],
-          robe:        ['mariage','mariée','mariee','nuptiale','nuptial','noces','bridal','wedding','couture','robe'],
-          costume:     ['smoking','costume','costumier','déguisement','location tenue'],
-          coiffeur:    ['coiffeur','coiffure','coiff'],
-          beaute:      ['maquillage','esthétique','esthetique'],
-          bijou:       ['bijouterie','joaillerie','orfèvrerie','orfevrerie'],
-          imprimeur:   ['faire-part','imprimerie','papeterie'],
-          voiture:     ['limousine','location voiture','voiture mariage'],
-          hotel:       ['hôtel','hotel','gîte','gite','hébergement','hebergement','chambre','logis','auberge'],
-          decor:       ['décoration','decorat','wedding','événementiel','evenementiel','floral']
-        };
-        const filters=catFilters[catKey]||[];
         (data.results||[]).forEach(e=>{
-          const naf=(e.activite_principale||e.siege?.activite_principale||'').substring(0,2);
+          const naf=(e.activite_principale||'').substring(0,2);
           if(EXCL_NAF.includes(naf))return;
           const nomDisplay=e.nom_complet||e.nom_raison_sociale||'';
           if(!nomDisplay||nomDisplay.length<2)return;
-          // Appliquer le filtre spécifique à la catégorie si défini
-          if(filters.length>0){
-            const nomLower=nomDisplay.toLowerCase();
-            if(!filters.some(f=>nomLower.includes(f)))return;
-          }
-          const matching=(e.matching_etablissements||[]);
-          const siege=e.siege||{};
-          // Utiliser les établissements locaux si disponibles, sinon le siège
-          // Pour le siège sans coordonnées locales, on force l'ajout sans filtre distance
-          if(matching.length>0){
-            matching.forEach(m=>{
-              const coords=(m.coordonnees||siege.coordonnees||'').split(',');
-              const adresse=m.adresse||siege.adresse||[siege.code_postal,siege.commune].filter(Boolean).join(' ');
+          // Garder uniquement les établissements dans le(s) département(s) ciblé(s)
+          const deptSet=[...depts];
+          const localEtabs=(e.matching_etablissements||[]).filter(m=>
+            deptSet.some(d=>m.code_postal&&m.code_postal.startsWith(d))
+          );
+          if(localEtabs.length>0){
+            localEtabs.forEach(m=>{
+              const coords=(m.coordonnees||'').split(',');
+              const adresse=m.adresse||[m.code_postal,m.libelle_commune].filter(Boolean).join(' ');
               addPlace(nomDisplay,adresse,'','',coords[0],coords[1]);
             });
-          } else {
-            // Pas de matching local : forcer l'ajout avec coords du siège
-            // mais mettre distance=null pour ne pas filtrer par rayon
-            const coords=(siege.coordonnees||'').split(',');
-            const adresse=siege.adresse||[siege.code_postal,siege.commune].filter(Boolean).join(' ');
-            const la=parseFloat(coords[0]), lo=parseFloat(coords[1]);
-            const key=nomDisplay.toLowerCase().trim();
-            if(nomDisplay.length>=2 && !seen.has(key)){
-              seen.add(key);
-              results.push({id:Date.now()+Math.random(),nom:nomDisplay,categorie:catLabel,adresse,tel:'',site:'',distance:null,lat:la||lat,lng:lo||lng,notes:''});
-            }
           }
+          // Ignorer si pas d'établissement local trouvé
         });
         log('Annuaire "'+term+'" filtre: '+results.length);
       }catch(e){log('Annuaire "'+term+'" ERR: '+e.message);}
@@ -4021,8 +3987,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
 
   if(!sorted.length){
     const gmUrl=`https://www.google.com/maps/search/${encodeURIComponent(catLabel+' mariage')}/@${lat},${lng},12z`;
-    const logHtml=(window._vndLogs||[]).map(m=>`<div style="font-size:10px;color:#aaa;padding:1px 0;">${m}</div>`).join('');
-    wrap.innerHTML=`<div style="padding:20px;text-align:center;"><p style="font-size:13px;color:${tl};margin-bottom:16px;">Aucun résultat trouvé.<br><span style="font-size:11px;">Essaie un rayon plus large ou un autre code postal.</span></p><div style="background:#f9f9f9;border-radius:8px;padding:8px;margin-bottom:12px;text-align:left;">${logHtml}</div><a href="${gmUrl}" target="_blank" style="display:block;padding:13px;background:${sf};border:1px solid ${br};border-radius:14px;text-decoration:none;color:${pk};font-size:13px;font-weight:700;font-family:Lora,serif;text-align:center;">Chercher sur Google Maps</a></div>`;
+    wrap.innerHTML=`<div style="padding:20px;text-align:center;"><p style="font-size:13px;color:${tl};margin-bottom:16px;">Aucun résultat trouvé.<br><span style="font-size:11px;">Essaie un rayon plus large ou un autre code postal.</span></p><a href="${gmUrl}" target="_blank" style="display:block;padding:13px;background:${sf};border:1px solid ${br};border-radius:14px;text-decoration:none;color:${pk};font-size:13px;font-weight:700;font-family:Lora,serif;text-align:center;">Chercher sur Google Maps</a></div>`;
     return;
   }
   renderVndResults(catLabel);
