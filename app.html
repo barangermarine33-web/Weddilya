@@ -3954,16 +3954,37 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
         if(!r.ok){log('Annuaire "'+term+'" HTTP '+r.status);return;}
         const data=await r.json();
         log('Annuaire "'+term+'": '+(data.total_results||0));
-        // Garder uniquement les entreprises dont le nom contient un des termes mariage
-        const WEDDING_TERMS=['mariage','mariée','mariee','nuptial','nuptiale','noces','bridal','wedding','traiteur','photographe','fleuriste','coiffeur','maquillage','bijouterie','patisserie','pâtisserie','décoration','decoration','videaste','vidéaste','animation','limousine','faire-part','domaine','château','chateau','reception','réception','alliance','couture','robe','smoking','tailleur','bouquet','salle','domaine','prestataire','evenement','événement'];
         const EXCL_NAF=['64','65','66','68','69','70','84','85','86','87','88','91','92','94','99'];
+        // Filtres spécifiques à chaque catégorie
+        const catFilters={
+          salle:    ['réception','domaine','château','manoir','prieuré','abbaye','salle des fêtes','salle de fête'],
+          traiteur: ['traiteur'],
+          photographe:['photographe','studio photo','studio photographique'],
+          videaste: ['vidéaste','videaste','audiovisuel'],
+          dj:       ['dj ','disc jockey','sonorisation mariage','animation mariage','orchestre mariage'],
+          fleuriste:['fleuriste','floral','bouquet mariage','fleurs mariage'],
+          patisserie:['pâtisserie','patisserie','boulangerie','wedding cake','confiserie'],
+          robe:     ['mariage','nuptial','noces','mariée','mariee','bridal','wedding','couture','robe '],
+          costume:  ['costume','smoking','tailleur homme','location costume'],
+          coiffeur: ['coiffure','coiffeur','coiff'],
+          beaute:   ['maquillage','esthétique','esthetique','nail art'],
+          bijou:    ['bijouterie','joaillerie','orfèvrerie','orfevrerie','alliance mariage'],
+          imprimeur:['faire-part','imprimerie','papeterie mariage'],
+          voiture:  ['limousine','voiture mariage','location prestige','location mariage'],
+          hotel:    ['hôtel','hotel','gîte','gite','hébergement','hebergement'],
+          decor:    ['décoration mariage','wedding planner','décorateur mariage','scénographie','scenographie']
+        };
+        const filters=catFilters[catKey]||[];
         (data.results||[]).forEach(e=>{
           const naf=(e.activite_principale||e.siege?.activite_principale||'').substring(0,2);
           if(EXCL_NAF.includes(naf))return;
           const nomDisplay=e.nom_complet||e.nom_raison_sociale||'';
-          const nomLower=nomDisplay.toLowerCase();
-          if(!WEDDING_TERMS.some(t=>nomLower.includes(t)))return;
-          // Utiliser le matching_etablissement local plutôt que le siège national
+          if(!nomDisplay||nomDisplay.length<2)return;
+          // Appliquer le filtre spécifique à la catégorie si défini
+          if(filters.length>0){
+            const nomLower=nomDisplay.toLowerCase();
+            if(!filters.some(f=>nomLower.includes(f)))return;
+          }
           const matching=(e.matching_etablissements||[]).filter(m=>m.etat_administratif==='A');
           const siege=e.siege||{};
           if(matching.length>0){
