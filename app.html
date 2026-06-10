@@ -2084,14 +2084,14 @@ function guestRow(g){
   const invColor=g.invitation==='envoyée'?gn:tl;
   const presColor=sc[g.presence]||tl;
   return `<tr onclick="openGuestDetail(${g.id})" style="cursor:pointer;">
-    <td style="padding:10px 12px;background:#fff;border-radius:10px 0 0 10px;border:1.5px solid ${br};border-right:none;">
+    <td style="padding:11px 4px 11px 0;background:transparent;border:none;border-bottom:1px dashed ${br};">
       <div style="font-size:14px;font-weight:700;color:${tx};">${h(g.nom)}</div>
       <div style="font-size:11px;color:${tl};margin-top:2px;">${h(g.cote==='p1'?USER.p1:USER.p2)} · ${h(g.role||'Invité·e')}</div>
     </td>
-    <td style="padding:10px 9px;background:#fff;border:1.5px solid ${br};border-left:none;border-right:none;text-align:center;">
+    <td style="padding:11px 9px;background:transparent;border:none;border-bottom:1px dashed ${br};text-align:center;">
       <span style="color:${invColor};font-size:11px;font-weight:700;">${invLabel}</span>
     </td>
-    <td style="padding:10px 9px;background:#fff;border-radius:0 10px 10px 0;border:1.5px solid ${br};border-left:none;text-align:center;">
+    <td style="padding:11px 0 11px 4px;background:transparent;border:none;border-bottom:1px dashed ${br};text-align:right;">
       <span style="color:${presColor};font-size:11px;font-weight:700;">${presLabel}</span>
     </td>
   </tr>`;
