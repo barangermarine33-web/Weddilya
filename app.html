@@ -3920,22 +3920,22 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
 
   async function srcAnnuaire(){
     const qMap={
-      salle:    ['mariage','réception mariage','domaine mariage','château mariage','noces'],
-      traiteur: ['traiteur','traiteur mariage','traiteur réception','traiteur banquet'],
-      photographe:['photographe mariage','photographe','studio photo mariage'],
-      videaste: ['vidéaste','vidéaste mariage','cameraman mariage'],
-      dj:       ['DJ mariage','animation mariage','animation musicale','disc jockey'],
-      fleuriste:['fleuriste','fleuriste mariage','fleurs mariage'],
-      patisserie:['pâtisserie','pâtisserie mariage','wedding cake','gâteau mariage'],
-      robe:     ['mariage','nuptiale','noces','mariée','bridal'],
-      costume:  ['costume mariage','smoking mariage','tailleur costume','location costume'],
-      coiffeur: ['coiffeur','coiffeur mariage','coiffure mariage','salon coiffure'],
-      beaute:   ['maquillage','maquillage mariage','esthétique','esthétique mariage'],
-      bijou:    ['bijouterie','bijouterie mariage','alliance','joaillerie mariage'],
-      imprimeur:['faire-part','faire-part mariage','imprimerie mariage','papeterie mariage'],
-      voiture:  ['voiture mariage','limousine','location voiture mariage','prestige mariage'],
-      hotel:    ['hôtel','hébergement mariage','gîte mariage','château hôtel'],
-      decor:    ['décoration mariage','wedding planner','décorateur mariage','événementiel mariage']
+      salle:       ['domaine','château','salle réception','manoir','prieuré'],
+      traiteur:    ['traiteur'],
+      photographe: ['photographe'],
+      videaste:    ['vidéaste','videaste'],
+      dj:          ['disc jockey','sonorisation','dj mariage'],
+      fleuriste:   ['fleuriste'],
+      patisserie:  ['pâtisserie','patisserie'],
+      robe:        ['mariée','nuptiale','noces','bridal','wedding dress'],
+      costume:     ['smoking','tailleur homme','costume mariage'],
+      coiffeur:    ['coiffeur','coiffure'],
+      beaute:      ['maquillage','esthétique','esthetique'],
+      bijou:       ['bijouterie','joaillerie','orfèvrerie'],
+      imprimeur:   ['faire-part','imprimerie'],
+      voiture:     ['limousine','voiture mariage','location prestige'],
+      hotel:       ['hôtel','hotel','gîte','gite'],
+      decor:       ['décoration mariage','wedding planner','décorateur']
     };
     const terms=(qMap[catKey]||[catLabel+' mariage']).slice(0,4);
     const postalVal=(el('vnd-postal')?.value||'').trim();
@@ -3957,22 +3957,22 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
         const EXCL_NAF=['64','65','66','68','69','70','84','85','86','87','88','91','92','94','99'];
         // Filtres spécifiques à chaque catégorie
         const catFilters={
-          salle:    ['réception','domaine','château','manoir','prieuré','abbaye','salle des fêtes','salle de fête'],
-          traiteur: ['traiteur'],
-          photographe:['photographe','studio photo','studio photographique'],
-          videaste: ['vidéaste','videaste','audiovisuel'],
-          dj:       ['dj ','disc jockey','sonorisation mariage','animation mariage','orchestre mariage'],
-          fleuriste:['fleuriste','floral','bouquet mariage','fleurs mariage'],
-          patisserie:['pâtisserie','patisserie','boulangerie','wedding cake','confiserie'],
-          robe:     ['mariage','nuptial','noces','mariée','mariee','bridal','wedding','couture','robe '],
-          costume:  ['costume','smoking','tailleur homme','location costume'],
-          coiffeur: ['coiffure','coiffeur','coiff'],
-          beaute:   ['maquillage','esthétique','esthetique','nail art'],
-          bijou:    ['bijouterie','joaillerie','orfèvrerie','orfevrerie','alliance mariage'],
-          imprimeur:['faire-part','imprimerie','papeterie mariage'],
-          voiture:  ['limousine','voiture mariage','location prestige','location mariage'],
-          hotel:    ['hôtel','hotel','gîte','gite','hébergement','hebergement'],
-          decor:    ['décoration mariage','wedding planner','décorateur mariage','scénographie','scenographie']
+          salle:       ['domaine','château','manoir','prieuré','abbaye','réception','salle de fête','salle des fêtes'],
+          traiteur:    ['traiteur'],
+          photographe: ['photographe'],
+          videaste:    ['vidéaste','videaste'],
+          dj:          ['disc jockey','sonorisation','dj '],
+          fleuriste:   ['fleuriste'],
+          patisserie:  ['pâtisserie','patisserie'],
+          robe:        ['mariée','mariee','nuptiale','nuptial','noces','bridal','wedding','couture','robe '],
+          costume:     ['smoking','tailleur homme','costume mariage'],
+          coiffeur:    ['coiffeur','coiffure','coiff'],
+          beaute:      ['maquillage','esthétique','esthetique'],
+          bijou:       ['bijouterie','joaillerie','orfèvrerie','orfevrerie'],
+          imprimeur:   ['faire-part','imprimerie'],
+          voiture:     ['limousine','voiture mariage','location prestige'],
+          hotel:       ['hôtel','hotel','gîte','gite'],
+          decor:       ['décoration mariage','wedding planner','décorateur']
         };
         const filters=catFilters[catKey]||[];
         (data.results||[]).forEach(e=>{
