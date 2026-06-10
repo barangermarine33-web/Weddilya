@@ -3927,7 +3927,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
       dj:['DJ mariage','animation mariage'],
       fleuriste:['fleuriste mariage'],
       patisserie:['pâtisserie mariage','wedding cake'],
-      robe:['robe mariée','robe nuptiale','robe noces','robe mariage','boutique mariage','mariage mode'],
+      robe:['mariage','nuptiale','noces','mariée','bridal'],
       costume:['smoking mariage','tailleur mariage'],
       coiffeur:['coiffeur mariage'],
       beaute:['maquillage mariage'],
@@ -3960,14 +3960,23 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
         (data.results||[]).forEach(e=>{
           const naf=(e.activite_principale||e.siege?.activite_principale||'').substring(0,2);
           if(EXCL_NAF.includes(naf))return;
-          const siege=e.siege||{};
-          const nom=(e.nom_complet||e.nom_raison_sociale||'').toLowerCase();
-          // Vérifier que le nom contient au moins un terme lié au mariage
-          if(!WEDDING_TERMS.some(t=>nom.includes(t)))return;
           const nomDisplay=e.nom_complet||e.nom_raison_sociale||'';
-          const adresse=siege.adresse||[siege.code_postal,siege.commune].filter(Boolean).join(' ');
-          const coords=(siege.coordonnees||'').split(',');
-          addPlace(nomDisplay,adresse,'','',coords[0],coords[1]);
+          const nomLower=nomDisplay.toLowerCase();
+          if(!WEDDING_TERMS.some(t=>nomLower.includes(t)))return;
+          // Utiliser le matching_etablissement local plutôt que le siège national
+          const matching=(e.matching_etablissements||[]).filter(m=>m.etat_administratif==='A');
+          const siege=e.siege||{};
+          if(matching.length>0){
+            matching.forEach(m=>{
+              const coords=(m.coordonnees||siege.coordonnees||'').split(',');
+              const adresse=m.adresse||siege.adresse||[siege.code_postal,siege.commune].filter(Boolean).join(' ');
+              addPlace(nomDisplay,adresse,'','',coords[0],coords[1]);
+            });
+          } else {
+            const coords=(siege.coordonnees||'').split(',');
+            const adresse=siege.adresse||[siege.code_postal,siege.commune].filter(Boolean).join(' ');
+            addPlace(nomDisplay,adresse,'','',coords[0],coords[1]);
+          }
         });
         log('Annuaire "'+term+'" filtre: '+results.length);
       }catch(e){log('Annuaire "'+term+'" ERR: '+e.message);}
