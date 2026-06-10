@@ -3837,20 +3837,20 @@ async function searchByCategory(catKey,catLabel){
 const FSQ_PROXY = 'https://weddilya-proxy.baranger-marine.workers.dev';
 
 async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
-  const wrap = el('vnd-results-wrap');
-  if(!wrap) return;
-  wrap.innerHTML = `<p style="text-align:center;padding:20px;font-size:13px;color:${tl};">Recherche en cours…</p>`;
-  window._vndLogs = [];
-  const log=(msg)=>{ window._vndLogs = window._vndLogs||[]; window._vndLogs.push(msg); console.log('[VND]',msg); };
+  const wrap=el('vnd-results-wrap');
+  if(!wrap)return;
+  wrap.innerHTML=`<p style="text-align:center;padding:20px;font-size:13px;color:${tl};">Recherche en cours…</p>`;
+  window._vndLogs=[];
+  const log=(msg)=>{window._vndLogs=window._vndLogs||[];window._vndLogs.push(msg);console.log('[VND]',msg);};
 
-  const radiusKm = Math.round(radiusMeters/1000);
-  const results = []; const seen = new Set();
+  const radiusKm=Math.round(radiusMeters/1000);
+  const results=[];const seen=new Set();
 
   function hav(a,b,c,d){const R=6371,dLat=(c-a)*Math.PI/180,dLon=(d-b)*Math.PI/180,x=Math.sin(dLat/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dLon/2)**2;return Math.round(R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))*10)/10;}
   function addPlace(nom,adresse,tel,site,plat,plng){
     const key=nom.toLowerCase().trim();
     if(!nom||nom.length<3||seen.has(key))return;
-    const la=parseFloat(plat), lo=parseFloat(plng);
+    const la=parseFloat(plat),lo=parseFloat(plng);
     const hasCoords=!isNaN(la)&&!isNaN(lo)&&la!==0&&lo!==0;
     if(hasCoords){
       const dist=hav(lat,lng,la,lo);
@@ -3858,10 +3858,8 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
       seen.add(key);
       results.push({id:Date.now()+Math.random(),nom,categorie:catLabel,adresse:adresse||'',tel:tel||'',site:site||'',distance:dist,lat:la,lng:lo,notes:''});
     } else {
-      // Sans GPS : garder si l'adresse contient un code postal du département ciblé
       const dept=(el('vnd-postal')?.value||'').trim().substring(0,2);
-      if(!dept||!adresse)return;
-      if(!adresse.includes(dept))return;
+      if(!dept||!adresse||!adresse.includes(dept))return;
       seen.add(key);
       results.push({id:Date.now()+Math.random(),nom,categorie:catLabel,adresse:adresse||'',tel:tel||'',site:site||'',distance:null,lat:lat,lng:lng,notes:''});
     }
@@ -3874,25 +3872,43 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
     if(!cat)return;
     const fp=cat.tags.map(t=>{const[k,v]=t.split('=');return `node["${k}"="${v}"](around:${radiusMeters},${lat},${lng});way["${k}"="${v}"](around:${radiusMeters},${lat},${lng});`;}).join('');
     const oq=`[out:json][timeout:25];(${fp});out center 80;`;
-    for(const m of MIRRORS){try{const c=new AbortController();setTimeout(()=>c.abort(),20000);const r=await fetch(m+'?data='+encodeURIComponent(oq),{signal:c.signal});if(!r.ok){log('Overpass tags '+m.split('/')[2]+' HTTP '+r.status);continue;}const d=await r.json();const n=(d.elements||[]).filter(e=>e.tags?.name).length;log('Overpass tags OK: '+n);(d.elements||[]).filter(e=>e.tags?.name).forEach(e=>{addPlace(e.tags.name,[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' '),e.tags.phone||e.tags['contact:phone'],e.tags.website||e.tags['contact:website'],e.lat||(e.center?.lat),e.lon||(e.center?.lon));});return;}catch(e){log('Overpass tags ERR: '+e.message);}}
+    for(const m of MIRRORS){try{const c=new AbortController();setTimeout(()=>c.abort(),20000);const r=await fetch(m+'?data='+encodeURIComponent(oq),{signal:c.signal});if(!r.ok){log('Overpass tags HTTP '+r.status);continue;}const d=await r.json();const n=(d.elements||[]).filter(e=>e.tags?.name).length;log('Overpass tags OK: '+n);(d.elements||[]).filter(e=>e.tags?.name).forEach(e=>{addPlace(e.tags.name,[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' '),e.tags.phone||e.tags['contact:phone'],e.tags.website||e.tags['contact:website'],e.lat||(e.center?.lat),e.lon||(e.center?.lon));});return;}catch(e){log('Overpass tags ERR: '+e.message);}}
   }
 
   async function srcOverpassName(){
-    const nkw={salle:['mariage','réception','domaine','château'],traiteur:['traiteur'],photographe:['photographe'],videaste:['vidéaste'],dj:['dj','animation'],fleuriste:['fleur'],patisserie:['pâtisserie'],robe:['mariée','bridal','wedding'],costume:['smoking','tailleur'],coiffeur:['coiff'],beaute:['maquill'],bijou:['bijou'],imprimeur:['imprim'],voiture:['limousine'],hotel:['hôtel','hotel'],decor:['décor']};
-    const kws=(nkw[catKey]||[]).slice(0,3);
+    const nkw={
+      salle:['mariage','réception','domaine','château','noces'],
+      traiteur:['traiteur','mariage'],photographe:['photographe','mariage'],
+      videaste:['vidéaste','mariage'],dj:['dj','mariage','animation'],
+      fleuriste:['fleur','mariage'],patisserie:['pâtisserie','mariage','wedding'],
+      robe:['mariage','mariée','bridal','wedding','noces','nuptiale'],costume:['mariage','smoking'],
+      coiffeur:['coiff','mariage'],beaute:['maquill','mariage'],
+      bijou:['bijou','mariage','alliance'],imprimeur:['imprim','mariage','faire-part'],
+      voiture:['mariage','limousine'],hotel:['hôtel','hotel','mariage'],decor:['mariage','décor']
+    };
+    const kws=(nkw[catKey]||['mariage']).slice(0,3);
     await Promise.allSettled(kws.map(async kw=>{
       for(const m of MIRRORS){try{const c=new AbortController();setTimeout(()=>c.abort(),15000);const nq=`[out:json][timeout:20];(node["name"~"${kw}",i](around:${radiusMeters},${lat},${lng});way["name"~"${kw}",i](around:${radiusMeters},${lat},${lng}););out center 40;`;const r=await fetch(m+'?data='+encodeURIComponent(nq),{signal:c.signal});if(!r.ok)continue;const d=await r.json();const n=(d.elements||[]).filter(e=>e.tags?.name).length;log('Overpass "'+kw+'": '+n);(d.elements||[]).filter(e=>e.tags?.name).forEach(e=>{addPlace(e.tags.name,[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' '),e.tags.phone,e.tags.website,e.lat||(e.center?.lat),e.lon||(e.center?.lon));});return;}catch(e){log('Overpass "'+kw+'" ERR: '+e.message);}}
     }));
   }
 
   async function srcNominatim(){
-    const nt={salle:['salle mariage','domaine mariage','chateau mariage'],traiteur:['traiteur mariage'],photographe:['photographe mariage'],videaste:['videaste mariage'],dj:['DJ mariage'],fleuriste:['fleuriste'],patisserie:['patisserie'],robe:['robe mariee','boutique mariage'],costume:['costume mariage'],coiffeur:['coiffeur'],beaute:['maquillage'],bijou:['bijouterie'],imprimeur:['imprimerie'],voiture:['location voiture'],hotel:['hotel'],decor:['decoration mariage']};
-    const terms=(nt[catKey]||[catLabel]).slice(0,3);
+    const nt={
+      salle:['salle mariage','domaine mariage','château mariage'],
+      traiteur:['traiteur mariage'],photographe:['photographe mariage'],
+      videaste:['vidéaste mariage'],dj:['DJ mariage','animation mariage'],
+      fleuriste:['fleuriste mariage'],patisserie:['pâtisserie mariage','wedding cake'],
+      robe:['boutique mariage','robe mariée','robe noces','robe nuptiale'],costume:['costume mariage'],
+      coiffeur:['coiffeur mariage'],beaute:['maquillage mariage'],
+      bijou:['bijouterie mariage','alliance mariage'],
+      imprimeur:['faire-part mariage'],voiture:['voiture mariage'],
+      hotel:['hôtel mariage'],decor:['décoration mariage','wedding planner']
+    };
+    const terms=(nt[catKey]||[catLabel+' mariage']).slice(0,2);
     await Promise.allSettled(terms.map(async term=>{
       try{
         const c=new AbortController();setTimeout(()=>c.abort(),10000);
-        // bounded=0 pour ne pas rater des résultats, le filtre distance dans addPlace s'en charge
-        const deg=radiusKm/60; // viewbox large
+        const deg=radiusKm/60;
         const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(term)}&format=json&limit=30&addressdetails=1&countrycodes=fr,be,ch,lu&viewbox=${lng-deg},${lat+deg},${lng+deg},${lat-deg}&bounded=0`,{signal:c.signal,headers:{'Accept-Language':'fr'}});
         if(!r.ok){log('Nominatim HTTP '+r.status);return;}
         const d=await r.json();
@@ -3903,46 +3919,37 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
   }
 
   async function srcAnnuaire(){
-    // Termes de recherche métier (q est obligatoire)
     const qMap={
-      salle:'salle réception mariage domaine',traiteur:'traiteur',
-      photographe:'photographe',videaste:'vidéaste cameraman',
-      dj:'DJ animation musicale',fleuriste:'fleuriste',
-      patisserie:'pâtisserie boulangerie',robe:'robe mariée mariage',
-      costume:'costume tailleur smoking',coiffeur:'coiffeur coiffure',
-      beaute:'maquillage esthétique beauté',bijou:'bijouterie',
-      imprimeur:'imprimerie reprographie',voiture:'location véhicule limousine',
-      hotel:'hôtel chambre hébergement',decor:'décoration événementiel'
+      salle:'mariage réception domaine',traiteur:'traiteur mariage',
+      photographe:'photographe mariage',videaste:'vidéaste mariage',
+      dj:'DJ mariage animation',fleuriste:'fleuriste mariage',
+      patisserie:'pâtisserie mariage wedding',robe:'mariage noces nuptiale robe mariée',
+      costume:'mariage costume',coiffeur:'coiffeur mariage',
+      beaute:'maquillage mariage',bijou:'bijouterie mariage alliance',
+      imprimeur:'faire-part mariage',voiture:'voiture mariage',
+      hotel:'hôtel mariage',decor:'décoration mariage'
     };
-    const q=qMap[catKey];
-    if(!q){log('Annuaire: pas de terme pour '+catKey);return;}
-
+    const q=qMap[catKey]||catLabel+' mariage';
     const postalVal=(el('vnd-postal')?.value||'').trim();
     const dept=postalVal.length>=2?postalVal.substring(0,2):'';
     if(!dept){log('Annuaire: pas de département');return;}
-
-    // Départements voisins selon rayon
     const depts=new Set([dept]);
     const n=parseInt(dept);
     if(radiusKm>30){[-1,1].forEach(i=>depts.add(String(n+i).padStart(2,'0')));}
     if(radiusKm>60){[-2,2].forEach(i=>depts.add(String(n+i).padStart(2,'0')));}
-
-    const deptStr=[...depts].join(',');
     try{
       const c=new AbortController();setTimeout(()=>c.abort(),12000);
-      const url=`https://recherche-entreprises.api.gouv.fr/search?q=${encodeURIComponent(q)}&departement=${deptStr}&per_page=25&etat_administratif=A`;
+      const url=`https://recherche-entreprises.api.gouv.fr/search?q=${encodeURIComponent(q)}&departement=${[...depts].join(',')}&per_page=25&etat_administratif=A`;
       const r=await fetch(url,{signal:c.signal,headers:{'Accept':'application/json'}});
       if(!r.ok){log('Annuaire HTTP '+r.status);return;}
       const data=await r.json();
-      const total=data.total_results||0;
-      log('Annuaire "'+q.split(' ')[0]+'" dept '+deptStr+': '+total+' résultats');
+      log('Annuaire "'+q.split(' ')[0]+'" dept '+[...depts].join(',')+': '+(data.total_results||0));
       (data.results||[]).forEach(e=>{
         const siege=e.siege||{};
         const nom=e.nom_complet||e.nom_raison_sociale||'';
         const adresse=siege.adresse||[siege.code_postal,siege.commune].filter(Boolean).join(' ');
         const coords=(siege.coordonnees||'').split(',');
-        const la=parseFloat(coords[0]), lo=parseFloat(coords[1]);
-        addPlace(nom,adresse,'',e.siren||'',la,lo);
+        addPlace(nom,adresse,'','',coords[0],coords[1]);
       });
       log('Annuaire après filtre: '+results.length);
     }catch(e){log('Annuaire ERR: '+e.message);}
@@ -3950,27 +3957,18 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
 
   await Promise.allSettled([srcOverpassTags(), srcOverpassName(), srcNominatim(), srcAnnuaire()]);
 
-  // ── Affichage ──
-  const sorted = results.sort((a,b)=>a.distance-b.distance).slice(0,40);
-  window._vndResults = sorted;
-
-  // DEBUG temporaire - à supprimer après diagnostic
-  const logMsgs = window._vndLogs || [];
-  console.log('[VND] Résumé:', logMsgs.join(' | '), '| Total:', sorted.length);
+  const sorted=results.sort((a,b)=>(a.distance||999)-(b.distance||999)).slice(0,40);
+  window._vndResults=sorted;
+  console.log('[VND]',(window._vndLogs||[]).join(' | '),'| Total:',sorted.length);
 
   if(!sorted.length){
     const gmUrl=`https://www.google.com/maps/search/${encodeURIComponent(catLabel+' mariage')}/@${lat},${lng},12z`;
-    const logHtml=(window._vndLogs||[]).map(m=>`<div style="font-size:10px;color:#aaa;text-align:left;padding:1px 0;">${m}</div>`).join('');
-    wrap.innerHTML=`<div style="padding:20px;text-align:center;">
-      <p style="font-size:13px;color:${tl};margin-bottom:16px;">Aucun résultat trouvé.<br><span style="font-size:11px;">Essaie un rayon plus large ou un autre code postal.</span></p>
-      <div style="background:#f9f9f9;border-radius:8px;padding:8px;margin-bottom:12px;text-align:left;">${logHtml}</div>
-      <a href="${gmUrl}" target="_blank" style="display:block;padding:13px;background:${sf};border:1px solid ${br};border-radius:14px;text-decoration:none;color:${pk};font-size:13px;font-weight:700;font-family:Lora,serif;text-align:center;">Chercher sur Google Maps</a>
-    </div>`;
+    const logHtml=(window._vndLogs||[]).map(m=>`<div style="font-size:10px;color:#aaa;padding:1px 0;">${m}</div>`).join('');
+    wrap.innerHTML=`<div style="padding:20px;text-align:center;"><p style="font-size:13px;color:${tl};margin-bottom:16px;">Aucun résultat trouvé.<br><span style="font-size:11px;">Essaie un rayon plus large ou un autre code postal.</span></p><div style="background:#f9f9f9;border-radius:8px;padding:8px;margin-bottom:12px;text-align:left;">${logHtml}</div><a href="${gmUrl}" target="_blank" style="display:block;padding:13px;background:${sf};border:1px solid ${br};border-radius:14px;text-decoration:none;color:${pk};font-size:13px;font-weight:700;font-family:Lora,serif;text-align:center;">Chercher sur Google Maps</a></div>`;
     return;
   }
   renderVndResults(catLabel);
 }
-
 
 async function searchVendorsWithLocation(query,lat,lng){
   const btn=el('vnd-btn');btn.textContent='Recherche...';btn.disabled=true;
