@@ -3839,6 +3839,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
   const wrap = el('vnd-results-wrap');
   if(!wrap) return;
   wrap.innerHTML = `<p style="text-align:center;padding:20px;font-size:13px;color:${tl};">Recherche en cours…</p>`;
+  const log=(msg)=>{ const p=el('vnd-results-wrap'); if(p){ const d=document.createElement('div'); d.style.cssText='font-size:10px;color:#aaa;padding:2px 14px;'; d.textContent=msg; p.appendChild(d); } console.log('[VND]',msg); };
 
   const radiusKm = Math.round(radiusMeters/1000);
   const results = []; const seen = new Set();
@@ -3863,14 +3864,16 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
       try{
         const ctrl=new AbortController(); setTimeout(()=>ctrl.abort(),10000);
         const r=await fetch(`${mirror}?data=${encodeURIComponent(oq)}`,{signal:ctrl.signal});
-        if(!r.ok)continue;
+        if(!r.ok){log('Overpass tags '+mirror.split('/')[2]+' HTTP '+r.status); continue;}
         const d=await r.json();
+        const found=(d.elements||[]).filter(e=>e.tags?.name).length;
+        log('Overpass tags OK ('+mirror.split('/')[2]+'): '+found+' résultats');
         (d.elements||[]).filter(e=>e.tags?.name).forEach(e=>{
           const la=e.lat||(e.center?.lat)||0, lo=e.lon||(e.center?.lon)||0;
           addPlace(e.tags.name,[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' '),e.tags.phone||e.tags['contact:phone'],e.tags.website||e.tags['contact:website'],la,lo);
         });
-        break; // succès, pas besoin d'essayer les autres miroirs
-      }catch(e){console.warn('Overpass',mirror,e.message);}
+        break;
+      }catch(e){log('Overpass tags '+mirror.split('/')[2]+' ERR: '+e.message);}
     }
   }
 
@@ -3919,6 +3922,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
       const r=await fetch(nurl,{signal:ctrl.signal,headers:{'Accept-Language':'fr'}});
       if(!r.ok)continue;
       const d=await r.json();
+      const before=results.length;
       d.forEach(e=>{
         const la=parseFloat(e.lat),lo=parseFloat(e.lon);
         if(isNaN(la))return;
@@ -3926,6 +3930,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
         const a=e.address||{};
         addPlace(nom,[a.road,a.postcode,a.city||a.town||a.village].filter(Boolean).join(' '),'','',la,lo);
       });
+      log('Nominatim "'+term+'": '+(results.length-before)+' nouveaux résultats');
     }catch(e){console.warn('Nominatim',e.message);}
   }
 
@@ -3937,6 +3942,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
     const r=await fetch(`${FSQ_PROXY}?query=${encodeURIComponent(fq)}&ll=${lat},${lng}&radius=${Math.min(radiusMeters,50000)}&limit=20`,{signal:ctrl.signal});
     if(r.ok){
       const d=await r.json();
+      const before=results.length;
       (d.results||d.response?.venues||[]).forEach(p=>{
         const la=p.geocodes?.main?.latitude||p.location?.lat;
         const lo=p.geocodes?.main?.longitude||p.location?.lng;
