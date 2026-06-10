@@ -3849,12 +3849,21 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
   function addPlace(nom,adresse,tel,site,plat,plng){
     const key=nom.toLowerCase().trim();
     if(!nom||nom.length<3||seen.has(key))return;
-    const la=parseFloat(plat)||0, lo=parseFloat(plng)||0;
-    if(!la||!lo)return;
-    const dist=hav(lat,lng,la,lo);
-    if(dist>radiusKm)return; // filtre strict : respecter le rayon choisi
-    seen.add(key);
-    results.push({id:Date.now()+Math.random(),nom,categorie:catLabel,adresse:adresse||'',tel:tel||'',site:site||'',distance:dist,lat:la,lng:lo,notes:''});
+    const la=parseFloat(plat), lo=parseFloat(plng);
+    const hasCoords=!isNaN(la)&&!isNaN(lo)&&la!==0&&lo!==0;
+    if(hasCoords){
+      const dist=hav(lat,lng,la,lo);
+      if(dist>radiusKm)return;
+      seen.add(key);
+      results.push({id:Date.now()+Math.random(),nom,categorie:catLabel,adresse:adresse||'',tel:tel||'',site:site||'',distance:dist,lat:la,lng:lo,notes:''});
+    } else {
+      // Sans GPS : garder si l'adresse contient un code postal du département ciblé
+      const dept=(el('vnd-postal')?.value||'').trim().substring(0,2);
+      if(!dept||!adresse)return;
+      if(!adresse.includes(dept))return;
+      seen.add(key);
+      results.push({id:Date.now()+Math.random(),nom,categorie:catLabel,adresse:adresse||'',tel:tel||'',site:site||'',distance:null,lat:lat,lng:lng,notes:''});
+    }
   }
 
   const MIRRORS=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://overpass.openstreetmap.fr/api/interpreter'];
