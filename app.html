@@ -3839,7 +3839,8 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
   const wrap = el('vnd-results-wrap');
   if(!wrap) return;
   wrap.innerHTML = `<p style="text-align:center;padding:20px;font-size:13px;color:${tl};">Recherche en cours…</p>`;
-  const log=(msg)=>{ const p=el('vnd-results-wrap'); if(p){ const d=document.createElement('div'); d.style.cssText='font-size:10px;color:#aaa;padding:2px 14px;'; d.textContent=msg; p.appendChild(d); } console.log('[VND]',msg); };
+  window._vndLogs = [];
+  const log=(msg)=>{ window._vndLogs = window._vndLogs||[]; window._vndLogs.push(msg); console.log('[VND]',msg); };
 
   const radiusKm = Math.round(radiusMeters/1000);
   const results = []; const seen = new Set();
@@ -3849,9 +3850,9 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
     const key=nom.toLowerCase().trim();
     if(!nom||nom.length<3||seen.has(key))return;
     seen.add(key);
-    const dist=hav(lat,lng,plat||lat,plng||lng);
-    if(dist>radiusKm*1.5)return;
-    results.push({id:Date.now()+Math.random(),nom,categorie:catLabel,adresse:adresse||'',tel:tel||'',site:site||'',distance:dist,lat:plat||lat,lng:plng||lng,notes:''});
+    const la=parseFloat(plat)||lat, lo=parseFloat(plng)||lng;
+    const dist=hav(lat,lng,la,lo);
+    results.push({id:Date.now()+Math.random(),nom,categorie:catLabel,adresse:adresse||'',tel:tel||'',site:site||'',distance:dist,lat:la,lng:lo,notes:''});
   }
 
   // ── 1) OVERPASS — tags OSM directs (3 miroirs en cascade) ──
@@ -3939,7 +3940,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
     const fsqTerms={salle:'salle reception mariage',traiteur:'traiteur mariage',photographe:'photographe mariage',videaste:'videaste mariage',dj:'DJ mariage',fleuriste:'fleuriste',patisserie:'patisserie',robe:'boutique mariage',costume:'costume mariage',coiffeur:'coiffeur',beaute:'maquillage mariage',bijou:'bijouterie',imprimeur:'imprimerie',voiture:'location voiture',hotel:'hotel',decor:'decoration mariage'};
     const fq=fsqTerms[catKey]||catLabel;
     const ctrl=new AbortController(); setTimeout(()=>ctrl.abort(),10000);
-    const r=await fetch(`${FSQ_PROXY}?query=${encodeURIComponent(fq)}&ll=${lat},${lng}&radius=${Math.min(radiusMeters,50000)}&limit=20`,{signal:ctrl.signal});
+    const r=await fetch(`${FSQ_PROXY}?query=${encodeURIComponent(fq)}&ll=${lat},${lng}&radius=${radiusMeters}&limit=20`,{signal:ctrl.signal});
     if(r.ok){
       const d=await r.json();
       const before=results.length;
@@ -3955,10 +3956,16 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
   const sorted = results.sort((a,b)=>a.distance-b.distance).slice(0,40);
   window._vndResults = sorted;
 
+  // DEBUG temporaire - à supprimer après diagnostic
+  const logMsgs = window._vndLogs || [];
+  console.log('[VND] Résumé:', logMsgs.join(' | '), '| Total:', sorted.length);
+
   if(!sorted.length){
     const gmUrl=`https://www.google.com/maps/search/${encodeURIComponent(catLabel+' mariage')}/@${lat},${lng},12z`;
+    const logHtml=(window._vndLogs||[]).map(m=>`<div style="font-size:10px;color:#aaa;text-align:left;padding:1px 0;">${m}</div>`).join('');
     wrap.innerHTML=`<div style="padding:20px;text-align:center;">
       <p style="font-size:13px;color:${tl};margin-bottom:16px;">Aucun résultat trouvé.<br><span style="font-size:11px;">Essaie un rayon plus large ou un autre code postal.</span></p>
+      <div style="background:#f9f9f9;border-radius:8px;padding:8px;margin-bottom:12px;text-align:left;">${logHtml}</div>
       <a href="${gmUrl}" target="_blank" style="display:block;padding:13px;background:${sf};border:1px solid ${br};border-radius:14px;text-decoration:none;color:${pk};font-size:13px;font-weight:700;font-family:Lora,serif;text-align:center;">Chercher sur Google Maps</a>
     </div>`;
     return;
