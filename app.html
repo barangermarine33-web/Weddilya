@@ -3955,12 +3955,34 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
         const data=await r.json();
         log('Annuaire "'+term+'": '+(data.total_results||0));
         const EXCL_NAF=['64','65','66','68','69','70','84','85','86','87','88','91','92','94','99'];
+        const catFilters={
+          salle:       ['domaine','château','salle polyvalente','salle des fêtes','manoir','prieuré','abbaye','réception'],
+          traiteur:    ['traiteur'],
+          photographe: ['photographe'],
+          videaste:    ['vidéaste','videaste'],
+          dj:          ['dj','disc jockey','sonorisation','animation'],
+          fleuriste:   ['fleuriste','fleurs'],
+          patisserie:  ['pâtisserie','patisserie','boulangerie','confiserie','chocolat','cake'],
+          robe:        ['mariage','mariée','mariee','nuptiale','nuptial','noces','bridal','wedding','couture','robe'],
+          costume:     ['smoking','costume','costumier','location tenue'],
+          coiffeur:    ['coiffeur','coiffure','coiff'],
+          beaute:      ['maquillage','esthétique','esthetique'],
+          bijou:       ['bijouterie','joaillerie','orfèvrerie','orfevrerie'],
+          imprimeur:   ['faire-part','imprimerie','papeterie'],
+          voiture:     ['limousine','location voiture','voiture mariage'],
+          hotel:       ['hôtel','hotel','gîte','gite','hébergement','hebergement','chambre','logis','auberge'],
+          decor:       ['décoration','decorat','wedding','événementiel','evenementiel','floral']
+        };
+        const filters=catFilters[catKey]||[];
         (data.results||[]).forEach(e=>{
           const naf=(e.activite_principale||'').substring(0,2);
           if(EXCL_NAF.includes(naf))return;
           const nomDisplay=e.nom_complet||e.nom_raison_sociale||'';
           if(!nomDisplay||nomDisplay.length<2)return;
-          // Garder uniquement les établissements dans le(s) département(s) ciblé(s)
+          if(filters.length>0){
+            const nomLower=nomDisplay.toLowerCase();
+            if(!filters.some(f=>nomLower.includes(f)))return;
+          }
           const deptSet=[...depts];
           const localEtabs=(e.matching_etablissements||[]).filter(m=>
             deptSet.some(d=>m.code_postal&&m.code_postal.startsWith(d))
@@ -3972,7 +3994,6 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
               addPlace(nomDisplay,adresse,'','',coords[0],coords[1]);
             });
           }
-          // Ignorer si pas d'établissement local trouvé
         });
         log('Annuaire "'+term+'" filtre: '+results.length);
       }catch(e){log('Annuaire "'+term+'" ERR: '+e.message);}
