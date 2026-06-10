@@ -3937,7 +3937,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
       hotel:['hôtel mariage'],
       decor:['décoration mariage','wedding planner']
     };
-    const terms=(qMap[catKey]||[catLabel+' mariage']).slice(0,2);
+    const terms=(qMap[catKey]||[catLabel+' mariage']).slice(0,3);
     const postalVal=(el('vnd-postal')?.value||'').trim();
     const dept=postalVal.length>=2?postalVal.substring(0,2):'';
     if(!dept){log('Annuaire: pas de département');return;}
