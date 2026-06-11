@@ -3,1196 +3,1059 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Weddilya — Créez le mariage dont vous rêvez</title>
+<title>Weddilya — Dashboard</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23fdf8f5'/%3E%3Ccircle cx='12' cy='16' r='9' stroke='%23d4607a' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='20' cy='16' r='9' stroke='%23d4607a' stroke-width='1.5' fill='none'/%3E%3C/svg%3E">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,700;1,400&family=Josefin+Sans:wght@300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,700;1,400&family=Josefin+Sans:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
 :root {
-    --pink: #d4607a;
-    --pink-dark: #b84060;
-    --pink-light: #e8a0b0;
-    --pink-pale: #fef2f6;
-    --bg: #fdf8f5;
-    --dark: #3e1828;
-    --mid: #7a4050;
-    --gold: #c9a84c;
-    --white: #ffffff;
-    --border: #f5d5e0;
-  }
+  --pk: #d4607a; --pk2: #b84060; --sf: #fde8ed; --br: #f0dde5;
+  --tx: #3e1828; --tm: #7a4050; --tl: #b07080;
+  --gn: #5a8a6a; --am: #c47a2a; --rd: #c43a3a;
+  --bg: #fdf8f5; --white: #ffffff;
+  --nav-h: 64px; --sidebar-w: 0px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { font-family: 'Lora', serif; background: var(--bg); color: var(--tx); height: 100%; overflow-x: hidden; }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  html, body {
-    font-family: 'Lora', serif;
-    background: var(--white);
-    color: var(--dark);
-    overflow-x: hidden;
-    max-width: 100%;
-  }
+/* ══ TOPBAR ══ */
+.topbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  height: var(--nav-h); background: var(--white);
+  border-bottom: 1px solid var(--br);
+  display: flex; align-items: center;
+  padding: 0 32px; gap: 0;
+  box-shadow: 0 2px 20px rgba(212,96,122,0.06);
+}
+.topbar-logo {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none; margin-right: 40px; flex-shrink: 0;
+}
+.topbar-logo svg { width: 28px; height: 28px; }
+.topbar-logo-text {
+  font-family: 'Josefin Sans', sans-serif; font-weight: 300;
+  font-size: 16px; letter-spacing: .25em; color: var(--pk); text-transform: uppercase;
+}
+.topbar-tabs {
+  display: flex; gap: 0; flex: 1; overflow-x: auto; scrollbar-width: none;
+}
+.topbar-tabs::-webkit-scrollbar { display: none; }
+.tab-btn {
+  flex-shrink: 0; padding: 0 20px; height: var(--nav-h);
+  display: flex; align-items: center; gap: 7px;
+  font-family: 'Lora', serif; font-size: 13px; color: var(--tl);
+  cursor: pointer; border: none; background: none;
+  border-bottom: 2px solid transparent; white-space: nowrap;
+  transition: color .2s, border-color .2s;
+}
+.tab-btn:hover { color: var(--pk); }
+.tab-btn.active { color: var(--pk); border-bottom-color: var(--pk); font-weight: 700; }
+.tab-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+.topbar-right {
+  margin-left: auto; display: flex; align-items: center; gap: 16px; flex-shrink: 0; padding-left: 20px;
+}
+.topbar-wedding {
+  text-align: right; line-height: 1.3;
+}
+.topbar-wedding-names { font-size: 13px; font-weight: 700; color: var(--tx); font-family: 'Lora', serif; }
+.topbar-wedding-date { font-size: 11px; color: var(--tl); }
+.countdown-mini {
+  display: flex; gap: 8px; align-items: center;
+}
+.cd-box {
+  text-align: center; background: var(--sf); border-radius: 8px; padding: 4px 8px; min-width: 36px;
+}
+.cd-num { font-family: 'Playfair Display', serif; font-size: 16px; color: var(--pk); line-height: 1; font-weight: 700; }
+.cd-lbl { font-size: 7px; letter-spacing: .08em; text-transform: uppercase; color: var(--tl); }
+.topbar-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--pk2), var(--pk));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; color: white; cursor: pointer; flex-shrink: 0;
+  position: relative;
+}
+.avatar-menu {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  background: white; border: 1px solid var(--br); border-radius: 12px;
+  padding: 6px; min-width: 160px;
+  box-shadow: 0 8px 32px rgba(62,24,40,.12); display: none; z-index: 300;
+}
+.avatar-menu.open { display: block; }
+.avatar-menu-item {
+  padding: 9px 14px; font-size: 13px; font-family: 'Lora', serif;
+  cursor: pointer; border-radius: 8px; color: var(--tx); white-space: nowrap;
+}
+.avatar-menu-item:hover { background: var(--sf); }
+.avatar-menu-item.danger { color: var(--rd); }
 
-  /* ── NAV ── */
-  nav {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 60px;
-    height: 72px;
-    background: rgba(253,248,245,0.95);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-    transition: box-shadow 0.3s;
-  }
-  nav.scrolled { box-shadow: 0 2px 24px rgba(212,96,122,0.08); }
+/* ══ LAYOUT ══ */
+.layout {
+  margin-top: var(--nav-h); min-height: calc(100vh - var(--nav-h));
+  display: flex;
+}
+.main {
+  flex: 1; padding: 32px 40px; max-width: 1400px; margin: 0 auto; width: 100%;
+}
 
-  .nav-logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    text-decoration: none;
-  }
-  .nav-logo svg { width: 32px; height: 32px; }
-  .nav-logo-text {
-    font-family: 'Josefin Sans', sans-serif;
-    font-weight: 300;
-    font-size: 18px;
-    letter-spacing: 0.25em;
-    color: var(--pink);
-    text-transform: uppercase;
-  }
+/* ══ AUTH WALL ══ */
+#auth-wall {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(62,24,40,.5); backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+}
+.auth-box {
+  background: white; border-radius: 20px; padding: 40px;
+  width: 100%; max-width: 420px;
+  box-shadow: 0 24px 80px rgba(62,24,40,.2);
+}
+.auth-logo {
+  font-family: 'Josefin Sans', sans-serif; font-weight: 300;
+  font-size: 20px; letter-spacing: .25em; color: var(--pk);
+  text-align: center; margin-bottom: 8px;
+}
+.auth-title {
+  font-family: 'Playfair Display', serif; font-size: 22px;
+  color: var(--tx); text-align: center; margin-bottom: 24px;
+}
+.auth-tabs { display: flex; gap: 0; margin-bottom: 24px; border-bottom: 1px solid var(--br); }
+.auth-tab {
+  flex: 1; padding: 10px; text-align: center; font-size: 13px;
+  font-family: 'Lora', serif; color: var(--tl); cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+.auth-tab.active { color: var(--pk); border-bottom-color: var(--pk); font-weight: 700; }
+.auth-form { display: flex; flex-direction: column; gap: 12px; }
+.auth-form input {
+  padding: 12px 16px; border: 1.5px solid var(--br); border-radius: 10px;
+  font-family: 'Lora', serif; font-size: 14px; color: var(--tx);
+  outline: none; background: var(--bg);
+  transition: border-color .2s;
+}
+.auth-form input:focus { border-color: var(--pk); }
+.auth-form input::placeholder { color: var(--tl); }
+.auth-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.auth-btn {
+  padding: 13px; border: none; border-radius: 11px; cursor: pointer;
+  font-family: 'Lora', serif; font-size: 14px; font-weight: 700;
+  background: linear-gradient(135deg, var(--pk2), var(--pk)); color: white;
+  box-shadow: 0 4px 16px rgba(212,96,122,.3);
+  transition: opacity .2s, transform .2s; margin-top: 4px;
+}
+.auth-btn:hover { opacity: .9; transform: translateY(-1px); }
+.auth-error { color: var(--rd); font-size: 12px; display: none; }
+.auth-link { text-align: center; font-size: 12px; color: var(--tl); cursor: pointer; }
+.auth-link span { color: var(--pk); font-weight: 700; text-decoration: underline; }
 
-  .nav-links {
-    display: flex;
-    gap: 36px;
-    list-style: none;
-    align-items: center;
-  }
-  .nav-links a {
-    text-decoration: none;
-    font-family: 'Lora', serif;
-    font-size: 14px;
-    color: var(--mid);
-    transition: color 0.2s;
-  }
-  .nav-links a:hover { color: var(--pink); }
+/* ══ WIDGETS DASHBOARD HOME ══ */
+.dash-header {
+  margin-bottom: 28px;
+}
+.dash-title {
+  font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 400; color: var(--tx);
+}
+.dash-sub { font-size: 14px; color: var(--tl); margin-top: 4px; }
 
-  .nav-cta {
-    background: linear-gradient(135deg, var(--pink-dark), var(--pink)) !important;
-    color: white !important;
-    padding: 10px 24px;
-    border-radius: 11px;
-    font-weight: 700 !important;
-    transition: opacity 0.2s, transform 0.2s !important;
-  }
-  .nav-cta:hover { opacity: 0.9 !important; transform: translateY(-1px); }
+.widgets-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;
+}
+.widget {
+  background: white; border-radius: 16px; padding: 20px 22px;
+  box-shadow: 0 2px 16px rgba(212,96,122,.06);
+  border: 1px solid var(--br);
+}
+.widget-icon { font-size: 22px; margin-bottom: 10px; }
+.widget-label {
+  font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--tl); margin-bottom: 6px; font-family: 'Josefin Sans', sans-serif;
+}
+.widget-value {
+  font-family: 'Playfair Display', serif; font-size: 30px; color: var(--pk); line-height: 1;
+}
+.widget-sub { font-size: 12px; color: var(--tl); margin-top: 6px; }
+.progress-bar { height: 5px; background: var(--sf); border-radius: 3px; margin-top: 10px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--pk2), var(--pk)); transition: width .6s; }
 
-  /* ── HERO ── */
-  .hero {
-    min-height: auto;
-    display: grid;
-    grid-template-columns: 1fr 1.2fr;
-    align-items: center;
-    padding: 100px 80px 60px;
-    background: var(--bg);
-    position: relative;
-    overflow: hidden;
-    gap: 40px;
-  }
-  .hero::before {
-    content: '';
-    position: absolute;
-    top: -200px; right: -200px;
-    width: 600px; height: 600px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(212,96,122,0.07) 0%, transparent 70%);
-    pointer-events: none;
-  }
+.dash-grid-2 { display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px; margin-bottom: 24px; }
+.dash-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
 
-  .hero-text { position: relative; z-index: 2; }
+.panel {
+  background: white; border-radius: 16px; padding: 22px 24px;
+  box-shadow: 0 2px 16px rgba(212,96,122,.06); border: 1px solid var(--br);
+}
+.panel-title {
+  font-family: 'Playfair Display', serif; font-size: 16px; color: var(--tx);
+  margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;
+}
+.panel-title-link { font-size: 12px; color: var(--pk); font-family: 'Lora', serif; cursor: pointer; font-weight: 700; }
+.task-item {
+  display: flex; align-items: center; gap: 10px; padding: 9px 0;
+  border-bottom: 1px dashed var(--br); font-size: 13px;
+}
+.task-item:last-child { border-bottom: none; }
+.task-check {
+  width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--br);
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.task-check.done { background: var(--gn); border-color: var(--gn); }
+.task-month { margin-left: auto; font-size: 11px; color: var(--tl); white-space: nowrap; flex-shrink: 0; }
+.badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.badge-gn { background: #e8f5ed; color: var(--gn); }
+.badge-am { background: #fff5e8; color: var(--am); }
+.badge-pk { background: var(--sf); color: var(--pk); }
+.badge-tl { background: #f5f0f2; color: var(--tl); }
 
-  .hero h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(38px, 4.5vw, 62px);
-    font-weight: 400;
-    line-height: 1.15;
-    color: var(--dark);
-    margin-bottom: 24px;
-    animation: fadeUp 0.6s ease 0.2s forwards;
-  }
-  .hero h1 em {
-    font-style: italic;
-    color: var(--pink);
-  }
+/* ══ SECTION TABS ══ */
+.tab-section { display: none; }
+.tab-section.active { display: block; }
 
-  .hero-sub {
-    font-family: 'Lora', serif;
-    font-size: 16px;
-    font-weight: 400;
-    color: var(--mid);
-    line-height: 1.8;
-    max-width: 440px;
-    margin-bottom: 40px;
-    animation: fadeUp 0.6s ease 0.4s forwards;
-  }
+/* ══ TABLE INVITÉS ══ */
+.inv-table { width: 100%; border-collapse: collapse; }
+.inv-table th {
+  font-family: 'Josefin Sans', sans-serif; font-size: 10px;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--tl);
+  padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--br);
+}
+.inv-table td { padding: 12px 12px; border-bottom: 1px dashed var(--br); font-size: 13px; }
+.inv-table tr:last-child td { border-bottom: none; }
+.inv-table tr:hover td { background: #fdf5f7; }
 
-  .hero-actions {
-    display: flex;
-    gap: 16px;
-    align-items: center;
-    animation: fadeUp 0.6s ease 0.6s forwards;
-  }
+/* ══ BUDGET ══ */
+.budget-bar-wrap { margin-bottom: 24px; }
+.budget-bar-track { height: 10px; background: var(--sf); border-radius: 5px; overflow: hidden; margin-top: 8px; }
+.budget-bar-fill { height: 100%; border-radius: 5px; background: linear-gradient(90deg, var(--pk2), var(--pk)); }
+.budget-items { display: flex; flex-direction: column; gap: 8px; }
+.budget-item {
+  display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+  background: var(--bg); border-radius: 12px; border: 1px solid var(--br);
+  font-size: 13px;
+}
+.budget-item-cat { flex: 1; font-weight: 700; color: var(--tx); }
+.budget-item-budget { color: var(--tl); }
+.budget-item-spent { color: var(--pk); font-weight: 700; }
 
-  .btn-primary {
-    background: linear-gradient(135deg, var(--pink-dark), var(--pink));
-    color: white;
-    padding: 14px 32px;
-    border-radius: 11px;
-    text-decoration: none;
-    font-family: 'Lora', serif;
-    font-size: 15px;
-    font-weight: 700;
-    transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
-    box-shadow: 0 4px 20px rgba(212,96,122,0.3);
-  }
-  .btn-primary:hover {
-    opacity: 0.9;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 28px rgba(212,96,122,0.4);
-  }
+/* ══ PLAN DE TABLE ══ */
+.seating-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+.table-card {
+  background: white; border-radius: 14px; border: 1px solid var(--br); padding: 16px;
+  box-shadow: 0 2px 12px rgba(212,96,122,.05);
+}
+.table-card-title { font-family: 'Playfair Display', serif; font-size: 15px; color: var(--tx); margin-bottom: 12px; }
+.seat-item { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 12px; color: var(--tm); border-bottom: 1px dashed var(--br); }
+.seat-item:last-child { border-bottom: none; }
 
-  .btn-secondary {
-    color: var(--pink);
-    text-decoration: none;
-    font-family: 'Lora', serif;
-    font-size: 14px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: gap 0.2s, opacity 0.2s;
-  }
-  .btn-secondary:hover { gap: 12px; opacity: 0.8; }
-  .btn-secondary::after { content: '→'; color: var(--pink); }
+/* ══ NOTES ══ */
+.notes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.note-card {
+  background: white; border-radius: 14px; border: 1px solid var(--br); padding: 18px;
+  box-shadow: 0 2px 12px rgba(212,96,122,.05); min-height: 140px;
+}
+.note-card textarea {
+  width: 100%; border: none; outline: none; background: transparent;
+  font-family: 'Lora', serif; font-size: 13px; color: var(--tx);
+  resize: none; min-height: 100px; line-height: 1.7;
+}
 
-  /* ── PHONE MOCKUP ── */
-  .hero-visual {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    animation: fadeIn 0.8s ease 0.5s forwards;
-    padding: 20px 80px;
-  }
+/* ══ BTN ══ */
+.btn {
+  padding: 10px 20px; border: none; border-radius: 10px; cursor: pointer;
+  font-family: 'Lora', serif; font-size: 13px; font-weight: 700;
+  background: linear-gradient(135deg, var(--pk2), var(--pk)); color: white;
+  box-shadow: 0 3px 12px rgba(212,96,122,.25); transition: opacity .2s, transform .2s;
+}
+.btn:hover { opacity: .9; transform: translateY(-1px); }
+.btn-outline {
+  padding: 9px 18px; border: 1.5px solid var(--pk); border-radius: 10px;
+  background: transparent; color: var(--pk); font-family: 'Lora', serif;
+  font-size: 13px; font-weight: 700; cursor: pointer; transition: background .2s;
+}
+.btn-outline:hover { background: var(--sf); }
+.section-actions { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
+.section-title {
+  font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 400; color: var(--tx);
+  margin-bottom: 20px;
+}
+.section-title span { color: var(--pk); }
 
-  .phone-mockup {
-    width: 290px;
-    height: 580px;
-    background: var(--bg);
-    border-radius: 44px;
-    box-shadow: 0 40px 80px rgba(62,24,40,0.18), 0 0 0 8px #f0dde4;
-    position: relative;
-    overflow: hidden;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-  }
+/* ══ CHECKLIST ══ */
+.checklist-group { margin-bottom: 24px; }
+.checklist-group-title {
+  font-family: 'Josefin Sans', sans-serif; font-size: 11px; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--tl); margin-bottom: 10px;
+  padding-bottom: 6px; border-bottom: 1px solid var(--br);
+}
+.checklist-item {
+  display: flex; align-items: center; gap: 12px; padding: 10px 14px;
+  border-radius: 10px; cursor: pointer; transition: background .15s;
+  font-size: 14px; color: var(--tx);
+}
+.checklist-item:hover { background: var(--sf); }
+.checklist-item.done { color: var(--tl); }
+.checklist-item.done span { text-decoration: line-through; }
+.check-circle {
+  width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--br);
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  transition: background .2s, border-color .2s;
+}
+.check-circle.done { background: var(--gn); border-color: var(--gn); }
 
-  .phone-top-bar {
-    background: var(--bg);
-    padding: 14px 20px 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-  }
+/* ══ PRESTATAIRES ══ */
+.vendor-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.vendor-cat-card {
+  background: white; border-radius: 14px; border: 1px solid var(--br);
+  padding: 20px 16px; text-align: center; cursor: pointer;
+  box-shadow: 0 2px 12px rgba(212,96,122,.05);
+  transition: transform .15s, box-shadow .15s;
+}
+.vendor-cat-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212,96,122,.1); }
+.vendor-cat-icon { font-size: 26px; margin-bottom: 8px; }
+.vendor-cat-name { font-family: 'Lora', serif; font-size: 13px; font-weight: 700; color: var(--tx); }
 
-  .phone-app-title {
-    font-family: 'Josefin Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 300;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: var(--pink);
-    margin-bottom: 6px;
-  }
-
-  /* Barre d'onglets scrollable */
-  .phone-tabs-wrap {
-    background: var(--pink-pale);
-    border-radius: 10px;
-    padding: 3px;
-    display: flex;
-    gap: 2px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    width: 100%;
-    flex-shrink: 0;
-  }
-  .phone-tabs-wrap::-webkit-scrollbar { display: none; }
-
-  .phone-tab {
-    flex-shrink: 0;
-    padding: 5px 9px;
-    border-radius: 7px;
-    font-family: 'Lora', serif;
-    font-size: 7px;
-    font-weight: 700;
-    color: #c8809a;
-    white-space: nowrap;
-    cursor: pointer;
-  }
-  .phone-tab.active {
-    background: white;
-    color: var(--pink);
-  }
-
-  .phone-content {
-    flex: 1;
-    overflow: hidden;
-    padding: 12px 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  /* Carte checklist */
-  .phone-section-title {
-    font-family: 'Josefin Sans', sans-serif;
-    font-size: 9px;
-    font-weight: 400;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--mid);
-    margin-bottom: 4px;
-  }
-
-  .phone-card {
-    background: white;
-    border-radius: 12px;
-    padding: 12px;
-    box-shadow: 0 2px 10px rgba(212,96,122,0.07);
-    border: 1px solid var(--border);
-  }
-
-  .phone-check-row {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    padding: 3px 0;
-  }
-  .phone-check {
-    width: 11px; height: 11px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    border: 1.5px solid var(--border);
-  }
-  .phone-check.done {
-    background: var(--pink);
-    border-color: var(--pink);
-    position: relative;
-  }
-  .phone-check.done::after {
-    content: '✓';
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    font-size: 7px;
-    font-weight: 700;
-    line-height: 1;
-  }
-  .phone-check-text {
-    font-family: 'Lora', serif;
-    font-size: 7.5px;
-    color: var(--dark);
-  }
-  .phone-check-text.done-text {
-    color: var(--mid);
-    text-decoration: line-through;
-  }
-
-  /* Budget card */
-  .phone-budget-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 4px 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .phone-budget-row:last-child { border-bottom: none; }
-  .phone-budget-cat { font-family: 'Lora', serif; font-size: 7.5px; color: var(--dark); }
-  .phone-budget-amt { font-family: 'Lora', serif; font-size: 7.5px; color: var(--pink); font-weight: 700; }
-
-  .phone-bar-wrap { margin-top: 8px; }
-  .phone-bar-label {
-    display: flex;
-    justify-content: space-between;
-    font-family: 'Lora', serif;
-    font-size: 7px;
-    color: var(--mid);
-    margin-bottom: 4px;
-  }
-  .phone-bar {
-    height: 5px;
-    border-radius: 3px;
-    background: var(--pink-pale);
-  }
-  .phone-bar-fill {
-    height: 100%;
-    border-radius: 3px;
-    background: linear-gradient(90deg, var(--pink-light), var(--pink));
-  }
-
-  /* Floating cards */
-  .floating-card {
-    position: absolute;
-    background: white;
-    border-radius: 14px;
-    padding: 10px 14px;
-    box-shadow: 0 8px 28px rgba(62,24,40,0.12);
-    border: 1px solid var(--border);
-  }
-  .fc-1 { top: 40px; right: 10px; animation: float 3s ease-in-out infinite; z-index: 3; }
-  .fc-2 { bottom: 60px; left: 10px; animation: float 3s ease-in-out infinite 1.5s; z-index: 3; }
-  .fc-label { font-family: 'Lora', serif; font-size: 9px; color: var(--mid); margin-bottom: 2px; }
-  .fc-value { font-family: 'Josefin Sans', sans-serif; font-weight: 400; font-size: 13px; color: var(--dark); }
-  .fc-pink { color: var(--pink); }
-
-  /* ── PHONE HEADER (vrai rendu app) ── */
-  .phone-header {
-    background: var(--bg);
-    padding: 12px 14px 0;
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-  }
-  .phone-title-main {
-    font-family: 'Josefin Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 300;
-    letter-spacing: 0.35em;
-    color: var(--pink);
-    text-transform: uppercase;
-  }
-  .phone-subtitle {
-    font-family: 'Lora', serif;
-    font-size: 7px;
-    color: var(--mid);
-    text-align: center;
-  }
-  .phone-subtitle em { font-style: italic; }
-  .phone-subtitle strong { font-weight: 700; color: var(--dark); }
-
-  .phone-countdown {
-    display: flex;
-    gap: 5px;
-    margin: 5px 0;
-  }
-  .phone-cd-box {
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    padding: 5px 8px;
-    text-align: center;
-    min-width: 38px;
-  }
-  .phone-cd-num {
-    font-family: 'Playfair Display', serif;
-    font-size: 14px;
-    color: var(--pink);
-    font-weight: 700;
-    line-height: 1;
-  }
-  .phone-cd-label {
-    font-family: 'Josefin Sans', sans-serif;
-    font-size: 5px;
-    letter-spacing: 0.1em;
-    color: var(--mid);
-    text-transform: uppercase;
-    margin-top: 2px;
-  }
-
-  .phone-progress-card {
-    background: var(--pink-pale);
-    border-radius: 12px;
-    padding: 10px 12px;
-    border: 1px solid var(--border);
-  }
-  .phone-prog-label {
-    font-family: 'Josefin Sans', sans-serif;
-    font-size: 7px;
-    letter-spacing: 0.15em;
-    color: var(--mid);
-    font-weight: 700;
-    margin-bottom: 6px;
-  }
-  .phone-prog-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .phone-prog-count {
-    font-family: 'Playfair Display', serif;
-    font-size: 20px;
-    color: var(--dark);
-    font-weight: 400;
-  }
-  .phone-prog-done { color: var(--pink); }
-
-  .phone-group-title {
-    font-family: 'Lora', serif;
-    font-size: 8px;
-    font-weight: 700;
-    color: white;
-    background: var(--pink-pale);
-    color: var(--pink-dark);
-    border-radius: 8px;
-    padding: 7px 10px;
-  }
-  .phone-group-title span {
-    font-weight: 400;
-    color: var(--mid);
-    margin-left: 4px;
-  }
-
-  .phone-task-list {
-    background: white;
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    overflow: hidden;
-  }
-  .phone-task {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
-    border-bottom: 1px solid var(--border);
-  }
-  .phone-task:last-child { border-bottom: none; }
-  .phone-task-circle {
-    width: 14px; height: 14px;
-    border-radius: 50%;
-    border: 1.5px solid var(--pink-light);
-    flex-shrink: 0;
-  }
-  .done-circle {
-    background: var(--pink);
-    border-color: var(--pink);
-  }
-  .phone-task-text {
-    font-family: 'Lora', serif;
-    font-size: 7.5px;
-    color: var(--dark);
-  }
-  .done-ttext {
-    color: var(--mid);
-    text-decoration: line-through;
-  }
-
-  /* ── FEATURES ── */
-  .features {
-    padding: 110px 60px;
-    background: white;
-  }
-
-  .section-header {
-    text-align: center;
-    margin-bottom: 64px;
-  }
-  .section-tag {
-    font-family: 'Josefin Sans', sans-serif;
-    font-size: 11px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--pink);
-    font-weight: 400;
-    margin-bottom: 14px;
-    display: block;
-  }
-  .section-title {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(28px, 3.5vw, 46px);
-    font-weight: 400;
-    line-height: 1.2;
-    color: var(--dark);
-  }
-  .section-title em { font-style: italic; color: var(--pink); }
-
-  .features-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 28px;
-    max-width: 1100px;
-    margin: 0 auto;
-  }
-
-  .feature-card {
-    padding: 36px 28px;
-    border-radius: 20px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
-    position: relative;
-    overflow: hidden;
-  }
-  .feature-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--pink-light), var(--pink));
-    transition: opacity 0.3s;
-  }
-  .feature-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 16px 40px rgba(212,96,122,0.1);
-    border-color: var(--pink-light);
-  }
-  .feature-card:hover::before { opacity: 1; }
-
-  .feature-icon {
-    width: 46px; height: 46px;
-    background: white;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 20px;
-    font-size: 20px;
-    box-shadow: 0 2px 10px rgba(212,96,122,0.1);
-    border: 1px solid var(--border);
-  }
-  .feature-card h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 20px;
-    font-weight: 400;
-    color: var(--dark);
-    margin-bottom: 10px;
-  }
-  .feature-card p {
-    font-family: 'Lora', serif;
-    font-size: 13px;
-    color: var(--mid);
-    line-height: 1.75;
-  }
-
-  /* ── HOW IT WORKS ── */
-  .how {
-    padding: 110px 60px;
-    background: var(--bg);
-  }
-
-  .steps {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0;
-    max-width: 960px;
-    margin: 0 auto;
-    position: relative;
-  }
-  .steps::before {
-    content: '';
-    position: absolute;
-    top: 27px; left: 80px; right: 80px;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--border), var(--border), transparent);
-  }
-
-  .step { padding: 0 20px; text-align: center; }
-  .step-num {
-    width: 54px; height: 54px;
-    border-radius: 50%;
-    background: white;
-    border: 2px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 22px;
-    font-family: 'Playfair Display', serif;
-    font-size: 20px;
-    color: var(--pink);
-    position: relative;
-    z-index: 2;
-    transition: background 0.3s, border-color 0.3s, color 0.3s;
-  }
-  .step:hover .step-num {
-    background: var(--pink);
-    border-color: var(--pink);
-    color: white;
-  }
-  .step h4 {
-    font-family: 'Playfair Display', serif;
-    font-size: 17px;
-    font-weight: 400;
-    color: var(--dark);
-    margin-bottom: 8px;
-  }
-  .step p {
-    font-family: 'Lora', serif;
-    font-size: 13px;
-    color: var(--mid);
-    line-height: 1.65;
-  }
-
-  /* ── CONTACT ── */
-  .contact {
-    padding: 110px 60px;
-    background: var(--dark);
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 80px;
-    align-items: center;
-  }
-
-  .contact-text h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(28px, 3.5vw, 46px);
-    font-weight: 400;
-    color: white;
-    line-height: 1.25;
-    margin-bottom: 18px;
-  }
-  .contact-text h2 em { font-style: italic; color: var(--pink-light); }
-  .contact-text p {
-    font-family: 'Lora', serif;
-    font-size: 14px;
-    color: rgba(255,255,255,0.5);
-    line-height: 1.8;
-    margin-bottom: 32px;
-  }
-  .contact-info-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-family: 'Lora', serif;
-    font-size: 14px;
-    color: rgba(255,255,255,0.6);
-    margin-bottom: 14px;
-  }
-  .contact-info-icon {
-    width: 34px; height: 34px;
-    border-radius: 9px;
-    background: rgba(255,255,255,0.06);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 15px;
-    flex-shrink: 0;
-  }
-
-  .contact-form { display: flex; flex-direction: column; gap: 14px; }
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .form-group { display: flex; flex-direction: column; gap: 7px; }
-  .form-group label {
-    font-family: 'Josefin Sans', sans-serif;
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: rgba(255,255,255,0.4);
-  }
-  .form-group input,
-  .form-group textarea {
-    background: rgba(255,255,255,0.05);
-    border: 1.5px solid rgba(255,255,255,0.1);
-    border-radius: 10px;
-    padding: 12px 14px;
-    color: white;
-    font-family: 'Lora', serif;
-    font-size: 13px;
-    outline: none;
-    transition: border-color 0.2s;
-    resize: none;
-  }
-  .form-group input::placeholder,
-  .form-group textarea::placeholder { color: rgba(255,255,255,0.2); }
-  .form-group input:focus,
-  .form-group textarea:focus { border-color: var(--pink-light); }
-
-  .btn-submit {
-    background: linear-gradient(135deg, var(--pink-dark), var(--pink));
-    color: white;
-    border: none;
-    padding: 14px 32px;
-    border-radius: 11px;
-    font-family: 'Lora', serif;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: opacity 0.2s, transform 0.2s;
-    align-self: flex-start;
-    box-shadow: 0 4px 16px rgba(212,96,122,0.3);
-  }
-  .btn-submit:hover { opacity: 0.9; transform: translateY(-1px); }
-
-  /* ── FOOTER ── */
-  footer {
-    background: #250c14;
-    padding: 44px 60px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 20px;
-  }
-  .footer-logo-text {
-    font-family: 'Josefin Sans', sans-serif;
-    font-weight: 300;
-    font-size: 15px;
-    letter-spacing: 0.25em;
-    color: rgba(255,255,255,0.5);
-    text-transform: uppercase;
-  }
-  .footer-links { display: flex; gap: 28px; list-style: none; }
-  .footer-links a {
-    text-decoration: none;
-    font-family: 'Lora', serif;
-    font-size: 12px;
-    color: rgba(255,255,255,0.3);
-    transition: color 0.2s;
-  }
-  .footer-links a:hover { color: var(--pink-light); }
-  .footer-copy {
-    font-family: 'Lora', serif;
-    font-size: 11px;
-    color: rgba(255,255,255,0.2);
-  }
-
-  /* ── RESPONSIVE MOBILE ── */
-  @media (max-width: 768px) {
-    nav { padding: 0 20px; }
-    .nav-links { display: none; }
-    .hero {
-      grid-template-columns: 1fr;
-      padding: 90px 24px 40px;
-      gap: 32px;
-      text-align: center;
-    }
-    .hero-visual { padding: 0 40px; }
-    .hero-sub { max-width: 100%; }
-    .hero-actions { justify-content: center; flex-wrap: wrap; }
-    .phone-mockup { width: 240px; height: 480px; }
-    .fc-1, .fc-2 { display: none; }
-    .features { padding: 60px 20px; }
-    .features-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
-    .feature-card { padding: 24px 16px; }
-    .how { padding: 60px 20px; }
-    .steps { grid-template-columns: 1fr 1fr; }
-    .steps::before { display: none; }
-    .contact { grid-template-columns: 1fr; padding: 60px 20px; gap: 40px; }
-    .form-row { grid-template-columns: 1fr; }
-    footer { padding: 32px 20px; flex-direction: column; gap: 16px; }
-    .footer-links { flex-wrap: wrap; gap: 16px; }
-  }
-  @media (max-width: 480px) {
-    .features-grid { grid-template-columns: 1fr; }
-    .steps { grid-template-columns: 1fr; }
-  }
-
+/* ══ RESPONSIVE ══ */
+@media (max-width: 1100px) { .widgets-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 768px) {
+  .main { padding: 20px 16px; }
+  .topbar { padding: 0 16px; }
+  .tab-btn .tab-label { display: none; }
+  .widgets-grid { grid-template-columns: repeat(2, 1fr); }
+  .dash-grid-2 { grid-template-columns: 1fr; }
+  .dash-grid-3 { grid-template-columns: 1fr; }
+  .topbar-wedding { display: none; }
+  .countdown-mini { display: none; }
+}
+@media (max-width: 480px) {
+  .widgets-grid { grid-template-columns: 1fr 1fr; }
+  .tab-btn { padding: 0 12px; }
+}
 </style>
 </head>
 <body>
-<div id="landing-page">
-<!-- NAV -->
-<nav id="navbar">
-  <a href="#" class="nav-logo">
+
+<!-- AUTH WALL -->
+<div id="auth-wall">
+  <div class="auth-box">
+    <div class="auth-logo">WEDDILYA</div>
+    <div class="auth-title">Bienvenue</div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="switchAuthTab('login',this)">Connexion</div>
+      <div class="auth-tab" onclick="switchAuthTab('register',this)">Créer un compte</div>
+    </div>
+    <!-- LOGIN -->
+    <div id="auth-login">
+      <div class="auth-form">
+        <input type="email" id="al-email" placeholder="Email">
+        <input type="password" id="al-pass" placeholder="Mot de passe">
+        <div class="auth-error" id="aerr-login"></div>
+        <button class="auth-btn" onclick="doLogin()">Se connecter</button>
+        <div class="auth-link" onclick="doForgot()">Mot de passe oublié ? <span>Réinitialiser</span></div>
+      </div>
+    </div>
+    <!-- REGISTER -->
+    <div id="auth-register" style="display:none">
+      <div class="auth-form">
+        <div class="auth-row">
+          <input type="text" id="ar-p1" placeholder="Votre prénom">
+          <input type="text" id="ar-p2" placeholder="Prénom partenaire">
+        </div>
+        <input type="date" id="ar-date" placeholder="Date du mariage">
+        <input type="email" id="ar-email" placeholder="Email">
+        <input type="password" id="ar-pass" placeholder="Mot de passe (6 caractères min.)">
+        <div class="auth-error" id="aerr-register"></div>
+        <button class="auth-btn" onclick="doRegister()">Créer mon compte</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <a href="index.html" class="topbar-logo">
     <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
       <rect width="32" height="32" rx="7" fill="#fdf8f5"/>
       <circle cx="12" cy="16" r="9" stroke="#d4607a" stroke-width="1.5" fill="none"/>
       <circle cx="20" cy="16" r="9" stroke="#d4607a" stroke-width="1.5" fill="none"/>
     </svg>
-    <span class="nav-logo-text">Weddilya</span>
+    <span class="topbar-logo-text">Weddilya</span>
   </a>
-  <ul class="nav-links">
-    <li><a href="#features">Fonctionnalités</a></li>
-    <li><a href="#how">Comment ça marche</a></li>
-    <li><a href="#contact">Contact</a></li>
-    <li><a href="app.html" class="nav-cta" style="cursor:pointer;">Commencer</a></li>
-  </ul>
-</nav>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-text">
-    <h1>Créez le mariage<br>dont vous <em>rêvez</em></h1>
-    <p class="hero-sub">Weddilya réunit tous les outils dont vous avez besoin pour organiser votre grand jour — checklist, budget, invités, plan de table et bien plus. Entièrement gratuit.</p>
-    <div class="hero-actions">
-      <a href="app.html" class="btn-primary" style="cursor:pointer;">Commencer</a>
-      <a href="#features" class="btn-secondary">Découvrir l'app</a>
+  <nav class="topbar-tabs" id="topbar-tabs">
+    <button class="tab-btn active" data-tab="0" onclick="switchTab(0,this)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10l4 4 8-8"/></svg>
+      <span class="tab-label">Checklist</span>
+    </button>
+    <button class="tab-btn" data-tab="1" onclick="switchTab(1,this)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l3 2"/></svg>
+      <span class="tab-label">Budget</span>
+    </button>
+    <button class="tab-btn" data-tab="2" onclick="switchTab(2,this)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 12c0 2.2-1.8 4-4 4S6 14.2 6 12c0-1.5.8-2.8 2-3.5M10 2v6"/><circle cx="10" cy="5" r="3"/></svg>
+      <span class="tab-label">Invités</span>
+    </button>
+    <button class="tab-btn" data-tab="3" onclick="switchTab(3,this)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="8" width="14" height="10" rx="2"/><path d="M7 8V6a3 3 0 016 0v2"/></svg>
+      <span class="tab-label">Plan de table</span>
+    </button>
+    <button class="tab-btn" data-tab="4" onclick="switchTab(4,this)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 16V8l6-4 6 4v8M8 16v-4h4v4"/></svg>
+      <span class="tab-label">Menu</span>
+    </button>
+    <button class="tab-btn" data-tab="5" onclick="switchTab(5,this)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 3c0 0-6 4-6 8a6 6 0 0012 0c0-4-6-8-6-8z"/></svg>
+      <span class="tab-label">Décorations</span>
+    </button>
+    <button class="tab-btn" data-tab="6" onclick="switchTab(6,this)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="14" height="11" rx="2"/><circle cx="10" cy="10" r="2"/></svg>
+      <span class="tab-label">Album</span>
+    </button>
+    <button class="tab-btn" data-tab="7" onclick="switchTab(7,this)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h12v10H4z"/><path d="M8 18h4M10 14v4"/></svg>
+      <span class="tab-label">Notes</span>
+    </button>
+    <button class="tab-btn" data-tab="8" onclick="switchTab(8,this)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10" cy="8" r="4"/><path d="M3 18c0-3.3 3.1-6 7-6s7 2.7 7 6"/></svg>
+      <span class="tab-label">Prestataires</span>
+    </button>
+    <button class="tab-btn" data-tab="9" onclick="switchTab(9,this)">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 3l1.8 3.6 4 .6-2.9 2.8.7 4L10 12l-3.6 1.9.7-4L4.1 7.2l4-.6z"/></svg>
+      <span class="tab-label">Wedding Cake</span>
+    </button>
+  </nav>
+
+  <div class="topbar-right">
+    <div class="topbar-wedding">
+      <div class="topbar-wedding-names" id="tb-names">—</div>
+      <div class="topbar-wedding-date" id="tb-date">—</div>
     </div>
-  </div>
-
-  <div class="hero-visual">
-    <div class="floating-card fc-1">
-      <div class="fc-label">Budget restant</div>
-      <div class="fc-value fc-pink">8 450 €</div>
-    </div>
-
-    <div class="phone-mockup">
-      <!-- Header app -->
-      <div class="phone-header">
-        <div class="phone-title-main">WEDDILYA</div>
-        <div class="phone-subtitle"><em>Mariage de</em> <strong>Sophie</strong> &amp; <strong>Thomas</strong> — 14 juin 2026</div>
-        <div class="phone-countdown">
-          <div class="phone-cd-box"><div class="phone-cd-num">8</div><div class="phone-cd-label">JOURS</div></div>
-          <div class="phone-cd-box"><div class="phone-cd-num">14</div><div class="phone-cd-label">HEURES</div></div>
-          <div class="phone-cd-box"><div class="phone-cd-num">22</div><div class="phone-cd-label">MIN</div></div>
-          <div class="phone-cd-box"><div class="phone-cd-num">07</div><div class="phone-cd-label">SEC</div></div>
-        </div>
-        <div class="phone-tabs-wrap">
-          <div class="phone-tab active">Checklist</div>
-          <div class="phone-tab">Budget</div>
-          <div class="phone-tab">Invités</div>
-          <div class="phone-tab">Plan de table</div>
-          <div class="phone-tab">Prestataires</div>
-          <div class="phone-tab">Menu</div>
-          <div class="phone-tab">Décorations</div>
-          <div class="phone-tab">Notes</div>
-        </div>
-      </div>
-
-      <!-- Contenu Checklist -->
-      <div class="phone-content">
-        <div class="phone-progress-card">
-          <div class="phone-prog-label">PROGRESSION</div>
-          <div class="phone-prog-row">
-            <div class="phone-prog-count"><span class="phone-prog-done">3</span> / 90</div>
-            <svg width="40" height="40" viewBox="0 0 40 40">
-              <circle cx="20" cy="20" r="16" fill="none" stroke="#fce4ec" stroke-width="3"/>
-              <circle cx="20" cy="20" r="16" fill="none" stroke="#d4607a" stroke-width="3"
-                stroke-dasharray="100.5" stroke-dashoffset="97" stroke-linecap="round"
-                transform="rotate(-90 20 20)"/>
-              <text x="20" y="24" text-anchor="middle" font-size="8" fill="#d4607a" font-family="Lora,serif">3%</text>
-            </svg>
-          </div>
-        </div>
-
-        <div class="phone-group-title">▼ 12 à 18 mois avant <span>(3/12)</span></div>
-        <div class="phone-task-list">
-          <div class="phone-task done-task">
-            <div class="phone-task-circle done-circle"></div>
-            <div class="phone-task-text done-ttext">Choisir la date du mariage</div>
-          </div>
-          <div class="phone-task done-task">
-            <div class="phone-task-circle done-circle"></div>
-            <div class="phone-task-text done-ttext">Définir le budget total</div>
-          </div>
-          <div class="phone-task done-task">
-            <div class="phone-task-circle done-circle"></div>
-            <div class="phone-task-text done-ttext">Déterminer le nombre d'invités</div>
-          </div>
-          <div class="phone-task">
-            <div class="phone-task-circle"></div>
-            <div class="phone-task-text">Établir une liste d'invités provisoire</div>
-          </div>
-          <div class="phone-task">
-            <div class="phone-task-circle"></div>
-            <div class="phone-task-text">Rechercher des lieux de réception</div>
-          </div>
-          <div class="phone-task">
-            <div class="phone-task-circle"></div>
-            <div class="phone-task-text">Visiter plusieurs lieux</div>
-          </div>
-        </div>
+    <div class="countdown-mini" id="tb-countdown"></div>
+    <div class="topbar-avatar" id="avatar-btn" onclick="toggleAvatarMenu()">
+      <span id="avatar-initial">?</span>
+      <div class="avatar-menu" id="avatar-menu">
+        <div class="avatar-menu-item" onclick="switchTab(0,document.querySelector('[data-tab=\'0\']'))">🏠 Accueil</div>
+        <div class="avatar-menu-item" onclick="openSettings()">⚙️ Paramètres</div>
+        <div class="avatar-menu-item danger" onclick="doLogout()">Se déconnecter</div>
       </div>
     </div>
+  </div>
+</header>
 
-    <div class="floating-card fc-2">
-      <div class="fc-label">Invités confirmés</div>
-      <div class="fc-value">124 <span style="font-size:10px;color:var(--mid)">/ 150</span></div>
-    </div>
-  </div>
-</section>
+<!-- MAIN -->
+<div class="layout">
+  <main class="main" id="main-content">
 
-<!-- FEATURES -->
-<section class="features" id="features">
-  <div class="section-header reveal">
-    <span class="section-tag">Fonctionnalités</span>
-    <h2 class="section-title">Tout pour votre <em>grand jour</em></h2>
-  </div>
-  <div class="features-grid">
-    <div class="feature-card reveal">
-      <div class="feature-icon">✅</div>
-      <h3>Checklist</h3>
-      <p>Une checklist complète organisée par étapes — de 18 mois avant jusqu'au jour J. Ne rien oublier, jamais.</p>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon">💰</div>
-      <h3>Budget</h3>
-      <p>Suivez chaque dépense par catégorie, visualisez votre budget restant et gardez le contrôle jusqu'au bout.</p>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon">👥</div>
-      <h3>Invités</h3>
-      <p>Gérez vos listes d'invités, confirmations de présence, régimes alimentaires et notes personnalisées.</p>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon">🪑</div>
-      <h3>Plan de table</h3>
-      <p>Créez et réorganisez votre plan de table interactivement — tables rondes, rectangulaires, placement au drag & drop.</p>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon">🤝</div>
-      <h3>Prestataires</h3>
-      <p>Centralisez tous vos prestataires — traiteur, photographe, fleuriste, DJ — avec leurs coordonnées et contrats.</p>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon">🍽️</div>
-      <h3>Menu & quantités</h3>
-      <p>Planifiez votre menu et calculez automatiquement les quantités nécessaires selon le nombre d'invités.</p>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon">✨</div>
-      <h3>Décorations</h3>
-      <p>Organisez vos idées de décoration par espace et gardez une vision d'ensemble de l'ambiance de votre mariage.</p>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon">🤖</div>
-      <h3>Assistant</h3>
-      <p>Un assistant intégré pour répondre à vos questions d'organisation et vous guider dans vos préparatifs.</p>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon">📸</div>
-      <h3>Album</h3>
-      <p>Rassemblez et partagez vos plus beaux souvenirs du mariage dans un album accessible à toute la famille.</p>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon">📝</div>
-      <h3>Notes</h3>
-      <p>Un espace libre pour noter toutes vos idées, inspirations et informations importantes au fil de l'eau.</p>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon">👫</div>
-      <h3>Espace partenaire</h3>
-      <p>Invitez votre futur(e) époux(se) pour organiser votre mariage ensemble, en temps réel, depuis vos téléphones.</p>
-    </div>
-  </div>
-</section>
-
-<!-- HOW IT WORKS -->
-<section class="how" id="how">
-  <div class="section-header reveal">
-    <span class="section-tag">Comment ça marche</span>
-    <h2 class="section-title">Prêt en <em>4 étapes</em></h2>
-  </div>
-  <div class="steps">
-    <div class="step reveal">
-      <div class="step-num">1</div>
-      <h4>Créez votre compte</h4>
-      <p>Inscription gratuite en quelques secondes, sans carte bancaire.</p>
-    </div>
-    <div class="step reveal">
-      <div class="step-num">2</div>
-      <h4>Renseignez votre mariage</h4>
-      <p>Date, lieu, nombre d'invités — Weddilya adapte tout automatiquement.</p>
-    </div>
-    <div class="step reveal">
-      <div class="step-num">3</div>
-      <h4>Invitez votre partenaire</h4>
-      <p>Organisez à deux en temps réel, depuis n'importe où.</p>
-    </div>
-    <div class="step reveal">
-      <div class="step-num">4</div>
-      <h4>Profitez de votre jour J</h4>
-      <p>Tout est prêt. Il ne reste plus qu'à dire oui.</p>
-    </div>
-  </div>
-</section>
-
-<!-- CONTACT -->
-<section class="contact" id="contact">
-  <div class="contact-text reveal">
-    <h2>Une question ?<br>On est <em>là</em> pour vous.</h2>
-    <p>Notre équipe répond sous 24h. Que ce soit pour un renseignement, un retour sur l'app ou une suggestion — on adore vous lire.</p>
-    <div class="contact-info-item">
-      
-      contact@weddilya.fr
-    </div>
-    <div class="contact-info-item">
-      
-      weddilya.fr
-    </div>
-  </div>
-  <form class="contact-form reveal" onsubmit="return false;">
-    <div class="form-row">
-      <div class="form-group">
-        <label>Prénom</label>
-        <input type="text" placeholder="Sophie">
+    <!-- TAB 0 : ACCUEIL / CHECKLIST -->
+    <div class="tab-section active" id="tab-0">
+      <div class="dash-header">
+        <div class="dash-title" id="dash-greeting">Bonjour ✨</div>
+        <div class="dash-sub" id="dash-sub">Voici un aperçu de votre organisation</div>
       </div>
-      <div class="form-group">
-        <label>Nom</label>
-        <input type="text" placeholder="Dupont">
+      <!-- Widgets -->
+      <div class="widgets-grid">
+        <div class="widget">
+          <div class="widget-label">Jours restants</div>
+          <div class="widget-value" id="w-days">—</div>
+          <div class="widget-sub" id="w-date-str">—</div>
+        </div>
+        <div class="widget">
+          <div class="widget-label">Invités</div>
+          <div class="widget-value" id="w-guests">0</div>
+          <div class="widget-sub" id="w-guests-sub">0 confirmés</div>
+        </div>
+        <div class="widget">
+          <div class="widget-label">Budget</div>
+          <div class="widget-value" id="w-budget">0 €</div>
+          <div class="widget-sub" id="w-budget-sub">0 € dépensés</div>
+          <div class="progress-bar"><div class="progress-fill" id="w-budget-bar" style="width:0%"></div></div>
+        </div>
+        <div class="widget">
+          <div class="widget-label">Checklist</div>
+          <div class="widget-value" id="w-check">0%</div>
+          <div class="widget-sub" id="w-check-sub">0 / 0 tâches</div>
+          <div class="progress-bar"><div class="progress-fill" id="w-check-bar" style="width:0%"></div></div>
+        </div>
+      </div>
+      <!-- Panels -->
+      <div class="dash-grid-2">
+        <div class="panel">
+          <div class="panel-title">
+            Prochaines tâches
+            <span class="panel-title-link" onclick="switchTab(0,document.querySelector('[data-tab=\'0\']'));showChecklist()">Voir tout →</span>
+          </div>
+          <div id="next-tasks">—</div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Statut des invités</div>
+          <div id="guests-summary" style="display:flex;flex-direction:column;gap:8px;margin-top:4px;"></div>
+        </div>
       </div>
     </div>
-    <div class="form-group">
-      <label>Email</label>
-      <input type="email" placeholder="sophie@exemple.fr">
-    </div>
-    <div class="form-group">
-      <label>Sujet</label>
-      <input type="text" placeholder="Question sur l'application">
-    </div>
-    <div class="form-group">
-      <label>Message</label>
-      <textarea rows="4" placeholder="Votre message..."></textarea>
-    </div>
-    <button type="submit" class="btn-submit">Envoyer le message</button>
-  </form>
-</section>
 
+    <!-- TAB 1 : BUDGET -->
+    <div class="tab-section" id="tab-1">
+      <div class="section-title">Budget <span>&</span> Dépenses</div>
+      <div id="budget-content">
+        <div style="color:var(--tl);font-size:14px;">Chargement…</div>
+      </div>
+    </div>
 
+    <!-- TAB 2 : INVITÉS -->
+    <div class="tab-section" id="tab-2">
+      <div class="section-title">Mes <span>invités</span></div>
+      <div id="guests-content">
+        <div style="color:var(--tl);font-size:14px;">Chargement…</div>
+      </div>
+    </div>
+
+    <!-- TAB 3 : PLAN DE TABLE -->
+    <div class="tab-section" id="tab-3">
+      <div class="section-title">Plan de <span>table</span></div>
+      <div id="seating-content">
+        <div style="color:var(--tl);font-size:14px;">Chargement…</div>
+      </div>
+    </div>
+
+    <!-- TAB 4 : MENU -->
+    <div class="tab-section" id="tab-4">
+      <div class="section-title">Menu <span>&</span> Quantités</div>
+      <div id="menu-content">
+        <div style="color:var(--tl);font-size:14px;">Chargement…</div>
+      </div>
+    </div>
+
+    <!-- TAB 5 : DÉCORATIONS -->
+    <div class="tab-section" id="tab-5">
+      <div class="section-title">Mes <span>décorations</span></div>
+      <div id="decor-content">
+        <div style="color:var(--tl);font-size:14px;">Chargement…</div>
+      </div>
+    </div>
+
+    <!-- TAB 6 : ALBUM -->
+    <div class="tab-section" id="tab-6">
+      <div class="section-title">Album <span>photos</span></div>
+      <div id="album-content">
+        <div style="color:var(--tl);font-size:14px;">Chargement…</div>
+      </div>
+    </div>
+
+    <!-- TAB 7 : NOTES -->
+    <div class="tab-section" id="tab-7">
+      <div class="section-title">Mes <span>notes</span></div>
+      <div id="notes-content">
+        <div style="color:var(--tl);font-size:14px;">Chargement…</div>
+      </div>
+    </div>
+
+    <!-- TAB 8 : PRESTATAIRES -->
+    <div class="tab-section" id="tab-8">
+      <div class="section-title">Mes <span>prestataires</span></div>
+      <div id="vendors-content">
+        <div style="color:var(--tl);font-size:14px;">Chargement…</div>
+      </div>
+    </div>
+
+    <!-- TAB 9 : WEDDING CAKE -->
+    <div class="tab-section" id="tab-9">
+      <div class="section-title">Wedding <span>Cake</span></div>
+      <div style="padding:40px;text-align:center;color:var(--tl);">
+        <div style="font-size:48px;margin-bottom:16px;">🎂</div>
+        <div style="font-family:'Playfair Display',serif;font-size:18px;color:var(--tx);margin-bottom:8px;">Configurateur 3D</div>
+        <div style="font-size:14px;">Disponible dans l'application mobile</div>
+        <a href="app.html" target="_blank" style="display:inline-block;margin-top:20px;padding:12px 28px;background:linear-gradient(135deg,var(--pk2),var(--pk));color:white;border-radius:11px;text-decoration:none;font-weight:700;font-family:'Lora',serif;font-size:14px;">Ouvrir l'app mobile</a>
+      </div>
+    </div>
+
+  </main>
 </div>
-<footer>
-  <div class="footer-logo-text">Weddilya</div>
-  <ul class="footer-links">
-    <li><a href="#">Mentions légales</a></li>
-    <li><a href="#">Politique de confidentialité</a></li>
-    <li><a href="#">CGU</a></li>
-    <li><a href="#contact">Contact</a></li>
-  </ul>
-  <div class="footer-copy">© 2026 Weddilya. Tous droits réservés.</div>
-</footer>
+
+<!-- FIREBASE -->
+<script type="module">
+import{initializeApp}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import*as fAuth from'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import*as fDB from'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+const cfg={apiKey:"AIzaSyC8Hn86vWDfrMLQAS_lTMFNt-SUdoTi_ic",authDomain:"wedding-dream-c5571.firebaseapp.com",projectId:"wedding-dream"};
+const app=initializeApp(cfg);
+window.firebaseAuth=fAuth.getAuth(app);
+window.firebaseDB=fDB.getFirestore(app);
+window.firebaseLib=fDB;
+window.firebaseAuthLib=fAuth;
+fAuth.onAuthStateChanged(window.firebaseAuth,user=>{
+  if(user){
+    document.getElementById('auth-wall').style.display='none';
+    loadUser(user);
+  } else {
+    document.getElementById('auth-wall').style.display='flex';
+  }
+});
+</script>
+
 <script>
+// ══ GLOBALS ══
+let USER={}, GUESTS=[], BUDGET=[], CHECKLIST=[], NOTES=[], DECOR=[], VENDORS_FAV=[];
+let _countdownTimer=null;
 
-
-// ── SITE WEB - COUCHE D'ADAPTATION ──────────────────────────────────────────
-const _eld = id => document.getElementById(id);
-
-function showAppSection(){
-  const landing = _eld('landing-page');
-  const appSec = _eld('app-section');
-  if(landing) landing.style.display='none';
-  if(appSec) appSec.style.display='block';
-  window.scrollTo({top:0,behavior:'smooth'});
-  // Vérifier si déjà connecté
-  function _onFirebaseReady(fn){ if(window._firebaseReady)fn(); else document.addEventListener('firebase-ready',fn,{once:true}); }
-  _onFirebaseReady(()=>{
-    const {onAuthStateChanged}=window.firebaseAuthLib;
-    onAuthStateChanged(window.firebaseAuth, user=>{
-      if(user) _loadWebUser(user);
-    });
-  });
+// ══ AUTH ══
+function switchAuthTab(tab, el){
+  document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('auth-login').style.display = tab==='login'?'block':'none';
+  document.getElementById('auth-register').style.display = tab==='register'?'block':'none';
 }
 
-function showAuthTab(tab){
-  _eld('aform-login').style.display = tab==='login'?'block':'none';
-  _eld('aform-register').style.display = tab==='register'?'block':'none';
-  _eld('atab-login').classList.toggle('active', tab==='login');
-  _eld('atab-register').classList.toggle('active', tab==='register');
-}
-
-async function doWebLogin(){
-  const email = _eld('al-email').value.trim();
-  const pass = _eld('al-pass').value;
-  const err = _eld('aerr-login');
+async function doLogin(){
+  const email=document.getElementById('al-email').value.trim();
+  const pass=document.getElementById('al-pass').value;
+  const err=document.getElementById('aerr-login');
   err.style.display='none';
   try{
-    const {signInWithEmailAndPassword} = window.firebaseAuthLib;
-    const cred = await signInWithEmailAndPassword(window.firebaseAuth, email, pass);
-    await _loadWebUser(cred.user);
+    const {signInWithEmailAndPassword}=window.firebaseAuthLib;
+    await signInWithEmailAndPassword(window.firebaseAuth,email,pass);
   }catch(e){
-    err.textContent = e.code==='auth/wrong-password'||e.code==='auth/invalid-credential' ? 'Email ou mot de passe incorrect.' : 'Erreur : '+(e.message||e.code);
+    err.textContent=e.code==='auth/invalid-credential'?'Email ou mot de passe incorrect.':'Erreur : '+(e.message||e.code);
     err.style.display='block';
   }
 }
 
-async function doWebRegister(){
-  const p1=_eld('ar-p1').value.trim(), p2=_eld('ar-p2').value.trim();
-  const wDate=_eld('ar-date').value, email=_eld('ar-email').value.trim(), pass=_eld('ar-pass').value;
-  const err=_eld('aerr-register');
+async function doRegister(){
+  const p1=document.getElementById('ar-p1').value.trim();
+  const p2=document.getElementById('ar-p2').value.trim();
+  const wDate=document.getElementById('ar-date').value;
+  const email=document.getElementById('ar-email').value.trim();
+  const pass=document.getElementById('ar-pass').value;
+  const err=document.getElementById('aerr-register');
   err.style.display='none';
-  if(!email||!pass||!p1||!p2||!wDate){ err.textContent='Veuillez remplir tous les champs.'; err.style.display='block'; return; }
+  if(!email||!pass||!p1||!p2||!wDate){err.textContent='Veuillez remplir tous les champs.';err.style.display='block';return;}
   try{
     const {createUserWithEmailAndPassword}=window.firebaseAuthLib;
-    const cred=await createUserWithEmailAndPassword(window.firebaseAuth,email,pass);
     const {doc,setDoc}=window.firebaseLib;
+    const cred=await createUserWithEmailAndPassword(window.firebaseAuth,email,pass);
     await setDoc(doc(window.firebaseDB,'userData',cred.user.uid),{email,p1,p2,wDate,_createdAt:Date.now()},{merge:true});
-    await _loadWebUser(cred.user);
   }catch(e){
-    err.textContent = e.code==='auth/email-already-in-use' ? 'Cet email est déjà utilisé.' : 'Erreur : '+(e.message||e.code);
+    err.textContent=e.code==='auth/email-already-in-use'?'Cet email est déjà utilisé.':'Erreur : '+(e.message||e.code);
     err.style.display='block';
   }
 }
 
-async function doWebForgot(){
-  const email=_eld('al-email').value.trim();
-  if(!email){ alert("Entrez votre email d\'abord."); return; }
+async function doForgot(){
+  const email=document.getElementById('al-email').value.trim();
+  if(!email){alert('Entrez votre email.');return;}
   try{
     await window.firebaseAuthLib.sendPasswordResetEmail(window.firebaseAuth,email);
     alert('Email de réinitialisation envoyé !');
-  }catch(e){ alert('Erreur : '+(e.message||e.code)); }
+  }catch(e){alert('Erreur : '+(e.message||e.code));}
 }
 
-async function doWebLogout(){
+async function doLogout(){
   await window.firebaseAuthLib.signOut(window.firebaseAuth);
-  // Revenir à la landing
-  const appSec=_eld('app-section');
-  const landing=_eld('landing-page');
-  const authDiv=_eld('app-auth');
-  const connDiv=_eld('app-connected');
-  if(appSec) appSec.style.display='none';
-  if(landing) landing.style.display='block';
-  if(authDiv) authDiv.style.display='block';
-  if(connDiv) connDiv.style.display='none';
-  window.scrollTo({top:0,behavior:'smooth'});
 }
 
-async function _loadWebUser(firebaseUser){
-  // Charger données Firestore
+// ══ LOAD USER ══
+async function loadUser(firebaseUser){
   const {doc,getDoc}=window.firebaseLib;
   let snap, docId=firebaseUser.uid;
   try{
     snap=await getDoc(doc(window.firebaseDB,'userData',firebaseUser.uid));
-    // Vérifier partenaire lié
     if(snap.exists()&&snap.data()._sharedOwnerDocId){
       docId=snap.data()._sharedOwnerDocId;
       snap=await getDoc(doc(window.firebaseDB,'userData',docId));
     }
-  }catch(e){ snap=null; }
+  }catch(e){snap=null;}
   window._activeDataDocId=docId;
   const data=snap&&snap.exists()?snap.data():{};
-  // Écrire en localStorage pour que startApp() puisse les lire
-  const email=firebaseUser.email;
-  for(const [k,v] of Object.entries(data)){
-    if(typeof v==='string'||typeof v==='number'||Array.isArray(v)){
-      try{localStorage.setItem(k,JSON.stringify(v));}catch{}
+
+  USER={
+    email:firebaseUser.email,
+    p1:data.p1||'Mariée',
+    p2:data.p2||'Marié',
+    wDate:data.wDate||''
+  };
+
+  // Charger les données
+  try{GUESTS=JSON.parse(data.guests||'[]');}catch{GUESTS=[];}
+  try{BUDGET=JSON.parse(data.budget||'[]');}catch{BUDGET=[];}
+  try{CHECKLIST=JSON.parse(data.checklist||'[]');}catch{CHECKLIST=[];}
+  try{NOTES=JSON.parse(data.notes||'[]');}catch{NOTES=[];}
+  try{DECOR=JSON.parse(data.decor||'[]');}catch{DECOR=[];}
+  try{VENDORS_FAV=JSON.parse(data['vfav_'+USER.email]||'[]');}catch{VENDORS_FAV=[];}
+
+  initUI();
+}
+
+// ══ SAVE ══
+async function saveData(key, value){
+  if(!window._activeDataDocId) return;
+  const {doc,setDoc}=window.firebaseLib;
+  try{
+    await setDoc(doc(window.firebaseDB,'userData',window._activeDataDocId),{[key]:JSON.stringify(value)},{merge:true});
+  }catch(e){console.error('save error',e);}
+}
+
+// ══ INIT UI ══
+function initUI(){
+  // Topbar
+  document.getElementById('tb-names').textContent=USER.p1+' & '+USER.p2;
+  document.getElementById('tb-date').textContent=USER.wDate?formatDate(USER.wDate):'Date non définie';
+  document.getElementById('avatar-initial').textContent=(USER.p1||'?')[0].toUpperCase();
+
+  // Countdown
+  startCountdown();
+
+  // Dashboard
+  renderDashboard();
+}
+
+function formatDate(d){
+  if(!d)return'—';
+  const dt=new Date(d+'T12:00:00');
+  return dt.toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
+}
+
+function startCountdown(){
+  if(_countdownTimer)clearInterval(_countdownTimer);
+  function update(){
+    const cd=document.getElementById('tb-countdown');
+    const wDays=document.getElementById('w-days');
+    if(!USER.wDate){if(cd)cd.innerHTML='';return;}
+    const now=new Date(), target=new Date(USER.wDate+'T12:00:00');
+    const diff=target-now;
+    if(diff<=0){if(cd)cd.innerHTML='<span style="color:var(--pk);font-weight:700;font-size:13px;">C\'est le jour J !</span>';return;}
+    const days=Math.floor(diff/86400000);
+    const hrs=Math.floor((diff%86400000)/3600000);
+    const min=Math.floor((diff%3600000)/60000);
+    const sec=Math.floor((diff%60000)/1000);
+    if(cd)cd.innerHTML=`
+      <div class="cd-box"><div class="cd-num">${days}</div><div class="cd-lbl">jours</div></div>
+      <div class="cd-box"><div class="cd-num">${String(hrs).padStart(2,'0')}</div><div class="cd-lbl">h</div></div>
+      <div class="cd-box"><div class="cd-num">${String(min).padStart(2,'0')}</div><div class="cd-lbl">min</div></div>
+      <div class="cd-box"><div class="cd-num">${String(sec).padStart(2,'0')}</div><div class="cd-lbl">sec</div></div>`;
+    if(wDays)wDays.textContent=days;
+  }
+  update();
+  _countdownTimer=setInterval(update,1000);
+}
+
+// ══ DASHBOARD ══
+function renderDashboard(){
+  // Widget date
+  const wDateStr=document.getElementById('w-date-str');
+  if(wDateStr)wDateStr.textContent=USER.wDate?formatDate(USER.wDate):'Date non définie';
+
+  // Widget invités
+  const conf=GUESTS.filter(g=>g.presence==='confirmée').length;
+  const wg=document.getElementById('w-guests');
+  const wgs=document.getElementById('w-guests-sub');
+  if(wg)wg.textContent=GUESTS.length;
+  if(wgs)wgs.textContent=conf+' confirmé'+(conf>1?'s':'');
+
+  // Widget budget
+  const totalBudget=BUDGET.reduce((s,b)=>s+(parseFloat(b.budget)||0),0);
+  const totalSpent=BUDGET.reduce((s,b)=>s+(parseFloat(b.depense||b.spent||0)),0);
+  const pct=totalBudget>0?Math.round(totalSpent/totalBudget*100):0;
+  const wb=document.getElementById('w-budget');
+  const wbs=document.getElementById('w-budget-sub');
+  const wbb=document.getElementById('w-budget-bar');
+  if(wb)wb.textContent=totalBudget.toLocaleString('fr-FR')+'  €';
+  if(wbs)wbs.textContent=totalSpent.toLocaleString('fr-FR')+' € dépensés';
+  if(wbb)wbb.style.width=Math.min(pct,100)+'%';
+
+  // Widget checklist
+  const done=CHECKLIST.filter(t=>t.done).length;
+  const total=CHECKLIST.length;
+  const cpct=total>0?Math.round(done/total*100):0;
+  const wc=document.getElementById('w-check');
+  const wcs=document.getElementById('w-check-sub');
+  const wcb=document.getElementById('w-check-bar');
+  if(wc)wc.textContent=cpct+'%';
+  if(wcs)wcs.textContent=done+' / '+total+' tâches';
+  if(wcb)wcb.style.width=cpct+'%';
+
+  // Greeting
+  const h=new Date().getHours();
+  const greet=h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir';
+  const dg=document.getElementById('dash-greeting');
+  if(dg)dg.textContent=greet+' '+USER.p1+' ✨';
+
+  // Next tasks
+  const nt=document.getElementById('next-tasks');
+  if(nt){
+    const pending=CHECKLIST.filter(t=>!t.done).slice(0,5);
+    if(pending.length===0){
+      nt.innerHTML='<div style="color:var(--gn);font-size:13px;padding:8px 0;">🎉 Toutes les tâches sont complétées !</div>';
+    } else {
+      nt.innerHTML=pending.map(t=>`
+        <div class="task-item">
+          <div class="check-circle" onclick="toggleTask(${t.id})"></div>
+          <span style="font-size:13px;color:var(--tx);">${t.text||t.task||''}</span>
+          <span class="task-month">${t.month||''}</span>
+        </div>`).join('');
     }
   }
-  // Stocker la session
-  try{localStorage.setItem('sess',JSON.stringify(email));}catch{}
-  // Appeler startApp() de l'app avec l'utilisateur
-  const user = {
-    email: email,
-    p1: data.p1||'',
-    p2: data.p2||'',
-    wDate: data.wDate||'',
-    albumCode: data.albumCode||''
-  };
-  // Afficher la section app connectée
-  const authDiv=_eld('app-auth');
-  const connDiv=_eld('app-connected');
-  if(authDiv) authDiv.style.display='none';
-  if(connDiv) connDiv.style.display='block';
-  // Appeler startApp de l'app qui charge tout
-  if(typeof startApp === 'function') startApp(user);
-}
 
-function switchWebTab(idx, btn){
-  document.querySelectorAll('.app-tab-btn').forEach(b=>b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  for(let i=0;i<10;i++){
-    const el=document.getElementById('web-tab-'+i);
-    if(el) el.style.display=i===idx?'block':'none';
+  // Guests summary
+  const gs=document.getElementById('guests-summary');
+  if(gs){
+    const att=GUESTS.filter(g=>g.presence==='en attente').length;
+    const dec=GUESTS.filter(g=>g.presence==='déclinée').length;
+    gs.innerHTML=`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg);border-radius:10px;">
+        <span style="font-size:13px;color:var(--tx);">Confirmés</span>
+        <span class="badge badge-gn">${conf}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg);border-radius:10px;">
+        <span style="font-size:13px;color:var(--tx);">En attente</span>
+        <span class="badge badge-am">${att}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg);border-radius:10px;">
+        <span style="font-size:13px;color:var(--tx);">Déclinés</span>
+        <span class="badge badge-pk">${dec}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg);border-radius:10px;border-top:1px solid var(--br);">
+        <span style="font-size:13px;font-weight:700;color:var(--tx);">Total</span>
+        <span class="badge badge-tl">${GUESTS.length}</span>
+      </div>`;
   }
-  if(typeof renderTab==='function') renderTab(idx);
+
+  // Render other tabs content lazily
+  renderGuests();
+  renderBudget();
+  renderChecklist();
+  renderNotes();
+  renderDecor();
+  renderVendors();
 }
 
+// ══ SWITCH TAB ══
+function switchTab(idx, btn){
+  document.querySelectorAll('.tab-section').forEach((s,i)=>s.classList.toggle('active',i===idx));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
 
+// ══ CHECKLIST ══
+function renderChecklist(){
+  // La checklist complète est dans l'onglet 0 (prochaines tâches) et dans le dashboard
+  // Pour les détails complets on redirige vers l'app mobile
+}
+
+function toggleTask(id){
+  const t=CHECKLIST.find(x=>x.id===id);
+  if(t){t.done=!t.done;saveData('checklist',CHECKLIST);renderDashboard();}
+}
+
+// ══ INVITÉS ══
+function renderGuests(){
+  const el=document.getElementById('guests-content');
+  if(!el)return;
+  const conf=GUESTS.filter(g=>g.presence==='confirmée').length;
+  const att=GUESTS.filter(g=>g.presence==='en attente').length;
+  const dec=GUESTS.filter(g=>g.presence==='déclinée').length;
+
+  el.innerHTML=`
+    <div class="section-actions">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <span class="badge badge-gn" style="font-size:13px;padding:6px 14px;">${conf} confirmés</span>
+        <span class="badge badge-am" style="font-size:13px;padding:6px 14px;">${att} en attente</span>
+        <span class="badge badge-pk" style="font-size:13px;padding:6px 14px;">${dec} déclinés</span>
+        <span class="badge badge-tl" style="font-size:13px;padding:6px 14px;">${GUESTS.length} total</span>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+        <input id="guest-search" type="text" placeholder="Rechercher…" oninput="filterGuests()" style="padding:8px 14px;border:1.5px solid var(--br);border-radius:10px;font-family:Lora,serif;font-size:13px;outline:none;background:var(--bg);color:var(--tx);">
+        <button class="btn" onclick="openAddGuestModal()">+ Ajouter</button>
+      </div>
+    </div>
+    <div class="panel">
+      <table class="inv-table" id="guests-table">
+        <thead><tr>
+          <th>Invité</th><th>Côté</th><th>Rôle</th><th>Invitation</th><th>Présence</th><th>Régime</th>
+        </tr></thead>
+        <tbody id="guests-tbody">
+          ${renderGuestRows(GUESTS)}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function renderGuestRows(list){
+  if(!list.length)return'<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--tl);">Aucun invité pour le moment.</td></tr>';
+  return list.map(g=>{
+    const presColor=g.presence==='confirmée'?'var(--gn)':g.presence==='déclinée'?'var(--rd)':'var(--am)';
+    const invColor=g.invitation==='envoyée'?'var(--gn)':'var(--tl)';
+    return`<tr style="cursor:pointer;" onclick="openGuestRow(${g.id})">
+      <td><strong>${g.nom||''}</strong></td>
+      <td style="color:var(--tl);">${g.cote==='p1'?USER.p1:USER.p2}</td>
+      <td style="color:var(--tl);">${g.role||'Invité·e'}</td>
+      <td><span style="color:${invColor};font-weight:700;font-size:12px;">${g.invitation==='envoyée'?'Envoyée':'Non envoyée'}</span></td>
+      <td><span style="color:${presColor};font-weight:700;font-size:12px;">${g.presence||'En attente'}</span></td>
+      <td style="color:var(--tl);font-size:12px;">${g.regime&&g.regime!=='Aucun'?g.regime:'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function filterGuests(){
+  const q=(document.getElementById('guest-search')?.value||'').toLowerCase();
+  const filtered=q?GUESTS.filter(g=>(g.nom||'').toLowerCase().includes(q)):GUESTS;
+  const tbody=document.getElementById('guests-tbody');
+  if(tbody)tbody.innerHTML=renderGuestRows(filtered);
+}
+
+function openGuestRow(id){
+  const g=GUESTS.find(x=>x.id===id);
+  if(!g)return;
+  alert(`${g.nom}\nCôté : ${g.cote==='p1'?USER.p1:USER.p2}\nRôle : ${g.role||'Invité·e'}\nPrésence : ${g.presence||'—'}\nRégime : ${g.regime||'Aucun'}`);
+}
+
+function openAddGuestModal(){
+  const nom=prompt('Nom complet de l\'invité :');
+  if(!nom||!nom.trim())return;
+  GUESTS.push({id:Date.now(),nom:nom.trim(),cote:'p1',invitation:'non envoyée',presence:'en attente',role:'Invité·e',regime:'Aucun',vinHonneur:false,age:'Adulte',seatTableId:null,seatIdx:null});
+  saveData('guests',GUESTS);
+  renderGuests();
+  renderDashboard();
+}
+
+// ══ BUDGET ══
+function renderBudget(){
+  const el=document.getElementById('budget-content');
+  if(!el)return;
+  const totalBudget=BUDGET.reduce((s,b)=>s+(parseFloat(b.budget)||0),0);
+  const totalSpent=BUDGET.reduce((s,b)=>s+(parseFloat(b.depense||b.spent||0)),0);
+  const pct=totalBudget>0?Math.round(totalSpent/totalBudget*100):0;
+  el.innerHTML=`
+    <div class="panel" style="margin-bottom:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+        <div>
+          <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--tl);margin-bottom:4px;">Budget total</div>
+          <div style="font-family:'Playfair Display',serif;font-size:32px;color:var(--pk);">${totalBudget.toLocaleString('fr-FR')} €</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--tl);margin-bottom:4px;">Dépensé</div>
+          <div style="font-family:'Playfair Display',serif;font-size:32px;color:var(--tx);">${totalSpent.toLocaleString('fr-FR')} €</div>
+        </div>
+      </div>
+      <div class="budget-bar-track"><div class="budget-bar-fill" style="width:${Math.min(pct,100)}%"></div></div>
+      <div style="text-align:right;font-size:12px;color:var(--tl);margin-top:6px;">${pct}% du budget utilisé</div>
+    </div>
+    <div class="budget-items">
+      ${BUDGET.length?BUDGET.map(b=>{
+        const sp=parseFloat(b.depense||b.spent||0);
+        const bu=parseFloat(b.budget||0);
+        const p=bu>0?Math.min(Math.round(sp/bu*100),100):0;
+        return`<div class="budget-item">
+          <div class="budget-item-cat">${b.category||b.categorie||b.nom||'—'}</div>
+          <div class="budget-item-budget">${bu.toLocaleString('fr-FR')} €</div>
+          <div style="flex:1;margin:0 12px;">
+            <div class="progress-bar"><div class="progress-fill" style="width:${p}%"></div></div>
+          </div>
+          <div class="budget-item-spent">${sp.toLocaleString('fr-FR')} €</div>
+        </div>`;
+      }).join(''):'<div style="color:var(--tl);font-size:14px;padding:16px 0;">Aucune entrée budget. Ajoutez depuis l\'app mobile.</div>'}
+    </div>`;
+}
+
+// ══ NOTES ══
+function renderNotes(){
+  const el=document.getElementById('notes-content');
+  if(!el)return;
+  if(!NOTES.length){
+    el.innerHTML=`<div class="section-actions"><button class="btn" onclick="addNote()">+ Nouvelle note</button></div><div style="color:var(--tl);font-size:14px;">Aucune note pour le moment.</div>`;
+    return;
+  }
+  el.innerHTML=`<div class="section-actions"><button class="btn" onclick="addNote()">+ Nouvelle note</button></div>
+    <div class="notes-grid">
+      ${NOTES.map((n,i)=>`
+        <div class="note-card">
+          <textarea onblur="saveNote(${i},this.value)" style="width:100%;border:none;outline:none;background:transparent;font-family:'Lora',serif;font-size:13px;color:var(--tx);resize:none;min-height:100px;line-height:1.7;">${n.text||n||''}</textarea>
+        </div>`).join('')}
+    </div>`;
+}
+
+function addNote(){
+  NOTES.push({text:'',date:Date.now()});
+  saveData('notes',NOTES);
+  renderNotes();
+}
+
+function saveNote(i,val){
+  if(NOTES[i]){NOTES[i].text=val;saveData('notes',NOTES);}
+}
+
+// ══ DÉCO ══
+function renderDecor(){
+  const el=document.getElementById('decor-content');
+  if(!el)return;
+  if(!DECOR.length){
+    el.innerHTML='<div style="color:var(--tl);font-size:14px;">Aucune décoration. Gérez depuis l\'app mobile.</div>';
+    return;
+  }
+  el.innerHTML=`<div class="dash-grid-3">${DECOR.map(d=>`
+    <div class="panel">
+      <div class="panel-title">${d.espace||d.space||'—'}</div>
+      <div style="font-size:13px;color:var(--tl);">${d.description||d.desc||''}</div>
+    </div>`).join('')}</div>`;
+}
+
+// ══ PRESTATAIRES ══
+function renderVendors(){
+  const el=document.getElementById('vendors-content');
+  if(!el)return;
+  const cats=[
+    {key:'salle',label:'Salle / Domaine',icon:'🏰'},
+    {key:'traiteur',label:'Traiteur',icon:'🍽️'},
+    {key:'photographe',label:'Photographe',icon:'📷'},
+    {key:'videaste',label:'Vidéaste',icon:'🎥'},
+    {key:'dj',label:'DJ / Musique',icon:'🎵'},
+    {key:'fleuriste',label:'Fleuriste',icon:'💐'},
+    {key:'patisserie',label:'Pâtisserie',icon:'🎂'},
+    {key:'robe',label:'Robe mariée',icon:'👗'},
+    {key:'costume',label:'Costume',icon:'🤵'},
+    {key:'coiffeur',label:'Coiffeur',icon:'✂️'},
+    {key:'beaute',label:'Maquillage',icon:'💄'},
+    {key:'bijou',label:'Bijouterie',icon:'💍'},
+    {key:'imprimeur',label:'Imprimeur',icon:'🖨️'},
+    {key:'voiture',label:'Voiture',icon:'🚗'},
+    {key:'hotel',label:'Hébergement',icon:'🏨'},
+    {key:'decor',label:'Décoration',icon:'✨'}
+  ];
+  const favs=VENDORS_FAV.length?`
+    <div class="panel" style="margin-bottom:24px;">
+      <div class="panel-title">Prestataires favoris <span style="font-size:13px;color:var(--tl);font-family:'Lora',serif;font-weight:400;">(${VENDORS_FAV.length})</span></div>
+      <table class="inv-table">
+        <thead><tr><th>Nom</th><th>Catégorie</th><th>Adresse</th><th>Distance</th></tr></thead>
+        <tbody>${VENDORS_FAV.map(v=>`<tr>
+          <td><strong>${v.nom||''}</strong></td>
+          <td style="color:var(--tl);">${v.categorie||''}</td>
+          <td style="color:var(--tl);font-size:12px;">${v.adresse||'—'}</td>
+          <td style="color:var(--gn);font-weight:700;">${v.distance?v.distance+'km':'—'}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+    </div>`:'';
+  el.innerHTML=`${favs}
+    <div class="panel-title" style="margin-bottom:14px;">Rechercher par catégorie <span style="font-size:12px;color:var(--tl);font-family:'Lora',serif;font-weight:400;">— géolocalisation disponible dans l'app mobile</span></div>
+    <div class="vendor-grid">
+      ${cats.map(c=>`
+        <div class="vendor-cat-card">
+          <div class="vendor-cat-icon">${c.icon}</div>
+          <div class="vendor-cat-name">${c.label}</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+// ══ AVATAR MENU ══
+function toggleAvatarMenu(){
+  document.getElementById('avatar-menu').classList.toggle('open');
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#avatar-btn'))
+    document.getElementById('avatar-menu')?.classList.remove('open');
+});
+
+function openSettings(){
+  const p1=prompt('Votre prénom :',USER.p1)||USER.p1;
+  const p2=prompt('Prénom partenaire :',USER.p2)||USER.p2;
+  const wDate=prompt('Date du mariage (YYYY-MM-DD) :',USER.wDate)||USER.wDate;
+  USER.p1=p1; USER.p2=p2; USER.wDate=wDate;
+  const {doc,setDoc}=window.firebaseLib;
+  setDoc(doc(window.firebaseDB,'userData',window._activeDataDocId),{p1,p2,wDate},{merge:true});
+  initUI();
+}
 </script>
 </body>
 </html>
