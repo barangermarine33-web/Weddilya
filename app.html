@@ -2103,7 +2103,76 @@ function renderGuests(){
     </table>
   </div>
   <p style="font-size:11px;color:${tl};font-style:italic;margin-top:10px;text-align:center;"> Import : un fichier Excel ou CSV avec au minimum une colonne "Nom"</p>`;
-  requestAnimationFrame(()=>{const tw=document.getElementById('guest-table-wrap');if(tw)tw.scrollLeft=prevTableScroll;});
+  requestAnimationFrame(()=>{
+    const tw=document.getElementById('guest-table-wrap');
+    if(tw)tw.scrollLeft=prevTableScroll;
+    initGuestDrag();
+  });
+}
+
+function initGuestDrag(){
+  const tbody=document.querySelector('#guest-table-wrap tbody');
+  if(!tbody)return;
+  let dragEl=null,dragId=null;
+
+  tbody.querySelectorAll('tr[draggable]').forEach(row=>{
+    // Desktop drag
+    row.addEventListener('dragstart',e=>{
+      dragEl=row; dragId=parseInt(row.dataset.id);
+      setTimeout(()=>row.style.opacity='0.4',0);
+    });
+    row.addEventListener('dragend',()=>{ row.style.opacity='1'; dragEl=null; });
+    row.addEventListener('dragover',e=>{ e.preventDefault(); if(dragEl&&dragEl!==row) row.style.background='#fdf0f4'; });
+    row.addEventListener('dragleave',()=>{ row.style.background=''; });
+    row.addEventListener('drop',e=>{
+      e.preventDefault(); row.style.background='';
+      if(!dragEl||dragEl===row)return;
+      const targetId=parseInt(row.dataset.id);
+      const fromIdx=GUESTS.findIndex(g=>g.id===dragId);
+      const toIdx=GUESTS.findIndex(g=>g.id===targetId);
+      if(fromIdx<0||toIdx<0)return;
+      const [moved]=GUESTS.splice(fromIdx,1);
+      GUESTS.splice(toIdx,0,moved);
+      saveGuests(); renderGuests();
+    });
+
+    // Mobile touch
+    const handle=row.querySelector('.drag-handle');
+    if(!handle)return;
+    let startY=0,clone=null;
+    handle.addEventListener('touchstart',e=>{
+      e.stopPropagation();
+      dragEl=row; dragId=parseInt(row.dataset.id);
+      startY=e.touches[0].clientY;
+      row.style.opacity='0.4';
+    },{passive:true});
+    handle.addEventListener('touchmove',e=>{
+      e.preventDefault();
+      const y=e.touches[0].clientY;
+      const els=document.elementsFromPoint(e.touches[0].clientX,y);
+      const target=els.find(el=>el.tagName==='TR'&&el.dataset.id&&el!==dragEl);
+      tbody.querySelectorAll('tr').forEach(r=>r.style.background='');
+      if(target)target.style.background='#fdf0f4';
+    },{passive:false});
+    handle.addEventListener('touchend',e=>{
+      row.style.opacity='1';
+      tbody.querySelectorAll('tr').forEach(r=>r.style.background='');
+      const y=e.changedTouches[0].clientY;
+      const els=document.elementsFromPoint(e.changedTouches[0].clientX,y);
+      const target=els.find(el=>el.tagName==='TR'&&el.dataset.id&&el!==dragEl);
+      if(target){
+        const targetId=parseInt(target.dataset.id);
+        const fromIdx=GUESTS.findIndex(g=>g.id===dragId);
+        const toIdx=GUESTS.findIndex(g=>g.id===targetId);
+        if(fromIdx>=0&&toIdx>=0){
+          const [moved]=GUESTS.splice(fromIdx,1);
+          GUESTS.splice(toIdx,0,moved);
+          saveGuests(); renderGuests();
+        }
+      }
+      dragEl=null;
+    });
+  });
 }
 function guestRow(g){
   const sc={'confirmée':gn,'déclinée':rd,'en attente':am};
@@ -2111,10 +2180,15 @@ function guestRow(g){
   const invLabel=g.invitation==='envoyée'?' Envoyée':'Non envoyée';
   const invColor=g.invitation==='envoyée'?gn:tl;
   const presColor=sc[g.presence]||tl;
-  return `<tr onclick="openGuestDetail(${g.id})" style="cursor:pointer;">
+  return `<tr draggable="true" data-id="${g.id}" onclick="openGuestDetail(${g.id})" style="cursor:pointer;">
     <td style="padding:11px 4px 11px 0;background:transparent;border:none;border-bottom:1px dashed ${br};">
-      <div style="font-size:14px;font-weight:700;color:${tx};">${h(g.nom)}</div>
-      <div style="font-size:11px;color:${tl};margin-top:2px;">${h(g.cote==='p1'?USER.p1:USER.p2)} · ${h(g.role||'Invité·e')}</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="drag-handle" onclick="event.stopPropagation()" style="cursor:grab;color:${br};font-size:16px;line-height:1;touch-action:none;">⠿</span>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:${tx};">${h(g.nom)}</div>
+          <div style="font-size:11px;color:${tl};margin-top:2px;">${h(g.cote==='p1'?USER.p1:USER.p2)} · ${h(g.role||'Invité·e')}</div>
+        </div>
+      </div>
     </td>
     <td style="padding:11px 9px;background:transparent;border:none;border-bottom:1px dashed ${br};text-align:center;">
       <span style="color:${invColor};font-size:11px;font-weight:700;">${invLabel}</span>
