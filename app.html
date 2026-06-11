@@ -2113,64 +2113,83 @@ function renderGuests(){
 function initGuestDrag(){
   const tbody=document.querySelector('#guest-table-wrap tbody');
   if(!tbody)return;
-  let dragEl=null,dragId=null;
+  let dragSrcId=null;
 
   tbody.querySelectorAll('tr[draggable]').forEach(row=>{
-    // Desktop drag
+    const handle=row.querySelector('.drag-handle');
+
+    // --- Desktop ---
     row.addEventListener('dragstart',e=>{
-      dragEl=row; dragId=parseInt(row.dataset.id);
+      dragSrcId=parseInt(row.dataset.id);
       setTimeout(()=>row.style.opacity='0.4',0);
+      e.dataTransfer.effectAllowed='move';
     });
-    row.addEventListener('dragend',()=>{ row.style.opacity='1'; dragEl=null; });
-    row.addEventListener('dragover',e=>{ e.preventDefault(); if(dragEl&&dragEl!==row) row.style.background='#fdf0f4'; });
-    row.addEventListener('dragleave',()=>{ row.style.background=''; });
+    row.addEventListener('dragend',()=>{
+      row.style.opacity='1';
+      tbody.querySelectorAll('tr').forEach(r=>r.style.background='');
+    });
+    row.addEventListener('dragover',e=>{
+      e.preventDefault();
+      e.dataTransfer.dropEffect='move';
+      if(dragSrcId&&parseInt(row.dataset.id)!==dragSrcId)
+        row.style.background='#fdf0f4';
+    });
+    row.addEventListener('dragleave',()=>row.style.background='');
     row.addEventListener('drop',e=>{
-      e.preventDefault(); row.style.background='';
-      if(!dragEl||dragEl===row)return;
+      e.preventDefault();
+      row.style.background='';
       const targetId=parseInt(row.dataset.id);
-      const fromIdx=GUESTS.findIndex(g=>g.id===dragId);
-      const toIdx=GUESTS.findIndex(g=>g.id===targetId);
-      if(fromIdx<0||toIdx<0)return;
-      const [moved]=GUESTS.splice(fromIdx,1);
-      GUESTS.splice(toIdx,0,moved);
-      saveGuests(); renderGuests();
+      if(!dragSrcId||dragSrcId===targetId)return;
+      const fi=GUESTS.findIndex(g=>g.id===dragSrcId);
+      const ti=GUESTS.findIndex(g=>g.id===targetId);
+      if(fi<0||ti<0)return;
+      const[m]=GUESTS.splice(fi,1);
+      GUESTS.splice(ti,0,m);
+      saveGuests();renderGuests();
     });
 
-    // Mobile touch
-    const handle=row.querySelector('.drag-handle');
+    // --- Mobile touch sur la poignée ---
     if(!handle)return;
-    let startY=0,clone=null;
+    let startY=0,lastTarget=null;
+
     handle.addEventListener('touchstart',e=>{
       e.stopPropagation();
-      dragEl=row; dragId=parseInt(row.dataset.id);
+      dragSrcId=parseInt(row.dataset.id);
       startY=e.touches[0].clientY;
-      row.style.opacity='0.4';
+      row.style.opacity='0.5';
     },{passive:true});
+
     handle.addEventListener('touchmove',e=>{
       e.preventDefault();
-      const y=e.touches[0].clientY;
-      const els=document.elementsFromPoint(e.touches[0].clientX,y);
-      const target=els.find(el=>el.tagName==='TR'&&el.dataset.id&&el!==dragEl);
+      const touch=e.touches[0];
       tbody.querySelectorAll('tr').forEach(r=>r.style.background='');
-      if(target)target.style.background='#fdf0f4';
+      // Trouver la ligne sous le doigt
+      row.style.display='none';
+      const el=document.elementFromPoint(touch.clientX,touch.clientY);
+      row.style.display='';
+      const targetRow=el?.closest('tr[data-id]');
+      if(targetRow&&targetRow!==row){
+        targetRow.style.background='#fdf0f4';
+        lastTarget=targetRow;
+      } else {
+        lastTarget=null;
+      }
     },{passive:false});
+
     handle.addEventListener('touchend',e=>{
       row.style.opacity='1';
       tbody.querySelectorAll('tr').forEach(r=>r.style.background='');
-      const y=e.changedTouches[0].clientY;
-      const els=document.elementsFromPoint(e.changedTouches[0].clientX,y);
-      const target=els.find(el=>el.tagName==='TR'&&el.dataset.id&&el!==dragEl);
-      if(target){
-        const targetId=parseInt(target.dataset.id);
-        const fromIdx=GUESTS.findIndex(g=>g.id===dragId);
-        const toIdx=GUESTS.findIndex(g=>g.id===targetId);
-        if(fromIdx>=0&&toIdx>=0){
-          const [moved]=GUESTS.splice(fromIdx,1);
-          GUESTS.splice(toIdx,0,moved);
-          saveGuests(); renderGuests();
+      if(lastTarget){
+        const targetId=parseInt(lastTarget.dataset.id);
+        const fi=GUESTS.findIndex(g=>g.id===dragSrcId);
+        const ti=GUESTS.findIndex(g=>g.id===targetId);
+        if(fi>=0&&ti>=0){
+          const[m]=GUESTS.splice(fi,1);
+          GUESTS.splice(ti,0,m);
+          saveGuests();renderGuests();
         }
       }
-      dragEl=null;
+      dragSrcId=null;lastTarget=null;
     });
   });
 }
@@ -2240,6 +2259,7 @@ async function openGuestDetail(id){
         <div data-pick="role" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:${sf};border-radius:12px;cursor:pointer;"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:${tl};">Rôle</span><span style="font-size:12px;font-weight:700;color:${tm};">${g.role||'Invité·e'} ▾</span></div>
         <div data-pick="age" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:${sf};border-radius:12px;cursor:pointer;"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:${tl};">Âge</span><span style="font-size:12px;font-weight:700;color:${tm};">${g.age||'Adulte'} ▾</span></div>
         <div data-pick="vin" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:${sf};border-radius:12px;cursor:pointer;"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:${tl};">Vin d'honneur</span><span style="font-size:12px;font-weight:700;color:${tm};">${vinLabel} ▾</span></div>
+        <div data-pick="regime" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:${sf};border-radius:12px;cursor:pointer;"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:${tl};">Régime alimentaire</span><span style="font-size:12px;font-weight:700;color:${tm};">${g.regime||'Aucun'} ▾</span></div>
         <div data-pick="invitation" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fdf8f5;border-radius:12px;cursor:pointer;"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:${tl};">Invitation</span><span style="font-size:12px;font-weight:700;color:${invColor};">${invLabel} ▾</span></div>
         <div data-pick="presence" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fdf8f5;border-radius:12px;cursor:pointer;"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:${tl};">Présence</span><span style="font-size:12px;font-weight:700;color:${presColor};">${presLabel} ▾</span></div>
         ${emailRow}${adresseRow}
@@ -2257,6 +2277,7 @@ async function openGuestDetail(id){
       role: ()=>pickGuestRole(id),
       age: ()=>pickGuestAge(id),
       vin: ()=>pickGuestVin(id),
+      regime: ()=>pickGuestRegime(id),
       invitation: ()=>pickGuestInvitation(id),
       presence: ()=>pickGuestPresence(id)
     };
@@ -2325,6 +2346,11 @@ async function pickGuestAge(id){
 function toggleInvitation(id){
   const g = GUESTS.find(x=>x.id===id); if(!g) return;
   updGuest(id,'invitation', g.invitation==='envoyée' ? 'non envoyée' : 'envoyée');
+}
+async function pickGuestRegime(id){
+  const g=GUESTS.find(x=>x.id===id);if(!g)return;
+  const v=await appPicker('Régime alimentaire',REGIMES,g.regime||'Aucun');
+  if(v)updGuest(id,'regime',v);
 }
 async function pickGuestInvitation(id){
   const g = GUESTS.find(x=>x.id===id); if(!g) return;
