@@ -771,10 +771,17 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 import{initializeApp}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import*as fAuth from'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import*as fDB from'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-const cfg={apiKey:"AIzaSyC8Hn86vWDfrMLQAS_lTMFNt-SUdoTi_ic",authDomain:"wedding-dream-c5571.firebaseapp.com",projectId:"wedding-dream"};
+const cfg={
+  apiKey:"AIzaSyC8Hn86vWDfrMLQAS_lTMFNt-SUdoTi_ic",
+  authDomain:"wedding-dream-eb422.firebaseapp.com",
+  projectId:"wedding-dream-eb422",
+  storageBucket:"wedding-dream-eb422.firebasestorage.app",
+  messagingSenderId:"445957351695",
+  appId:"1:445957351695:web:9d69b3cb52e7d34a4f767a"
+};
 const app=initializeApp(cfg);
 window.firebaseAuth=fAuth.getAuth(app);
-window.firebaseDB=fDB.getFirestore(app);
+window.firebaseDB=fDB.getFirestore(app,'wedding-dream');
 window.firebaseLib=fDB;
 window.firebaseAuthLib=fAuth;
 // Observer auth
