@@ -2349,8 +2349,9 @@ function toggleInvitation(id){
 }
 async function pickGuestRegime(id){
   const g=GUESTS.find(x=>x.id===id);if(!g)return;
-  const v=await appPicker('Régime alimentaire',REGIMES,g.regime||'Aucun');
-  if(v)updGuest(id,'regime',v);
+  const opts=REGIMES.map(r=>({value:r,label:r,icon:''}));
+  const v=await appPicker(opts,g.regime||'Aucun','Régime alimentaire',{icon:''});
+  if(v!==null)updGuest(id,'regime',v);
 }
 async function pickGuestInvitation(id){
   const g = GUESTS.find(x=>x.id===id); if(!g) return;
