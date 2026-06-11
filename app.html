@@ -2066,16 +2066,40 @@ function renderGuests(){
     <div style="padding:0 14px 14px;"><button class="btn" onclick="addGuest()">Ajouter</button></div>
   </div>
   <div id="guest-table-wrap" style="overflow-x:auto;margin-top:6px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-      <span style="font-size:11px;color:${tl};">${GUESTS.length} invité${GUESTS.length>1?'s':''}</span>
-      <button onclick="window._guestSort=window._guestSort==='az'?'default':'az';renderGuests();" style="background:${window._guestSort==='az'?sf:'transparent'};color:${window._guestSort==='az'?pk:tl};border:1px solid ${window._guestSort==='az'?pk:br};border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;">A → Z</button>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+      <button onclick="window._guestSort=(window._guestSort||'')=='az'?'':'az';renderGuests();" style="background:${(window._guestSort||'')=='az'?sf:'transparent'};color:${(window._guestSort||'')=='az'?pk:tl};border:1px solid ${(window._guestSort||'')=='az'?pk:br};border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;">A → Z</button>
+      <div style="position:relative;display:inline-block;">
+        <button onclick="window._showInvMenu=!window._showInvMenu;window._showPresMenu=false;renderGuests();" style="background:${(window._guestInv||'')?sf:'transparent'};color:${(window._guestInv||'')?pk:tl};border:1px solid ${(window._guestInv||'')?pk:br};border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;">Invitation ${(window._guestInv||'')=='envoyee'?'· Envoyée':(window._guestInv||'')=='non'?'· Non envoyée':'▾'}</button>
+        ${(window._showInvMenu)?`<div style="position:absolute;top:32px;left:0;background:#fff;border:1px solid ${br};border-radius:12px;padding:6px;z-index:99;min-width:150px;box-shadow:0 4px 12px #d4607a22;">
+          <div onclick="window._guestInv='envoyee';window._showInvMenu=false;renderGuests();" style="padding:8px 12px;font-size:12px;font-family:Lora,serif;cursor:pointer;color:${tx};border-radius:8px;">Envoyée</div>
+          <div onclick="window._guestInv='non';window._showInvMenu=false;renderGuests();" style="padding:8px 12px;font-size:12px;font-family:Lora,serif;cursor:pointer;color:${tx};border-radius:8px;">Non envoyée</div>
+          <div onclick="window._guestInv='';window._showInvMenu=false;renderGuests();" style="padding:8px 12px;font-size:12px;font-family:Lora,serif;cursor:pointer;color:${tl};border-radius:8px;">Tous</div>
+        </div>`:''}
+      </div>
+      <div style="position:relative;display:inline-block;">
+        <button onclick="window._showPresMenu=!window._showPresMenu;window._showInvMenu=false;renderGuests();" style="background:${(window._guestPres||'')?sf:'transparent'};color:${(window._guestPres||'')?pk:tl};border:1px solid ${(window._guestPres||'')?pk:br};border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;">Présence ${(window._guestPres||'')?'· '+(window._guestPres||'').charAt(0).toUpperCase()+(window._guestPres||'').slice(1):'▾'}</button>
+        ${(window._showPresMenu)?`<div style="position:absolute;top:32px;left:0;background:#fff;border:1px solid ${br};border-radius:12px;padding:6px;z-index:99;min-width:150px;box-shadow:0 4px 12px #d4607a22;">
+          <div onclick="window._guestPres='confirmée';window._showPresMenu=false;renderGuests();" style="padding:8px 12px;font-size:12px;font-family:Lora,serif;cursor:pointer;color:${gn};border-radius:8px;">Confirmée</div>
+          <div onclick="window._guestPres='en attente';window._showPresMenu=false;renderGuests();" style="padding:8px 12px;font-size:12px;font-family:Lora,serif;cursor:pointer;color:${am};border-radius:8px;">En attente</div>
+          <div onclick="window._guestPres='déclinée';window._showPresMenu=false;renderGuests();" style="padding:8px 12px;font-size:12px;font-family:Lora,serif;cursor:pointer;color:${rd};border-radius:8px;">Déclinée</div>
+          <div onclick="window._guestPres='';window._showPresMenu=false;renderGuests();" style="padding:8px 12px;font-size:12px;font-family:Lora,serif;cursor:pointer;color:${tl};border-radius:8px;">Tous</div>
+        </div>`:''}
+      </div>
     </div>
     <table style="width:100%;border-collapse:separate;border-spacing:0 5px;">
       <thead><tr>
         <th style="padding:6px 12px;font-family:Josefin Sans,sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:${tl};font-weight:700;text-align:left;">Invité</th>
         <th style="padding:6px 9px;font-family:Josefin Sans,sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:${tl};font-weight:700;text-align:center;">Invitation</th>
         <th style="padding:6px 9px;font-family:Josefin Sans,sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:${tl};font-weight:700;text-align:right;">Présence</th>
-      </tr></thead>      <tbody>${(window._guestSort==='az'?[...GUESTS].sort((a,b)=>a.nom.localeCompare(b.nom,'fr')):GUESTS).map(g=>guestRow(g)).join('')}</tbody>
+      </tr></thead>
+      <tbody>${(()=>{
+        let list=[...GUESTS];
+        if((window._guestInv||'')=='envoyee') list=list.filter(g=>g.invitation==='envoyée');
+        if((window._guestInv||'')=='non') list=list.filter(g=>g.invitation==='non envoyée');
+        if(window._guestPres) list=list.filter(g=>g.presence===window._guestPres);
+        if((window._guestSort||'')=='az') list=list.sort((a,b)=>a.nom.localeCompare(b.nom,'fr'));
+        return list.map(g=>guestRow(g)).join('');
+      })()}</tbody>
     </table>
   </div>
   <p style="font-size:11px;color:${tl};font-style:italic;margin-top:10px;text-align:center;"> Import : un fichier Excel ou CSV avec au minimum une colonne "Nom"</p>`;
