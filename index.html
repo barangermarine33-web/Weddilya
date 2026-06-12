@@ -181,9 +181,9 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 .app-cd-box{background:var(--pink-pale);border-radius:8px;padding:4px 8px;text-align:center;min-width:36px;}
 .app-cd-num{font-family:'Playfair Display',serif;font-size:16px;color:var(--pink);font-weight:700;line-height:1;}
 .app-cd-lbl{font-size:7px;letter-spacing:0.08em;text-transform:uppercase;color:var(--tl);}
-.power-btn{margin-left:auto;width:42px;height:42px;border-radius:13px;border:1.5px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s;flex-shrink:0;}
+.power-btn{margin-left:auto;width:36px;height:36px;border-radius:10px;border:1.5px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s;flex-shrink:0;}
 .power-btn:hover{background:var(--pink-pale);}
-.power-btn svg{width:19px;height:19px;stroke:#8a2d4a;fill:none;stroke-width:2;}
+.power-btn svg{width:16px;height:16px;stroke:#8a2d4a;fill:none;stroke-width:2;}
 .wedding-band{position:fixed;top:var(--topbar-h);left:0;right:0;height:var(--band-h);background:var(--bg);border-bottom:1px solid var(--border);z-index:190;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:0 12px;}
 .band-names{font-family:'Lora',serif;font-size:14px;color:var(--tl);font-style:italic;text-align:center;}
 .band-names strong{font-style:normal;font-weight:700;color:var(--dark);}
@@ -192,6 +192,7 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 .bcd{text-align:center;}
 .bcd-num{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--pink);line-height:1;}
 .bcd-lbl{font-family:'Josefin Sans',sans-serif;font-size:8px;letter-spacing:0.15em;color:var(--mid);text-transform:uppercase;margin-top:2px;}
+@media(max-width:640px){.hm{display:none;}.data-table{min-width:0 !important;}}
 @media(max-width:600px){.band-countdown{gap:18px;}.bcd-num{font-size:22px;}.band-names{font-size:12.5px;}}
 
 .app-layout{display:flex;padding-top:calc(var(--topbar-h) + var(--band-h));}
@@ -1188,14 +1189,21 @@ function renderBudget(){
     ${BUDGET.length?BUDGET.map(b=>{
       const est=parseFloat(b.est||b.budget||0), reel=parseFloat(b.reel!==undefined?b.reel:(b.depense||0))||0;
       const p=est>0?Math.min(Math.round(reel/est*100),100):0;
-      return`<div class="budget-item" style="flex-wrap:wrap;">
-        <div class="budget-item-cat" style="min-width:120px;">${b.cat||b.category||b.categorie||'—'}</div>
-        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--tl);">Estimé
-          <input type="number" value="${est}" onchange="updBudget(${b.id},'est',this.value)" style="width:90px;padding:6px 8px;border:1.5px solid var(--border);border-radius:8px;font-family:'Lora',serif;font-size:13px;color:var(--dark);outline:none;background:#fff;text-align:right;">€</div>
-        <div style="flex:1;margin:0 8px;min-width:80px;"><div class="progress-bar"><div class="progress-fill" style="width:${p}%"></div></div></div>
-        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--tl);">Réel
-          <input type="number" value="${reel}" onchange="updBudget(${b.id},'reel',this.value)" style="width:90px;padding:6px 8px;border:1.5px solid var(--border);border-radius:8px;font-family:'Lora',serif;font-size:13px;color:var(--pink);font-weight:700;outline:none;background:#fff;text-align:right;">€</div>
-        <button onclick="delBudgetCat(${b.id})" style="background:none;border:none;color:var(--tl);cursor:pointer;font-size:15px;padding:4px;">×</button>
+      const paye=parseFloat(b.paye||0)||0;
+      const restant=Math.max((reel||est)-paye,0);
+      const inputStyle="width:100%;padding:7px 8px;border:1.5px solid var(--border);border-radius:8px;font-family:'Lora',serif;font-size:13px;outline:none;background:#fff;text-align:right;";
+      return`<div class="budget-item" style="flex-direction:column;align-items:stretch;gap:10px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <input value="${(b.cat||b.category||b.categorie||'').replace(/"/g,'&quot;')}" onchange="updBudgetCat(${b.id},this.value)" style="flex:1;padding:7px 10px;border:1.5px solid transparent;border-radius:8px;font-family:'Lora',serif;font-size:14px;font-weight:700;color:var(--dark);outline:none;background:transparent;" onfocus="this.style.borderColor='var(--pink)';this.style.background='#fff';" onblur="this.style.borderColor='transparent';this.style.background='transparent';">
+          <button onclick="delBudgetCat(${b.id})" style="background:none;border:none;color:var(--tl);cursor:pointer;font-size:15px;padding:4px;">×</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;">
+          <div><div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--tl);margin-bottom:4px;">Estimé</div><input type="number" value="${est}" onchange="updBudget(${b.id},'est',this.value)" style="${inputStyle}color:var(--dark);"></div>
+          <div><div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--tl);margin-bottom:4px;">Coût réel</div><input type="number" value="${reel}" onchange="updBudget(${b.id},'reel',this.value)" style="${inputStyle}color:var(--dark);"></div>
+          <div><div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--tl);margin-bottom:4px;">Déjà payé</div><input type="number" value="${paye}" onchange="updBudget(${b.id},'paye',this.value)" style="${inputStyle}color:var(--gn);font-weight:700;"></div>
+          <div><div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--tl);margin-bottom:4px;">Restant à payer</div><div style="padding:7px 8px;font-family:'Lora',serif;font-size:13px;color:var(--pink);font-weight:700;text-align:right;background:var(--pink-pale);border-radius:8px;">${restant.toLocaleString('fr-FR')} €</div></div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${p}%"></div></div>
       </div>`;
     }).join(''):'<div style="color:var(--tl);font-size:14px;padding:16px 0;">Aucune catégorie de budget.</div>'}`;
 }
@@ -1206,6 +1214,10 @@ function addBudgetCat(){
   if(!cat)return;
   BUDGET.push({id:Date.now(),cat,est,reel:0,paye:0});
   saveData('budget',BUDGET);renderBudget();renderDashboard();
+}
+function updBudgetCat(id,val){
+  const b=BUDGET.find(x=>x.id===id);
+  if(b&&val.trim()){b.cat=val.trim();saveData('budget',BUDGET);renderDashboard();}
 }
 function updBudget(id,key,val){
   const b=BUDGET.find(x=>x.id===id);
@@ -1224,22 +1236,80 @@ function renderGuests(){
   const att=GUESTS.filter(g=>g.presence==='en attente').length;
   const dec=GUESTS.filter(g=>g.presence==='déclinée').length;
   el.innerHTML=`
-    <div class="section-actions" style="margin-bottom:16px;">
+    <div class="section-actions" style="margin-bottom:10px;">
       <span class="badge b-gn" style="font-size:12px;padding:5px 12px;">${conf} confirmés</span>
       <span class="badge b-am" style="font-size:12px;padding:5px 12px;">${att} en attente</span>
       <span class="badge b-pk" style="font-size:12px;padding:5px 12px;">${dec} déclinés</span>
       <span class="badge b-tl" style="font-size:12px;padding:5px 12px;">${GUESTS.length} total</span>
-      <div style="margin-left:auto;display:flex;gap:8px;">
-        <input id="guest-search" type="text" placeholder="Rechercher un invité…" oninput="filterGuests()" style="padding:8px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'Lora',serif;font-size:13px;outline:none;background:var(--bg);">
-        <button class="btn" onclick="openAddGuestModal()">+ Ajouter</button>
-      </div>
     </div>
-    <div class="panel">
-      <table class="data-table">
-        <thead><tr><th>Nom</th><th>Côté</th><th>Rôle</th><th>Invitation</th><th>Présence</th><th>Régime</th></tr></thead>
-        <tbody id="guests-tbody">${renderGuestRows(GUESTS)}</tbody>
-      </table>
+    <div class="section-actions" style="margin-bottom:16px;">
+      <button class="btn" onclick="openAddGuestModal()">+ Ajouter un invité</button>
+      <a href="https://www.canva.com/fr_fr/" target="_blank" class="btn-outline" style="text-decoration:none;display:inline-block;">Créer mes invitations</a>
+      <button class="btn-outline" onclick="document.getElementById('guest-import-file').click()">Importer</button>
+      <input type="file" id="guest-import-file" accept=".csv,.tsv,.txt" style="display:none;" onchange="importGuestsFile(this)">
+      <button class="btn-outline" onclick="exportGuestsCSV()">Exporter</button>
+      <input id="guest-search" type="text" placeholder="Rechercher…" oninput="filterGuests()" style="padding:8px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'Lora',serif;font-size:13px;outline:none;background:var(--bg);margin-left:auto;min-width:140px;flex:1;max-width:240px;">
+    </div>
+    <div class="panel" style="padding:14px;">
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+        <table class="data-table" style="min-width:480px;">
+          <thead><tr><th>Nom</th><th class="hm">Côté</th><th class="hm">Rôle</th><th>Invitation</th><th>Présence</th><th class="hm">Régime</th></tr></thead>
+          <tbody id="guests-tbody">${renderGuestRows(GUESTS)}</tbody>
+        </table>
+      </div>
     </div>`;
+}
+
+function importGuestsFile(input){
+  const file=input.files?.[0];if(!file)return;
+  input.value='';
+  const reader=new FileReader();
+  reader.onload=()=>{
+    let txt=reader.result;
+    if(txt.includes('\ufffd')){
+      const r2=new FileReader();
+      r2.onload=()=>parseGuestsCSV(r2.result);
+      r2.readAsText(file,'iso-8859-1');
+      return;
+    }
+    parseGuestsCSV(txt);
+  };
+  reader.readAsText(file,'utf-8');
+}
+
+function parseGuestsCSV(txt){
+  const lines=txt.split(/\r?\n/).filter(l=>l.trim());
+  if(!lines.length){alert('Fichier vide.');return;}
+  const sep=lines[0].includes(';')?';':(lines[0].includes('\t')?'\t':',');
+  const unq=s=>s.replace(/^"|"$/g,'').replace(/""/g,'"').trim();
+  let start=0;
+  const isHeader=/nom/i.test(lines[0]);
+  if(isHeader)start=1;
+  let added=0;
+  for(let i=start;i<lines.length;i++){
+    const cols=lines[i].split(sep).map(unq);
+    const nom=cols[0];
+    if(!nom||nom.length<2)continue;
+    if(GUESTS.some(g=>(g.nom||'').toLowerCase()===nom.toLowerCase()))continue;
+    const cote=(cols[2]||'').toLowerCase()===String(USER.p2||'').toLowerCase()?'p2':'p1';
+    GUESTS.push({id:Date.now()+added,nom,email:cols[1]||'',cote,role:cols[3]||'Invité·e',regime:cols[4]||'Aucun',vinHonneur:(cols[5]||'').toLowerCase()==='oui',invitation:(cols[6]||'').toLowerCase()==='envoyée'?'envoyée':'non envoyée',presence:['confirmée','déclinée'].includes((cols[7]||'').toLowerCase())?(cols[7]||'').toLowerCase():'en attente',age:'Adulte',seatTableId:null,seatIdx:null,adresse:''});
+    added++;
+  }
+  if(added){saveData('guests',GUESTS);renderGuests();renderSeating();renderDashboard();}
+  alert(added+' invité'+(added>1?'s':'')+' importé'+(added>1?'s':'')+'.');
+}
+
+function exportGuestsCSV(){
+  const rows=[['Nom complet','Email','Cote','Role','Regime particulier',"Vin d'honneur uniquement",'Invitation','Presence']];
+  GUESTS.forEach(g=>{rows.push([g.nom,g.email||'',g.cote==='p1'?USER.p1:USER.p2,g.role||'',g.regime||'',g.vinHonneur?'Oui':'Non',g.invitation,g.presence]);});
+  const csvLines=rows.map(row=>row.map(cell=>'"'+String(cell).replace(/"/g,'""')+'"').join(';'));
+  const csvStr=csvLines.join('\r\n');
+  const iso=(()=>{const out=[];for(let j=0;j<csvStr.length;j++){const code=csvStr.charCodeAt(j);out.push(code<=255?code:63);}return new Uint8Array(out);})();
+  const blob=new Blob([iso],{type:'text/csv;charset=iso-8859-1;'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');
+  a.href=url;a.download='invites_'+USER.p1+'_'+USER.p2+'.csv';
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},800);
 }
 
 function renderGuestRows(list){
@@ -1247,7 +1317,7 @@ function renderGuestRows(list){
   return list.map(g=>{
     const pc=g.presence==='confirmée'?'var(--gn)':g.presence==='déclinée'?'var(--rd)':'var(--am)';
     const ic=g.invitation==='envoyée'?'var(--gn)':'var(--tl)';
-    return`<tr style="cursor:pointer;" onclick="openGuestModal(${g.id})"><td><strong>${g.nom||''}</strong></td><td style="color:var(--tl);">${g.cote==='p1'?USER.p1:USER.p2}</td><td style="color:var(--tl);">${g.role||'Invité·e'}</td><td><span style="color:${ic};font-weight:700;font-size:12px;">${g.invitation==='envoyée'?'Envoyée':'Non envoyée'}</span></td><td><span style="color:${pc};font-weight:700;font-size:12px;">${g.presence||'En attente'}</span></td><td style="color:var(--tl);font-size:12px;">${g.regime&&g.regime!=='Aucun'?g.regime:'—'}</td></tr>`;
+    return`<tr style="cursor:pointer;" onclick="openGuestModal(${g.id})"><td><strong>${g.nom||''}</strong></td><td class="hm" style="color:var(--tl);">${g.cote==='p1'?USER.p1:USER.p2}</td><td class="hm" style="color:var(--tl);">${g.role||'Invité·e'}</td><td><span style="color:${ic};font-weight:700;font-size:12px;">${g.invitation==='envoyée'?'Envoyée':'Non envoyée'}</span></td><td><span style="color:${pc};font-weight:700;font-size:12px;">${g.presence||'En attente'}</span></td><td class="hm" style="color:var(--tl);font-size:12px;">${g.regime&&g.regime!=='Aucun'?g.regime:'—'}</td></tr>`;
   }).join('');
 }
 
@@ -1351,27 +1421,38 @@ function saveNote(i,val){
 }
 
 // ══ PLAN DE TABLE ══
+let tpShape='round';
+function setTpShape(s){tpShape=s;renderSeating();}
+
 function renderSeating(){
   const el=document.getElementById('seating-content');
   if(!el)return;
   const unseated=GUESTS.filter(g=>!g.seatTableId);
+  const shapeBtn=(v,label)=>`<button onclick="setTpShape('${v}')" class="btn-outline" style="font-size:12px;padding:7px 13px;${tpShape===v?'background:var(--pink);color:#fff;border-color:var(--pink);':''}">${label}</button>`;
   el.innerHTML=`
     <div class="section-actions">
-      <input id="new-table-name" class="m-input" placeholder="Nom de la table…" style="flex:1;min-width:150px;max-width:260px;">
-      <input id="new-table-seats" class="m-input" type="number" placeholder="Places" style="width:110px;">
-      <button class="btn" onclick="addTable()">+ Créer la table</button>
+      <input id="new-table-name" class="m-input" placeholder="Nom de la table…" style="flex:1;min-width:140px;max-width:220px;">
+      <input id="new-table-seats" class="m-input" type="number" placeholder="Places" value="6" style="width:90px;">
+      ${shapeBtn('round','Ronde')}${shapeBtn('rect','Rect.')}${shapeBtn('square','Carrée')}
+      <button class="btn" onclick="addTable()">+ Table</button>
+    </div>
+    <div class="section-actions">
+      <button class="btn-outline" onclick="autoSeatAll()">Placement automatique</button>
+      <button class="btn-outline" onclick="resetSeating()">Réinitialiser</button>
+      <button class="btn-outline" onclick="exportPlanPDF()">Export PDF</button>
       <span style="font-size:12px;color:var(--tl);margin-left:auto;">${unseated.length} invité${unseated.length>1?'s':''} non placé${unseated.length>1?'s':''}</span>
     </div>
+    <div id="tp-visual" style="position:relative;background:#fff;border:1.5px solid var(--border);border-radius:16px;height:480px;overflow:auto;margin-bottom:20px;-webkit-overflow-scrolling:touch;"></div>
     ${TABLES.length?`<div class="vendor-grid" style="grid-template-columns:repeat(auto-fill,minmax(250px,1fr));">
       ${TABLES.map(t=>{
         const seated=GUESTS.filter(g=>g.seatTableId===t.id);
-        const cap=t.seats||t.places||t.cap||0;
+        const cap=t.seats||0;
         return`<div class="panel" style="padding:18px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-            <div style="font-family:'Playfair Display',serif;font-size:15px;color:var(--dark);">${t.nom||t.name||'Table'}</div>
+            <div style="font-family:'Playfair Display',serif;font-size:15px;color:var(--dark);">${t.nom||'Table'}</div>
             <button onclick="delTable(${t.id})" style="background:none;border:none;color:var(--tl);cursor:pointer;font-size:15px;">×</button>
           </div>
-          <div style="font-size:11px;color:var(--tl);margin-bottom:10px;">${seated.length}${cap?' / '+cap:''} place${seated.length>1?'s':''}</div>
+          <div style="font-size:11px;color:var(--tl);margin-bottom:10px;">${seated.length}${cap?' / '+cap:''} place${seated.length>1?'s':''} · ${t.shape==='round'?'Ronde':t.shape==='square'?'Carrée':'Rectangulaire'}</div>
           ${seated.map(g=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed var(--border);font-size:12px;color:var(--mid);">
             <span style="width:6px;height:6px;border-radius:50%;background:var(--pink);flex-shrink:0;"></span>
             <span style="flex:1;">${g.nom||''}</span>
@@ -1384,28 +1465,351 @@ function renderSeating(){
         </div>`;
       }).join('')}
     </div>`:'<div style="color:var(--tl);font-size:14px;">Aucune table. Créez votre première table ci-dessus.</div>'}`;
+  drawPlanVisual();
+}
+
+// Visualisation dessinée — même géométrie que l'application
+function drawPlanVisual(){
+  const wrap=document.getElementById('tp-visual');
+  if(!wrap)return;
+  const RND=68,SQ=72,TW=120,TH=58,SEAT=24,GAP=10;
+  let maxX=600,maxY=400;
+  TABLES.forEach(t=>{maxX=Math.max(maxX,t.x+260);maxY=Math.max(maxY,t.y+240);});
+  const inner=document.createElement('div');
+  inner.style.cssText=`position:relative;width:${maxX}px;height:${maxY}px;`;
+  TABLES.forEach(t=>{
+    const placed=GUESTS.filter(g=>g.seatTableId===t.id);
+    const n=Math.min(t.seats||6,12);
+    const isR=t.shape==='round',isSq=t.shape==='square';
+    const cx=t.x+70,cy=t.y+70;
+    // Chaises
+    for(let i=0;i<n;i++){
+      let sx,sy;
+      if(isR){
+        const orbit=RND/2+GAP+SEAT/2;
+        const a=(i/n)*2*Math.PI-Math.PI/2;
+        sx=cx+orbit*Math.cos(a);sy=cy+orbit*Math.sin(a);
+      }else if(isSq){
+        const perSide=Math.ceil(n/4);
+        const side=Math.floor(i/perSide);
+        const idxOnSide=i%perSide;
+        const realPerSide=(side===3)?(n-3*perSide):perSide;
+        const step=SQ/(Math.max(realPerSide,1)+1);
+        const pos=step*(idxOnSide+1);
+        const off=SQ/2+GAP;
+        if(side===0){sx=cx-SQ/2+pos;sy=cy-off;}
+        else if(side===1){sx=cx+off;sy=cy-SQ/2+pos;}
+        else if(side===2){sx=cx-SQ/2+pos;sy=cy+off;}
+        else{sx=cx-off;sy=cy-SQ/2+pos;}
+      }else{
+        const half=Math.ceil(n/2);
+        const isTop=i<half;
+        const cnt=isTop?half:(n-half);
+        const idx=isTop?i:i-half;
+        const step=TW/(Math.max(cnt,1)+1);
+        sx=cx-TW/2+step*(idx+1);
+        sy=isTop?cy-(TH/2+GAP+SEAT/2):cy+(TH/2+GAP+SEAT/2);
+      }
+      const g=placed[i];
+      const seat=document.createElement('div');
+      seat.style.cssText=`position:absolute;left:${sx-SEAT/2}px;top:${sy-SEAT/2}px;width:${SEAT}px;height:${SEAT}px;border-radius:50%;${g?'background:var(--pink);border:1.5px solid var(--pink-dark);':'background:#fff;border:1.5px solid var(--border);'}display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;font-weight:700;`;
+      if(g){
+        seat.textContent=(g.nom||'?').split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase();
+        seat.title=g.nom;
+      }
+      inner.appendChild(seat);
+    }
+    // Table
+    const tbl=document.createElement('div');
+    let w,h2,br;
+    if(isR){w=RND;h2=RND;br='50%';}
+    else if(isSq){w=SQ;h2=SQ;br='10px';}
+    else{w=TW;h2=TH;br='10px';}
+    tbl.style.cssText=`position:absolute;left:${cx-w/2}px;top:${cy-h2/2}px;width:${w}px;height:${h2}px;border-radius:${br};background:var(--pink-pale);border:2px solid var(--pink);display:flex;align-items:center;justify-content:center;text-align:center;font-family:'Lora',serif;font-size:9px;font-weight:700;color:var(--pink-dark);cursor:grab;user-select:none;padding:4px;touch-action:none;`;
+    tbl.textContent=t.nom||'Table';
+    tbl.title=`${t.nom} — ${placed.length}/${t.seats} places`;
+    // Drag
+    let dragging=false,startPX=0,startPY=0,origX=t.x,origY=t.y;
+    tbl.addEventListener('pointerdown',e=>{
+      dragging=true;startPX=e.clientX;startPY=e.clientY;origX=t.x;origY=t.y;
+      tbl.setPointerCapture(e.pointerId);tbl.style.cursor='grabbing';e.preventDefault();
+    });
+    tbl.addEventListener('pointermove',e=>{
+      if(!dragging)return;
+      t.x=Math.max(0,origX+(e.clientX-startPX));
+      t.y=Math.max(0,origY+(e.clientY-startPY));
+      drawPlanVisual();
+    });
+    tbl.addEventListener('pointerup',e=>{
+      if(!dragging)return;
+      dragging=false;
+      saveData('tables',TABLES);
+      drawPlanVisual();
+    });
+    inner.appendChild(tbl);
+  });
+  wrap.innerHTML='';
+  wrap.appendChild(inner);
 }
 
 function addTable(){
-  const nom=document.getElementById('new-table-name').value.trim();
-  const seats=Number(document.getElementById('new-table-seats').value)||0;
-  if(!nom)return;
-  TABLES.push({id:Date.now(),nom,seats});
+  const nomEl=document.getElementById('new-table-name');
+  const seatsEl=document.getElementById('new-table-seats');
+  const nom=(nomEl?nomEl.value.trim():'')||('Table '+(TABLES.length+1));
+  const seats=Math.max(1,Math.min(Number(seatsEl?seatsEl.value:6)||6,12));
+  const x=80+(TABLES.length%4)*220;
+  const y=80+Math.floor(TABLES.length/4)*220;
+  TABLES.push({id:Date.now(),nom,shape:tpShape,seats,x,y,hiddenSeats:[]});
   saveData('tables',TABLES);renderSeating();
 }
+
 function delTable(id){
   if(!confirm('Supprimer cette table ? Les invités placés seront libérés.'))return;
   TABLES=TABLES.filter(t=>t.id!==id);
   GUESTS.forEach(g=>{if(g.seatTableId===id){g.seatTableId=null;g.seatIdx=null;}});
   saveData('tables',TABLES);saveData('guests',GUESTS);renderSeating();
 }
+
 function seatGuest(gid,tid){
   const g=GUESTS.find(x=>x.id===gid);
   if(g){g.seatTableId=tid;saveData('guests',GUESTS);renderSeating();}
 }
+
 function unseatGuest(gid){
   const g=GUESTS.find(x=>x.id===gid);
   if(g){g.seatTableId=null;g.seatIdx=null;saveData('guests',GUESTS);renderSeating();}
+}
+
+function autoSeatAll(){
+  if(!TABLES.length){alert('Créez d\'abord des tables.');return;}
+  // Invités non placés : confirmés d'abord, puis en attente
+  const order=['confirmée','en attente','déclinée'];
+  const unseated=GUESTS.filter(g=>!g.seatTableId).sort((a,b)=>order.indexOf(a.presence||'en attente')-order.indexOf(b.presence||'en attente'));
+  let gi=0;
+  TABLES.forEach(t=>{
+    const cap=t.seats||6;
+    let count=GUESTS.filter(g=>g.seatTableId===t.id).length;
+    while(count<cap&&gi<unseated.length){
+      unseated[gi].seatTableId=t.id;
+      gi++;count++;
+    }
+  });
+  saveData('guests',GUESTS);renderSeating();
+}
+
+function resetSeating(){
+  if(!confirm('Retirer tous les invités des tables ?'))return;
+  GUESTS.forEach(g=>{g.seatTableId=null;g.seatIdx=null;});
+  saveData('guests',GUESTS);renderSeating();
+}
+
+// Export PDF — mise en page identique à l'application
+function appAlert(msg){console.log('[PDF]',msg);}
+
+async function exportPlanPDF(){
+  appAlert('Préparation du PDF en cours…','Export');
+  try{
+    const jsPDF = await loadJsPDF();
+    const pdf = new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+    const pw=pdf.internal.pageSize.getWidth(), ph=pdf.internal.pageSize.getHeight();
+    const _wi=document.getElementById('_wpng')?.src||null;
+    // Couleurs exactes Weddilya
+    const C_PK=[212,96,122],   // #d4607a rose principal
+          C_TM=[62,24,40],     // #3e1828 bordeaux
+          C_TL=[138,74,96],    // #8a4a60 texte secondaire
+          C_SF=[251,230,238],  // #fbe6ee rose clair
+          C_BG=[253,248,245],  // #fdf8f5 fond
+          C_BD=[216,160,184],  // #d8a0b8 bordures
+          C_TX=[62,24,40],     // #3e1828 texte
+          C_WH=[255,255,255];  // blanc
+    const setFill=c=>pdf.setFillColor(c[0],c[1],c[2]);
+    const setText=c=>pdf.setTextColor(c[0],c[1],c[2]);
+    const setStroke=c=>pdf.setDrawColor(c[0],c[1],c[2]);
+
+    // Fond Weddilya sobre (commun à toutes les pages)
+    const drawFrame=()=>{
+      setFill([255,255,255]);pdf.rect(0,0,pw,ph,'F');
+      const bw=8,steps=20;
+      for(let i=0;i<steps;i++){
+        const t=i/steps;
+        setFill([Math.round(212+38*t),Math.round(96+64*t),Math.round(122+62*t)]);
+        pdf.rect(0,(ph/steps)*i,bw,ph/steps+0.5,'F');
+        setFill([Math.round(240-28*t),Math.round(160-64*t),Math.round(184-62*t)]);
+        pdf.rect(pw-bw,(ph/steps)*i,bw,ph/steps+0.5,'F');
+      }
+    };;
+
+    // ── Fonction header commune à toutes les pages ──
+    const drawPageHeader=(subtitle)=>{
+      if(_wi) pdf.addImage(_wi,'PNG',pw/2-36,4,72,16);
+      else { setText(C_PK);pdf.setFont('helvetica','normal');pdf.setFontSize(18);pdf.text('WEDDILYA',pw/2,13,{align:'center',charSpace:3}); }
+      setText(C_TM);pdf.setFont('times','italic');pdf.setFontSize(16);
+      pdf.text(subtitle,pw/2,31,{align:'center'});
+      setStroke(C_PK);pdf.setLineWidth(0.5);pdf.line(pw/2-30,35,pw/2+30,35);
+      setText(C_TL);pdf.setFont('times','normal');pdf.setFontSize(10);
+      pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,42,{align:'center'});
+    };
+
+    // ─── PAGE 1 : titre + plan visuel ───
+    drawFrame();
+    drawPageHeader('Plan de table');
+
+    // Géométrie IDENTIQUE à l'application (mêmes constantes en px, puis mise à l'échelle)
+    const RND=68, SQ=72, TW=120, TH=58, SEAT=24, GAP=10;
+    // Boîte englobante d'une table (en px app), centre de surface placé à (t.x+70, t.y+70)
+    // Bornes réelles de tout le plan, chaises comprises
+    const m=18, top=48, planW=pw-2*m, planH=ph-top-14;
+    let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+    TABLES.forEach(t=>{
+      const cx=t.x+70, cy=t.y+70;
+      // demi-encombrement max (table + orbite chaises)
+      const reach=Math.max(RND/2, SQ/2, TW/2) + GAP + SEAT;
+      minX=Math.min(minX,cx-reach); minY=Math.min(minY,cy-reach);
+      maxX=Math.max(maxX,cx+reach); maxY=Math.max(maxY,cy+reach);
+    });
+    if(!isFinite(minX)){minX=0;minY=0;maxX=400;maxY=300;}
+    const spanX=Math.max(maxX-minX,200), spanY=Math.max(maxY-minY,150);
+    const scale=Math.min(planW/spanX,planH/spanY)*0.95;
+    const offX=m+(planW-spanX*scale)/2-minX*scale;
+    const offY=top+(planH-spanY*scale)/2-minY*scale;
+    // Conversion px app -> mm PDF
+    const PX=(x)=>offX+x*scale, PY=(y)=>offY+y*scale;
+
+    // Fond du plan
+    setFill(C_WH); setStroke(C_BD); pdf.setLineWidth(0.4);
+    pdf.roundedRect(m,top,planW,planH,4,4,'FD');
+
+    TABLES.forEach(t=>{
+      const placed=GUESTS.filter(g=>g.seatTableId===t.id);
+      const n=Math.min(t.seats,12);
+      const isR=t.shape==='round', isSq=t.shape==='square';
+      const cx=t.x+70, cy=t.y+70;            // centre surface (px app)
+      const seatR=Math.max(1.8,(SEAT/2)*scale);
+
+      // ─── Chaises : MÊME logique que addTableEl ───
+      for(let i=0;i<n;i++){
+        let sx,sy;
+        if(isR){
+          const orbit=RND/2+GAP+SEAT/2;
+          const a=(i/n)*2*Math.PI-Math.PI/2;
+          sx=cx+orbit*Math.cos(a); sy=cy+orbit*Math.sin(a);
+        } else if(isSq){
+          const perSide=Math.ceil(n/4);
+          const side=Math.floor(i/perSide);
+          const idxOnSide=i%perSide;
+          const realPerSide=(side===3)?(n-3*perSide):perSide;
+          const step=SQ/(realPerSide+1);
+          const pos=step*(idxOnSide+1);
+          const off=SQ/2+GAP;
+          if(side===0){ sx=cx-SQ/2+pos; sy=cy-off; }
+          else if(side===1){ sx=cx+off; sy=cy-SQ/2+pos; }
+          else if(side===2){ sx=cx-SQ/2+pos; sy=cy+off; }
+          else { sx=cx-off; sy=cy-SQ/2+pos; }
+        } else {
+          const half=Math.ceil(n/2);
+          const isTop=i<half;
+          const idx=isTop?i:i-half;
+          const cnt=isTop?half:(n-half);
+          const step=TW/(cnt+1);
+          sx=cx-TW/2+step*(idx+1);
+          sy=isTop?(cy-TH/2-GAP):(cy+TH/2+GAP);
+        }
+        const g=placed.find(x=>x.seatIdx===i);
+        setFill(C_WH); setStroke(C_PK); pdf.setLineWidth(0.5);
+        pdf.circle(PX(sx),PY(sy),seatR,'FD');
+      }
+
+      // ─── Table (même forme/dimensions que l'app) ───
+      // ombre légère
+      setFill(C_BD);
+      if(isR){ pdf.circle(PX(cx)+0.6,PY(cy)+0.6,(RND/2)*scale,'F'); }
+      else if(isSq){ pdf.roundedRect(PX(cx-SQ/2)+0.6,PY(cy-SQ/2)+0.6,SQ*scale,SQ*scale,1.5,1.5,'F'); }
+      else { pdf.roundedRect(PX(cx-TW/2)+0.6,PY(cy-TH/2)+0.6,TW*scale,TH*scale,1.5,1.5,'F'); }
+      setFill(C_WH); setStroke(C_PK); pdf.setLineWidth(0.7);
+      if(isR){ pdf.circle(PX(cx),PY(cy),(RND/2)*scale,'FD'); }
+      else if(isSq){ pdf.roundedRect(PX(cx-SQ/2),PY(cy-SQ/2),SQ*scale,SQ*scale,1.5,1.5,'FD'); }
+      else { pdf.roundedRect(PX(cx-TW/2),PY(cy-TH/2),TW*scale,TH*scale,1.5,1.5,'FD'); }
+      // Nom
+      setText(C_TM); pdf.setFont('times','bold');
+      pdf.setFontSize(Math.max(7,11*scale));
+      pdf.text(t.nom||'Table',PX(cx),PY(cy),{align:'center',baseline:'middle',maxWidth:(isR?RND:isSq?SQ:TW)*scale*0.95});
+    });
+
+    // ─── PAGE 2+ : liste des invités par table (toutes ensemble, en cartes) ───
+    pdf.addPage(); drawFrame();
+    drawPageHeader('Invités par table');
+
+    const mm=16, yTop=52, colGap=8, nCols=3, colW=(pw-2*mm-(nCols-1)*colGap)/nCols;
+    let col=0, y=yTop;
+    const lineH=6.4;
+
+    const blockHeight=(names)=>11+Math.max(names.length,1)*lineH+8;
+    const newColumnOrPage=(needed)=>{
+      if(y+needed>ph-16){
+        col++;
+        if(col>=nCols){ pdf.addPage(); drawFrame();
+          drawPageHeader('Invités par table');
+          col=0; }
+        y=yTop;
+      }
+    };
+    const drawCard=(title,names,accent)=>{
+      const bh=blockHeight(names);
+      newColumnOrPage(bh);
+      const cx=mm+col*(colW+colGap);
+      // Carte avec bande de titre
+      setFill(C_WH); setStroke(C_BD); pdf.setLineWidth(0.4);
+      pdf.roundedRect(cx,y,colW,bh,3,3,'FD');
+      setFill(accent||C_SF);
+      pdf.roundedRect(cx,y,colW,9,3,3,'F'); pdf.rect(cx,y+5,colW,4,'F');
+      setText(C_WH); pdf.setFont('times','bold'); pdf.setFontSize(11);
+      pdf.text(title,cx+colW/2,y+6.2,{align:'center'});
+      let yy=y+15;
+      setText(C_TX); pdf.setFont('times','normal'); pdf.setFontSize(11);
+      if(names.length){ names.forEach(nm=>{ pdf.text('•  '+nm,cx+4,yy); yy+=lineH; }); }
+      else { setText(C_TL); pdf.setFont('times','italic'); pdf.text('table libre',cx+4,yy); yy+=lineH; }
+      y+=bh+7;
+    };
+
+    // TOUTES les tables dans la même série (pas de séparation)
+    TABLES.forEach(t=>{
+      const placed=GUESTS.filter(g=>g.seatTableId===t.id).sort((a,b)=>(a.seatIdx||0)-(b.seatIdx||0));
+      const accent = (t.nom||'').toLowerCase().includes('marié') ? C_TM : C_PK;
+      drawCard(`${t.nom||'Table'}`, placed.map(g=>g.nom), accent);
+    });
+    const nonPlaces=GUESTS.filter(g=>g.presence==='confirmée'&&g.seatTableId==null);
+    if(nonPlaces.length){ drawCard('Sans table', nonPlaces.map(g=>g.nom), [196,58,58]); }
+
+    pdf.save(`plan_de_table_${USER.p1}_${USER.p2}.pdf`);
+    setTimeout(()=>{const r=document.getElementById('app-modal-root');if(r){r.style.display='none';r.innerHTML='';}},500);
+  }catch(err){
+    appAlert('Impossible de générer le PDF (une connexion internet est nécessaire la première fois). Réessaie connectée.','Export PDF');
+  }
+}
+
+let _jsPDFPromise=null;
+function loadJsPDF(){
+  if(window.jspdf&&window.jspdf.jsPDF) return Promise.resolve(window.jspdf.jsPDF);
+  if(window.jsPDF) return Promise.resolve(window.jsPDF);
+  if(_jsPDFPromise) return _jsPDFPromise;
+  const urls=[
+    'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+    'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',
+    'https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js'
+  ];
+  _jsPDFPromise=new Promise((resolve,reject)=>{
+    let idx=0;
+    const tryNext=()=>{
+      if(idx>=urls.length){reject(new Error('jsPDF indisponible'));return;}
+      const s=document.createElement('script');
+      s.src=urls[idx++];
+      s.onload=()=>{ const j=(window.jspdf&&window.jspdf.jsPDF)||window.jsPDF; if(j)resolve(j); else tryNext(); };
+      s.onerror=()=>{ s.remove(); tryNext(); };
+      document.head.appendChild(s);
+    };
+    tryNext();
+  });
+  return _jsPDFPromise;
 }
 
 // ══ MENU ══
