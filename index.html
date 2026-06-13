@@ -287,6 +287,11 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 .picker-opt.sel{background:var(--pink-pale);color:var(--pink);font-weight:700;}
 .m-pick{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'Lora',serif;font-size:13px;color:var(--dark);outline:none;background:var(--bg);text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;}
 .m-pick:hover{border-color:var(--pink);}
+.card{background:#fff;border:1px solid #f0e8ec;border-radius:16px;}
+#assist-content ol,#assist-content ul{padding-left:24px;}
+.btn-sec{padding:9px 16px;border:1.5px solid var(--border);border-radius:10px;background:#fff;color:var(--mid);font-family:'Lora',serif;font-size:13px;cursor:pointer;}
+.btn-sec:hover{background:var(--pink-pale);}
+.inp{padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'Lora',serif;font-size:13px;color:var(--dark);outline:none;background:var(--bg);}
 
 /* ── Animations ── */
 @keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
@@ -769,12 +774,8 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
       <!-- ASSISTANT -->
       <div class="tab-page" id="tab-assistant">
         <div class="page-title">Assistant <em>Weddilya</em></div>
-        <div class="page-sub">Disponible dans l'application mobile</div>
-        <div style="padding:40px 0;text-align:center;color:var(--tl);">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--pink-light)" stroke-width="1.5" style="margin-bottom:16px;"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-          <div style="font-family:'Playfair Display',serif;font-size:18px;color:var(--dark);margin-bottom:8px;">Assistant disponible sur mobile</div>
-          <div style="font-size:14px;">Téléchargez l'application Weddilya sur Google Play Store.</div>
-        </div>
+        <div class="page-sub">Tous les conseils dont vous avez besoin pour votre mariage</div>
+        <div id="assistant-content"></div>
       </div>
 
       <!-- ALBUM -->
@@ -1034,6 +1035,7 @@ function initApp(){
   renderAlbum();
   renderNotes();
   renderVendors();
+  renderAssistant();
 }
 
 function fmtDate(d){
@@ -1694,7 +1696,7 @@ async function resetSeating(){
 }
 
 // Export PDF — mise en page identique à l'application
-function appAlert(msg){console.log('[PDF]',msg);}
+function appAlert(msg){appAlert2(msg);}
 
 async function exportPlanPDF(){
   appAlert('Préparation du PDF en cours…','Export');
@@ -2072,6 +2074,1350 @@ function openSettings(){
   setDoc(doc(window.firebaseDB,'userData',window._activeDataDocId),{p1:USER.p1,p2:USER.p2,wDate:USER.wDate},{merge:true});
   initApp();
 }
+
+
+// ══ ASSISTANT (code repris de l'application) ══
+const pk="#b84060",pm="#e89aac",sf="#f5d4e0",br="#d8a0b8",tx="#2d0a18",tm="#5a1a30",tl="#8a4a60",gn="#5a8a6a",rd="#c43a3a",am="#c47a2a",gd="#c9a84c",gl="#e8d48a",bg2="#deb96a";
+const h=s=>(s===undefined||s===null?'':String(s)).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const el=id=>document.getElementById(id);
+const ld=(k,d)=>{try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch{return d;}};
+const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
+
+function renderAssistant(){
+  const cont=document.getElementById('assistant-content');
+  if(!cont)return;
+  const services=[
+    {key:'animations',label:'Animations soirée',desc:'Idées pour égayer la fête'},
+    {key:'belleFamille',label:'Belle-famille',desc:'Gérer les situations délicates'},
+    {key:'bijouxMariee',label:'Bijoux mariée',desc:'Selon robe et coiffure'},
+    {key:'cadeauxInvites',label:'Cadeaux invités',desc:'Selon votre budget'},
+    {key:'checklistAvant',label:'Check 10min avant',desc:'Tout vérifier avant cérémonie'},
+    {key:'budget',label:'Conseils budget',desc:'Répartition optimisée'},
+    {key:'weddingDay',label:'Conseils jour J',desc:'Pas-à-pas du jour J'},
+    {key:'tenueMarie',label:'Costume',desc:'Costumes et accessoires'},
+    {key:'decoration',label:'Décoration mariage',desc:'Inspiration selon style'},
+    {key:'enfants',label:'Enfants au mariage',desc:'Rôles et animations'},
+    {key:'fairepart',label:'Faire-part',desc:'12 modèles prêts à utiliser'},
+    {key:'stress',label:'Gestion du stress',desc:'Avant, pendant, après'},
+    {key:'problemes',label:'Imprévus & solutions',desc:'Comment réagir'},
+    {key:'invitesLoin',label:'Invités de loin',desc:'Logement, attentions, infos'},
+    {key:'listeCadeaux',label:'Liste de mariage',desc:'Sites, idées, conseils'},
+    {key:'menu',label:'Menu personnalisé',desc:'Adapté au style et à la saison'},
+    {key:'emotion',label:'Moments émotion',desc:'Instants à ne pas manquer'},
+    {key:'photos',label:'Photos à prévoir',desc:'Checklist photographe'},
+    {key:'playlistAmbi',label:'Playlist par ambiance',desc:'Cérémonie, cocktail, soirée'},
+    {key:'prepCivile',label:'Préparation civile',desc:'Documents, étapes mairie'},
+    {key:'prepReligieuse',label:'Préparation religieuse',desc:'Selon la religion'},
+    {key:'questions',label:'Questions prestataires',desc:'Que demander à chacun'},
+    {key:'remerciements',label:'Remerciements',desc:'Cartes post-mariage'},
+    {key:'tenueMariee',label:'Robe de mariée',desc:'Modèles, styles, bijoux'},
+    {key:'timeline',label:'Timeline jour J',desc:'Planning heure par heure'},
+    {key:'voeux',label:'Vœux personnalisés',desc:'Modèles à adapter'},
+    {key:'voyageNoces',label:'Voyage de noces',desc:'Idées de destinations'},
+    {key:'weddingCake',label:'Wedding cake',desc:'Styles et inspirations'}
+  ];
+  cont.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin-bottom:20px;">
+    ${services.map(s=>`<button onclick="assistOpen('${s.key}')" id="assist-btn-${s.key}" style="display:flex;align-items:center;gap:14px;background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;cursor:pointer;font-family:'Lora',serif;text-align:left;transition:background .15s;" onmouseover="this.style.background='#fef8fb'" onmouseout="if(!this.classList.contains('active'))this.style.background='#fff'">
+      <div style="width:3px;height:32px;border-radius:2px;background:linear-gradient(180deg,var(--pink),#f0a0b8);flex-shrink:0;"></div>
+      <div style="flex:1;"><div style="font-size:14px;font-weight:700;color:var(--dark);margin-bottom:2px;">${s.label}</div><div style="font-size:11px;color:var(--tl);">${s.desc}</div></div>
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 2l4 3-4 3" stroke="var(--pink)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>`).join('')}
+  </div>
+  <div id="assist-content"></div>`;
+}
+
+function assistOpen(service){
+  const cont=el('assist-content');if(!cont)return;
+  document.querySelectorAll('#tab-assistant button[id^="assist-btn"]').forEach(b=>{b.style.background='#fff';b.classList.remove('active');});
+  const ab=document.getElementById('assist-btn-'+service);if(ab){ab.style.background='#fef5f8';ab.classList.add('active');}
+  // Scroller en douceur jusqu'au contenu après le clic
+  setTimeout(()=>{cont.scrollIntoView({behavior:'smooth',block:'start'});}, 50);
+  if(service === 'menu')           return assistMenu(cont);
+  if(service === 'fairepart')      return assistFairepart(cont);
+  if(service === 'budget')         return assistBudget(cont);
+  if(service === 'timeline')       return assistTimeline(cont);
+  if(service === 'decoration')     return assistDecoration(cont);
+  if(service === 'weddingCake')    return assistWeddingCake(cont);
+  if(service === 'animations')     return assistAnimations(cont);
+  if(service === 'voyageNoces')    return assistVoyageNoces(cont);
+  if(service === 'cadeauxInvites') return assistCadeauxInvites(cont);
+  if(service === 'tenueMariee')    return assistTenueMariee(cont);
+  if(service === 'tenueMarie')     return assistTenueMarie(cont);
+  if(service === 'bijouxMariee')   return assistBijouxMariee(cont);
+  if(service === 'photos')         return assistPhotos(cont);
+  if(service === 'stress')         return assistStress(cont);
+  if(service === 'belleFamille')   return assistBelleFamille(cont);
+  if(service === 'questions')      return assistQuestions(cont);
+  if(service === 'voeux')          return assistVoeux(cont);
+  if(service === 'remerciements')  return assistRemerciements(cont);
+  if(service === 'invitesLoin')    return assistInvitesLoin(cont);
+  if(service === 'listeCadeaux')   return assistListeCadeaux(cont);
+  if(service === 'prepCivile')     return assistPrepCivile(cont);
+  if(service === 'prepReligieuse') return assistPrepReligieuse(cont);
+  if(service === 'weddingDay')     return assistWeddingDay(cont);
+  if(service === 'enfants')        return assistEnfants(cont);
+  if(service === 'traditions')     return assistTraditions(cont);
+  if(service === 'playlistAmbi')   return assistPlaylistAmbi(cont);
+  if(service === 'emotion')        return assistEmotion(cont);
+  if(service === 'problemes')      return assistProblemes(cont);
+  if(service === 'checklistAvant') return assistChecklistAvant(cont);
+}
+
+// ─── SERVICE 1 : MENU ───
+function assistMenu(cont){
+  const gv = (k,d)=>ld('assist_menu_'+k, d);
+  const RESTRIC_OPTS = ['vegetarien','vegan','sansgluten','sanslactose','halal','casher','allergie-noix'];
+  const RESTRIC_LABELS = {vegetarien:'Végétarien',vegan:'Vegan',sansgluten:'Sans gluten',sanslactose:'Sans lactose',halal:'Halal',casher:'Casher','allergie-noix':'Allergie fruits à coque'};
+  const savedRestric = gv('restric', []);
+  const savedSaison = gv('saison','printemps');
+  const savedBudget = gv('budget','standard');
+  const savedFormat = gv('format','assiette');
+  const savedInvites = gv('invites',80);
+  cont.innerHTML = `
+    <div class="card" style="padding:16px;">
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:4px;font-weight:700;">️ Menu personnalisé</div>
+      <div style="font-size:11px;color:${tl};font-style:italic;margin-bottom:14px;">Des menus composés avec les produits de saison, adaptés à ton budget et à ton format de réception.</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div>
+          <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Saison</label>
+          <select id="menu-saison" class="inp" style="margin-top:4px;">
+            ${[['printemps','Printemps'],['ete','Été'],['automne','Automne'],['hiver','Hiver']].map(o=>`<option value="${o[0]}" ${savedSaison===o[0]?'selected':''}>${o[1]}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Budget / personne</label>
+          <select id="menu-budget" class="inp" style="margin-top:4px;">
+            ${[['eco','Économique (45-70€)'],['standard','Standard (70-120€)'],['luxe','Luxe (120€+)']].map(o=>`<option value="${o[0]}" ${savedBudget===o[0]?'selected':''}>${o[1]}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div>
+          <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Format</label>
+          <select id="menu-format" class="inp" style="margin-top:4px;">
+            ${[['assiette','Service à l\'assiette'],['buffet','Buffet'],['cocktail','Cocktail dînatoire'],['foodtruck','Food truck'],['garden','Garden party']].map(o=>`<option value="${o[0]}" ${savedFormat===o[0]?'selected':''}>${o[1]}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Nombre d'invités</label>
+          <input id="menu-invites" type="number" class="inp" value="${savedInvites}" min="10" step="5" style="margin-top:4px;">
+        </div>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;display:block;">Restrictions alimentaires (plusieurs possibles)</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          ${RESTRIC_OPTS.map(r=>{
+            const checked = savedRestric.includes(r);
+            return `<label style="display:inline-flex;align-items:center;gap:5px;padding:6px 10px;border-radius:14px;border:1.5px solid ${checked?pk:br};background:${checked?sf:'#fff'};cursor:pointer;font-size:11px;color:${tx};font-weight:600;">
+              <input type="checkbox" value="${r}" class="menu-restric-cb" ${checked?'checked':''} style="margin:0;accent-color:${pk};"> ${RESTRIC_LABELS[r]}
+            </label>`;
+          }).join('')}
+        </div>
+      </div>
+
+      <button class="btn" onclick="assistGenerateMenu()" style="width:100%;"> Générer un menu</button>
+      <div id="menu-result" style="margin-top:16px;"></div>
+    </div>
+  `;
+}
+
+// ════════════ BANQUE DE MENUS CURATÉS PAR RESTRICTION ════════════
+// Pools composés à la main, conformes à chaque régime. Le constructeur
+// pioche un élément par section pour produire 20+ menus distincts et cohérents.
+const RESTRIC_MENUS = {
+  vegan: {
+    cocktail: ['Verrines avocat-mangue','Houmous de betterave et gressins','Mini-brochettes de légumes grillés','Falafels miniatures','Gaspacho tomate-basilic','Toasts vegan à l\'avocat','Mini-wraps végétaux','Verrines quinoa-légumes','Guacamole et chips de maïs','Tartare de tomates et basilic'],
+    entree: ['Tartare d\'avocat et concombre','Carpaccio de betteraves multicolores','Millefeuille de légumes grillés','Velouté de petits pois à la menthe','Salade de lentilles et grenade','Houmous trio et crudités'],
+    plat: ['Risotto aux asperges et champignons (sans lait)','Curry de légumes au lait de coco et riz parfumé','Aubergine rôtie et polenta crémeuse végétale','Wok de légumes et tofu mariné','Légumes primeurs rôtis et boulgour aux herbes','Dahl de lentilles corail et riz basmati'],
+    dessert: ['Wedding cake vegan aux fruits rouges','Entremets chocolat vegan','Tarte vegan aux fruits rouges','Mousse au chocolat noir vegan','Panna cotta vegan au lait de coco','Salade de fruits frais de saison'],
+  },
+  vegetarien: {
+    cocktail: ['Gougères au fromage','Tartelettes chèvre-miel','Verrines tomate-mozzarella','Mini-quiches aux légumes','Brochettes mozzarella-tomate','Feuilletés au fromage','Mini-pizzas artisanales','Bruschettas tomate-basilic','Arancini croustillants','Verrines de gaspacho'],
+    entree: ['Burrata et tomates anciennes','Œuf parfait et crème de parmesan','Tarte fine aux légumes','Salade de chèvre chaud','Velouté de potimarron à la truffe','Asperges, œuf mollet et parmesan'],
+    plat: ['Ravioles ricotta-épinards, sauce aux morilles','Risotto à la truffe','Lasagnes aux légumes','Gnocchis crème de sauge et parmesan','Aubergine parmigiana','Wellington végétal aux champignons'],
+    dessert: ['Wedding cake citron-framboise','Pavlova aux fruits rouges','Cheesecake aux fruits rouges','Tiramisu','Fraisier à la vanille','Tarte au citron meringuée'],
+  },
+  sansgluten: {
+    cocktail: ['Verrines saumon-avocat','Brochettes crevettes-mangue','Verrines de crevettes','Mini-brochettes de poulet','Tartare de thon en verrine','Guacamole et bâtonnets de légumes','Verrines avocat-agrumes','Cuillères de tartare de saumon'],
+    entree: ['Tartare de saumon aux agrumes','Carpaccio de bœuf','Carpaccio de Saint-Jacques','Ceviche de daurade','Salade de gambas et avocat','Velouté de légumes de saison'],
+    plat: ['Filet de veau et purée truffée','Magret de canard et pommes grenailles','Filet de bar et riz sauvage','Suprême de volaille rôti et légumes glacés','Filet de bœuf et écrasé de pommes de terre','Dos de cabillaud et légumes primeurs'],
+    dessert: ['Fraisier sans gluten','Pavlova aux fruits rouges','Entremets chocolat sans gluten','Mousse au chocolat','Crème brûlée à la vanille','Sorbets et fruits frais'],
+  },
+  sanslactose: {
+    cocktail: ['Verrines avocat-crevettes','Gaspacho andalou','Brochettes de saumon fumé','Mini-brochettes de poulet','Tartare de tomates','Guacamole et chips','Verrines de légumes croquants'],
+    entree: ['Carpaccio de Saint-Jacques','Tartare de daurade','Ceviche de poisson','Salade de gambas et agrumes','Tartare de saumon à la mangue','Carpaccio de bœuf et roquette'],
+    plat: ['Suprême de volaille, sauce coco-citron','Filet de bar et riz pilaf','Filet de bœuf et pommes grenailles','Magret de canard, sauce au miel','Curry de légumes au lait de coco','Dos de cabillaud et légumes du soleil'],
+    dessert: ['Wedding cake sans lactose','Panna cotta au lait de coco','Mousse au chocolat végétale','Salade de fruits frais','Sorbets plein fruit','Tarte fine aux pommes'],
+  },
+  halal: {
+    cocktail: ['Brochettes de poulet halal','Verrines avocat-crevettes','Mini-pastillas','Feuilletés aux légumes','Mini-burgers halal','Houmous et pita','Samoussas aux légumes','Briouates au fromage'],
+    entree: ['Salade fleurie et burrata','Tartare de saumon','Salade méditerranéenne','Velouté de potimarron','Carpaccio de Saint-Jacques','Assiette de mezze'],
+    plat: ['Suprême de volaille halal et gratin dauphinois','Souris d\'agneau halal et purée de patates douces','Filet de veau halal et légumes glacés','Tajine de volaille halal et semoule','Brochettes de bœuf halal et riz parfumé','Couscous royal halal (volaille, agneau)'],
+    dessert: ['Wedding cake vanille-fruits rouges','Entremets à la fleur d\'oranger','Fraisier','Pavlova aux fruits rouges','Tarte au citron meringuée','Assortiment de pâtisseries orientales'],
+  },
+  casher: {
+    cocktail: ['Blinis de saumon','Verrines de légumes','Toasts de poisson fumé','Verrines avocat-poisson','Mini-brochettes de légumes','Houmous et crudités','Tartare de saumon en cuillère'],
+    entree: ['Carpaccio de bœuf casher','Tartare de saumon','Ceviche de daurade','Salade d\'agrumes et avocat','Gravlax de saumon','Velouté de légumes'],
+    plat: ['Filet de bœuf casher et haricots verts','Filet de bar rôti et riz pilaf','Volaille casher rôtie et pommes grenailles','Brochettes de bœuf casher et légumes grillés','Daurade rôtie et légumes du soleil','Suprême de volaille casher et purée'],
+    dessert: ['Mousse au chocolat parvé','Wedding cake parvé aux fruits rouges','Sorbets artisanaux','Salade de fruits frais','Tarte fine aux pommes parvé','Pavlova aux fruits rouges'],
+  },
+  'allergie-noix': {
+    cocktail: ['Mini-burgers','Verrines saumon-avocat','Brochettes mozzarella-tomate','Verrines crevettes-agrumes','Mini-quiches','Bruschettas tomate-basilic','Guacamole et chips','Toasts de chèvre frais'],
+    entree: ['Burrata et tomates anciennes','Saumon gravlax','Tartare de thon','Carpaccio de Saint-Jacques','Œuf parfait et crème de parmesan','Velouté de potimarron'],
+    plat: ['Filet de veau et purée maison','Magret de canard et gratin dauphinois','Filet de bar et riz sauvage','Suprême de volaille et légumes glacés','Filet de bœuf, sauce au poivre','Dos de cabillaud et beurre blanc'],
+    dessert: ['Wedding cake vanille-framboise','Pavlova aux fruits rouges','Crème brûlée','Tarte au citron meringuée','Fraisier','Tiramisu'],
+  }
+};
+
+// Mélange + sélection sans répétition pour composer un menu varié
+function buildRestrictionMenu(restric, format){
+  const pool = RESTRIC_MENUS[restric];
+  const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+  const pickN = (arr,n) => { const c=[...arr]; const out=[]; while(out.length<n && c.length){ out.push(c.splice(Math.floor(Math.random()*c.length),1)[0]); } return out; };
+
+  const sections = [];
+  // Vin d'honneur / cocktail : 3 à 4 bouchées (sauf format assiette où on en met 3)
+  const nbBouchees = (format==='cocktail') ? 6 : 3;
+  sections.push({titre:'Vin d\'honneur', items: pickN(pool.cocktail, Math.min(nbBouchees, pool.cocktail.length))});
+
+  if(format==='cocktail'){
+    // Cocktail dînatoire : pas d'assiette, on étoffe les bouchées + mini-desserts
+    sections.push({titre:'Pièces salées', items: pickN(pool.entree.concat(pool.plat), 4)});
+    sections.push({titre:'Douceurs', items: pickN(pool.dessert, 3)});
+  } else {
+    sections.push({titre:'Entrée', items:[pick(pool.entree)]});
+    sections.push({titre:'Plat principal', items:[pick(pool.plat)]});
+    sections.push({titre:'Dessert', items:[pick(pool.dessert)]});
+  }
+  return {sections, boissons:null};
+}
+
+function assistGenerateMenu(){
+  const saison = el('menu-saison').value;
+  const budget = el('menu-budget').value;
+  const format = el('menu-format').value;
+  const invites = parseInt(el('menu-invites').value,10) || 80;
+  const restrictions = Array.from(document.querySelectorAll('.menu-restric-cb:checked')).map(c=>c.value);
+
+  sv('assist_menu_saison',saison); sv('assist_menu_budget',budget);
+  sv('assist_menu_format',format); sv('assist_menu_invites',invites);
+  sv('assist_menu_restric',restrictions);
+
+  let menu;
+  // Si UNE SEULE restriction est cochée et qu'on a une banque curatée pour elle,
+  // on pioche un menu soigné composé à la main (cohérence garantie).
+  if(restrictions.length===1 && typeof RESTRIC_MENUS!=='undefined' && RESTRIC_MENUS[restrictions[0]]){
+    menu = buildRestrictionMenu(restrictions[0], format);
+  } else {
+    // Sinon : moteur dynamique (style aléatoire pour varier).
+    const STYLES=['romantique','boheme','champetre','chic','moderne','minimaliste'];
+    const style = STYLES[Math.floor(Math.random()*STYLES.length)];
+    menu = MENU_ENGINE.generate({style,saison,budget,format,boissons:'classiques',restrictions,invites});
+  }
+
+  const FORMAT_LABELS = {assiette:'Service à l\'assiette',buffet:'Buffet',cocktail:'Cocktail dînatoire',foodtruck:'Food truck',garden:'Garden party'};
+  const BUDGET_LABELS = {eco:'Économique',standard:'Standard',luxe:'Luxe'};
+  const RESTRIC_LABELS = {vegetarien:'Végétarien',vegan:'Vegan',sansgluten:'Sans gluten',sanslactose:'Sans lactose',halal:'Halal',casher:'Casher','allergie-noix':'Allergie fruits à coque'};
+
+  const sectionsHtml = menu.sections.map(sec=>`
+    <div style="margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">${h(sec.titre)}</div>
+      <ul style="margin:0;padding-left:18px;font-size:13px;color:${tx};line-height:1.7;">
+        ${sec.items.length?sec.items.map(it=>`<li>${h(it)}</li>`).join(''):`<li style="color:${tl};font-style:italic;">À composer avec votre traiteur</li>`}
+      </ul>
+    </div>`).join('');
+
+  const b = menu.boissons;
+  const restricChips = restrictions.length
+    ? `<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;justify-content:center;">${restrictions.map(r=>`<span style="background:${sf};border:1px solid ${br};border-radius:12px;padding:2px 9px;font-size:10px;color:${pk};font-weight:700;">${RESTRIC_LABELS[r]}</span>`).join('')}</div>`
+    : '';
+
+  el('menu-result').innerHTML = `
+    <div style="border-top:1.5px solid ${br};padding-top:14px;">
+      <div style="text-align:center;font-size:11px;color:${tl};margin-bottom:4px;font-style:italic;">${FORMAT_LABELS[format]} · ${BUDGET_LABELS[budget]} · ${invites} invités</div>
+      ${restricChips}
+      <div style="margin:14px 0;">${sectionsHtml}</div>
+
+      <div style="display:flex;gap:8px;">
+        <button onclick="assistGenerateMenu()" class="btn-sec" style="flex:1;font-size:12px;"> Autre proposition</button>
+        <button onclick="assistCopyMenu()" class="btn" style="flex:1;font-size:12px;"> Copier</button>
+      </div>
+      <div style="font-size:10px;color:${tl};font-style:italic;text-align:center;margin-top:8px;">Chaque génération propose une variante différente, avec des produits de saison.</div>
+    </div>
+  `;
+  window._lastMenu = {menu, format:FORMAT_LABELS[format], budget:BUDGET_LABELS[budget], invites, restrictions:restrictions.map(r=>RESTRIC_LABELS[r])};
+}
+
+async function assistCopyMenu(){
+  const data = window._lastMenu;
+  if(!data) return;
+  const m = data.menu;
+  let text = `Menu mariage — ${data.format} · ${data.budget} · ${data.invites} invités\n`;
+  if(data.restrictions.length) text += `Restrictions : ${data.restrictions.join(', ')}\n`;
+  text += '\n';
+  m.sections.forEach(sec=>{
+    text += sec.titre.toUpperCase() + '\n';
+    sec.items.forEach(it=> text += '  - ' + it + '\n');
+    text += '\n';
+  });
+  try { await navigator.clipboard.writeText(text); appAlert('Menu copié dans le presse-papier !', 'Copié'); }
+  catch{ appAlert(text, 'Menu (copie manuelle)'); }
+}
+
+// ─── SERVICE 2 : FAIRE-PART ───
+function assistFairepart(cont){
+  const savedStyle = ld('assist_fp_style', 'romantique');
+  cont.innerHTML = `
+    <div class="card" style="padding:16px;">
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">️ Faire-part de mariage</div>
+      <div style="margin-bottom:14px;">
+        <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Style</label>
+        <select id="fp-style" class="inp" style="margin-top:4px;">
+          <option value="romantique" ${savedStyle==='romantique'?'selected':''}>Romantique & poétique</option>
+          <option value="classique" ${savedStyle==='classique'?'selected':''}>Classique & formel</option>
+          <option value="boheme" ${savedStyle==='boheme'?'selected':''}>Bohème & décontracté</option>
+          <option value="humoristique" ${savedStyle==='humoristique'?'selected':''}>Humoristique</option>
+          <option value="court" ${savedStyle==='court'?'selected':''}>Court (save the date)</option>
+        </select>
+      </div>
+      <button class="btn" onclick="assistGenerateFairepart()" style="width:100%;">Voir les modèles</button>
+      <div id="fp-result" style="margin-top:16px;"></div>
+    </div>
+  `;
+}
+
+function assistGenerateFairepart(){
+  const style = el('fp-style').value;
+  sv('assist_fp_style', style);
+  const modeles = ASSIST_KB.fairepart[style] || [];
+  const r = el('fp-result');
+  if(!modeles.length){ r.innerHTML = `<p style="color:${tl};font-size:12px;">Aucun modèle disponible.</p>`; return; }
+  r.innerHTML = `<div style="border-top:1.5px solid ${br};padding-top:14px;font-size:11px;color:${tl};margin-bottom:10px;">Remplace les [crochets] par tes propres informations.</div>` +
+    modeles.map((t, i) => `<div class="card" style="padding:14px;margin-bottom:10px;background:${sf};">
+      <div style="font-size:11px;font-weight:700;color:${pk};margin-bottom:8px;">Modèle ${i+1}</div>
+      <div style="font-size:13px;color:${tx};line-height:1.7;white-space:pre-line;font-family:Playfair Display,Georgia,serif;font-style:italic;">${h(t)}</div>
+      <button onclick="assistCopyText(${JSON.stringify(t).replace(/"/g,'&quot;')})" class="btn-sec" style="margin-top:10px;font-size:11px;padding:6px 12px;"> Copier ce modèle</button>
+    </div>`).join('');
+}
+
+async function assistCopyText(text){
+  try { await navigator.clipboard.writeText(text); appAlert('Texte copié dans le presse-papier !', 'Copié'); }
+  catch{ appAlert(text, 'Texte (copie manuelle)'); }
+}
+
+// ─── SERVICE 3 : DISCOURS ───
+function assistDiscours(cont){
+  cont.innerHTML = `
+    <div class="card" style="padding:16px;">
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Discours de mariage</div>
+      <div style="margin-bottom:14px;">
+        <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Type de discours</label>
+        <select id="disc-type" class="inp" style="margin-top:4px;">
+          <option value="temoin-marie">Témoin du marié / de la mariée</option>
+          <option value="parents">Parents des mariés</option>
+        </select>
+      </div>
+      <button class="btn" onclick="assistGenerateDiscours()" style="width:100%;">Voir les trames</button>
+      <div id="disc-result" style="margin-top:16px;"></div>
+    </div>
+  `;
+}
+
+function assistGenerateDiscours(){
+  const type = el('disc-type').value;
+  const trames = ASSIST_KB.discours[type] || [];
+  const r = el('disc-result');
+  if(!trames.length){ r.innerHTML = `<p style="color:${tl};font-size:12px;">Aucune trame disponible.</p>`; return; }
+  r.innerHTML = `<div style="border-top:1.5px solid ${br};padding-top:14px;font-size:11px;color:${tl};margin-bottom:10px;">Remplace les [crochets] par tes propres souvenirs et anecdotes. Vise 4-6 minutes maximum.</div>` +
+    trames.map((t, i) => `<div class="card" style="padding:14px;margin-bottom:10px;background:${sf};">
+      <div style="font-size:11px;font-weight:700;color:${pk};margin-bottom:8px;">Trame ${i+1}</div>
+      <div style="font-size:13px;color:${tx};line-height:1.7;white-space:pre-line;">${h(t)}</div>
+      <button onclick="assistCopyText(${JSON.stringify(t).replace(/"/g,'&quot;')})" class="btn-sec" style="margin-top:10px;font-size:11px;padding:6px 12px;"> Copier cette trame</button>
+    </div>`).join('');
+}
+
+// ─── SERVICE 4 : BUDGET ───
+function assistBudget(cont){
+  const savedBudget = ld('assist_budget', 15000);
+  const savedInvites = ld('assist_invites', 80);
+  cont.innerHTML = `
+    <div class="card" style="padding:16px;">
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Conseils budget</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+        <div>
+          <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Budget total (€)</label>
+          <input id="bud-total" type="number" class="inp" value="${savedBudget}" min="1000" step="500" style="margin-top:4px;">
+        </div>
+        <div>
+          <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Nombre d'invités</label>
+          <input id="bud-invites" type="number" class="inp" value="${savedInvites}" min="5" step="5" style="margin-top:4px;">
+        </div>
+      </div>
+      <button class="btn" onclick="assistGenerateBudget()" style="width:100%;">Calculer la répartition</button>
+      <div id="bud-result" style="margin-top:16px;"></div>
+    </div>
+  `;
+}
+
+function assistGenerateBudget(){
+  const budget = parseInt(el('bud-total').value, 10) || 15000;
+  const invites = parseInt(el('bud-invites').value, 10) || 80;
+  sv('assist_budget', budget);
+  sv('assist_invites', invites);
+  const data = ASSIST_KB.budget.general(budget, invites);
+  const r = el('bud-result');
+  r.innerHTML = `
+    <div style="border-top:1.5px solid ${br};padding-top:14px;">
+      <div style="font-family:Playfair Display,serif;font-style:italic;font-size:16px;color:${tm};margin-bottom:4px;text-align:center;">${h(data.title)}</div>
+      <div style="font-size:12px;color:${tl};text-align:center;margin-bottom:14px;font-style:italic;">${h(data.parInvite)}</div>
+      ${data.repartition.map(item => `<div style="background:${sf};border-radius:8px;padding:10px 12px;margin-bottom:6px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+          <span style="font-weight:700;font-size:13px;color:${tx};">${h(item.poste)}</span>
+          <span style="font-weight:700;color:${pk};font-size:14px;">${item.montant}€<span style="color:${tl};font-size:10px;font-weight:400;margin-left:4px;">(${item.pct}%)</span></span>
+        </div>
+        <div style="font-size:11px;color:${tm};font-style:italic;line-height:1.4;">${h(item.tip)}</div>
+      </div>`).join('')}
+
+      <div style="margin-top:16px;padding:14px;background:linear-gradient(135deg,#fff8ec,#fef5e0);border-radius:12px;border:1px solid ${gd}40;">
+        <div style="font-family:Playfair Display,serif;font-size:14px;color:${tm};margin-bottom:10px;font-weight:700;"> 10 astuces pour économiser</div>
+        <ul style="margin:0;padding-left:18px;font-size:12px;color:${tx};line-height:1.7;">
+          ${ASSIST_KB.budget.astuces.map(a => `<li>${h(a)}</li>`).join('')}
+        </ul>
+      </div>
+    </div>
+  `;
+}
+
+// ─── SERVICE 5 : TIMELINE ───
+function assistTimeline(cont){
+  const savedHeure = ld('assist_tl_heure', '15:00');
+  const savedCer = ld('assist_tl_cer', 'Mairie de [ville]');
+  const savedRec = ld('assist_tl_rec', 'Domaine de [nom]');
+  cont.innerHTML = `
+    <div class="card" style="padding:16px;">
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">⏰ Timeline du jour J</div>
+      <div style="margin-bottom:10px;">
+        <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Heure de la cérémonie</label>
+        <input id="tl-heure" type="time" class="inp" value="${savedHeure}" style="margin-top:4px;">
+      </div>
+      <div style="margin-bottom:10px;">
+        <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Lieu de cérémonie</label>
+        <input id="tl-cer" type="text" class="inp" value="${h(savedCer)}" style="margin-top:4px;">
+      </div>
+      <div style="margin-bottom:14px;">
+        <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Lieu de réception</label>
+        <input id="tl-rec" type="text" class="inp" value="${h(savedRec)}" style="margin-top:4px;">
+      </div>
+      <button class="btn" onclick="assistGenerateTimeline()" style="width:100%;">Générer ma timeline</button>
+      <div id="tl-result" style="margin-top:16px;"></div>
+    </div>
+  `;
+}
+
+function assistGenerateTimeline(){
+  const heure = el('tl-heure').value || '15:00';
+  const cer = el('tl-cer').value || 'Mairie';
+  const rec = el('tl-rec').value || 'Domaine';
+  sv('assist_tl_heure', heure);
+  sv('assist_tl_cer', cer);
+  sv('assist_tl_rec', rec);
+  const tl = ASSIST_KB.timeline.generate(heure, cer, rec);
+  const r = el('tl-result');
+  r.innerHTML = `<div style="border-top:1.5px solid ${br};padding-top:14px;">
+    <div style="font-family:Playfair Display,serif;font-style:italic;font-size:16px;color:${tm};margin-bottom:14px;text-align:center;">Planning du jour J</div>
+    ${tl.map(item => `<div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid ${br};">
+      <div style="flex-shrink:0;width:55px;font-family:Playfair Display,serif;font-weight:700;color:${pk};font-size:14px;">${item.time}</div>
+      <div style="flex:1;font-size:13px;color:${tx};line-height:1.5;">${h(item.action)}</div>
+    </div>`).join('')}
+  </div>`;
+}
+
+// ─── SERVICE 6 : DÉCORATION ───
+function assistDecoration(cont){
+  const savedStyle = ld('assist_deco_style', 'romantique');
+  const savedSaison = ld('assist_deco_saison', 'printemps');
+  cont.innerHTML = `
+    <div class="card" style="padding:16px;">
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Idées de décoration</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+        <div>
+          <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Style</label>
+          <select id="deco-style" class="inp" style="margin-top:4px;">
+            <option value="romantique" ${savedStyle==='romantique'?'selected':''}>Romantique</option>
+            <option value="boheme" ${savedStyle==='boheme'?'selected':''}>Bohème</option>
+            <option value="chic" ${savedStyle==='chic'?'selected':''}>Chic & élégant</option>
+            <option value="nature" ${savedStyle==='nature'?'selected':''}>Nature</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Saison</label>
+          <select id="deco-saison" class="inp" style="margin-top:4px;">
+            <option value="printemps" ${savedSaison==='printemps'?'selected':''}>Printemps</option>
+            <option value="ete" ${savedSaison==='ete'?'selected':''}>Été</option>
+            <option value="automne" ${savedSaison==='automne'?'selected':''}>Automne</option>
+            <option value="hiver" ${savedSaison==='hiver'?'selected':''}>Hiver</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn" onclick="assistGenerateDeco()" style="width:100%;">Voir l'inspiration</button>
+      <div id="deco-result" style="margin-top:16px;"></div>
+    </div>
+  `;
+}
+
+function assistGenerateDeco(){
+  const style = el('deco-style').value;
+  const saison = el('deco-saison').value;
+  sv('assist_deco_style', style);
+  sv('assist_deco_saison', saison);
+  let key = `${style}-${saison}`;
+  if(!ASSIST_KB.decoration[key]) key = `${style}-toute-saison`;
+  if(!ASSIST_KB.decoration[key]) key = Object.keys(ASSIST_KB.decoration)[0];
+  const d = ASSIST_KB.decoration[key];
+  const r = el('deco-result');
+  r.innerHTML = `<div style="border-top:1.5px solid ${br};padding-top:14px;">
+    <div style="font-family:Playfair Display,serif;font-style:italic;font-size:16px;color:${tm};margin-bottom:14px;text-align:center;">${h(d.title)}</div>
+
+    <div class="assist-card">
+      <div class="assist-section-title"> Palette de couleurs</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">${d.couleurs.map(c=>`<span style="background:#fff;padding:4px 10px;border-radius:14px;font-size:11px;color:${tx};border:1px solid ${br};font-weight:600;">${h(c)}</span>`).join('')}</div>
+    </div>
+
+    <div style="margin-bottom:10px;"><span style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;"> Fleurs recommandées</span><div style="font-size:13px;color:${tx};margin-top:4px;line-height:1.6;">${h(d.fleurs)}</div></div>
+
+    <div style="margin-bottom:10px;"><span style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;"> Tables</span><div style="font-size:13px;color:${tx};margin-top:4px;line-height:1.6;">${h(d.tables)}</div></div>
+
+    <div style="margin-bottom:10px;"><span style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;">️ Vaisselle</span><div style="font-size:13px;color:${tx};margin-top:4px;line-height:1.6;">${h(d.vaisselle)}</div></div>
+
+    <div style="margin-bottom:10px;"><span style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;"> Ambiance générale</span><div style="font-size:13px;color:${tx};margin-top:4px;line-height:1.6;">${h(d.ambiance)}</div></div>
+
+    <div style="margin-bottom:10px;"><span style="font-size:11px;font-weight:700;color:${pk};text-transform:uppercase;letter-spacing:0.5px;"> Arche de cérémonie</span><div style="font-size:13px;color:${tx};margin-top:4px;line-height:1.6;">${h(d.arche)}</div></div>
+
+    <a href="${pinterestUrl(d.title)}" target="_blank" rel="noopener" style="display:inline-block;margin-top:14px;padding:10px 16px;background:linear-gradient(135deg,#fff8ec,#fef5e0);border:1.5px solid ${gd}50;border-radius:10px;text-decoration:none;color:${tx};font-size:12px;font-weight:700;font-family:Lora,serif;">
+       Voir des inspirations sur Pinterest
+    </a>
+  </div>`;
+}
+
+// ─── SERVICE 7 : WEDDING CAKE ───
+function assistWeddingCake(cont){
+  const saved = ld('assist_cake_cat', 'classiques');
+  const cats = ASSIST_KB.weddingCake;
+  const catKeys = Object.keys(cats);
+  const current = cats[saved] || cats[catKeys[0]];
+  cont.innerHTML = `
+    <div class="card" style="padding:16px;">
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:6px;font-weight:700;"> Wedding cake — styles & inspirations</div>
+      <div style="font-size:11px;color:${tl};font-style:italic;margin-bottom:14px;">Choisis une famille de styles, puis ouvre Pinterest pour chaque inspiration.</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;">
+        ${catKeys.map(k=>`<button onclick="sv('assist_cake_cat','${k}');assistWeddingCake(el('assist-content'));" class="btn-sec" style="font-size:11px;padding:7px 12px;${saved===k?'background:'+pk+';color:#fff;border-color:'+pk+';':''}">${h(cats[k].label)}</button>`).join('')}
+      </div>
+      <div style="font-family:Playfair Display,serif;font-style:italic;font-size:16px;color:${tm};margin-bottom:12px;text-align:center;">${h(current.label)}</div>
+      <div style="display:grid;gap:8px;">
+        ${current.items.map(it=>`<div style="display:flex;align-items:center;gap:10px;background:${sf};border-radius:10px;padding:11px 12px;">
+          <span style="flex:1;font-size:13px;color:${tx};font-weight:600;line-height:1.4;">${h(it.nom)}</span>
+          <a href="${pinterestUrl(it.pin)}" target="_blank" rel="noopener" style="flex-shrink:0;padding:6px 11px;background:#fff;border:1.5px solid ${gd}50;border-radius:8px;text-decoration:none;color:${tx};font-size:11px;font-weight:700;font-family:Lora,serif;white-space:nowrap;"> Pinterest</a>
+        </div>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// ─── SERVICE 8 : ANIMATIONS ───
+function assistAnimations(cont){
+  const saved = ld('assist_anim_cat', 'classique');
+  cont.innerHTML = `
+    <div class="card" style="padding:16px;">
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Animations pour la soirée</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+        ${[
+          {k:'classique',l:'Classiques'},{k:'fun',l:'Fun & originales'},
+          {k:'surprise',l:'Surprises'},{k:'enfants',l:'Pour enfants'}
+        ].map(c=>`<button onclick="sv('assist_anim_cat','${c.k}');assistAnimations(el('assist-content'));" class="btn-sec" style="font-size:11px;padding:7px 12px;${saved===c.k?'background:'+pk+';color:#fff;border-color:'+pk+';':''}">${c.l}</button>`).join('')}
+      </div>
+      <div id="anim-result"></div>
+    </div>
+  `;
+  assistRenderAnim();
+}
+function assistRenderAnim(){
+  const cat = ld('assist_anim_cat', 'classique');
+  const list = ASSIST_KB.animations[cat] || [];
+  el('anim-result').innerHTML = list.map(a=>`<div class="card" style="padding:14px;margin-bottom:8px;background:${sf};">
+    <div style="font-weight:700;color:${tx};font-size:14px;margin-bottom:5px;">${h(a.nom)}</div>
+    <div class="assist-card-body">${h(a.desc)}</div>
+  </div>`).join('');
+  // Refresh boutons actifs
+  const buttons = document.querySelectorAll('#assist-content .btn-sec');
+  // (style déjà mis à jour à chaque clic via attribut inline)
+}
+
+// ─── SERVICE 9 : VOYAGE DE NOCES ───
+function assistVoyageNoces(cont){
+  const saved = ld('assist_voyage_cat', 'plage');
+  cont.innerHTML = `
+    <div class="card" style="padding:16px;">
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">️ Voyage de noces</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+        ${[
+          {k:'plage',l:'️ Plage'},{k:'culture',l:'️ Culture'},
+          {k:'aventure',l:'️ Aventure'},{k:'romantique-europe',l:' Europe romantique'}
+        ].map(c=>`<button onclick="sv('assist_voyage_cat','${c.k}');assistVoyageNoces(el('assist-content'));" class="btn-sec" style="font-size:11px;padding:7px 12px;${saved===c.k?'background:'+pk+';color:#fff;border-color:'+pk+';':''}">${c.l}</button>`).join('')}
+      </div>
+      <div id="voyage-result"></div>
+    </div>
+  `;
+  assistRenderVoyage();
+}
+function assistRenderVoyage(){
+  const cat = ld('assist_voyage_cat', 'plage');
+  const list = ASSIST_KB.voyageNoces[cat] || [];
+  el('voyage-result').innerHTML = list.map(d=>`<div class="card" style="padding:14px;margin-bottom:8px;background:${sf};">
+    <div style="font-weight:700;color:${tx};font-size:14px;margin-bottom:5px;">${h(d.dest)}</div>
+    <div class="assist-card-body">${h(d.desc)}</div>
+  </div>`).join('');
+}
+
+// ─── SERVICE 10 : CADEAUX INVITÉS ───
+function assistCadeauxInvites(cont){
+  const saved = ld('assist_cadeau_cat', 'petit-budget');
+  cont.innerHTML = `
+    <div class="card" style="padding:16px;">
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Cadeaux pour les invités</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+        ${[
+          {k:'petit-budget',l:'Petit budget (1-3€)'},
+          {k:'moyen-budget',l:'Moyen budget (3-8€)'},
+          {k:'gros-budget',l:'Gros budget (8-20€)'}
+        ].map(c=>`<button onclick="sv('assist_cadeau_cat','${c.k}');assistCadeauxInvites(el('assist-content'));" class="btn-sec" style="font-size:11px;padding:7px 12px;${saved===c.k?'background:'+pk+';color:#fff;border-color:'+pk+';':''}">${c.l}</button>`).join('')}
+      </div>
+      <div id="cadeau-result"></div>
+    </div>
+  `;
+  assistRenderCadeau();
+}
+function assistRenderCadeau(){
+  const cat = ld('assist_cadeau_cat', 'petit-budget');
+  const list = ASSIST_KB.cadeauxInvites[cat] || [];
+  el('cadeau-result').innerHTML = list.map(c=>`<div class="card" style="padding:14px;margin-bottom:8px;background:${sf};">
+    <div style="font-weight:700;color:${tx};font-size:14px;margin-bottom:5px;">${h(c.nom)}</div>
+    <div class="assist-card-body">${h(c.desc)}</div>
+  </div>`).join('');
+}
+
+// ─── SERVICE 11 : TENUE MARIÉE ───
+function assistTenueMariee(cont){
+  const d = ASSIST_KB.tenueMariee;
+  cont.innerHTML = `
+    <div class="card" style="padding:16px;">
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Robe de mariée</div>
+
+      <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;"> Conseils selon morphologie</div>
+      ${Object.entries(d.morphologies).map(([k,v])=>`<div class="assist-card">
+        <div style="font-weight:700;color:${tx};font-size:13px;text-transform:capitalize;margin-bottom:4px;">Morphologie en ${h(k)}</div>
+        <div class="assist-card-body">${h(v)}</div>
+      </div>`).join('')}
+
+      <div style="font-size:13px;font-weight:700;color:${pk};margin:18px 0 8px;"> Styles de robe</div>
+      ${d.styles.map(s=>`<div class="assist-card">
+        <div class="assist-card-title">${h(s.nom)}</div>
+        <div style="font-size:12px;color:${tm};line-height:1.6;margin-bottom:8px;">${h(s.desc)}</div>
+        <a href="${pinterestUrl(s.pin || ('robe de mariée '+s.nom))}" target="_blank" rel="noopener" style="display:inline-block;padding:5px 11px;background:#fff;border:1.5px solid ${gd}50;border-radius:8px;text-decoration:none;color:${tx};font-size:11px;font-weight:700;font-family:Lora,serif;"> Voir sur Pinterest</a>
+      </div>`).join('')}
+    </div>
+  `;
+}
+
+// ─── SERVICE 12 : TENUE MARIÉ ───
+function assistTenueMarie(cont){
+  const d = ASSIST_KB.tenueMarie;
+  cont.innerHTML = `
+    <div class="card" style="padding:16px;">
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Costume</div>
+
+      <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;"> Styles de costume</div>
+      ${d.styles.map(s=>`<div class="assist-card">
+        <div class="assist-card-title">${h(s.nom)}</div>
+        <div style="font-size:12px;color:${tm};line-height:1.6;margin-bottom:8px;">${h(s.desc)}</div>
+        <a href="${pinterestUrl('costume marié '+s.nom)}" target="_blank" rel="noopener" style="display:inline-block;padding:5px 11px;background:#fff;border:1.5px solid ${gd}50;border-radius:8px;text-decoration:none;color:${tx};font-size:11px;font-weight:700;font-family:Lora,serif;"> Voir sur Pinterest</a>
+      </div>`).join('')}
+
+      <div style="font-size:13px;font-weight:700;color:${pk};margin:18px 0 8px;"> Accessoires essentiels</div>
+      <ul style="margin:0;padding-left:18px;font-size:13px;color:${tx};line-height:1.8;">
+        ${d.accessoires.map(a=>`<li>${h(a)}</li>`).join('')}
+      </ul>
+
+      <div style="background:${sf};padding:12px;border-radius:10px;margin-top:14px;">
+        <div class="assist-section-title"> Choix des couleurs</div>
+        <div class="assist-card-body">${h(d.couleurs)}</div>
+      </div>
+    </div>
+  `;
+}
+
+// ─── SERVICE 13 : BIJOUX MARIÉE ───
+function assistBijouxMariee(cont){
+  const d = ASSIST_KB.bijouxMariee;
+  cont.innerHTML = `
+    <div class="card" style="padding:16px;">
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;">Bijoux de la mariée</div>
+      <div class="assist-section-title">Selon le décolleté / style de robe</div>
+      ${Object.entries(d.selonRobe).map(([k,v])=>{
+        const labels = {decollete:'Décolleté plongeant',bustier:'Bustier sans bretelles','col-haut':'Col haut','dos-nu':'Dos-nu',simple:'Robe minimaliste'};
+        return `<div class="assist-card">
+          <div class="assist-card-title">${labels[k]||k}</div>
+          <div class="assist-card-body">${h(v)}</div>
+        </div>`;
+      }).join('')}
+      <div class="assist-section-title">Coordination avec le voile</div>
+      <div class="assist-card"><div class="assist-card-body">${h(d.voile)}</div></div>
+      <div class="assist-section-title">Selon la coiffure</div>
+      <div class="assist-card"><div class="assist-card-body">${h(d.coiffure)}</div></div>
+      <div class="assist-section-title">Coordination avec le bouquet</div>
+      <div class="assist-card"><div class="assist-card-body">${h(d.bouquet)}</div></div>
+    </div>
+  `;
+}
+
+// ─── SERVICE 14 : MUSIQUE CÉRÉMONIE ───
+function assistMusiqueCer(cont){
+  const saved = ld('assist_musique_moment', 'entree-moderne');
+  const moments = [
+    {k:'entree-classique',l:' Entrée — Classique'},
+    {k:'entree-moderne',l:' Entrée — Moderne'},
+    {k:'voeux',l:' Pendant les vœux'},
+    {k:'sortie',l:' Sortie'},
+    {k:'premiere-danse',l:' Première danse'},
+    {k:'soiree-ambiance',l:' Ambiance soirée'}
+  ];
+  cont.innerHTML = `
+    <div class="card" style="padding:16px;">
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Musique pour la cérémonie</div>
+      <div style="margin-bottom:14px;">
+        <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Moment du mariage</label>
+        <select id="musique-moment" class="inp" style="margin-top:4px;" onchange="sv('assist_musique_moment',this.value);assistRenderMusique();">
+          ${moments.map(m=>`<option value="${m.k}" ${saved===m.k?'selected':''}>${m.l}</option>`).join('')}
+        </select>
+      </div>
+      <div id="musique-result"></div>
+    </div>
+  `;
+  assistRenderMusique();
+}
+function assistRenderMusique(){
+  const moment = el('musique-moment').value;
+  const list = ASSIST_KB.musiqueCer[moment] || [];
+  el('musique-result').innerHTML = `<ul style="margin:0;padding-left:18px;font-size:13px;color:${tx};line-height:1.9;">
+    ${list.map(s=>`<li>${h(s)}</li>`).join('')}
+  </ul>`;
+}
+
+// ─── SERVICE 15 : PHOTOS À PRÉVOIR ───
+function assistPhotos(cont){
+  const d = ASSIST_KB.photosAneFairePas;
+  const sections = [
+    {k:'preparatifs-mariee',l:' Préparatifs mariée'},
+    {k:'preparatifs-marie',l:' Préparatifs marié'},
+    {k:'ceremonie',l:' Cérémonie'},
+    {k:'cocktail-reception',l:' Vin d\'honneur'},
+    {k:'reception',l:'️ Réception / Soirée'},
+    {k:'couple',l:' Photos de couple'}
+  ];
+  cont.innerHTML = `
+    <div class="card" style="padding:16px;">
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:6px;font-weight:700;"> Photos à ne pas manquer</div>
+      <div style="font-size:11px;color:${tl};font-style:italic;margin-bottom:14px;">Donne cette checklist à ton photographe pour ne rien oublier.</div>
+      ${sections.map(s=>`<div style="margin-bottom:14px;">
+        <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;">${s.l}</div>
+        <ul style="margin:0;padding-left:18px;font-size:13px;color:${tx};line-height:1.8;">
+          ${d[s.k].map(p=>`<li>${h(p)}</li>`).join('')}
+        </ul>
+      </div>`).join('')}
+    </div>
+  `;
+}
+
+// ─── SERVICE 16 : STRESS ───
+function assistStress(cont){
+  const saved = ld('assist_stress_cat', 'avant');
+  const cats = [
+    {k:'avant',l:' Avant le mariage'},
+    {k:'jour-j',l:'⭐ Le jour J'},
+    {k:'apres',l:' Après le mariage'}
+  ];
+  cont.innerHTML = `
+    <div class="card" style="padding:16px;">
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Gestion du stress</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+        ${cats.map(c=>`<button onclick="sv('assist_stress_cat','${c.k}');assistStress(el('assist-content'));" class="btn-sec" style="font-size:11px;padding:7px 12px;${saved===c.k?'background:'+pk+';color:#fff;border-color:'+pk+';':''}">${c.l}</button>`).join('')}
+      </div>
+      <div id="stress-result"></div>
+    </div>
+  `;
+  assistRenderStress();
+}
+function assistRenderStress(){
+  const cat = ld('assist_stress_cat', 'avant');
+  const list = ASSIST_KB.gestionStress[cat] || [];
+  el('stress-result').innerHTML = `<ul style="margin:0;padding-left:18px;font-size:13px;color:${tx};line-height:1.9;">
+    ${list.map(s=>`<li>${h(s)}</li>`).join('')}
+  </ul>`;
+}
+
+// ─── SERVICE 17 : BELLE-FAMILLE ───
+function assistBelleFamille(cont){
+  const d = ASSIST_KB.belleFamille;
+  cont.innerHTML = `
+    <div class="card" style="padding:16px;">
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">‍‍ Belle-famille & situations délicates</div>
+
+      <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;">Situations courantes</div>
+      ${d.situations.map(s=>`<div class="assist-card">
+        <div class="assist-card-title">${h(s.nom)}</div>
+        <div class="assist-card-body">${h(s.desc)}</div>
+      </div>`).join('')}
+
+      <div style="background:linear-gradient(135deg,#fff8ec,#fef5e0);padding:14px;border-radius:12px;border:1px solid ${gd}40;margin-top:14px;">
+        <div style="font-family:Playfair Display,serif;font-size:14px;color:${tm};margin-bottom:10px;font-weight:700;"> 6 astuces générales</div>
+        <ul style="margin:0;padding-left:18px;font-size:12px;color:${tx};line-height:1.7;">
+          ${d.astuces.map(a=>`<li>${h(a)}</li>`).join('')}
+        </ul>
+      </div>
+    </div>
+  `;
+}
+
+// ─── SERVICE 18 : QUESTIONS PRESTATAIRES ───
+function assistQuestions(cont){
+  const saved = ld('assist_quest_presta', 'lieu');
+  const types = [
+    {k:'lieu',l:'️ Lieu de réception'},
+    {k:'traiteur',l:'️ Traiteur'},
+    {k:'photographe',l:' Photographe'},
+    {k:'dj',l:' DJ / Musique'},
+    {k:'fleuriste',l:' Fleuriste'}
+  ];
+  cont.innerHTML = `
+    <div class="card" style="padding:16px;">
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Questions aux prestataires</div>
+      <div style="margin-bottom:14px;">
+        <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Type de prestataire</label>
+        <select id="quest-presta" class="inp" style="margin-top:4px;" onchange="sv('assist_quest_presta',this.value);assistRenderQuestions();">
+          ${types.map(t=>`<option value="${t.k}" ${saved===t.k?'selected':''}>${t.l}</option>`).join('')}
+        </select>
+      </div>
+      <div id="quest-result"></div>
+    </div>
+  `;
+  assistRenderQuestions();
+}
+function assistRenderQuestions(){
+  const t = el('quest-presta').value;
+  const list = ASSIST_KB.questionsPrestataires[t] || [];
+  el('quest-result').innerHTML = `<div style="font-size:11px;color:${tl};font-style:italic;margin-bottom:10px;">Coche les questions à poser lors du rendez-vous :</div>
+    ${list.map((q,i)=>`<div class="card" style="padding:10px 12px;margin-bottom:6px;background:${sf};display:flex;align-items:flex-start;gap:8px;">
+      <span style="color:${pk};font-weight:700;flex-shrink:0;">${i+1}.</span>
+      <span style="font-size:13px;color:${tx};line-height:1.5;">${h(q)}</span>
+    </div>`).join('')}`;
+}
+
+// ─── SERVICE : VŒUX PERSONNALISÉS ───
+function assistVoeux(cont){
+  const saved = ld('assist_voeux_style','romantique');
+  cont.innerHTML = `<div class="card" style="padding:16px;">
+    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Vœux personnalisés</div>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Style</label>
+      <select id="voeux-style" class="inp" style="margin-top:4px;" onchange="sv('assist_voeux_style',this.value);assistRenderVoeux();">
+        <option value="romantique" ${saved==='romantique'?'selected':''}>Romantique</option>
+        <option value="humoristique" ${saved==='humoristique'?'selected':''}>Humoristique</option>
+        <option value="court" ${saved==='court'?'selected':''}>Courts & marquants</option>
+        <option value="religieux" ${saved==='religieux'?'selected':''}>Religieux</option>
+      </select>
+    </div>
+    <div id="voeux-result"></div>
+  </div>`;
+  assistRenderVoeux();
+}
+function assistRenderVoeux(){
+  const style = el('voeux-style').value;
+  const list = ASSIST_KB.voeux[style] || [];
+  el('voeux-result').innerHTML = `<div style="font-size:11px;color:${tl};font-style:italic;margin-bottom:10px;">Remplace les [crochets] par tes propres mots et anecdotes.</div>` +
+    list.map((t,i)=>`<div class="card" style="padding:14px;margin-bottom:10px;background:${sf};">
+      <div style="font-size:11px;font-weight:700;color:${pk};margin-bottom:8px;">Modèle ${i+1}</div>
+      <div style="font-size:13px;color:${tx};line-height:1.7;white-space:pre-line;font-family:Playfair Display,Georgia,serif;font-style:italic;">${h(t)}</div>
+      <button onclick="assistCopyText(${JSON.stringify(t).replace(/"/g,'&quot;')})" class="btn-sec" style="margin-top:10px;font-size:11px;padding:6px 12px;"> Copier</button>
+    </div>`).join('');
+}
+
+// ─── SERVICE : REMERCIEMENTS ───
+function assistRemerciements(cont){
+  const saved = ld('assist_remerciement_type','classique');
+  cont.innerHTML = `<div class="card" style="padding:16px;">
+    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Cartes de remerciement</div>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Type</label>
+      <select id="remerc-type" class="inp" style="margin-top:4px;" onchange="sv('assist_remerciement_type',this.value);assistRenderRemerc();">
+        <option value="classique" ${saved==='classique'?'selected':''}>Classique (présence)</option>
+        <option value="cadeau" ${saved==='cadeau'?'selected':''}>Pour un cadeau</option>
+        <option value="aide-jour-j" ${saved==='aide-jour-j'?'selected':''}>Pour de l'aide (témoin, organisateur)</option>
+      </select>
+    </div>
+    <div id="remerc-result"></div>
+  </div>`;
+  assistRenderRemerc();
+}
+function assistRenderRemerc(){
+  const type = el('remerc-type').value;
+  const list = ASSIST_KB.remerciements[type] || [];
+  el('remerc-result').innerHTML = list.map((t,i)=>`<div class="card" style="padding:14px;margin-bottom:10px;background:${sf};">
+    <div style="font-size:11px;font-weight:700;color:${pk};margin-bottom:8px;">Modèle ${i+1}</div>
+    <div style="font-size:13px;color:${tx};line-height:1.7;white-space:pre-line;">${h(t)}</div>
+    <button onclick="assistCopyText(${JSON.stringify(t).replace(/"/g,'&quot;')})" class="btn-sec" style="margin-top:10px;font-size:11px;padding:6px 12px;"> Copier</button>
+  </div>`).join('');
+}
+
+// ─── SERVICE : INVITÉS VENANT DE LOIN ───
+function assistInvitesLoin(cont){
+  const d = ASSIST_KB.invitesLoin;
+  cont.innerHTML = `<div class="card" style="padding:16px;">
+    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Invités venant de loin</div>
+
+    <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;"> Logement</div>
+    <ul style="margin:0 0 16px;padding-left:18px;font-size:13px;color:${tx};line-height:1.8;">
+      ${d.logement.map(x=>`<li>${h(x)}</li>`).join('')}
+    </ul>
+
+    <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;">️ Communication</div>
+    <ul style="margin:0 0 16px;padding-left:18px;font-size:13px;color:${tx};line-height:1.8;">
+      ${d.invitations.map(x=>`<li>${h(x)}</li>`).join('')}
+    </ul>
+
+    <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;"> Petites attentions</div>
+    <ul style="margin:0;padding-left:18px;font-size:13px;color:${tx};line-height:1.8;">
+      ${d.attentions.map(x=>`<li>${h(x)}</li>`).join('')}
+    </ul>
+  </div>`;
+}
+
+// ─── SERVICE : LISTE DE MARIAGE ───
+function assistListeCadeaux(cont){
+  const d = ASSIST_KB.listeCadeaux;
+  cont.innerHTML = `<div class="card" style="padding:16px;">
+    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Liste de mariage / Cagnotte</div>
+
+    <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;"> Plateformes recommandées</div>
+    ${d['cagnotte-en-ligne'].map(p=>`<div class="assist-card">
+      <div class="assist-card-title">${h(p.nom)}</div>
+      <div class="assist-card-body">${h(p.desc)}</div>
+    </div>`).join('')}
+
+    <div style="font-size:13px;font-weight:700;color:${pk};margin:18px 0 8px;"> Idées de listes</div>
+    <ul style="margin:0 0 16px;padding-left:18px;font-size:13px;color:${tx};line-height:1.8;">
+      ${d.idees.map(x=>`<li>${h(x)}</li>`).join('')}
+    </ul>
+
+    <div style="background:linear-gradient(135deg,#fff8ec,#fef5e0);padding:14px;border-radius:12px;border:1px solid ${gd}40;">
+      <div style="font-family:Playfair Display,serif;font-size:14px;color:${tm};margin-bottom:10px;font-weight:700;"> Conseils pratiques</div>
+      <ul style="margin:0;padding-left:18px;font-size:12px;color:${tx};line-height:1.7;">
+        ${d.tips.map(x=>`<li>${h(x)}</li>`).join('')}
+      </ul>
+    </div>
+  </div>`;
+}
+
+// ─── SERVICE : PRÉPARATION CIVILE ───
+function assistPrepCivile(cont){
+  const d = ASSIST_KB.prepCivile;
+  cont.innerHTML = `<div class="card" style="padding:16px;">
+    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">️ Préparation civile (mairie)</div>
+
+    <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;"> Documents à fournir</div>
+    <ul style="margin:0 0 16px;padding-left:18px;font-size:13px;color:${tx};line-height:1.8;">
+      ${d.documents.map(x=>`<li>${h(x)}</li>`).join('')}
+    </ul>
+
+    <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;"> Étapes & calendrier</div>
+    ${d.etapes.map((e,i)=>`<div class="card" style="padding:10px 12px;margin-bottom:6px;background:${sf};display:flex;align-items:flex-start;gap:10px;">
+      <span style="color:${pk};font-weight:700;flex-shrink:0;font-family:Playfair Display,serif;font-size:14px;">${i+1}.</span>
+      <span style="font-size:13px;color:${tx};line-height:1.5;">${h(e)}</span>
+    </div>`).join('')}
+
+    <div style="background:linear-gradient(135deg,#fff8ec,#fef5e0);padding:14px;border-radius:12px;border:1px solid ${gd}40;margin-top:14px;">
+      <div style="font-family:Playfair Display,serif;font-size:14px;color:${tm};margin-bottom:10px;font-weight:700;"> L'audition à la mairie</div>
+      <ul style="margin:0;padding-left:18px;font-size:12px;color:${tx};line-height:1.7;">
+        ${d['questions-officier'].map(x=>`<li>${h(x)}</li>`).join('')}
+      </ul>
+    </div>
+  </div>`;
+}
+
+// ─── SERVICE : PRÉPARATION RELIGIEUSE ───
+function assistPrepReligieuse(cont){
+  const saved = ld('assist_religion','catholique');
+  const types = [
+    {k:'catholique',l:' Catholique'},
+    {k:'protestant',l:'️ Protestant'},
+    {k:'juif',l:'️ Juif'},
+    {k:'musulman',l:'️ Musulman'},
+    {k:'orthodoxe',l:'️ Orthodoxe'}
+  ];
+  cont.innerHTML = `<div class="card" style="padding:16px;">
+    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Préparation religieuse</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+      ${types.map(t=>`<button onclick="sv('assist_religion','${t.k}');assistPrepReligieuse(el('assist-content'));" class="btn-sec" style="font-size:11px;padding:7px 12px;${saved===t.k?'background:'+pk+';color:#fff;border-color:'+pk+';':''}">${t.l}</button>`).join('')}
+    </div>
+    <div id="religion-result"></div>
+  </div>`;
+  assistRenderReligion();
+}
+function assistRenderReligion(){
+  const r = ld('assist_religion','catholique');
+  const list = ASSIST_KB.prepReligieuse[r] || [];
+  el('religion-result').innerHTML = `<ul style="margin:0;padding-left:18px;font-size:13px;color:${tx};line-height:1.9;">
+    ${list.map(s=>`<li>${h(s)}</li>`).join('')}
+  </ul>`;
+}
+
+// ─── SERVICE : CONSEILS JOUR J ───
+function assistWeddingDay(cont){
+  const d = ASSIST_KB.weddingDay;
+  const saved = ld('assist_wday_phase','reveil');
+  const phases = [
+    {k:'reveil',l:'️ Réveil & matin'},
+    {k:'preparatifs',l:' Préparatifs'},
+    {k:'arrivee',l:' Arrivée cérémonie'},
+    {k:'apres',l:' Après le mariage'}
+  ];
+  cont.innerHTML = `<div class="card" style="padding:16px;">
+    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">⭐ Conseils du jour J</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+      ${phases.map(p=>`<button onclick="sv('assist_wday_phase','${p.k}');assistWeddingDay(el('assist-content'));" class="btn-sec" style="font-size:11px;padding:7px 12px;${saved===p.k?'background:'+pk+';color:#fff;border-color:'+pk+';':''}">${p.l}</button>`).join('')}
+    </div>
+    <div id="wday-result"></div>
+  </div>`;
+  assistRenderWday();
+}
+function assistRenderWday(){
+  const p = ld('assist_wday_phase','reveil');
+  const list = ASSIST_KB.weddingDay[p] || [];
+  el('wday-result').innerHTML = `<ul style="margin:0;padding-left:18px;font-size:13px;color:${tx};line-height:1.9;">
+    ${list.map(s=>`<li>${h(s)}</li>`).join('')}
+  </ul>`;
+}
+
+// ─── SERVICE : ENFANTS AU MARIAGE ───
+function assistEnfants(cont){
+  const d = ASSIST_KB.enfants;
+  cont.innerHTML = `<div class="card" style="padding:16px;">
+    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Enfants au mariage</div>
+
+    <div style="font-size:13px;font-weight:700;color:${pk};margin-bottom:8px;"> Rôles à leur confier</div>
+    ${d.roles.map(r=>`<div class="assist-card">
+      <div class="assist-card-title">${h(r.nom)}</div>
+      <div class="assist-card-body">${h(r.desc)}</div>
+    </div>`).join('')}
+
+    <div style="font-size:13px;font-weight:700;color:${pk};margin:18px 0 8px;"> Comment les occuper</div>
+    <ul style="margin:0 0 16px;padding-left:18px;font-size:13px;color:${tx};line-height:1.8;">
+      ${d.occuper.map(x=>`<li>${h(x)}</li>`).join('')}
+    </ul>
+
+    <div style="background:linear-gradient(135deg,#fff8ec,#fef5e0);padding:14px;border-radius:12px;border:1px solid ${gd}40;">
+      <div style="font-family:Playfair Display,serif;font-size:14px;color:${tm};margin-bottom:10px;font-weight:700;"> Conseils pratiques</div>
+      <ul style="margin:0;padding-left:18px;font-size:12px;color:${tx};line-height:1.7;">
+        ${d.tips.map(x=>`<li>${h(x)}</li>`).join('')}
+      </ul>
+    </div>
+  </div>`;
+}
+
+// ─── SERVICE : TRADITIONS RÉGIONALES ───
+function assistTraditions(cont){
+  const saved = ld('assist_region','sud-ouest');
+  const regions = [
+    {k:'sud-ouest',l:' Sud-Ouest'},
+    {k:'bretagne',l:' Bretagne'},
+    {k:'provence',l:' Provence'},
+    {k:'alsace',l:' Alsace'},
+    {k:'corse',l:' Corse'}
+  ];
+  cont.innerHTML = `<div class="card" style="padding:16px;">
+    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">️ Traditions régionales</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+      ${regions.map(r=>`<button onclick="sv('assist_region','${r.k}');assistTraditions(el('assist-content'));" class="btn-sec" style="font-size:11px;padding:7px 12px;${saved===r.k?'background:'+pk+';color:#fff;border-color:'+pk+';':''}">${r.l}</button>`).join('')}
+    </div>
+    <div id="region-result"></div>
+  </div>`;
+  assistRenderRegion();
+}
+function assistRenderRegion(){
+  const r = ld('assist_region','sud-ouest');
+  const list = ASSIST_KB.traditions[r] || [];
+  el('region-result').innerHTML = `<ul style="margin:0;padding-left:18px;font-size:13px;color:${tx};line-height:1.9;">
+    ${list.map(s=>`<li>${h(s)}</li>`).join('')}
+  </ul>`;
+}
+
+// ─── SERVICE : MOMENTS-ÉMOTION ───
+function assistEmotion(cont){
+  const list = ASSIST_KB.emotion;
+  cont.innerHTML = `<div class="card" style="padding:16px;">
+    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:6px;font-weight:700;"> Moments-émotion</div>
+    <div style="font-size:11px;color:${tl};font-style:italic;margin-bottom:14px;">10 instants à savourer pleinement pour graver le souvenir.</div>
+    ${list.map((m,i)=>`<div class="card" style="padding:12px;margin-bottom:8px;background:${sf};display:flex;align-items:flex-start;gap:10px;">
+      <span style="color:${pk};font-weight:700;flex-shrink:0;font-family:Playfair Display,serif;font-size:14px;">${i+1}.</span>
+      <div>
+        <div style="font-weight:700;color:${tx};font-size:13px;margin-bottom:3px;">${h(m.nom)}</div>
+        <div class="assist-card-body">${h(m.desc)}</div>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+// ─── SERVICE : PROBLÈMES & SOLUTIONS ───
+function assistProblemes(cont){
+  const list = ASSIST_KB.problemes;
+  cont.innerHTML = `<div class="card" style="padding:16px;">
+    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:6px;font-weight:700;">🆘 Imprévus du jour J</div>
+    <div style="font-size:11px;color:${tl};font-style:italic;margin-bottom:14px;">Anticiper les problèmes courants pour mieux les gérer.</div>
+    ${list.map(p=>`<div class="assist-card">
+      <div style="font-weight:700;color:${rd};font-size:13px;margin-bottom:5px;"> ${h(p.pb)}</div>
+      <div style="font-size:12px;color:${tx};line-height:1.6;"><strong style="color:${gn};"> Solution :</strong> ${h(p.sol)}</div>
+    </div>`).join('')}
+  </div>`;
+}
+
+// ─── SERVICE : CHECK 10 MIN AVANT CÉRÉMONIE ───
+function assistChecklistAvant(cont){
+  const list = ASSIST_KB.checklistAvant;
+  cont.innerHTML = `<div class="card" style="padding:16px;">
+    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:6px;font-weight:700;"> Check-list 10 min avant cérémonie</div>
+    <div style="font-size:11px;color:${tl};font-style:italic;margin-bottom:14px;">La dernière vérification avant le grand moment. Coche au fur et à mesure.</div>
+    ${list.map((item,i)=>`<label style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;margin-bottom:6px;background:${sf};border-radius:10px;cursor:pointer;">
+      <input type="checkbox" style="margin:3px 0 0;accent-color:${pk};width:16px;height:16px;flex-shrink:0;">
+      <span style="font-size:13px;color:${tx};line-height:1.6;">${h(item)}</span>
+    </label>`).join('')}
+    <div style="margin-top:16px;text-align:center;padding:14px;background:linear-gradient(135deg,#fff8ec,#fef5e0);border-radius:12px;border:1px solid ${gd}40;font-family:Playfair Display,serif;font-style:italic;color:${tm};font-size:14px;">
+       Profite de cet instant. Tout est prêt.
+    </div>
+  </div>`;
+}
+
+// ─── SERVICE : PLAYLIST PAR AMBIANCE ───
+// Playlists complètes (20 titres) pour chaque moment + ambiance du mariage.
+// Reste 100 % textuel (pas de lecteur intégré, on cite juste les titres).
+const PLAYLIST_KB = {
+  'ceremonie-entree': {
+    title: 'Cérémonie — Entrée de la mariée',
+    desc: 'Le moment le plus émouvant : l\'arrivée à l\'autel',
+    tracks: [
+      'Pachelbel — Canon en Ré', 'Mendelssohn — Marche nuptiale',
+      'Wagner — Marche nuptiale (Lohengrin)', 'Vivaldi — Le Printemps (4 Saisons)',
+      'Bach — Air sur la corde de Sol', 'A Thousand Years — Christina Perri',
+      'Make You Feel My Love — Adele', 'Can\'t Help Falling in Love — Elvis (cover acoustique)',
+      'Perfect — Ed Sheeran', 'Marry Me — Train',
+      'River Flows in You — Yiruma', 'Comptine d\'un autre été — Yann Tiersen',
+      'All of Me — John Legend', 'Ave Maria — Schubert',
+      'Clair de Lune — Debussy', 'Gymnopédie n°1 — Satie',
+      'Méditation de Thaïs — Massenet', 'Adagio — Albinoni',
+      'Concerto pour clarinette — Mozart', 'You Are the Best Thing — Ray LaMontagne'
+    ]
+  },
+  'ceremonie-voeux': {
+    title: 'Cérémonie — Pendant les vœux / signature',
+    desc: 'Musique douce en fond pendant les moments forts',
+    tracks: [
+      'Bach — Concerto pour 2 violons (Largo)', 'Pachelbel — Canon (version cordes)',
+      'Massenet — Méditation de Thaïs', 'River Flows in You — Yiruma',
+      'Comptine d\'un autre été — Yann Tiersen', 'Clair de Lune — Debussy',
+      'The Book of Love — Peter Gabriel', 'Your Song — Ellie Goulding',
+      'First Day of My Life — Bright Eyes', 'Holocene — Bon Iver',
+      'Skinny Love — Birdy', 'To Build a Home — The Cinematic Orchestra',
+      'Saturn — Sleeping at Last', 'Turning Page — Sleeping at Last',
+      'I Choose You — Sara Bareilles', 'Latch (Acoustic) — Sam Smith',
+      'Lover — Taylor Swift', 'Better Together — Jack Johnson',
+      'Like Real People Do — Hozier', 'Flightless Bird — Iron & Wine'
+    ]
+  },
+  'ceremonie-sortie': {
+    title: 'Cérémonie — Sortie des mariés',
+    desc: 'Joyeux et entraînant pour la sortie sous les pétales',
+    tracks: [
+      'Signed Sealed Delivered — Stevie Wonder', 'I\'m Yours — Jason Mraz',
+      'Lovely Day — Bill Withers', 'Walking on Sunshine — Katrina & The Waves',
+      'Best Day of My Life — American Authors', 'Happy — Pharrell Williams',
+      'Marry You — Bruno Mars', 'This Will Be (An Everlasting Love) — Natalie Cole',
+      'Beautiful Day — U2', 'Good Life — OneRepublic',
+      'Don\'t Stop Me Now — Queen', 'I Gotta Feeling — Black Eyed Peas',
+      'Celebration — Kool & The Gang', 'September — Earth Wind & Fire',
+      'Love On Top — Beyoncé', 'Sugar — Maroon 5',
+      'Can\'t Stop the Feeling — Justin Timberlake', 'Build Me Up Buttercup — The Foundations',
+      'Here Comes the Sun — The Beatles', 'Best Day of My Life — American Authors'
+    ]
+  },
+  'cocktail-chill': {
+    title: 'Cocktail / Vin d\'honneur — Chill & Élégant',
+    desc: 'Ambiance feutrée, lounge, parfaite pour les discussions',
+    tracks: [
+      'Sade — Smooth Operator', 'Nora Jones — Don\'t Know Why', 'Jamie Cullum — These Are the Days',
+      'Stacey Kent — The Boy Next Door', 'Diana Krall — The Look of Love', 'Michael Bublé — Feeling Good',
+      'Madeleine Peyroux — Dance Me to the End of Love', 'Jamie Cullum — All at Sea',
+      'Caro Emerald — Back It Up', 'Carla Bruni — Quelqu\'un m\'a dit',
+      'Norah Jones — Come Away with Me', 'Frank Sinatra — Fly Me to the Moon',
+      'Ella Fitzgerald — Cheek to Cheek', 'Stan Getz & João Gilberto — The Girl from Ipanema',
+      'Astrud Gilberto — Águas de Março', 'Bossanostra — Café del Mar (cover)',
+      'Bebel Gilberto — So Nice', 'Henri Salvador — Jardin d\'hiver',
+      'Pink Martini — Sympathique', 'Caravan Palace — Lone Digger (version lounge)'
+    ]
+  },
+  'cocktail-festif': {
+    title: 'Cocktail / Vin d\'honneur — Festif',
+    desc: 'Ambiance entraînante, pop, parfait pour mettre tout le monde de bonne humeur',
+    tracks: [
+      'Justin Timberlake — Can\'t Stop the Feeling', 'Pharrell Williams — Happy',
+      'Bruno Mars — Marry You', 'Earth Wind & Fire — September',
+      'Stevie Wonder — Signed Sealed Delivered', 'Bill Withers — Lovely Day',
+      'Walk the Moon — Shut Up and Dance', 'Daft Punk — Get Lucky',
+      'Michael Jackson — Don\'t Stop \'Til You Get Enough', 'Lizzo — Good as Hell',
+      'Pharrell Williams — Get Lucky (version live)', 'Beyoncé — Love On Top',
+      'Sister Sledge — We Are Family', 'Cyndi Lauper — Girls Just Want to Have Fun',
+      'Whitney Houston — I Wanna Dance with Somebody', 'Maroon 5 — Sugar',
+      'Edwin Starr — War', 'Mark Ronson ft. Bruno Mars — Uptown Funk',
+      'The Weeknd — Can\'t Feel My Face', 'Doja Cat — Say So'
+    ]
+  },
+  'diner': {
+    title: 'Dîner — Ambiance feutrée',
+    desc: 'Discussion en table, douceur, classes',
+    tracks: [
+      'Coldplay — Sky Full of Stars', 'Ed Sheeran — Perfect', 'Norah Jones — Sunrise',
+      'John Mayer — Gravity', 'Michael Bublé — Home', 'Adele — Make You Feel My Love',
+      'James Bay — Let It Go', 'Birdy — Skinny Love', 'Ed Sheeran — Thinking Out Loud',
+      'James Blunt — You\'re Beautiful', 'Lewis Capaldi — Someone You Loved',
+      'Sam Smith — Stay With Me', 'Calum Scott — You Are the Reason',
+      'Christina Perri — A Thousand Years', 'John Legend — All of Me',
+      'Ben Platt — Grow As We Go', 'Maroon 5 — She Will Be Loved',
+      'Ed Sheeran — Photograph', 'Tracy Chapman — Fast Car', 'James Bay — Hold Back the River'
+    ]
+  },
+  'ouverture-bal': {
+    title: 'Ouverture de bal — Première danse',
+    desc: '20 grands classiques pour votre première danse en couple',
+    tracks: [
+      'At Last — Etta James', 'Thinking Out Loud — Ed Sheeran', 'All of Me — John Legend',
+      'Perfect — Ed Sheeran', 'You Are the Best Thing — Ray LaMontagne',
+      'L-O-V-E — Nat King Cole', 'La Vie en Rose — Édith Piaf',
+      'Can\'t Help Falling in Love — Elvis Presley', 'Make You Feel My Love — Adele',
+      'A Thousand Years — Christina Perri', 'Marry Me — Train',
+      'Better Together — Jack Johnson', 'I\'m Yours — Jason Mraz',
+      'I Won\'t Give Up — Jason Mraz', 'Stand By Me — Ben E. King',
+      'How Long Will I Love You — Ellie Goulding', 'You Make My Dreams — Hall & Oates',
+      'Marvin Gaye — Let\'s Get It On', 'Crazy Love — Michael Bublé',
+      'Lucky — Jason Mraz & Colbie Caillat'
+    ]
+  },
+  'soiree-dancefloor': {
+    title: 'Soirée — Dancefloor déchaîné',
+    desc: 'Pour faire danser tout le monde jusqu\'au bout de la nuit',
+    tracks: [
+      'Mark Ronson — Uptown Funk', 'Queen — Don\'t Stop Me Now',
+      'ABBA — Dancing Queen', 'Daft Punk — Around the World',
+      'Sister Sledge — He\'s the Greatest Dancer', 'Earth Wind & Fire — Boogie Wonderland',
+      'Donna Summer — Hot Stuff', 'The Killers — Mr. Brightside',
+      'Black Eyed Peas — I Gotta Feeling', 'Bruno Mars — 24K Magic',
+      'Outkast — Hey Ya!', 'Beyoncé — Crazy in Love',
+      'Michael Jackson — Billie Jean', 'Lady Gaga — Bad Romance',
+      'Pitbull ft. Ne-Yo — Time of Our Lives', 'Madonna — Like a Prayer',
+      'Whitney Houston — I Wanna Dance with Somebody', 'Bonnie Tyler — Total Eclipse of the Heart',
+      'Robbie Williams — Rock DJ', 'AC/DC — You Shook Me All Night Long'
+    ]
+  },
+  'soiree-annees80': {
+    title: 'Soirée — Spéciale années 80',
+    desc: 'Pour la génération de tes parents et grands enfants',
+    tracks: [
+      'Michael Jackson — Thriller', 'Whitney Houston — I Wanna Dance with Somebody',
+      'A-ha — Take On Me', 'Cyndi Lauper — Girls Just Want to Have Fun',
+      'Madonna — Like a Virgin', 'Wham! — Wake Me Up Before You Go-Go',
+      'Tina Turner — What\'s Love Got to Do with It', 'Bonnie Tyler — Total Eclipse of the Heart',
+      'Toto — Africa', 'Journey — Don\'t Stop Believin\'',
+      'Prince — Kiss', 'Indochine — L\'Aventurier',
+      'France Gall — Résiste', 'Téléphone — Cendrillon',
+      'Téléphone — Ça (c\'est vraiment toi)', 'Les Rita Mitsouko — Marcia Baïla',
+      'Niagara — J\'ai vu', 'Mylène Farmer — Libertine',
+      'Etienne Daho — Week-end à Rome', 'Dépêche Mode — Just Can\'t Get Enough'
+    ]
+  },
+  'soiree-francaise': {
+    title: 'Soirée — Spéciale française',
+    desc: 'Variété française pour faire chanter tout le monde',
+    tracks: [
+      'Stromae — Alors on danse', 'Indila — Dernière danse',
+      'Christine and the Queens — Christine', 'Maître Gims — Sapés comme jamais',
+      'Aya Nakamura — Djadja', 'Angèle — Balance ton quoi',
+      'Jul — Wesh alors', 'Bigflo & Oli — Dommage',
+      'Patrick Bruel — Casser la voix', 'Francis Cabrel — Octobre',
+      'Goldman — Quand la musique est bonne', 'Mylène Farmer — Désenchantée',
+      'Daniel Balavoine — Le chanteur', 'Renaud — Mistral Gagnant',
+      'Charles Aznavour — La Bohème', 'Jacques Brel — Ne me quitte pas',
+      'Edith Piaf — Non, je ne regrette rien', 'Joe Dassin — Les Champs-Élysées',
+      'Michel Sardou — La Maladie d\'amour', 'Claude François — Alexandrie Alexandra'
+    ]
+  },
+  'fin-soiree': {
+    title: 'Fin de soirée — Slow et émotion',
+    desc: 'Pour clôturer la soirée en douceur',
+    tracks: [
+      'Coldplay — Yellow', 'Coldplay — Fix You', 'Adele — Someone Like You',
+      'Sam Smith — Stay With Me', 'Lewis Capaldi — Someone You Loved',
+      'Etta James — At Last', 'Norah Jones — Come Away with Me',
+      'Édith Piaf — La Vie en Rose', 'Frank Sinatra — My Way',
+      'Louis Armstrong — What a Wonderful World', 'Bill Withers — Lean on Me',
+      'James Brown — It\'s a Man\'s Man\'s Man\'s World', 'Otis Redding — These Arms of Mine',
+      'Aretha Franklin — Natural Woman', 'Tracy Chapman — Talkin\' Bout a Revolution',
+      'John Lennon — Imagine', 'The Beatles — Let It Be',
+      'Simon & Garfunkel — Bridge Over Troubled Water', 'Bob Dylan — Make You Feel My Love',
+      'Ed Sheeran — Photograph'
+    ]
+  }
+};
+
+function assistPlaylistAmbi(cont){
+  const saved = ld('assist_playlist_moment','cocktail-chill');
+  const moments = [
+    {k:'ceremonie-entree',l:' Entrée mariée'},
+    {k:'ceremonie-voeux',l:' Vœux / signature'},
+    {k:'ceremonie-sortie',l:' Sortie cérémonie'},
+    {k:'cocktail-chill',l:' Cocktail Chill'},
+    {k:'cocktail-festif',l:' Cocktail Festif'},
+    {k:'diner',l:'️ Dîner feutré'},
+    {k:'ouverture-bal',l:' Ouverture de bal'},
+    {k:'soiree-dancefloor',l:' Dancefloor'},
+    {k:'soiree-annees80',l:' Années 80'},
+    {k:'soiree-francaise',l:'🇫🇷 Française'},
+    {k:'fin-soiree',l:' Fin de soirée'}
+  ];
+  const list = PLAYLIST_KB[saved] || PLAYLIST_KB['cocktail-chill'];
+  cont.innerHTML = `<div class="card" style="padding:16px;">
+    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Playlist par ambiance</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+      ${moments.map(m=>`<button onclick="sv('assist_playlist_moment','${m.k}');assistPlaylistAmbi(el('assist-content'));" class="btn-sec" style="font-size:11px;padding:7px 12px;${saved===m.k?'background:'+pk+';color:#fff;border-color:'+pk+';':''}">${m.l}</button>`).join('')}
+    </div>
+    <div style="font-family:Playfair Display,serif;font-style:italic;font-size:16px;color:${tm};text-align:center;margin-bottom:4px;">${h(list.title)}</div>
+    <div style="text-align:center;font-size:11px;color:${tl};font-style:italic;margin-bottom:14px;">${h(list.desc)}</div>
+    <ol style="margin:0;padding-left:24px;font-size:13px;color:${tx};line-height:1.9;">
+      ${list.tracks.map(t=>t.replace(/\s*—\s*/g,' - ')).sort((a,b)=>a.localeCompare(b,'fr',{sensitivity:'base'})).map(t=>`<li>${h(t)}</li>`).join('')}
+    </ol>
+    <div style="margin-top:14px;padding:10px 12px;background:${sf};border-radius:8px;font-size:11px;color:${tm};font-style:italic;">
+       Donne cette playlist à ton DJ ou crée la directement dans ton application de musique préférée.
+    </div>
+  </div>`;
+}
+
 
 // ══ SCROLL REVEAL (landing) ══
 const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:0.1});
