@@ -193,6 +193,16 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 .bcd-num{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--pink);line-height:1;}
 .bcd-lbl{font-family:'Josefin Sans',sans-serif;font-size:8px;letter-spacing:0.15em;color:var(--mid);text-transform:uppercase;margin-top:2px;}
 @media(max-width:640px){.hm{display:none;}.data-table{min-width:0 !important;}}
+.app-main{max-width:100%;overflow-x:hidden;}
+.vnd-cat-btn,.m-input,.m-pick,.m-select{max-width:100%;box-sizing:border-box;}
+#tp-visual{max-width:100%;}
+.section-actions{max-width:100%;}
+.section-actions .m-input,.section-actions input{box-sizing:border-box;}
+@media(max-width:640px){
+  .section-actions{gap:8px;}
+  .section-actions .btn,.section-actions .btn-outline{flex:1;min-width:calc(50% - 4px);text-align:center;}
+  #tp-visual{height:360px;}
+}
 @media(max-width:600px){.band-countdown{gap:18px;}.bcd-num{font-size:22px;}.band-names{font-size:12.5px;}}
 
 .app-layout{display:flex;padding-top:calc(var(--topbar-h) + var(--band-h));}
@@ -833,7 +843,8 @@ fAuth.onAuthStateChanged(window.firebaseAuth,user=>{
 </script>
 
 <script>
-let USER={}, GUESTS=[], BUDGET=[], CHECKLIST=[], NOTES='', VENDORS_FAV=[], TABLES=[], DRIVE_URL='', DECO_CHECKED={}, DECO_CUSTOM={}, MENUQTY={};
+let USER={}, GUESTS=[], BUDGET=[], CHECKLIST=[], NOTES='', VENDORS_FAV=[], VENDORS_CHO=[], TABLES=[], DRIVE_URL='', DECO_CHECKED={}, DECO_CUSTOM={}, MENUQTY={}, MENU=[];
+const DEF_MENU=[{id:1,section:"Vin d'honneur / Cocktail",items:[{id:11,text:"Champagne & vins"},{id:12,text:"Cocktails & softs"},{id:13,text:"Amuse-bouches (canapés, verrines, petits fours)"}]},{id:2,section:"Entrée",items:[{id:21,text:"Froide ou chaude (foie gras, tartare de poisson, salade raffinée...)"}]},{id:3,section:"Plat principal",items:[{id:31,text:"Viande, poisson ou option végétarienne"},{id:32,text:"Accompagnements (légumes, féculents)"}]},{id:4,section:"Fromage",items:[{id:41,text:"Plateau de fromages variés"},{id:42,text:"Salade"}]},{id:5,section:"Dessert",items:[{id:51,text:"Pièce montée, Wedding cake ou dessert à l'assiette"}]}];
 let _cdTimer=null;
 
 // ══ VUES ══
@@ -929,7 +940,7 @@ async function doForgot(){
 async function doLogout(){
   if(_cdTimer)clearInterval(_cdTimer);
   await window.firebaseAuthLib.signOut(window.firebaseAuth);
-  USER={}; GUESTS=[]; BUDGET=[]; CHECKLIST=[]; NOTES=''; VENDORS_FAV=[]; TABLES=[]; DECO_CHECKED={}; DECO_CUSTOM={}; MENUQTY={}; DRIVE_URL='';
+  USER={}; GUESTS=[]; BUDGET=[]; CHECKLIST=[]; NOTES=''; VENDORS_FAV=[]; VENDORS_CHO=[]; TABLES=[]; DECO_CHECKED={}; DECO_CUSTOM={}; MENUQTY={}; MENU=[]; DRIVE_URL='';
   document.getElementById('avatar-menu').classList.remove('open');
   showView('landing');
 }
@@ -996,7 +1007,10 @@ async function loadUser(firebaseUser){
   DECO_CUSTOM=pick('deco_custom',{});if(!DECO_CUSTOM||typeof DECO_CUSTOM!=='object'||Array.isArray(DECO_CUSTOM))DECO_CUSTOM={};
   MENUQTY=pick('menuqty',{});if(!MENUQTY||typeof MENUQTY!=='object')MENUQTY={};
   VENDORS_FAV=pick('vfav',[]);if(!Array.isArray(VENDORS_FAV))VENDORS_FAV=[];
+  VENDORS_CHO=pick('vcho',[]);if(!Array.isArray(VENDORS_CHO))VENDORS_CHO=[];
+  MENU=pick('menu',null);if(!Array.isArray(MENU)||!MENU.length)MENU=DEF_MENU.map(s=>({...s,items:s.items.map(i=>({...i}))}));
   TABLES=pick('tables',[]);if(!Array.isArray(TABLES))TABLES=[];
+  SEAT_CONFLICTS=pick('seat_conflicts',[]);if(!Array.isArray(SEAT_CONFLICTS))SEAT_CONFLICTS=[];
   DRIVE_URL=pick('drive_url','');if(typeof DRIVE_URL!=='string')DRIVE_URL='';
   initApp();
   if(loadErr){
@@ -1394,6 +1408,23 @@ function appAlert2(msg){
     ov.querySelector('#pk-ok').onclick=close;
   });
 }
+function appPrompt(title,value){
+  return new Promise(res=>{
+    const ov=document.getElementById('picker-overlay');
+    ov.innerHTML=`<div class="picker-box">
+      <div class="modal-title" style="font-size:17px;margin-bottom:12px;">${title}</div>
+      <input class="m-input" id="pk-input" value="${(value||'').replace(/"/g,'&quot;')}" style="margin-bottom:16px;">
+      <div style="display:flex;gap:10px;"><button class="btn" id="pk-ok" style="flex:1;">Valider</button><button class="btn-outline" id="pk-no" style="flex:1;">Annuler</button></div>
+    </div>`;
+    ov.classList.add('open');
+    const inp=ov.querySelector('#pk-input');inp.focus();inp.select();
+    const close=v=>{ov.classList.remove('open');ov.innerHTML='';ov.onclick=null;res(v);};
+    ov.onclick=e=>{if(e.target===ov)close(null);};
+    ov.querySelector('#pk-ok').onclick=()=>close(inp.value);
+    ov.querySelector('#pk-no').onclick=()=>close(null);
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter')close(inp.value);});
+  });
+}
 
 function openGuestModal(id){
   const g=GUESTS.find(x=>x.id===id);if(!g)return;
@@ -1512,6 +1543,7 @@ function renderNotes(){
 
 // ══ PLAN DE TABLE ══
 let tpShape='round';
+let SEAT_CONFLICTS=[];
 function setTpShape(s){tpShape=s;renderSeating();}
 
 function renderSeating(){
@@ -1528,6 +1560,7 @@ function renderSeating(){
     </div>
     <div class="section-actions">
       <button class="btn-outline" onclick="autoSeatAll()">Placement automatique</button>
+      <button class="btn-outline" onclick="openConflictsModal()">Ne pas placer côte à côte${SEAT_CONFLICTS.length?' ('+SEAT_CONFLICTS.length+')':''}</button>
       <button class="btn-outline" onclick="resetSeating()">Réinitialiser</button>
       <button class="btn-outline" onclick="exportPlanPDF()">Export PDF</button>
       <span style="font-size:12px;color:var(--tl);margin-left:auto;">${unseated.length} invité${unseated.length>1?'s':''} non placé${unseated.length>1?'s':''}</span>
@@ -1599,10 +1632,14 @@ function drawPlanVisual(){
       }
       const g=placed[i];
       const seat=document.createElement('div');
-      seat.style.cssText=`position:absolute;left:${sx-SEAT/2}px;top:${sy-SEAT/2}px;width:${SEAT}px;height:${SEAT}px;border-radius:50%;${g?'background:var(--pink);border:1.5px solid var(--pink-dark);':'background:#fff;border:1.5px solid var(--border);'}display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;font-weight:700;`;
+      seat.style.cssText=`position:absolute;left:${sx-SEAT/2}px;top:${sy-SEAT/2}px;width:${SEAT}px;height:${SEAT}px;border-radius:50%;${g?'background:var(--pink);border:1.5px solid var(--pink-dark);':'background:#fff;border:1.5px dashed var(--pink-light);'}display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;font-weight:700;cursor:pointer;z-index:5;`;
       if(g){
         seat.textContent=(g.nom||'?').split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase();
-        seat.title=g.nom;
+        seat.title=g.nom+' — cliquer pour retirer';
+        seat.onclick=ev=>{ev.stopPropagation();unseatGuest(g.id);};
+      }else{
+        seat.title='Chaise libre — cliquer pour placer un invité';
+        seat.onclick=ev=>{ev.stopPropagation();pickSeatGuest(t.id);};
       }
       inner.appendChild(seat);
     }
@@ -1614,24 +1651,26 @@ function drawPlanVisual(){
     else{w=TW;h2=TH;br='10px';}
     tbl.style.cssText=`position:absolute;left:${cx-w/2}px;top:${cy-h2/2}px;width:${w}px;height:${h2}px;border-radius:${br};background:var(--pink-pale);border:2px solid var(--pink);display:flex;align-items:center;justify-content:center;text-align:center;font-family:'Lora',serif;font-size:9px;font-weight:700;color:var(--pink-dark);cursor:grab;user-select:none;padding:4px;touch-action:none;`;
     tbl.textContent=t.nom||'Table';
-    tbl.title=`${t.nom} — ${placed.length}/${t.seats} places`;
-    // Drag
-    let dragging=false,startPX=0,startPY=0,origX=t.x,origY=t.y;
+    tbl.title=`${t.nom} — ${placed.length}/${t.seats} places · cliquer pour renommer, glisser pour déplacer`;
+    // Drag + clic = renommer (si pas de déplacement)
+    let dragging=false,moved=false,startPX=0,startPY=0,origX=t.x,origY=t.y;
     tbl.addEventListener('pointerdown',e=>{
-      dragging=true;startPX=e.clientX;startPY=e.clientY;origX=t.x;origY=t.y;
+      dragging=true;moved=false;startPX=e.clientX;startPY=e.clientY;origX=t.x;origY=t.y;
       tbl.setPointerCapture(e.pointerId);tbl.style.cursor='grabbing';e.preventDefault();
     });
     tbl.addEventListener('pointermove',e=>{
       if(!dragging)return;
-      t.x=Math.max(0,origX+(e.clientX-startPX));
-      t.y=Math.max(0,origY+(e.clientY-startPY));
+      const dx=e.clientX-startPX,dy=e.clientY-startPY;
+      if(Math.abs(dx)>4||Math.abs(dy)>4)moved=true;
+      t.x=Math.max(0,origX+dx);
+      t.y=Math.max(0,origY+dy);
       drawPlanVisual();
     });
     tbl.addEventListener('pointerup',e=>{
       if(!dragging)return;
       dragging=false;
-      saveData('tables',TABLES);
-      drawPlanVisual();
+      if(moved){saveData('tables',TABLES);drawPlanVisual();}
+      else{renameTable(t.id);}
     });
     inner.appendChild(tbl);
   });
@@ -1639,6 +1678,11 @@ function drawPlanVisual(){
   wrap.appendChild(inner);
 }
 
+async function renameTable(id){
+  const t=TABLES.find(x=>x.id===id);if(!t)return;
+  const v=await appPrompt('Nom de la table',t.nom||'');
+  if(v!==null&&v.trim()){t.nom=v.trim();saveData('tables',TABLES);renderSeating();}
+}
 function addTable(){
   const nomEl=document.getElementById('new-table-name');
   const seatsEl=document.getElementById('new-table-seats');
@@ -1672,21 +1716,73 @@ function unseatGuest(gid){
   if(g){g.seatTableId=null;g.seatIdx=null;saveData('guests',GUESTS);renderSeating();}
 }
 
+function openConflictsModal(){
+  const names=GUESTS.map(g=>g.nom).filter(Boolean);
+  openModal(`
+    <div class="modal-title">Ne pas placer côte à côte <button class="modal-x" onclick="closeModal()">×</button></div>
+    <div style="font-size:12px;color:var(--tl);margin-bottom:14px;line-height:1.6;">Indiquez les paires d'invités à ne jamais placer à la même table lors du placement automatique.</div>
+    <div id="conflicts-list">${renderConflictsList()}</div>
+    <div class="m-field" style="margin-top:16px;"><label class="m-label">Ajouter une paire</label>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button class="m-pick" id="cf-a" onclick="pickConflict('a')">Premier invité ▾</button>
+        <button class="m-pick" id="cf-b" onclick="pickConflict('b')">Second invité ▾</button>
+        <button class="btn" onclick="addConflict()">Ajouter la paire</button>
+      </div>
+    </div>
+    <div class="m-actions"><button class="btn-outline" onclick="closeModal()">Fermer</button></div>`);
+  window._cfA=null;window._cfB=null;
+}
+function renderConflictsList(){
+  if(!SEAT_CONFLICTS.length)return '<div style="font-size:13px;color:var(--tl);font-style:italic;">Aucune paire définie.</div>';
+  return SEAT_CONFLICTS.map((p,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg);border-radius:10px;margin-bottom:6px;font-size:13px;">
+    <span style="flex:1;">${p[0]} <span style="color:var(--tl);">≠</span> ${p[1]}</span>
+    <button onclick="delConflict(${i})" style="background:none;border:none;color:var(--rd);cursor:pointer;font-size:15px;">×</button>
+  </div>`).join('');
+}
+async function pickConflict(which){
+  const names=GUESTS.map(g=>g.nom).filter(Boolean);
+  const v=await appPicker('Choisir un invité',names,which==='a'?window._cfA:window._cfB);
+  if(v===null)return;
+  if(which==='a'){window._cfA=v;document.getElementById('cf-a').innerHTML=v+' ▾';}
+  else{window._cfB=v;document.getElementById('cf-b').innerHTML=v+' ▾';}
+}
+function addConflict(){
+  if(!window._cfA||!window._cfB||window._cfA===window._cfB)return;
+  SEAT_CONFLICTS.push([window._cfA,window._cfB]);
+  saveData('seat_conflicts',SEAT_CONFLICTS);
+  window._cfA=null;window._cfB=null;
+  document.getElementById('conflicts-list').innerHTML=renderConflictsList();
+  document.getElementById('cf-a').innerHTML='Premier invité ▾';
+  document.getElementById('cf-b').innerHTML='Second invité ▾';
+  renderSeating();
+}
+function delConflict(i){
+  SEAT_CONFLICTS.splice(i,1);saveData('seat_conflicts',SEAT_CONFLICTS);
+  const list=document.getElementById('conflicts-list');if(list)list.innerHTML=renderConflictsList();
+  renderSeating();
+}
+function conflictsAtTable(tableId,guestName){
+  const mates=GUESTS.filter(g=>g.seatTableId===tableId).map(g=>g.nom);
+  return SEAT_CONFLICTS.some(p=>(p[0]===guestName&&mates.includes(p[1]))||(p[1]===guestName&&mates.includes(p[0])));
+}
 function autoSeatAll(){
   if(!TABLES.length){appAlert2('Créez d\'abord des tables.');return;}
-  // Invités non placés : confirmés d'abord, puis en attente
   const order=['confirmée','en attente','déclinée'];
   const unseated=GUESTS.filter(g=>!g.seatTableId).sort((a,b)=>order.indexOf(a.presence||'en attente')-order.indexOf(b.presence||'en attente'));
-  let gi=0;
-  TABLES.forEach(t=>{
-    const cap=t.seats||6;
-    let count=GUESTS.filter(g=>g.seatTableId===t.id).length;
-    while(count<cap&&gi<unseated.length){
-      unseated[gi].seatTableId=t.id;
-      gi++;count++;
+  let notPlaced=0;
+  unseated.forEach(g=>{
+    let placed=false;
+    for(const t of TABLES){
+      const cap=t.seats||6;
+      const count=GUESTS.filter(x=>x.seatTableId===t.id).length;
+      if(count<cap&&!conflictsAtTable(t.id,g.nom)){
+        g.seatTableId=t.id;placed=true;break;
+      }
     }
+    if(!placed)notPlaced++;
   });
   saveData('guests',GUESTS);renderSeating();
+  if(notPlaced>0)appAlert2(notPlaced+' invité'+(notPlaced>1?'s n\'ont':' n\'a')+' pas pu être placé'+(notPlaced>1?'s':'')+' (tables pleines ou contraintes).');
 }
 
 async function resetSeating(){
@@ -1906,8 +2002,9 @@ function loadJsPDF(){
 
 // ══ MENU & QUANTITÉS ══
 function renderMenu(){
-  const el=document.getElementById('menu-content');
-  if(!el)return;
+  const el2=document.getElementById('menu-content');
+  if(!el2)return;
+  const esc=s=>(s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
   const conf=GUESTS.filter(g=>g.presence==='confirmée'||g.presence==='en attente');
   const noAlc=conf.filter(g=>g.regime&&g.regime.includes('Sans alcool')).length;
   const spec=conf.filter(g=>g.regime&&g.regime!=='Aucun'&&!g.regime.includes('Sans alcool')).length;
@@ -1916,40 +2013,115 @@ function renderMenu(){
   const tousReception=GUESTS.length-vinHonneurOnly;
   if(!MENUQTY._manual_h)MENUQTY.honneur=String(vinHonneurOnly);
   if(!MENUQTY._manual_r)MENUQTY.repas=String(tousReception);
-  const hc=parseInt(MENUQTY.honneur)||0, rc=parseInt(MENUQTY.repas)||0;
-  const regimes={};
-  conf.forEach(g=>{if(g.regime&&g.regime!=='Aucun'){regimes[g.regime]=(regimes[g.regime]||0)+1;}});
-  const stat=(l,v,col)=>`<div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:12px 14px;"><div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--tl);margin-bottom:4px;">${l}</div><div style="font-family:'Playfair Display',serif;font-size:24px;color:${col};">${v}</div></div>`;
-  el.innerHTML=`
+  const hc=parseInt(MENUQTY.honneur)||0, rc=parseInt(MENUQTY.repas)||0, total=hc+rc;
+  const stat=(l,v,col)=>`<div style="background:${col}18;border-radius:10px;padding:12px;text-align:center;"><div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:${col};">${v}</div><div style="font-size:11px;color:var(--tl);margin-top:2px;">${l}</div></div>`;
+  const boissons=[
+    {nom:'Champagne',calc:Math.ceil(total/3),unit:'bouteilles',note:"1 bouteille / 3 invités (vin d'honneur)"},
+    {nom:'Cocktails',calc:total*2,unit:'verres',note:"2 verres / invité (vin d'honneur)"},
+    {nom:'Bières',calc:total,unit:'bouteilles',note:"1 bouteille / invité (vin d'honneur)"},
+    {nom:'Spiritueux',calc:Math.ceil(total/13),unit:'bouteilles',note:'1 bouteille / 13 invités'},
+    {nom:'Vin blanc',calc:Math.ceil(rc/4),unit:'bouteilles',note:'1 bouteille / 4 invités (repas)'},
+    {nom:'Vin rouge',calc:Math.ceil(rc/3),unit:'bouteilles',note:'1 bouteille / 3 invités (repas)'},
+    {nom:'Vin rosé',calc:Math.ceil(rc/4),unit:'bouteilles',note:'1 bouteille / 4 invités (repas)'},
+    {nom:'Eau plate',calc:(total*0.5).toFixed(1),unit:'litres',note:'50cl / invité'},
+    {nom:'Eau gazeuse',calc:(total*0.5).toFixed(1),unit:'litres',note:'50cl / invité'},
+    {nom:'Softs (sodas, jus)',calc:(total/3).toFixed(1),unit:'litres',note:'1L / 3 invités'}
+  ];
+  const regimesGuests=conf.filter(g=>g.regime&&g.regime!=='Aucun');
+  el2.innerHTML=`
     <div class="panel" style="margin-bottom:16px;">
-      <div class="panel-title">Aperçu des invités</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;">
-        ${stat('Invités confirmés',GUESTS.filter(g=>g.presence==='confirmée').length,'var(--gn)')}
-        ${stat('En attente',GUESTS.filter(g=>g.presence==='en attente').length,'var(--am)')}
-        ${stat('Enfants',enfants,'var(--pink)')}
-        ${stat('Régimes spéciaux',spec,'var(--pink-dark)')}
-        ${stat('Sans alcool',noAlc,'var(--mid)')}
-        ${stat("Vin d'honneur uniquement",vinHonneurOnly,'var(--tl)')}
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;">
+        ${stat('Invités confirmés',conf.length,'#5a8a6a')}
+        ${stat('Sans alcool',noAlc,'#c47a2a')}
+        ${stat('Régimes spéciaux',spec,'#d4607a')}
+        ${stat('Enfants',enfants,'#4a7ab0')}
       </div>
     </div>
     <div class="panel" style="margin-bottom:16px;">
-      <div class="panel-title">Quantités à prévoir</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;">
-        <div><div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--tl);margin-bottom:5px;">Vin d'honneur</div><input type="number" value="${hc}" onchange="updMenuQty('h',this.value)" class="m-input" style="text-align:right;"></div>
-        <div><div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--tl);margin-bottom:5px;">Repas</div><input type="number" value="${rc}" onchange="updMenuQty('r',this.value)" class="m-input" style="text-align:right;"></div>
-        <div><div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--tl);margin-bottom:5px;">Total couverts</div><div style="padding:11px 14px;background:var(--pink-pale);border-radius:10px;font-family:'Playfair Display',serif;font-size:18px;color:var(--pink);text-align:right;font-weight:700;">${hc+rc}</div></div>
+      <div class="panel-title" style="justify-content:center;">Répartition des invités</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div><label class="m-label">Vin d'honneur uniquement</label><input class="m-input" type="number" min="0" id="mnu-h" value="${MENUQTY.honneur}" onchange="saveMenuQty(true,false)"></div>
+        <div><label class="m-label">Présents toute la réception</label><input class="m-input" type="number" min="0" id="mnu-r" value="${MENUQTY.repas}" onchange="saveMenuQty(false,true)"></div>
       </div>
-      <div style="font-size:11px;color:var(--tl);margin-top:10px;">Les quantités se calculent automatiquement depuis votre liste d'invités. Modifiez-les pour les fixer manuellement.</div>
+      <div style="text-align:center;margin-top:10px;font-size:12px;color:var(--tl);">Total : <strong style="color:var(--dark);">${total}</strong> invités</div>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button onclick="saveMenuQty(true,true)" class="btn" style="flex:1;">Calculer les quantités</button>
+        <button onclick="resetMenuQty()" class="btn-outline" style="white-space:nowrap;">↺ Réinitialiser</button>
+      </div>
     </div>
-    ${Object.keys(regimes).length?`<div class="panel">
-      <div class="panel-title">Régimes particuliers</div>
-      ${Object.entries(regimes).map(([r,n])=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--border);font-size:13px;"><span style="color:var(--dark);">${r}</span><span class="badge b-pk">${n}</span></div>`).join('')}
-    </div>`:''}`;
+    <div class="panel" style="margin-bottom:16px;">
+      <div class="panel-title" style="justify-content:center;">Estimation des boissons</div>
+      ${boissons.map(b=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);">
+        <div><div style="font-size:13px;color:var(--dark);font-weight:700;">${b.nom}</div><div style="font-size:10px;color:var(--tl);margin-top:1px;">${b.note}</div></div>
+        <div style="font-size:15px;font-weight:700;color:var(--pink);text-align:right;white-space:nowrap;">${b.calc} <span style="font-size:10px;color:var(--tl);font-weight:400;">${b.unit}</span></div>
+      </div>`).join('')}
+      <div style="margin-top:14px;padding:10px 12px;background:var(--bg);border-radius:10px;font-size:11px;color:var(--tl);font-style:italic;line-height:1.6;">Ces chiffres varient selon le profil des invités, la durée, la météo et le service choisi.</div>
+    </div>
+    <div class="panel" style="margin-bottom:16px;">
+      <div class="panel-title" style="justify-content:center;">Régimes particuliers</div>
+      ${regimesGuests.length===0?'<p style="color:var(--tl);font-style:italic;font-size:13px;">Aucun régime particulier renseigné.</p>':regimesGuests.map(g=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px dashed var(--border);font-size:13px;"><span style="color:var(--dark);">${esc(g.nom)}</span><span style="color:#c47a2a;font-weight:700;">${esc(g.regime)}</span></div>`).join('')}
+    </div>
+    <div class="panel">
+      <div class="panel-title" style="justify-content:center;">Menu</div>
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <input class="m-input" id="menu-new-cat" placeholder="Nouvelle catégorie…" style="flex:1;">
+        <button onclick="addMenuCategory()" class="btn" style="padding:8px 16px;">+</button>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
+        <button onclick="resetMenu()" class="btn-outline" style="font-size:11px;padding:5px 12px;">↺ Menu par défaut</button>
+      </div>
+      ${MENU.map((section,si)=>`
+        <div style="margin-bottom:12px;border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+          <div style="display:flex;align-items:center;background:var(--pink-pale);padding:10px 16px;">
+            <span data-menu-cat="${si}" onclick="renameMenuCategory(${si})" style="font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--pink-dark);cursor:pointer;flex:1;" title="Cliquer pour renommer">${esc(section.section)}</span>
+            <button onclick="removeMenuCategory(${si})" style="background:none;border:none;color:var(--tl);font-size:18px;cursor:pointer;padding:0 4px;">×</button>
+          </div>
+          <div style="padding:8px 12px 12px;">
+            ${section.items.map((item,ii)=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px dashed var(--border);">
+              <span data-menu="${si}-${ii}" onclick="renameMenuItem(${si},${ii})" style="flex:1;font-size:13px;color:var(--dark);cursor:pointer;" title="Cliquer pour renommer">${esc(item.text)}</span>
+              <button onclick="removeMenuItem(${si},${ii})" style="background:none;border:none;color:var(--tl);font-size:16px;cursor:pointer;">×</button>
+            </div>`).join('')}
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <input class="m-input" id="menu-add-${si}" placeholder="Ajouter un plat…" style="flex:1;font-size:12px;padding:7px 10px;">
+              <button onclick="addMenuItem(${si})" class="btn" style="padding:7px 14px;font-size:12px;">+</button>
+            </div>
+          </div>
+        </div>`).join('')}
+    </div>`;
 }
-function updMenuQty(which,val){
-  if(which==='h'){MENUQTY.honneur=String(val);MENUQTY._manual_h=true;}
-  else{MENUQTY.repas=String(val);MENUQTY._manual_r=true;}
+function saveMenu(){saveData('menu',MENU);}
+function saveMenuQty(manualH,manualR){
+  const hVal=document.getElementById('mnu-h')?.value;
+  const rVal=document.getElementById('mnu-r')?.value;
+  if(hVal!==undefined)MENUQTY.honneur=hVal;
+  if(rVal!==undefined)MENUQTY.repas=rVal;
+  if(manualH)MENUQTY._manual_h=true;
+  if(manualR)MENUQTY._manual_r=true;
   saveData('menuqty',MENUQTY);renderMenu();
+}
+function resetMenuQty(){MENUQTY={};saveData('menuqty',MENUQTY);renderMenu();}
+function addMenuItem(si){const inp=document.getElementById('menu-add-'+si);if(!inp||!inp.value.trim())return;MENU[si].items.push({id:Date.now(),text:inp.value.trim()});saveMenu();renderMenu();}
+function removeMenuItem(si,ii){MENU[si].items.splice(ii,1);saveMenu();renderMenu();}
+function addMenuCategory(){const inp=document.getElementById('menu-new-cat');if(!inp||!inp.value.trim())return;MENU.push({id:Date.now(),section:inp.value.trim(),items:[]});saveMenu();renderMenu();}
+async function removeMenuCategory(si){if(MENU[si].items.length>0&&!await appConfirm('Supprimer cette catégorie et tous ses plats ?'))return;MENU.splice(si,1);saveMenu();renderMenu();}
+async function resetMenu(){if(await appConfirm('Réinitialiser le menu par défaut ? Vos modifications seront perdues.')){MENU=DEF_MENU.map(s=>({...s,items:s.items.map(i=>({...i}))}));saveMenu();renderMenu();}}
+function renameMenuCategory(si){
+  const span=document.querySelector('[data-menu-cat="'+si+'"]');if(!span)return;
+  const old=MENU[si].section;const inp=document.createElement('input');inp.value=old;
+  inp.style.cssText='flex:1;font-size:15px;font-weight:700;color:var(--pink);border:none;border-bottom:2px solid var(--pink);outline:none;background:transparent;font-family:Playfair Display,serif;';
+  span.replaceWith(inp);inp.focus();inp.select();
+  const save=()=>{if(inp.value.trim())MENU[si].section=inp.value.trim();saveMenu();renderMenu();};
+  inp.addEventListener('blur',save);
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')inp.blur();if(e.key==='Escape')renderMenu();});
+}
+function renameMenuItem(si,ii){
+  const span=document.querySelector('[data-menu="'+si+'-'+ii+'"]');if(!span)return;
+  const old=MENU[si].items[ii].text;const inp=document.createElement('input');inp.value=old;
+  inp.style.cssText='flex:1;font-size:13px;border:1.5px solid var(--pink);border-radius:6px;padding:2px 6px;outline:none;font-family:Lora,serif;';
+  span.replaceWith(inp);inp.focus();inp.select();
+  const save=()=>{if(inp.value.trim())MENU[si].items[ii].text=inp.value.trim();saveMenu();renderMenu();};
+  inp.addEventListener('blur',save);
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')inp.blur();if(e.key==='Escape')renderMenu();});
 }
 
 // ══ ALBUM ══
@@ -2049,19 +2221,202 @@ function addDecoIdx(ci){
 }
 
 // ══ PRESTATAIRES ══
+const VND_CATEGORIES={
+  salle:{label:'Salle / Domaine',tags:['amenity=events_venue','amenity=community_centre','leisure=hall']},
+  traiteur:{label:'Traiteur',tags:['craft=caterer','shop=deli','amenity=caterer']},
+  photographe:{label:'Photographe',tags:['craft=photographer','shop=photo','office=photographer']},
+  videaste:{label:'Vidéaste',tags:['craft=videographer','office=videographer','shop=video']},
+  dj:{label:'DJ / Musique',tags:['craft=musical_instrument','shop=musical_instrument','office=dj','shop=music']},
+  fleuriste:{label:'Fleuriste',tags:['shop=florist']},
+  patisserie:{label:'Pâtisserie',tags:['shop=bakery','shop=pastry','shop=confectionery','craft=confectioner']},
+  robe:{label:'Robe mariée',tags:['shop=wedding_contract','shop=bridal']},
+  costume:{label:'Costume',tags:['craft=tailor','shop=tailor','shop=clothes']},
+  coiffeur:{label:'Coiffeur',tags:['shop=hairdresser']},
+  beaute:{label:'Maquillage',tags:['shop=beauty','shop=cosmetics','leisure=spa']},
+  bijou:{label:'Bijouterie',tags:['shop=jewelry']},
+  imprimeur:{label:'Imprimeur',tags:['shop=stationery','shop=copyshop','craft=printer']},
+  voiture:{label:'Voiture',tags:['amenity=car_rental','shop=car']},
+  hotel:{label:'Hébergement',tags:['tourism=hotel','tourism=guest_house','tourism=apartment','tourism=hostel']},
+  decor:{label:'Décoration',tags:['shop=interior_decoration','craft=upholsterer','office=event_management']}
+};
+let sortFav='alpha', sortCho='alpha';
+
 function renderVendors(){
-  const el=document.getElementById('vendors-content');
-  if(!el)return;
-  const cats=[
-    {k:'salle',n:'Salle / Domaine'},{k:'traiteur',n:'Traiteur'},{k:'photographe',n:'Photographe'},
-    {k:'videaste',n:'Vidéaste'},{k:'dj',n:'DJ / Musique'},{k:'fleuriste',n:'Fleuriste'},
-    {k:'patisserie',n:'Pâtisserie'},{k:'robe',n:'Robe mariée'},{k:'costume',n:'Costume'},
-    {k:'coiffeur',n:'Coiffeur'},{k:'beaute',n:'Maquillage'},{k:'bijou',n:'Bijouterie'},
-    {k:'imprimeur',n:'Imprimeur'},{k:'voiture',n:'Voiture'},{k:'hotel',n:'Hébergement'},{k:'decor',n:'Décoration'}
-  ];
-  const svgIcon=`<svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
-  const favs=VENDORS_FAV.length?`<div class="panel" style="margin-bottom:24px;"><div class="panel-title">Favoris <span style="font-size:13px;color:var(--tl);font-weight:400;">(${VENDORS_FAV.length})</span></div><table class="data-table"><thead><tr><th>Nom</th><th>Catégorie</th><th>Adresse</th><th>Distance</th></tr></thead><tbody>${VENDORS_FAV.map(v=>`<tr><td><strong>${v.nom||''}</strong></td><td style="color:var(--tl);">${v.categorie||''}</td><td style="color:var(--tl);font-size:12px;">${v.adresse||'—'}</td><td style="color:var(--gn);font-weight:700;">${v.distance?v.distance+' km':'—'}</td></tr>`).join('')}</tbody></table></div>`:'';
-  el.innerHTML=`${favs}<div style="font-family:'Playfair Display',serif;font-size:16px;color:var(--dark);margin-bottom:14px;">Catégories</div><div class="vendor-grid">${cats.map(c=>`<div class="vendor-card">${svgIcon}<div class="vendor-card-name">${c.n}</div></div>`).join('')}</div>`;
+  const el2=document.getElementById('vendors-content');
+  if(!el2)return;
+  const cats=Object.entries(VND_CATEGORIES);
+  el2.innerHTML=`
+    <div class="panel" style="margin-bottom:16px;">
+      <div class="panel-title">Rechercher un prestataire</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px;margin-bottom:12px;">
+        ${cats.map(([k,cat])=>`<button data-catkey="${k}" class="vnd-cat-btn" onclick="searchByCategory('${k}','${cat.label}')" style="background:var(--bg);color:var(--dark);border:1px solid var(--border);border-radius:10px;padding:9px 10px;cursor:pointer;font-size:12px;font-weight:600;font-family:'Lora',serif;text-align:left;transition:all .15s;">${cat.label}</button>`).join('')}
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+        <input type="text" id="vnd-postal" placeholder="Code postal ou ville (ex : 57000)" class="m-input" style="flex:1;min-width:160px;" onkeydown="if(event.key==='Enter')searchByPostal()">
+        <button class="btn" onclick="searchByPostal()">Rechercher</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <label style="font-size:11px;color:var(--tl);font-weight:700;flex-shrink:0;">Rayon :</label>
+        <input type="range" id="vnd-radius" min="5" max="100" step="5" value="20" oninput="document.getElementById('vnd-radius-val').textContent=this.value+' km'" style="flex:1;accent-color:var(--pink);">
+        <span id="vnd-radius-val" style="font-size:12px;color:var(--dark);font-weight:700;min-width:50px;text-align:right;">20 km</span>
+      </div>
+      <div id="vnd-location-status" style="font-size:11px;color:var(--tl);min-height:16px;"></div>
+      <p style="font-size:11px;color:var(--tl);font-style:italic;margin-top:6px;">Choisissez une catégorie puis indiquez un code postal. Données OpenStreetMap & annuaire des entreprises, triées par distance.</p>
+    </div>
+    <div id="vnd-results-wrap" style="margin-bottom:16px;"></div>
+    <div class="panel" style="margin-bottom:16px;">
+      <div class="panel-title">Prestataires favoris <span class="badge b-pk">${VENDORS_FAV.length}</span></div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:8px;"><button class="btn-outline" style="font-size:11px;padding:5px 12px;" onclick="addManualVendor('fav')">+ Ajouter manuellement</button></div>
+      <div id="vnd-favs"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Prestataires choisis <span class="badge b-gn">${VENDORS_CHO.length}</span></div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:8px;"><button class="btn-outline" style="font-size:11px;padding:5px 12px;" onclick="addManualVendor('cho')">+ Ajouter manuellement</button></div>
+      <div id="vnd-chosen"></div>
+    </div>`;
+  renderFavs();renderChosen();
+}
+
+function vndCard(v,zone){
+  const dist=v.distance!=null?`${v.distance} km`:'';
+  const actions=zone==='fav'
+    ? `<button class="btn-outline" style="font-size:11px;padding:5px 10px;border-color:var(--gn);color:var(--gn);" onclick="movToChosen('${v.id}')">Choisir</button><button style="background:none;border:none;color:var(--tl);cursor:pointer;font-size:15px;" onclick="removFav('${v.id}')">×</button>`
+    : (zone==='cho'
+      ? `<button class="btn-outline" style="font-size:11px;padding:5px 10px;" onclick="movToFav('${v.id}')">↩ Favori</button><button style="background:none;border:none;color:var(--tl);cursor:pointer;font-size:15px;" onclick="removCho('${v.id}')">×</button>`
+      : `<button class="btn" style="font-size:11px;padding:6px 12px;" onclick="addToFav('${v.id}')">+ Favori</button>`);
+  return `<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border:1px solid var(--border);border-radius:12px;margin-bottom:8px;">
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:13px;font-weight:700;color:var(--dark);">${(v.nom||'').replace(/</g,'&lt;')}</div>
+      <div style="font-size:11px;color:var(--tl);margin-top:2px;">${v.categorie||''}${v.adresse?' · '+v.adresse.replace(/</g,'&lt;'):''}</div>
+      ${v.tel||v.site?`<div style="font-size:11px;color:var(--pink);margin-top:2px;">${v.tel||''}${v.site?(v.tel?' · ':'')+'<a href="'+(v.site.startsWith('http')?v.site:'https://'+v.site)+'" target="_blank" style="color:var(--pink);">site web</a>':''}</div>`:''}
+    </div>
+    ${dist?`<span class="badge b-gn" style="white-space:nowrap;">${dist}</span>`:''}
+    <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">${actions}</div>
+  </div>`;
+}
+
+function vSort(arr,mode){
+  const a=[...arr];
+  if(mode==='alpha')a.sort((x,y)=>(x.nom||'').localeCompare(y.nom||'','fr'));
+  else if(mode==='distance')a.sort((x,y)=>(x.distance||999)-(y.distance||999));
+  return a;
+}
+function renderFavs(){
+  const d=document.getElementById('vnd-favs');if(!d)return;
+  d.innerHTML=VENDORS_FAV.length===0
+    ?'<div style="background:var(--bg);border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;color:var(--tl);font-size:13px;font-style:italic;">Ajoutez vos prestataires favoris ici</div>'
+    :vSort(VENDORS_FAV,sortFav).map(v=>vndCard(v,'fav')).join('');
+}
+function renderChosen(){
+  const d=document.getElementById('vnd-chosen');if(!d)return;
+  d.innerHTML=VENDORS_CHO.length===0
+    ?'<div style="background:var(--bg);border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;color:var(--tl);font-size:13px;font-style:italic;">Vos prestataires confirmés apparaîtront ici</div>'
+    :vSort(VENDORS_CHO,sortCho).map(v=>vndCard(v,'cho')).join('');
+}
+
+function addToFav(id){
+  const v=(window._vndResults||[]).find(r=>String(r.id)===String(id));
+  if(!v)return;
+  if(!VENDORS_FAV.find(f=>f.nom===v.nom)){VENDORS_FAV.push(v);saveData('vfav',VENDORS_FAV);renderFavs();renderVendors();}
+}
+function movToChosen(id){
+  const v=VENDORS_FAV.find(f=>String(f.id)===String(id));if(!v)return;
+  VENDORS_FAV=VENDORS_FAV.filter(f=>String(f.id)!==String(id));
+  if(!VENDORS_CHO.find(c2=>c2.nom===v.nom))VENDORS_CHO.push(v);
+  saveData('vfav',VENDORS_FAV);saveData('vcho',VENDORS_CHO);renderVendors();
+}
+function movToFav(id){
+  const v=VENDORS_CHO.find(c2=>String(c2.id)===String(id));if(!v)return;
+  VENDORS_CHO=VENDORS_CHO.filter(c2=>String(c2.id)!==String(id));
+  if(!VENDORS_FAV.find(f=>f.nom===v.nom))VENDORS_FAV.push(v);
+  saveData('vfav',VENDORS_FAV);saveData('vcho',VENDORS_CHO);renderVendors();
+}
+function removFav(id){VENDORS_FAV=VENDORS_FAV.filter(f=>String(f.id)!==String(id));saveData('vfav',VENDORS_FAV);renderVendors();}
+function removCho(id){VENDORS_CHO=VENDORS_CHO.filter(c2=>String(c2.id)!==String(id));saveData('vcho',VENDORS_CHO);renderVendors();}
+
+async function addManualVendor(zone){
+  const nom=await appPrompt('Nom du prestataire','');
+  if(!nom||!nom.trim())return;
+  const v={id:Date.now()+Math.random(),nom:nom.trim(),categorie:'',adresse:'',tel:'',site:'',distance:null,notes:''};
+  if(zone==='fav'){VENDORS_FAV.push(v);saveData('vfav',VENDORS_FAV);}
+  else{VENDORS_CHO.push(v);saveData('vcho',VENDORS_CHO);}
+  renderVendors();
+}
+
+async function searchByPostal(){
+  const postal=document.getElementById('vnd-postal')?.value.trim();
+  if(!postal){appAlert2('Entrez un code postal ou une ville.');return;}
+  const status=document.getElementById('vnd-location-status');
+  if(status)status.textContent='Recherche du lieu…';
+  try{
+    const res=await fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(postal+' France')+'&format=json&limit=1',{headers:{'Accept-Language':'fr'}});
+    const data=await res.json();
+    if(!data||!data.length){if(status)status.textContent='Lieu non trouvé.';return;}
+    window._userLat=parseFloat(data[0].lat);window._userLng=parseFloat(data[0].lon);
+    const name=data[0].display_name.split(',').slice(0,2).join(', ');
+    if(status)status.textContent='Lieu défini : '+name;
+    if(window._activeCatKey)await searchByCategory(window._activeCatKey,window._activeCatLabel);
+    else if(status)status.textContent+=' — sélectionnez une catégorie.';
+  }catch(e){if(status)status.textContent='Erreur de géocodage.';}
+}
+
+async function searchByCategory(catKey,catLabel){
+  window._activeCatKey=catKey;window._activeCatLabel=catLabel;
+  document.querySelectorAll('.vnd-cat-btn').forEach(b=>{
+    const active=b.getAttribute('data-catkey')===catKey;
+    b.style.background=active?'var(--pink-pale)':'var(--bg)';
+    b.style.borderColor=active?'var(--pink)':'var(--border)';
+    b.style.color=active?'var(--pink)':'var(--dark)';
+  });
+  if(!window._userLat||!window._userLng){
+    const status=document.getElementById('vnd-location-status');
+    if(status)status.textContent='Indiquez d\'abord un code postal puis cliquez sur Rechercher.';
+    return;
+  }
+  const radiusKm=parseInt(document.getElementById('vnd-radius')?.value||20);
+  await runCategorySearch(catKey,catLabel,window._userLat,window._userLng,radiusKm);
+}
+
+async function runCategorySearch(catKey,catLabel,lat,lng,radiusKm){
+  const wrap=document.getElementById('vnd-results-wrap');
+  if(!wrap)return;
+  wrap.innerHTML='<p style="text-align:center;padding:20px;font-size:13px;color:var(--tl);">Recherche en cours…</p>';
+  const results=[];const seen=new Set();
+  const hav=(a,b,c2,d)=>{const R=6371,dLat=(c2-a)*Math.PI/180,dLon=(d-b)*Math.PI/180,x=Math.sin(dLat/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c2*Math.PI/180)*Math.sin(dLon/2)**2;return Math.round(R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))*10)/10;};
+  function addPlace(nom,adresse,tel,site,plat,plng){
+    const key=(nom||'').toLowerCase().trim();
+    if(!nom||nom.length<3||seen.has(key))return;
+    const la=parseFloat(plat),lo=parseFloat(plng);
+    if(!isNaN(la)&&!isNaN(lo)&&la!==0&&lo!==0){
+      const dist=hav(lat,lng,la,lo);
+      if(dist>radiusKm)return;
+      seen.add(key);
+      results.push({id:Date.now()+Math.random(),nom,categorie:catLabel,adresse:adresse||'',tel:tel||'',site:site||'',distance:dist,notes:''});
+    }
+  }
+  async function srcNominatim(){
+    const nt={salle:['salle mariage','domaine mariage','château mariage'],traiteur:['traiteur mariage'],photographe:['photographe mariage'],videaste:['vidéaste mariage'],dj:['DJ mariage'],fleuriste:['fleuriste mariage'],patisserie:['pâtisserie mariage','wedding cake'],robe:['boutique mariage','robe mariée'],costume:['costume mariage'],coiffeur:['coiffeur mariage'],beaute:['maquillage mariage'],bijou:['bijouterie alliance'],imprimeur:['faire-part mariage'],voiture:['voiture mariage'],hotel:['hôtel mariage'],decor:['décoration mariage']};
+    const terms=(nt[catKey]||[catLabel+' mariage']).slice(0,2);
+    const deg=radiusKm/60;
+    await Promise.allSettled(terms.map(async term=>{
+      try{
+        const ctrl=new AbortController();setTimeout(()=>ctrl.abort(),10000);
+        const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(term)}&format=json&limit=30&addressdetails=1&countrycodes=fr,be,ch,lu&viewbox=${lng-deg},${lat+deg},${lng+deg},${lat-deg}&bounded=0`,{signal:ctrl.signal,headers:{'Accept-Language':'fr'}});
+        if(!r.ok)return;
+        const d=await r.json();
+        d.forEach(e=>{const a=e.address||{};addPlace((e.display_name||'').split(',')[0].trim(),[a.road,a.postcode,a.city||a.town||a.village].filter(Boolean).join(' '),'','',e.lat,e.lon);});
+      }catch(e){}
+    }));
+  }
+  await Promise.allSettled([srcNominatim()]);
+  const sorted=results.sort((a,b)=>(a.distance||999)-(b.distance||999)).slice(0,40);
+  window._vndResults=sorted;
+  if(!sorted.length){
+    const gmUrl=`https://www.google.com/maps/search/${encodeURIComponent(catLabel+' mariage')}/@${lat},${lng},12z`;
+    wrap.innerHTML=`<div class="panel" style="text-align:center;"><p style="font-size:13px;color:var(--tl);margin-bottom:14px;">Aucun résultat trouvé. Essayez un rayon plus large ou un autre code postal.</p><a href="${gmUrl}" target="_blank" class="btn" style="text-decoration:none;display:inline-block;">Chercher sur Google Maps</a></div>`;
+    return;
+  }
+  wrap.innerHTML=`<div class="panel"><div class="panel-title">${sorted.length} résultat${sorted.length>1?'s':''} — ${catLabel}</div>${sorted.map(v=>vndCard(v,'result')).join('')}</div>`;
 }
 
 // ══ AVATAR MENU ══
@@ -2077,7 +2432,7 @@ function openSettings(){
 
 
 // ══ ASSISTANT (code repris de l'application) ══
-const pk="#b84060",pm="#e89aac",sf="#f5d4e0",br="#d8a0b8",tx="#2d0a18",tm="#5a1a30",tl="#8a4a60",gn="#5a8a6a",rd="#c43a3a",am="#c47a2a",gd="#c9a84c",gl="#e8d48a",bg2="#deb96a";
+const pk="#d4607a",pm="#e89aac",sf="#fef2f6",br="#f0dde5",tx="#3e1828",tm="#7a4050",tl="#b07080",gn="#5a8a6a",rd="#c43a3a",am="#c47a2a",gd="#c9a84c",gl="#e8d48a",bg2="#deb96a";
 const h=s=>(s===undefined||s===null?'':String(s)).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 const el=id=>document.getElementById(id);
 const ld=(k,d)=>{try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch{return d;}};
@@ -2131,7 +2486,7 @@ function assistOpen(service){
   document.querySelectorAll('#tab-assistant button[id^="assist-btn"]').forEach(b=>{b.style.background='#fff';b.classList.remove('active');});
   const ab=document.getElementById('assist-btn-'+service);if(ab){ab.style.background='#fef5f8';ab.classList.add('active');}
   // Scroller en douceur jusqu'au contenu après le clic
-  setTimeout(()=>{cont.scrollIntoView({behavior:'smooth',block:'start'});}, 50);
+  setTimeout(()=>{try{if(cont&&cont.scrollIntoView)cont.scrollIntoView({behavior:'smooth',block:'start'});}catch(e){}}, 50);
   if(service === 'menu')           return assistMenu(cont);
   if(service === 'fairepart')      return assistFairepart(cont);
   if(service === 'budget')         return assistBudget(cont);
