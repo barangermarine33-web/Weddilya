@@ -2438,6 +2438,1932 @@ const el=id=>document.getElementById(id);
 const ld=(k,d)=>{try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch{return d;}};
 const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
 
+const ASSIST_KB = {
+  // ─── 1. MENUS — base étoffée par style × saison + adaptations ──────────
+  // Chaque menu contient UNIQUEMENT de la nourriture pour le cocktail (pas de boissons).
+  // Les boissons sont gérées séparément dans 'boissons'.
+  // Le générateur adapte au format (assiette/buffet), au budget par personne,
+  // et aux restrictions alimentaires.
+  menus: {
+    'romantique-printemps': {
+      title: 'Menu Romantique de Printemps',
+      cocktail: ['Verrines de petits pois frais à la menthe et chèvre', 'Cuillères d\'asperges vertes au jambon cru croustillant', 'Mini-tartelettes au saumon fumé et aneth', 'Brochettes de mozzarella, tomate cerise et basilic', 'Mini-quiches aux poireaux et chèvre frais', 'Bouchées de radis croquants au beurre demi-sel'],
+      entree: 'Carpaccio de Saint-Jacques aux agrumes, huile vierge et fleurs comestibles',
+      plat: 'Filet d\'agneau de printemps en croûte d\'herbes, jus court et écrasée de pommes de terre nouvelles aux herbes fraîches',
+      fromage: 'Sélection de fromages frais (brillat-savarin truffé, crottin de Chavignol, chaource AOP)',
+      dessert: 'Pavlova aux fruits rouges, crème vanille et fleurs comestibles',
+      vins: 'Sancerre blanc en entrée, Côtes-du-Rhône rouge sur le plat, Champagne rosé sur le dessert'
+    },
+    'romantique-ete': {
+      title: 'Menu Romantique Estival',
+      cocktail: ['Verrines de gaspacho d\'été aux billes de melon', 'Brochettes melon-jambon de Parme-figue fraîche', 'Mini-tartelettes tomate-burrata-pesto', 'Bouchées de courgettes farcies au fromage frais', 'Cuillères de tartare de daurade au yuzu', 'Mini-cônes au tarama maison et œufs de saumon'],
+      entree: 'Tartare de daurade royale, mangue, citron vert et avocat',
+      plat: 'Loup de mer rôti aux herbes de Provence, légumes de soleil confits et pesto léger',
+      fromage: 'Plateau de fromages frais (mozzarella di bufala, ricotta, fromage de chèvre cendré)',
+      dessert: 'Fraisier revisité avec biscuit pistache et crème mousseline vanille',
+      vins: 'Provence rosé tout le repas, ou Bordeaux blanc sec en entrée'
+    },
+    'romantique-automne': {
+      title: 'Menu Romantique d\'Automne',
+      cocktail: ['Verrines de velouté de courge butternut au foie gras', 'Mini-feuilletés aux champignons des bois et persillade', 'Tartines toastées figue-roquefort-noix', 'Cuillères de canard fumé au pain d\'épices', 'Mini-tartes fines tatin oignons rouges et chèvre', 'Bouchées potimarron-marron-noisette'],
+      entree: 'Foie gras mi-cuit au pain d\'épices, chutney de figues et fleur de sel',
+      plat: 'Suprême de pintade fermière au cidre, purée de céleri rave truffée et girolles poêlées',
+      fromage: 'Sélection automnale (saint-marcellin, comté 24 mois, fourme d\'Ambert)',
+      dessert: 'Royal chocolat-noisette et son cœur praliné coulant',
+      vins: 'Pouilly-Fumé en entrée, Saint-Émilion en plat, Sauternes sur le foie gras'
+    },
+    'romantique-hiver': {
+      title: 'Menu Romantique d\'Hiver',
+      cocktail: ['Cuillères de Saint-Jacques poêlées au beurre noisette', 'Toasts au tarama de saumon fumé et blinis', 'Verrines de soupe de châtaignes et lardons', 'Mini-croque-monsieur à la truffe', 'Bouchées de tartare de bœuf au caviar', 'Mini-vols-au-vent aux fruits de mer'],
+      entree: 'Tartare de Saint-Jacques au caviar, écume de yuzu et tuile noire',
+      plat: 'Filet de bœuf Rossini, sauce périgueux et gratin dauphinois aux truffes',
+      fromage: 'Plateau d\'hiver (vacherin Mont d\'Or, comté vieux, beaufort d\'alpage, époisses)',
+      dessert: 'Vacherin glacé vanille-marrons confits-meringue',
+      vins: 'Chassagne-Montrachet en entrée, Pomerol en plat, Champagne sur le dessert'
+    },
+    'boheme-printemps': {
+      title: 'Menu Bohème de Printemps',
+      cocktail: ['Houmous de betterave et crackers maison', 'Brochettes de légumes croquants au pesto', 'Mini-bagels au saumon fumé et concombre', 'Cuillères de tabboulé aux herbes fraîches', 'Wraps végétariens chèvre-roquette-tomates séchées', 'Bouchées de feta marinée aux olives'],
+      entree: 'Salade de roquette, fèves nouvelles, parmesan et copeaux de truffe',
+      plat: 'Pavé de cabillaud rôti, risotto d\'orge perlé aux herbes et asperges vertes',
+      fromage: 'Plateau campagnard sur planche de bois (chèvre frais, brebis, comté)',
+      dessert: 'Tarte aux fraises rustique et chantilly à la vanille de Madagascar',
+      vins: 'Bandol rosé tout le repas pour une ambiance décontractée'
+    },
+    'boheme-ete': {
+      title: 'Menu Bohème Estival',
+      cocktail: ['Wraps colorés végétariens au falafel', 'Brochettes tomate-mozzarella-basilic', 'Cônes apéritif aux légumes croquants', 'Cuillères de poke bowl saumon-avocat', 'Houmous trio (classique, betterave, courgette) et pains pita', 'Bouchées de pastèque-feta-menthe'],
+      entree: 'Buddha bowl aux légumes grillés, quinoa, pousses et sauce tahini',
+      plat: 'Cochon de lait rôti à la broche, ratatouille confite et gratin de pommes de terre',
+      fromage: 'Buffet de fromages à thème provençal',
+      dessert: 'Tarte aux abricots et romarin, glace au lait d\'amande',
+      vins: 'Tavel rosé en plat principal, Muscat Beaumes-de-Venise sur le dessert'
+    },
+    'boheme-automne': {
+      title: 'Menu Bohème d\'Automne',
+      cocktail: ['Tartines de pain de campagne au potiron rôti', 'Brochettes champignons-magret séché', 'Bouchées de fromage de chèvre aux figues fraîches', 'Verrines de crème de courge et noisettes torréfiées', 'Mini-pizzas blanches aux cèpes', 'Cuillères de salade automnale (mâche, betterave, pomme)'],
+      entree: 'Salade tiède de châtaignes, magret fumé et roquette',
+      plat: 'Cocotte de poulet fermier aux champignons des bois et purée maison',
+      fromage: 'Plateau campagnard automnal',
+      dessert: 'Tarte rustique aux pommes et caramel beurre salé',
+      vins: 'Bourgogne pinot noir tout le repas'
+    },
+    'boheme-hiver': {
+      title: 'Menu Bohème d\'Hiver',
+      cocktail: ['Mini-croques au camembert et noix', 'Verrines de soupe de potimarron', 'Brochettes de magret fumé et figue confite', 'Bouchées de pain perdu au foie gras', 'Tartines de chèvre chaud miel-thym', 'Cuillères de tartare de bœuf relevé'],
+      entree: 'Velouté de châtaignes et lardons croustillants',
+      plat: 'Daube de bœuf aux pruneaux et pommes de terre fondantes',
+      fromage: 'Sélection régionale dans un plateau en bois',
+      dessert: 'Pain perdu brioché aux poires et glace caramel',
+      vins: 'Côtes du Rhône rouge en plat, Champagne sur le dessert'
+    },
+    'chic-printemps': {
+      title: 'Menu Chic de Printemps',
+      cocktail: ['Cuillères de homard mayonnaise truffée', 'Macarons foie gras-figue', 'Tartelettes au caviar Osciètre', 'Mini-blinis au saumon fumé Balik', 'Bouchées de Saint-Jacques aux agrumes', 'Cuillères d\'asperges blanches mousseline'],
+      entree: 'Carpaccio de langoustines au caviar Osciètre et fleur de sel',
+      plat: 'Filet de turbot aux morilles et beurre Champagne, ris de veau croustillant',
+      fromage: 'Plateau de fromages affinés (Saint-Marcellin, époisses, beaufort, brie de Meaux)',
+      dessert: 'Pièce montée chocolat-vanille avec macarons et fruits de la passion',
+      vins: 'Meursault en entrée, Chambertin en plat, Champagne millésimé tout le repas'
+    },
+    'chic-ete': {
+      title: 'Menu Chic Estival',
+      cocktail: ['Mini-cônes au caviar et crème fraîche', 'Brochettes de gambas grillées au sésame', 'Tartelettes à la tomate ancienne et burrata', 'Bouchées de melon-jambon ibérique', 'Cuillères de céviche de Saint-Jacques', 'Verrines de gaspacho au homard'],
+      entree: 'Homard breton, vinaigrette aux agrumes et émulsion d\'avocat',
+      plat: 'Sole meunière, asperges blanches et beurre noisette aux herbes',
+      fromage: 'Sélection raffinée (brie de Meaux, comté, chèvre frais aux truffes)',
+      dessert: 'Tarte au citron méringuée revisitée et sorbet basilic',
+      vins: 'Chablis premier cru en entrée, Pessac-Léognan blanc en plat'
+    },
+    'chic-automne': {
+      title: 'Menu Chic d\'Automne',
+      cocktail: ['Macarons foie gras-figue', 'Tartelettes au confit de canard', 'Cuillères de Saint-Jacques aux truffes', 'Mini-feuilletés au homard', 'Bouchées de chevreuil fumé', 'Verrines de velouté de cèpes au foie gras'],
+      entree: 'Foie gras mi-cuit aux figues, gelée de Sauternes et brioche tiède',
+      plat: 'Pavé de chevreuil sauce grand veneur, purée de céleri truffée et cèpes',
+      fromage: 'Plateau d\'exception (brie aux truffes, comté 36 mois, époisses)',
+      dessert: 'Soufflé chaud aux poires Williams et glace au caramel beurre salé',
+      vins: 'Sauternes sur le foie gras, Pomerol en plat, Champagne sur le dessert'
+    },
+    'chic-hiver': {
+      title: 'Menu Chic d\'Hiver',
+      cocktail: ['Bouchées de Saint-Jacques au caviar', 'Tartelettes aux truffes noires', 'Macarons foie gras-truffe', 'Cuillères de homard aux agrumes', 'Mini-blinis au caviar', 'Cuillères de tartare de bœuf Wagyu'],
+      entree: 'Œuf parfait à la truffe noire du Périgord et mouillettes briochées',
+      plat: 'Filet de bœuf Wellington aux truffes, gratin dauphinois et légumes glacés',
+      fromage: 'Plateau d\'exception hivernal',
+      dessert: 'Dôme chocolat-marrons confits, cœur coulant praliné',
+      vins: 'Grand cru de Bourgogne, Grand cru de Pomerol en plat, vin liquide d\'exception sur le dessert'
+    },
+    'nature-printemps': {
+      title: 'Menu Nature de Printemps',
+      cocktail: ['Tartines de pain au levain et fromage fermier', 'Verrines de légumes oubliés du potager', 'Bouchées de radis nouveaux au beurre fermier', 'Brochettes de tomates anciennes', 'Cuillères de salade printanière du jardin', 'Mini-quiches aux herbes du potager'],
+      entree: 'Salade du potager avec œuf parfait et lardons croustillants',
+      plat: 'Volaille fermière rôtie aux herbes, légumes anciens du marché',
+      fromage: 'Sélection de producteurs locaux (3 fromages selon la région)',
+      dessert: 'Tarte rustique aux fruits du verger et glace au lait fermier',
+      vins: 'Vins biodynamiques du vigneron local du couple'
+    },
+    'nature-ete': {
+      title: 'Menu Nature Estival',
+      cocktail: ['Brochettes de légumes du marché', 'Verrines de gaspacho de tomates anciennes', 'Cuillères de tabboulé du jardin', 'Tartines aux herbes fraîches', 'Mini-tartelettes aux courgettes-chèvre', 'Bouchées de fromage frais aux fleurs'],
+      entree: 'Salade fraîcheur du jour, légumes croquants et fleurs comestibles',
+      plat: 'Poisson du jour grillé, légumes du potager et huile d\'olive du pays',
+      fromage: 'Fromages locaux et pain au levain',
+      dessert: 'Sorbet artisanal aux fruits de saison',
+      vins: 'Vins locaux biologiques'
+    }
+  },
+
+  // ─── BOISSONS (à présenter SÉPARÉMENT du cocktail nourriture) ──────────
+  boissons: {
+    'classique': {
+      title: 'Boissons Classiques',
+      vinHonneur: ['Champagne brut traditionnel', 'Crémant rosé', 'Kir royal', 'Eau plate et pétillante aromatisée (citron, concombre, menthe)', 'Jus de fruits frais pressés'],
+      repas: 'Vins en accord avec chaque plat (1 bouteille pour 3 personnes), eau plate et pétillante illimitée',
+      digestif: 'Champagne, vieux marc, calvados, eau-de-vie de prune'
+    },
+    'estival': {
+      title: 'Boissons Estivales',
+      vinHonneur: ['Spritz à la pêche', 'Champagne rosé', 'Limonade artisanale au gingembre', 'Eaux infusées (concombre-menthe, citron-basilic, fraise)', 'Mocktails fruits exotiques (sans alcool)'],
+      repas: 'Vins rosés frais, vin blanc en apéritif, rouge léger en plat',
+      digestif: 'Champagne rosé, limoncello, gin tonic'
+    },
+    'sansalcool': {
+      title: 'Boissons Sans Alcool',
+      vinHonneur: ['Mocktails créatifs (Virgin Mojito, Spritz sans alcool, Mule sans alcool)', 'Eaux pétillantes aromatisées maison', 'Jus de fruits pressés (orange, pamplemousse, fruits rouges)', 'Thés glacés artisanaux', 'Kombuchas natures et fruités'],
+      repas: 'Eaux fines plates et pétillantes, jus de raisin, jus de pomme pétillant',
+      digestif: 'Infusions chaudes, thés rares, chocolat chaud (mariage d\'hiver)'
+    }
+  },
+
+  // ─── ADAPTATIONS PAR RESTRICTION ALIMENTAIRE ────────────────────────────
+  restrictions: {
+    'vegetarien': {
+      label: 'Végétarien',
+      cocktail: 'Remplacer les bouchées avec viande/poisson par des bouchées végétariennes (mini-quiches légumes, brochettes mozza-tomate, falafels)',
+      entree: 'Alternative : Risotto aux asperges et truffe, ou tarte fine aux légumes du potager',
+      plat: 'Alternative : Risotto aux cèpes et parmesan, ou wellington de légumes en croûte feuilletée',
+      tip: 'Préciser au traiteur le nombre exact de menus végétariens 15 jours avant'
+    },
+    'vegan': {
+      label: 'Vegan',
+      cocktail: 'Bouchées 100% végétales : guacamole, houmous, falafels, légumes croquants, bruschettas tomate-basilic',
+      entree: 'Alternative : Carpaccio de betterave et avocat, ou tartare de légumes au tofu fumé',
+      plat: 'Alternative : Wellington de légumes, risotto de légumes, ou curry de légumes au lait de coco',
+      tip: 'Vérifier que les sauces et vinaigrettes sont sans œuf, beurre, miel ni produit laitier'
+    },
+    'sansgluten': {
+      label: 'Sans gluten',
+      cocktail: 'Privilégier les verrines, cuillères, brochettes (éviter pains, feuilletés, tartelettes)',
+      entree: 'La plupart des entrées proposées sont naturellement sans gluten — vérifier les chapelures et farines',
+      plat: 'Demander une sauce sans farine de blé (préférer l\'arrow-root ou fécule de maïs)',
+      tip: 'Demander au traiteur une attention particulière aux contaminations croisées en cuisine'
+    },
+    'sanslactose': {
+      label: 'Sans lactose',
+      cocktail: 'Éviter fromages, mozzarella, crème ; privilégier saumon, charcuterie, légumes, houmous',
+      entree: 'Demander une vinaigrette à l\'huile (pas de crème) et omettre les fromages',
+      plat: 'Remplacer le beurre par de l\'huile d\'olive ou margarine végétale',
+      tip: 'Beaucoup de plats traditionnels contiennent du beurre caché — prévenir précisément'
+    },
+    'halal': {
+      label: 'Halal',
+      cocktail: 'Éviter charcuteries (jambon, lardons, magret fumé) ; privilégier poisson, légumes, fromages',
+      entree: 'Adapté tel quel pour les entrées poisson/végétariennes',
+      plat: 'Demander viande halal certifiée auprès du traiteur (agneau, volaille, bœuf)',
+      tip: 'Préciser également l\'absence d\'alcool dans les sauces (vin blanc, cognac)'
+    },
+    'casher': {
+      label: 'Casher',
+      cocktail: 'Pas de mélange viande-lait ; pas de fruits de mer ; charcuteries casher uniquement',
+      entree: 'Soit lait, soit viande — pas les deux. Adapter selon le menu du plat principal',
+      plat: 'Faire appel à un traiteur casher certifié. Pas de viande de porc ni fruits de mer',
+      tip: 'Le mariage casher demande un traiteur spécialisé — anticiper 6 mois à l\'avance'
+    },
+    'allergie-noix': {
+      label: 'Allergie noix / fruits à coque',
+      cocktail: 'Vérifier l\'absence de pesto (pignons), de pralinés, et de chocolats avec noix',
+      entree: 'Éviter les salades aux noix/noisettes ; vérifier les huiles aromatisées',
+      plat: 'Pas de sauce au beurre de cacahuète, pas de granola, pas de praliné',
+      tip: 'Allergie potentiellement grave : prévenir le traiteur formellement par écrit'
+    }
+  },
+
+  // ─── ADAPTATIONS SELON BUDGET PAR PERSONNE ──────────────────────────────
+  budgetMenu: {
+    'eco': {
+      label: 'Budget économique (45-70 €/pers)',
+      conseils: [
+        'Privilégier le format buffet (économise 25 à 35 % par rapport au service à l\'assiette)',
+        'Choisir un menu unique pour tous (les choix multiplient les coûts)',
+        'Vin de la région à la place des grands crus (économies importantes sur les vins)',
+        'Limiter le vin d\'honneur à 4-5 bouchées par personne (au lieu de 8)',
+        'Demander un buffet de fromages-charcuteries pour remplacer le plateau de fromages servi',
+        'Pâtisserie locale plutôt que pièce montée 5 étages',
+        'Pas de servire de café/digestif inclus (proposer en option payante au bar)'
+      ],
+      cocktailSize: 5,
+      noteSpeciale: 'Le format buffet est tout aussi élégant et économise beaucoup. Beaucoup d\'invités préfèrent.'
+    },
+    'standard': {
+      label: 'Budget standard (70-110 €/pers)',
+      conseils: [
+        'Service à l\'assiette pour le repas, buffet pour vin d\'honneur et dessert',
+        'Un choix viande/poisson sur le plat principal',
+        'Vins en accord avec chaque plat (1 bouteille pour 3 personnes)',
+        '6-7 bouchées par personne au vin d\'honneur',
+        'Plateau de fromages affinés en plat séparé',
+        'Pièce montée classique 2-3 niveaux',
+        'Café et digestif inclus en fin de repas'
+      ],
+      cocktailSize: 7,
+      noteSpeciale: 'Bon compromis qualité-prix. Format apprécié par tous types d\'invités.'
+    },
+    'premium': {
+      label: 'Budget premium (110-180 €/pers)',
+      conseils: [
+        'Service à l\'assiette intégral avec menu unique fixe',
+        'Vin d\'honneur prolongé (1h30 à 2h) avec 8-10 bouchées par personne',
+        'Vins d\'appellation (Bordeaux, Bourgogne) en accord avec chaque plat',
+        'Plateau de fromages affinés AOP servi en plat',
+        'Pièce montée multi-étages personnalisée',
+        'Service de boissons illimitées (champagne, eaux fines)',
+        'Café gourmand et mignardises en fin de repas',
+        'Brunch ou continuation possible pour le lendemain'
+      ],
+      cocktailSize: 9,
+      noteSpeciale: 'Niveau attendu pour un mariage chic et raffiné. Le service à l\'assiette est essentiel.'
+    },
+    'luxe': {
+      label: 'Budget luxe (180+ €/pers)',
+      conseils: [
+        'Menu gastronomique élaboré par un chef étoilé',
+        'Produits d\'exception : caviar, truffe, homard, foie gras, Saint-Jacques fraîches',
+        'Grands crus classés (Champagne millésimé, Bordeaux Grand Cru, Bourgogne)',
+        'Vin d\'honneur sur 2h avec 10-12 bouchées dont produits nobles',
+        '2 entrées différentes au choix',
+        'Plateau de fromages d\'exception (truffe, vieilles AOP)',
+        'Dessert composé : pièce montée + assiette de mignardises + café gourmand',
+        'Open bar premium pendant toute la soirée'
+      ],
+      cocktailSize: 11,
+      noteSpeciale: 'Niveau gastronomique haute couture. Réservé aux grands événements.'
+    }
+  },
+
+  // ─── 2. RÉDACTION DE FAIRE-PART ─────────────────────────────────────────
+  fairepart: {
+    'romantique': [
+      'Nous avons décidé de croire à l\'amour, à la vie, à l\'éternité. Nous avons surtout décidé de nous unir et nous serions infiniment heureux de partager ce moment avec vous.\n\n[Prénom 1] et [Prénom 2] auront la joie de s\'unir le [date] à [lieu].\n\nLa cérémonie aura lieu à [heure].',
+      'C\'est parce qu\'on a quelqu\'un que la vie a un sens. Nous tenions à vous annoncer notre union prochaine et serions ravis de vous compter parmi nous.\n\n[Prénom 1] & [Prénom 2]\nLe [date] — [lieu]\nUn cocktail suivra à partir de [heure]',
+      'Deux cœurs, une promesse. Nous vous invitons à célébrer notre amour le [date] à [lieu]. Votre présence sera notre plus beau cadeau.\n\nAvec amour,\n[Prénom 1] & [Prénom 2]'
+    ],
+    'classique': [
+      'M. et Mme [Parents] ont l\'honneur de vous faire part du mariage de leurs enfants [Prénom 1] et [Prénom 2].\n\nLa cérémonie sera célébrée le [date] à [heure] en l\'église/mairie de [lieu], suivie d\'un vin d\'honneur et d\'un dîner à [lieu réception].\n\nMerci de bien vouloir confirmer votre présence avant le [date limite].',
+      '[Prénom 1] et [Prénom 2] sont heureux de vous annoncer leur mariage qui sera célébré le [date] à [heure] à [lieu].\n\nUn cocktail dînatoire suivra à [lieu réception] à partir de [heure cocktail].\n\nRSVP avant le [date].'
+    ],
+    'boheme': [
+      'Sous le grand ciel, parmi les fleurs sauvages, nous voulons vous dire OUI. Rejoignez-nous le [date] à [lieu] pour célébrer notre amour, partager un verre, danser jusqu\'au bout de la nuit.\n\n[Prénom 1]  [Prénom 2]',
+      'On a choisi un endroit qu\'on aime, des gens qu\'on aime, et un jour à ne pas oublier. Le [date], on se dit oui à [lieu]. Venez les pieds dans l\'herbe, le cœur léger.\n\n[Prénom 1] & [Prénom 2]'
+    ],
+    'humoristique': [
+      'Après [X] années de fiançailles, [Prénom 2] a enfin décidé de me supporter pour la vie. Aidez-moi à célébrer ce miracle le [date] à [lieu]. Open bar garanti.\n\nVotre future Madame/Monsieur [Nom]',
+      'Avis aux célibataires : il vous reste jusqu\'au [date] pour nous arrêter. Sinon, rendez-vous le [date] à [lieu] pour la fête de notre vie.\n\n[Prénom 1] & [Prénom 2]'
+    ],
+    'court': [
+      '[Prénom 1] & [Prénom 2]\nse marient\nle [date] à [lieu]\n[Heure]',
+      'Save the date\n[Prénom 1]  [Prénom 2]\n[Date] — [Lieu]'
+    ]
+  },
+
+  // ─── 3. DISCOURS TÉMOIN ─────────────────────────────────────────────────
+  discours: {
+    'temoin-marie': [
+      'INTRODUCTION (1 min) :\nBonsoir à tous. Pour ceux qui ne me connaissent pas, je suis [Votre nom], témoin et ami(e) de [Prénom marié]. C\'est un immense honneur d\'être ici ce soir, même si je dois avouer que ma main tremble un peu plus que d\'habitude.\n\nUNE ANECDOTE (2 min) :\nPour vous donner une idée du genre de personne qu\'est [Prénom marié], laissez-moi vous raconter [insérez une anecdote drôle ou touchante : une bêtise d\'adolescence, un moment où il/elle a montré son grand cœur, une situation cocasse].\n\nLA RENCONTRE (2 min) :\nJe me souviens parfaitement du jour où [Prénom marié] m\'a parlé de [Prénom conjoint] pour la première fois. [Décrivez : l\'étincelle dans les yeux, la phrase exacte, votre première réaction]. Ce jour-là, j\'ai su que quelque chose avait changé.\n\nLE COUPLE (1 min) :\nCe que j\'aime chez [Prénom 1] et [Prénom 2] ensemble, c\'est [qualité du couple : leur complicité / leur rire commun / leur façon de se compléter]. Ils sont la preuve que [un trait positif observé].\n\nCONCLUSION (30 sec) :\nAlors levons nos verres aux mariés. À votre amour, à vos rires futurs, à vos projets, et à toutes les belles années qui vous attendent. Que votre mariage soit aussi beau que vous l\'êtes.\n\nÀ [Prénom 1] et [Prénom 2] !',
+      'OUVERTURE :\nMesdames, messieurs, [Prénom marié], j\'ai longtemps cherché comment commencer ce discours. Et puis je me suis dit : commence par la vérité. La vérité, c\'est que je n\'aurais jamais imaginé qu\'on en arriverait là.\n\nPORTRAIT (humour) :\n[Prénom marié], c\'est cette personne qui [trait humoristique : arrive toujours en retard / oublie systématiquement les clés / chante faux mais avec conviction]. Mais c\'est aussi celle qui [trait positif : sera toujours là pour vous, qui ferait n\'importe quoi pour un ami].\n\nL\'AMOUR :\nQuand [Prénom marié] a rencontré [Prénom conjoint], j\'ai vu quelque chose de nouveau. [Personnalisez avec un détail observé]. Ce n\'était pas juste de l\'amour, c\'était la bonne personne au bon moment.\n\nCONSEIL :\n[Prénom 1] et [Prénom 2], un seul conseil : continuez à rire ensemble. Quand vous riez, le monde s\'arrête, et c\'est ça qui fait que vous êtes magiques.\n\nFINAL :\nLevons nos verres au plus beau couple de la soirée. Santé !'
+    ],
+    'parents': [
+      'Mes chers enfants,\n\nIl y a [X] années, [Prénom enfant] arrivait dans nos vies. Aujourd\'hui, vous arrivez ensemble dans une nouvelle vie.\n\n[Prénom 1], tu as toujours été [trait de caractère : passionné, généreux, drôle...]. Te voir grandir, te tromper, recommencer, et trouver ta voie a été le plus beau cadeau qu\'on pouvait avoir.\n\n[Prénom 2], merci. Merci d\'avoir vu chez [Prénom 1] tout ce qu\'on a toujours vu nous-mêmes. Merci de l\'aimer pour ses qualités et de l\'accepter avec ses petits défauts (on en a connus quelques-uns !).\n\nLe mariage, ce n\'est pas un point d\'arrivée, c\'est un point de départ. Vous allez construire ensemble, vous tromper ensemble, vous relever ensemble. C\'est ça, l\'aventure.\n\nNotre seul conseil : prenez soin l\'un de l\'autre, même dans les jours gris. Surtout dans les jours gris.\n\nAvec tout notre amour,\nVos parents'
+    ]
+  },
+
+  // ─── 4. CONSEILS BUDGET ─────────────────────────────────────────────────
+  budget: {
+    'general': (budget, invites) => {
+      const parInv = budget / invites;
+      return {
+        title: `Répartition budget pour ${budget}€ et ${invites} invités`,
+        parInvite: `Coût moyen par invité : ${Math.round(parInv)}€`,
+        repartition: [
+          {poste:'Lieu de réception', pct:25, montant: Math.round(budget*0.25), tip:'Inclut location de salle, mise en place, vaisselle. Comparez 3 lieux minimum.'},
+          {poste:'Traiteur', pct:30, montant: Math.round(budget*0.30), tip:'Poste le plus important. Demandez le prix incluant les boissons.'},
+          {poste:'Tenues (robe + costume)', pct:8, montant: Math.round(budget*0.08), tip:'Pensez aux retouches et accessoires (chaussures, bijoux).'},
+          {poste:'Photographe / Vidéaste', pct:10, montant: Math.round(budget*0.10), tip:'Le seul souvenir vraiment durable. Ne lésinez pas.'},
+          {poste:'DJ / Musique', pct:5, montant: Math.round(budget*0.05), tip:'Compter ~800-2000€ pour un DJ pro de qualité.'},
+          {poste:'Fleurs / Décoration', pct:7, montant: Math.round(budget*0.07), tip:'Concentrez sur 2-3 points forts (bouquets de mariée, centres de table, arche).'},
+          {poste:'Faire-parts / Papeterie', pct:2, montant: Math.round(budget*0.02), tip:'Faire en ligne (canva, etc.) divise par 3 le coût.'},
+          {poste:'Coiffure / Maquillage', pct:2, montant: Math.round(budget*0.02), tip:'Prévoir un essai un mois avant le mariage.'},
+          {poste:'Wedding cake', pct:3, montant: Math.round(budget*0.03), tip:'Compter 5-12€ par part selon complexité.'},
+          {poste:'Alliances', pct:3, montant: Math.round(budget*0.03), tip:'Vérifier que les bagues incluent la gravure.'},
+          {poste:'Animation / Surprises', pct:2, montant: Math.round(budget*0.02), tip:'Photobooth, magicien, dégustation : à voir selon envie.'},
+          {poste:'Transport / Logement', pct:2, montant: Math.round(budget*0.02), tip:'Voiture des mariés, navettes invités si éloignés.'},
+          {poste:'Imprévus (marge)', pct:1, montant: Math.round(budget*0.01), tip:'Toujours garder une marge pour les surprises de dernière minute.'}
+        ]
+      };
+    },
+    'astuces': [
+      'Mariez-vous hors saison (octobre-avril) : économies de 20-30 % chez le traiteur et le lieu',
+      'Choisissez un mariage en semaine (vendredi ou dimanche) : tarifs souvent réduits de 15 à 25 %',
+      'Limitez le nombre d\'invités au vin d\'honneur uniquement pour les éloignés (compte 50 % du budget traiteur)',
+      'Empruntez ou louez la robe / le costume : la location coûte 3 à 5 fois moins',
+      'Faites vos propres faire-parts (Canva est gratuit), vos centres de table et votre déco',
+      'Achetez vos boissons vous-même chez un caviste qui reprend les invendus',
+      'Choisissez un buffet plutôt qu\'un service à l\'assiette : 20 à 30 % moins cher',
+      'Réservez tôt (12-18 mois avant) : les prestataires haute saison négocient mieux',
+      'Demandez 3 devis minimum pour chaque poste et négociez : 5-10 % de remise est presque toujours possible',
+      'Mutualisez les déplacements avec d\'autres mariages dans la région du fleuriste ou DJ'
+    ]
+  },
+
+  // ─── 5. TIMELINE JOUR J ─────────────────────────────────────────────────
+  timeline: {
+    // Générée dynamiquement, calée sur l'heure de la cérémonie civile (mairie)
+    generate: (heureCer, lieuCer, lieuRecep) => {
+      const [h, m] = heureCer.split(':').map(n=>parseInt(n,10));
+      const cer = h*60 + (m||0); // minutes de la cérémonie civile
+      function tt(min){
+        min=((min%1440)+1440)%1440; // rester sur 24h
+        const hh=Math.floor(min/60), mm=min%60;
+        return String(hh).padStart(2,'0')+'h'+String(mm).padStart(2,'0');
+      }
+      // Décalages (en minutes) calqués sur le modèle où la mairie est à 14h00
+      return [
+        {time:tt(cer-360), action:' Réveil & petit-déjeuner calme. Petit-déjeuner léger, hydratation, playlist agréable, ambiance détendue.'},
+        {time:tt(cer-330), action:' Début coiffure / maquillage de la mariée. Prévoir large : cela prend souvent plus de temps que prévu.'},
+        {time:tt(cer-300), action:' Arrivée du photographe / vidéaste (optionnel). Photos des détails : robe, alliances, papeterie, parfum, chaussures, bouquet.'},
+        {time:tt(cer-240), action:' Préparatifs du marié. Habillage et photos avec les témoins.'},
+        {time:tt(cer-150), action:' Habillage de la mariée. Moment robe + photos avec les proches.'},
+        {time:tt(cer-120), action:' First look (optionnel). Découverte des mariés avant la cérémonie + photos de couple pour gagner du temps.'},
+        {time:tt(cer-90), action:' Pause déjeuner légère.'},
+        {time:tt(cer-30), action:' Départ vers '+lieuCer+'.'},
+        {time:tt(cer), action:'️ Cérémonie civile à la mairie (20 à 40 min en général).'},
+        {time:tt(cer+60), action:' Déplacements + photos de groupe rapides.'},
+        {time:tt(cer+120), action:' Cérémonie laïque ou religieuse (30 min à 1h selon le format).'},
+        {time:tt(cer+180), action:' Vin d\'honneur / cocktail à '+lieuRecep+'. Boissons, animations et photos avec les invités (photos de groupe, livre d\'or, photobooth, jeux, photos de couple au coucher du soleil).'},
+        {time:tt(cer+270), action:'️ Ouverture de la salle pour le dîner. Les invités prennent place.'},
+        {time:tt(cer+300), action:' Entrée des mariés.'},
+        {time:tt(cer+315), action:' Début du repas — entrée.'},
+        {time:tt(cer+360), action:' Animation / discours.'},
+        {time:tt(cer+390), action:' Plat principal.'},
+        {time:tt(cer+435), action:' Animations / surprises.'},
+        {time:tt(cer+480), action:' Fromage / dessert.'},
+        {time:tt(cer+510), action:' Pièce montée ou wedding cake. Moment photos + champagne.'},
+        {time:tt(cer+540), action:' Ouverture du bal.'},
+        {time:tt(cer+570), action:' Soirée dansante.'},
+        {time:tt(cer+630), action:' Snack de nuit (optionnel) : mini-burgers, pizza, bar à crêpes, hot-dogs…'},
+        {time:tt(cer+750), action:' Fin de soirée (selon le lieu, entre 2h et 4h du matin).'}
+      ];
+    }
+  },
+
+  // ─── 6. DÉCORATION ─────────────────────────────────────────────────────
+  decoration: {
+    // ─── ROMANTIQUE × 4 saisons ───
+    'romantique-printemps': {
+      title: 'Décoration Romantique de Printemps',
+      couleurs: ['Rose poudré', 'Blanc cassé', 'Vert sauge tendre', 'Touches dorées'],
+      fleurs: 'Pivoines roses pâles, roses anciennes, lisianthus blancs, jacinthes, branches de cerisier en fleurs, eucalyptus et gypsophile en remplissage',
+      tables: 'Nappes en lin écru, chemins de table en lin rose poudré, bougies blanches dans des photophores en verre, vaisselle blanche avec liseré doré, petits cadres dorés pour les noms de table',
+      vaisselle: 'Assiettes en porcelaine blanche, couverts dorés mat, verres en cristal fin avec liseré',
+      ambiance: 'Guirlandes lumineuses chaudes, photophores partout, fleurs suspendues, voilages roses légers, ambiance jardin secret',
+      arche: 'Arche en bois clair recouverte de mousse, pivoines blanches et roses, eucalyptus en cascade, branches fleuries de cerisier'
+    },
+    'romantique-ete': {
+      title: 'Décoration Romantique d\'Été',
+      couleurs: ['Blanc immaculé', 'Pêche tendre', 'Vert clair', 'Or rose'],
+      fleurs: 'Roses pêche et blanches, hortensias bleu pâle, fleurs des champs (cosmos, marguerites), oliviers, lavande, herbes aromatiques',
+      tables: 'Nappes blanches en lin léger, chemins de table verts feuillage, vaisselle artisanale, fleurs en abondance sur la table',
+      vaisselle: 'Service en céramique blanche mate, verrerie ambrée, couverts en or rose',
+      ambiance: 'Lampions et guirlandes accrochés aux arbres, mariage en plein air, ombrelles colorées pour les invités, citronnade en pichet',
+      arche: 'Pergola en bois flotté, hortensias blancs et bleus, voilage léger qui flotte au vent, lierre en cascade'
+    },
+    'romantique-automne': {
+      title: 'Décoration Romantique d\'Automne',
+      couleurs: ['Bordeaux profond', 'Terracotta', 'Or vieilli', 'Crème'],
+      fleurs: 'Dahlias bordeaux, roses terracotta et caramel, eucalyptus argenté, feuilles d\'automne colorées, chrysanthèmes, branches d\'épines vinettes',
+      tables: 'Nappes crème, chemins de table en velours bordeaux, candélabres dorés, citrouilles décoratives miniatures, feuilles dorées dispersées',
+      vaisselle: 'Assiettes en grès terracotta, verres ambrés, couverts en cuivre, serviettes en velours',
+      ambiance: 'Lustres en plumes, beaucoup de bougies à la cire d\'abeille, foyer / cheminée, lanternes en cuivre, chemin de feuilles à l\'entrée',
+      arche: 'Arche en branches sèches, dahlias et physalis, drapé de velours bordeaux, feuilles d\'automne en cascade'
+    },
+    'romantique-hiver': {
+      title: 'Décoration Romantique d\'Hiver',
+      couleurs: ['Blanc immaculé', 'Argent', 'Bleu glacier', 'Touches dorées'],
+      fleurs: 'Roses blanches, anémones, eucalyptus argenté, branches givrées, baies blanches, brins de sapin, feuilles d\'olivier',
+      tables: 'Nappes blanches damassées, chemins de table argentés ou en velours bleu glacier, candélabres argentés, paillettes blanches, flocons décoratifs',
+      vaisselle: 'Porcelaine blanche, couverts argentés, verres en cristal taillé, serviettes blanches avec rond argenté',
+      ambiance: 'Beaucoup de bougies blanches, lumière tamisée, branches givrées, pommes de pin argentées, ambiance "forêt enchantée d\'hiver"',
+      arche: 'Arche en branches blanches givrées, roses blanches, branches de sapin et baies, voile blanc qui scintille'
+    },
+    // ─── BOHÈME × 4 saisons ───
+    'boheme-printemps': {
+      title: 'Décoration Bohème de Printemps',
+      couleurs: ['Blanc cassé', 'Vert tendre', 'Pampa beige', 'Touches dorées'],
+      fleurs: 'Pampa, eucalyptus, gypsophile, branches de cerisier en fleurs, fleurs séchées, roses blanches, anémones',
+      tables: 'Tables en bois brut sans nappe, chemins en macramé, vaisselle dépareillée vintage chinée, herbes aromatiques en pots',
+      vaisselle: 'Assiettes vintage chinées, verres en pied dorés, couverts en bois ou bambou, serviettes en lin froissé',
+      ambiance: 'Tapis berbères, coussins au sol, attrape-rêves, ampoules guinguettes, herbes fraîches en bouquets',
+      arche: 'Arche triangulaire en bois, pampa et fleurs séchées, dentelle blanche, plumes, branches fleuries'
+    },
+    'boheme-ete': {
+      title: 'Décoration Bohème Estivale',
+      couleurs: ['Beige sable', 'Terre cuite', 'Ocre doré', 'Blanc cassé'],
+      fleurs: 'Tournesols, marguerites, lavande, herbes de la pampa, oliviers, immortelles, soucis, fleurs sauvages',
+      tables: 'Tables en bois flotté, chemins en lin sable, paniers tressés en osier, marque-place en pierre ou bois gravé',
+      vaisselle: 'Vaisselle en argile naturelle, verres colorés style méditerranéen, couverts dépareillés en bois ou cuivre',
+      ambiance: 'Tapis berbères au sol, hamacs sous les arbres, lampions colorés, ambiance "désert"/"oasis", musique douce',
+      arche: 'Arche en macramé géant, fleurs séchées (pampa, immortelles), voilage écru au vent, lierre'
+    },
+    'boheme-automne': {
+      title: 'Décoration Bohème d\'Automne',
+      couleurs: ['Terracotta', 'Moutarde', 'Ocre', 'Marron caramel'],
+      fleurs: 'Chrysanthèmes ocre, dahlias terracotta, branches de blé séchées, pampa dorée, feuilles d\'automne, gypsophile teintée',
+      tables: 'Tables en bois brut, chemins en jute, paniers tressés, pommes et poires comme décoration, citrouilles miniatures',
+      vaisselle: 'Vaisselle en grès brut, verres ambrés, couverts en bois ou cuivre, serviettes en coton brut',
+      ambiance: 'Tapis berbères, coussins en velours moutarde, lanternes en métal, beaucoup de bougies, ambiance "chalet bohème"',
+      arche: 'Arche en branches torsadées, pampa dorée, dahlias terracotta, blé séché, voilage couleur sable'
+    },
+    'boheme-hiver': {
+      title: 'Décoration Bohème d\'Hiver',
+      couleurs: ['Blanc cassé', 'Beige rosé', 'Argent vieilli', 'Vert sapin'],
+      fleurs: 'Pampa blanche, eucalyptus argenté, branches de sapin, baies blanches, pommes de pin argentées, fleurs séchées',
+      tables: 'Tables en bois brut, chemins en lin blanc froissé, paniers en osier, branches de sapin en décoration',
+      vaisselle: 'Assiettes vintage blanc cassé, verres en pied, couverts en cuivre patiné',
+      ambiance: 'Plaids en laine sur les chaises, beaucoup de bougies, lanternes, ambiance "cocoon d\'hiver bohème", musique acoustique',
+      arche: 'Arche en bois flotté, pampa blanche, branches de sapin, voilage écru, fausse fourrure'
+    },
+    // ─── CHIC × 4 saisons ───
+    'chic-printemps': {
+      title: 'Décoration Chic de Printemps',
+      couleurs: ['Blanc immaculé', 'Vert sauge', 'Or', 'Rose pâle'],
+      fleurs: 'Roses blanches, pivoines blanches, lys, calla, branches fleuries hautes (cerisier), feuillage vert foncé',
+      tables: 'Nappes blanches en lin épais, chemins de table dorés, candélabres hauts argentés, marque-places calligraphiés',
+      vaisselle: 'Service en porcelaine fine avec filet doré, verres en cristal haut de gamme, couverts plaqués or, serviettes blanches en lin damassé',
+      ambiance: 'Grands chandeliers en argent, lustre en cristal, parterres fleuris, marbre, touches noires',
+      arche: 'Arche en colonnes blanches, cascade de roses blanches, branches fleuries hautes en cascade'
+    },
+    'chic-ete': {
+      title: 'Décoration Chic d\'Été',
+      couleurs: ['Blanc', 'Or', 'Bleu marine', 'Vert profond'],
+      fleurs: 'Roses blanches, hortensias bleu nuit, orchidées, fougères, lis blancs',
+      tables: 'Nappes blanches, chemins de table en velours bleu marine, candélabres dorés hauts, vaisselle blanche et or',
+      vaisselle: 'Porcelaine blanche à liseré doré, verres en cristal, couverts plaqués or, ronds de serviette dorés',
+      ambiance: 'Mariage en jardin chic ou en château, ambiance "Gatsby"/"Riviera", lumière naturelle généreuse',
+      arche: 'Arche en marbre / colonnes blanches, hortensias bleus et blancs, voile fluide en mousseline'
+    },
+    'chic-automne': {
+      title: 'Décoration Chic d\'Automne',
+      couleurs: ['Bordeaux', 'Or vieilli', 'Noir', 'Crème'],
+      fleurs: 'Roses bordeaux, calla noires, orchidées, branches dorées, feuilles d\'automne dorées (or véritable)',
+      tables: 'Nappes en velours bordeaux, chemins de table en or, candélabres noirs hauts, vaisselle dorée',
+      vaisselle: 'Porcelaine avec filet or, verres en cristal ambré, couverts en or rose, serviettes en velours',
+      ambiance: 'Lustre en cristal sombre, beaucoup de bougies, ambiance opéra/théâtre, marbre noir et or',
+      arche: 'Arche noire métallique, cascade de roses bordeaux et calla noires, drapés de velours'
+    },
+    'chic-hiver': {
+      title: 'Décoration Chic d\'Hiver',
+      couleurs: ['Argent', 'Blanc immaculé', 'Bleu glacier', 'Cristal'],
+      fleurs: 'Roses blanches, anémones noir-blanc, branches givrées, baies blanches, eucalyptus argenté',
+      tables: 'Nappes blanches damassées, chemins en cristal ou paillettes argentées, candélabres en cristal, ronds de serviette argentés',
+      vaisselle: 'Porcelaine blanche à filet argent, verres en cristal Bohème, couverts argentés massifs',
+      ambiance: 'Lustres en cristal de Bohème, ambiance "palais de glace", beaucoup de cristal et de blanc, neige artificielle scintillante',
+      arche: 'Arche en cristal et branches givrées, roses blanches et anémones, drapés de mousseline blanche scintillante'
+    },
+    // ─── NATURE × 4 saisons ───
+    'nature-printemps': {
+      title: 'Décoration Nature de Printemps',
+      couleurs: ['Vert tendre', 'Blanc', 'Beige', 'Jaune doux'],
+      fleurs: 'Fleurs sauvages de saison (coquelicots, marguerites, anémones), branches de saule, fougères, primevères',
+      tables: 'Tables en bois brut, chemins de table en mousse fraîche, bougies dans des bocaux en verre, herbes aromatiques en pots',
+      vaisselle: 'Vaisselle artisanale céramique, verrerie simple, serviettes en lin écru, couverts en bois',
+      ambiance: 'Mariage en plein air, ambiance prairie en fleurs, papillons décoratifs, ballots de paille',
+      arche: 'Arche en branches naturelles, feuillage abondant, fleurs sauvages, voilage en gaze de coton'
+    },
+    'nature-ete': {
+      title: 'Décoration Nature Estivale',
+      couleurs: ['Vert sapin', 'Blanc', 'Jaune tournesol', 'Bois clair'],
+      fleurs: 'Tournesols, marguerites, lavande, herbes folles, fenouil sauvage, oliviers',
+      tables: 'Grandes tables en bois en U pour ambiance conviviale, chemins en lin naturel, fleurs sauvages dans des bouteilles dépareillées',
+      vaisselle: 'Vaisselle en grès brut, verres dépareillés, couverts en bois',
+      ambiance: 'Mariage champêtre dans un verger ou champ, guirlandes de loupiotes, tables en bois sur l\'herbe',
+      arche: 'Arche en bois brut couverte de feuillage abondant et tournesols, sans fleurs sophistiquées'
+    },
+    'nature-automne': {
+      title: 'Décoration Nature d\'Automne',
+      couleurs: ['Marron', 'Orange brûlé', 'Vert sapin', 'Bois'],
+      fleurs: 'Branches de sorbier (avec baies), chrysanthèmes, blé séché, branches d\'épines vinettes, feuilles d\'automne',
+      tables: 'Tables en bois, chemins en jute, citrouilles miniatures, pommes, châtaignes, mousse',
+      vaisselle: 'Vaisselle en grès terracotta, verres ambrés, couverts en bois',
+      ambiance: 'Mariage en grange ou forêt, beaucoup de bougies, ambiance "feu de cheminée", couvertures en laine pour les invités',
+      arche: 'Arche en branches mortes torsadées, feuilles d\'automne, citrouilles décoratives, blé'
+    },
+    'nature-hiver': {
+      title: 'Décoration Nature d\'Hiver',
+      couleurs: ['Vert sapin profond', 'Blanc', 'Bois sombre', 'Touches dorées'],
+      fleurs: 'Branches de sapin, houx, pommes de pin, baies rouges et blanches, eucalyptus',
+      tables: 'Tables en bois sombre, chemins en lin naturel, branches de sapin en décoration, oranges piquées de clous de girofle',
+      vaisselle: 'Vaisselle en céramique brute, verres en verre soufflé, couverts en bois ou cuivre',
+      ambiance: 'Cabane en bois en montagne, beaucoup de bougies, plaids en laine sur les chaises, vin chaud à l\'arrivée',
+      arche: 'Arche en branches de sapin, pommes de pin, baies rouges, ambiance "forêt enchantée d\'hiver"'
+    }
+  },
+
+  // ─── 7. WEDDING CAKE — STYLES DE DÉCORATION ───────────────────────────────
+  weddingCake: {
+    'classiques': {
+      label: 'Classiques & populaires',
+      items: [
+        {nom:'Wedding cake classique élégant', pin:'classic elegant wedding cake'},
+        {nom:'Wedding cake romantique', pin:'romantic wedding cake'},
+        {nom:'Ombré wedding cake', pin:'ombre wedding cake'},
+        {nom:'Wedding cake luxe / chic', pin:'luxury chic wedding cake'},
+        {nom:'Wedding cake moderne', pin:'modern wedding cake'},
+        {nom:'Wedding cake minimaliste', pin:'minimalist wedding cake'}
+      ]
+    },
+    'rustiques': {
+      label: 'Rustiques & naturels',
+      items: [
+        {nom:'Semi-naked cake', pin:'semi naked wedding cake'},
+        {nom:'Champêtre wedding cake', pin:'rustic wedding cake'},
+        {nom:'Woodland / forêt wedding cake', pin:'woodland forest wedding cake'},
+        {nom:'Garden party wedding cake', pin:'garden party wedding cake'},
+        {nom:'Terracotta boho wedding cake', pin:'terracotta boho wedding cake'}
+      ]
+    },
+    'vintage': {
+      label: 'Vintage & rétro',
+      items: [
+        {nom:'Victorian wedding cake', pin:'victorian wedding cake'},
+        {nom:'Bridgerton wedding cake', pin:'bridgerton regency wedding cake'},
+        {nom:'Retro wedding cake (années 50-80)', pin:'retro wedding cake'},
+        {nom:'Heart wedding cake (vintage/coquette)', pin:'heart shaped wedding cake'}
+      ]
+    },
+    'artistiques': {
+      label: 'Artistiques & design',
+      items: [
+        {nom:'Marble wedding cake (effet marbre)', pin:'marble wedding cake'},
+        {nom:'Palette knife cake (effet peinture)', pin:'palette knife wedding cake'},
+        {nom:'Watercolor wedding cake (aquarelle)', pin:'watercolor wedding cake'},
+        {nom:'Brushstroke wedding cake', pin:'brushstroke wedding cake'},
+        {nom:'Geometric wedding cake', pin:'geometric wedding cake'},
+        {nom:'Sculptural / statement wedding cake', pin:'sculptural statement wedding cake'},
+        {nom:'Asymmetrical wedding cake', pin:'asymmetrical wedding cake'},
+        {nom:'Concrete effect cake (effet béton)', pin:'concrete effect wedding cake'}
+      ]
+    },
+    'glamour': {
+      label: 'Glamour',
+      items: [
+        {nom:'Pearl wedding cake (perles)', pin:'pearl wedding cake'},
+        {nom:'Gold luxe wedding cake', pin:'gold luxe wedding cake'},
+        {nom:'Lace wedding cake (effet dentelle)', pin:'lace wedding cake'},
+        {nom:'Draped fabric cake (effet tissu drapé)', pin:'draped fabric wedding cake'},
+        {nom:'Monochrome wedding cake', pin:'monochrome wedding cake'},
+        {nom:'Bow cake (avec nœuds)', pin:'bow wedding cake'}
+      ]
+    },
+    'destination': {
+      label: 'Destination / ambiance',
+      items: [
+        {nom:'Coastal / beach wedding cake', pin:'coastal beach wedding cake'},
+        {nom:'Tropical wedding cake', pin:'tropical wedding cake'},
+        {nom:'Italian wedding cake (Dolce Vita)', pin:'italian dolce vita wedding cake'},
+        {nom:'Parisian / French wedding cake', pin:'parisian french wedding cake'},
+        {nom:'Winter wedding cake', pin:'winter wedding cake'},
+        {nom:'Autumn wedding cake', pin:'autumn wedding cake'}
+      ]
+    },
+    'audacieux': {
+      label: 'Audacieux',
+      items: [
+        {nom:'Black wedding cake', pin:'black wedding cake'},
+        {nom:'Colorful wedding cake', pin:'colorful wedding cake'},
+        {nom:'Jewel tones wedding cake', pin:'jewel tones wedding cake'},
+        {nom:'Maximalist wedding cake', pin:'maximalist wedding cake'}
+      ]
+    }
+  },
+
+  // ─── 8. ANIMATIONS POUR LA SOIRÉE ─────────────────────────────────────────
+  animations: {
+    'classique': [
+      {nom: 'Photobooth', desc: 'Cabine photo avec accessoires (chapeaux, lunettes, pancartes). Livre d\'or photographique. Prix : 350-800€ pour la soirée.'},
+      {nom: 'Live music acoustique pendant le cocktail', desc: 'Guitariste / pianiste / chanteur live pour le vin d\'honneur. Crée une ambiance raffinée. Prix : 400-900€.'},
+      {nom: 'Lancer de pétales / riz / bulles', desc: 'À la sortie de la cérémonie. Achat des bulles ou pétales : 50-150€. Effet photo garanti.'},
+      {nom: 'Jeu du marié vs la mariée', desc: 'Quiz "qui connaît mieux qui ?" projeté sur écran. Aucun coût, à organiser par un témoin.'},
+      {nom: 'Photos de groupe avec polaroid', desc: 'Polaroids partagés sur un mur, les invités écrivent un message. Prix : 200-400€ (pack appareil + films).'}
+    ],
+    'fun': [
+      {nom: 'Magicien close-up pendant le cocktail', desc: 'Va de table en table pendant le vin d\'honneur. Effet "wow" garanti. Prix : 500-1200€.'},
+      {nom: 'Caricaturiste', desc: 'Dessine en direct des portraits des invités. Souvenir personnalisé. Prix : 400-700€.'},
+      {nom: 'Karaoké géant', desc: 'Système karaoké avec catalogue de chansons. Idéal après minuit. Prix : 200-500€.'},
+      {nom: 'Battle de danse', desc: 'Concours de danse entre invités avec jury (parents + témoins). Aucun coût, à animer par le DJ.'},
+      {nom: 'Mur d\'embrassades', desc: 'Mur peint avec quote romantique où les couples viennent s\'embrasser. Photographe immortalise. Prix : matériel ~100€.'},
+      {nom: 'Mini-jeux d\'apéritif', desc: 'Boîtes de jeux (cartes, dés, qui suis-je) sur les tables du vin d\'honneur. Aucun coût, à préparer soi-même.'}
+    ],
+    'surprise': [
+      {nom: 'Flashmob des mariés', desc: 'Mariés et témoins dansent ensemble sur une chorégraphie surprise. Effet émotion garanti.'},
+      {nom: 'Vidéo souvenirs', desc: 'Montage des amis et famille (messages, photos d\'enfance). Projeté pendant le dessert. À préparer 2 mois avant.'},
+      {nom: 'Feu d\'artifice', desc: 'Pour la fin de soirée. Vérifier autorisation lieu. Prix : 800-3000€.'},
+      {nom: 'Lâcher de lanternes / colombes', desc: 'Lanternes (vérifier réglementation) : 200-400€. Colombes via pro : 200-500€.'},
+      {nom: 'Première danse chorégraphiée', desc: 'Cours de danse en couple avant le mariage (3-5 séances). Effet wow. Prix : 200-500€ pour les cours.'},
+      {nom: 'Concert surprise d\'un proche', desc: 'Un ami chanteur / musicien interprète "votre" chanson en live. Gratuit, émotion garantie.'}
+    ],
+    'enfants': [
+      {nom: 'Animateur enfants', desc: 'Pour s\'occuper des enfants pendant le cocktail et le repas. Activités, contes, maquillage. Prix : 200-450€.'},
+      {nom: 'Coin enfants', desc: 'Salle dédiée avec jouets, jeux, coloriages, films. À aménager (~100€ matériel).'},
+      {nom: 'Mini quiz mariage pour enfants', desc: 'Quiz personnalisé sur les mariés, avec petits cadeaux à gagner. À faire soi-même.'},
+      {nom: 'Pinata personnalisée', desc: 'Piñata aux couleurs du mariage, remplie de bonbons. Prix : 30-80€.'},
+      {nom: 'Lâcher de ballons', desc: 'À organiser en fin d\'après-midi avec messages écrits par les enfants. Privilégier ballons biodégradables.'}
+    ]
+  },
+
+  // ─── 9. VOYAGE DE NOCES ──────────────────────────────────────────────────
+  voyageNoces: {
+    'plage': [
+      {dest: 'Maldives', desc: 'L\'archipel romantique par excellence. Villas sur pilotis, eaux turquoise, snorkeling. Idéal 7-10 jours. Budget : 4000-10000€/couple.'},
+      {dest: 'Seychelles', desc: 'Plages de sable blanc, granite, faune unique. Plus authentique que les Maldives. Budget : 3500-8000€/couple.'},
+      {dest: 'Bora Bora (Polynésie)', desc: 'Le plus iconique. Lagons bleus, bungalows pilotis. Long voyage (24h). Budget : 5000-12000€/couple.'},
+      {dest: 'République Dominicaine (Punta Cana)', desc: 'All-inclusive 5*, plages superbes, animations. Plus abordable. Budget : 2000-4500€/couple.'},
+      {dest: 'Île Maurice', desc: 'Mix culturel, plages, montagnes. Hôtels luxe accessibles. Budget : 3000-6500€/couple.'}
+    ],
+    'culture': [
+      {dest: 'Japon (Tokyo + Kyoto)', desc: 'Mix modernité-tradition. Sakura au printemps. Idéal 10-14 jours. Budget : 4500-8000€/couple.'},
+      {dest: 'Italie (Toscane + Cinque Terre)', desc: 'Romance, gastronomie, paysages. Voiture conseillée. Budget : 2500-5000€/couple.'},
+      {dest: 'Maroc (Marrakech + Sahara)', desc: 'Riads, désert, oasis. Dépaysement à 3h d\'avion. Budget : 1800-4500€/couple.'},
+      {dest: 'Pérou (Cusco + Machu Picchu)', desc: 'Aventure et histoire. Altitude attention. Budget : 3500-6000€/couple.'},
+      {dest: 'Vietnam', desc: 'Du nord au sud : baie d\'Halong, Hué, delta du Mékong. Budget : 2800-5500€/couple.'}
+    ],
+    'aventure': [
+      {dest: 'Costa Rica', desc: 'Volcans, forêts tropicales, plages 2 côtes. Idéal pour couple actif. Budget : 3500-6500€/couple.'},
+      {dest: 'Islande', desc: 'Aurores boréales (hiver) ou soleil de minuit (été). Geysers, glaciers. Budget : 4000-7500€/couple.'},
+      {dest: 'Nouvelle-Zélande', desc: 'Paysages mythiques, randos, vignobles. Long voyage. Budget : 5500-10000€/couple.'},
+      {dest: 'Afrique du Sud (Cape Town + Safari)', desc: 'Mix safari, océan, vignobles. Diversité. Budget : 4500-8500€/couple.'},
+      {dest: 'Canada Ouest (Rocheuses)', desc: 'Lacs turquoise, glaciers, ours. Roadtrip parfait. Budget : 4500-7500€/couple.'}
+    ],
+    'romantique-europe': [
+      {dest: 'Santorin (Grèce)', desc: 'Couchers de soleil mythiques, maisons blanches. Très romantique. Budget : 2200-4500€/couple.'},
+      {dest: 'Paris + Loire', desc: 'La capitale + châteaux. Romantique et culturel. Budget : 1500-3500€/couple.'},
+      {dest: 'Venise + Vérone', desc: 'Gondoles, balcon de Juliette. Plein d\'âme. Budget : 1800-3800€/couple.'},
+      {dest: 'Andalousie (Séville, Grenade, Cordoue)', desc: 'Tapas, flamenco, palais arabes. Budget : 1500-3500€/couple.'},
+      {dest: 'Lacs italiens (Côme, Garde)', desc: 'Villas, jardins, gastronomie. Budget : 2000-4500€/couple.'}
+    ]
+  },
+
+  // ─── 10. CADEAUX INVITÉS ─────────────────────────────────────────────────
+  cadeauxInvites: {
+    'petit-budget': [
+      {nom: 'Sachet de dragées personnalisé', desc: 'Classique mais toujours apprécié. ~1€/personne.'},
+      {nom: 'Bocal de confiture maison', desc: 'À faire soi-même 2 mois avant. ~1,50€/personne avec étiquette.'},
+      {nom: 'Sachet de graines à planter', desc: 'Original et écologique. ~2€/personne (sachet kraft + étiquette).'},
+      {nom: 'Petit savon artisanal', desc: 'Senteur du mariage. ~2-3€/personne.'},
+      {nom: 'Marque-page personnalisé', desc: 'En bois, papier ou tissu. ~1€/personne.'}
+    ],
+    'moyen-budget': [
+      {nom: 'Sachet de thé / café personnalisé', desc: 'Sachets avec étiquette à vos prénoms. ~3-4€/personne.'},
+      {nom: 'Mini-bouteille de vin / spiritueux', desc: 'Étiquette personnalisée. ~5-8€/personne.'},
+      {nom: 'Bougie parfumée artisanale', desc: 'Parfum signature du mariage. ~4-6€/personne.'},
+      {nom: 'Coffret épices / sels gourmets', desc: 'Petits pots à votre image. ~5€/personne.'},
+      {nom: 'Photo polaroid + cadre carton', desc: 'Souvenir immédiat à emporter. ~4€/personne.'}
+    ],
+    'gros-budget': [
+      {nom: 'Coffret gastronomique régional', desc: 'Produits locaux mis en valeur. ~10-15€/personne.'},
+      {nom: 'Verre gravé aux initiales', desc: 'Avec gravure du jour et prénoms. ~8-12€/personne.'},
+      {nom: 'Plante en pot personnalisée', desc: 'Pot peint à la main, plante grasse. ~10€/personne.'},
+      {nom: 'Coffret beauté (bougie + savon + huile)', desc: 'Box bien-être complète. ~12-18€/personne.'},
+      {nom: 'Mini-album photo souvenir', desc: 'À remplir avec polaroids pendant le mariage. ~10€/personne.'}
+    ]
+  },
+
+  // ─── 11. TENUE MARIÉE ────────────────────────────────────────────────────
+  tenueMariee: {
+    morphologies: {
+      'sablier': 'Morphologie en sablier (taille marquée, épaules = hanches) : presque tous les styles vous vont. Privilégiez les coupes sirène, fourreau, ou princesse cintrée à la taille.',
+      'poire': 'Morphologie en poire (hanches plus larges que les épaules) : privilégiez les robes A-line (évasées du bas), bustier large, manches volumineuses. Évitez les robes sirène très moulantes.',
+      'pomme': 'Morphologie en pomme (taille moins marquée) : privilégiez l\'empire (ceinture sous la poitrine), les coupes droites fluides, V-neck. Évitez les ceintures sur la taille naturelle.',
+      'rectangle': 'Morphologie rectangle (épaules = taille = hanches) : créez des courbes avec une robe ceinturée à la taille, jupe volumineuse, bustier accentué.'
+    },
+    styles: [
+      {nom: 'A-Line', desc: 'Resserrée à la taille puis évasée en "A". La coupe la plus universelle : convient à toutes les morphologies. Élégante et confortable.', pin: 'A-line wedding dress'},
+      {nom: 'Ball Gown (Princesse)', desc: 'Bustier ajusté et jupe très ample façon robe de bal. Effet "conte de fées". Idéale pour les morphologies en poire et les grandes cérémonies.', pin: 'ball gown wedding dress'},
+      {nom: 'Empire', desc: 'Taille marquée juste sous la poitrine, jupe fluide qui tombe droit. Confortable, romantique, parfaite pour les mariées enceintes ou morphologie pomme.', pin: 'empire wedding dress'},
+      {nom: 'Drop-Waist (Taille basse)', desc: 'La taille est marquée plus bas que naturellement, sur les hanches. Allonge la silhouette, look rétro chic et élégant.', pin: 'drop waist wedding dress'},
+      {nom: 'Sheath (Gaine)', desc: 'Coupe droite et fluide qui suit la silhouette sans la serrer. Simple et élégante, idéale pour un mariage civil ou bohème.', pin: 'sheath wedding dress'},
+      {nom: 'Column (Colonne)', desc: 'Coupe droite et structurée du buste aux pieds, façon colonne. Minimaliste et moderne, allonge la silhouette.', pin: 'column wedding dress'},
+      {nom: 'Trumpet (Trompette)', desc: 'Épouse le corps jusqu\'à mi-cuisse puis s\'évase comme une trompette. Plus douce que la sirène, met les courbes en valeur.', pin: 'trumpet wedding dress'},
+      {nom: 'Mermaid (Sirène)', desc: 'Très moulante jusqu\'aux genoux puis évasée. Sublime les silhouettes en sablier, look glamour et sensuel.', pin: 'mermaid wedding dress'},
+      {nom: 'Fit-and-Flare', desc: 'Ajustée sur le buste et la taille, évasée progressivement. Compromis flatteur entre A-line et sirène, convient à beaucoup de morphologies.', pin: 'fit and flare wedding dress'},
+      {nom: 'Slip (Nuisette)', desc: 'Coupe fluide en satin, fines bretelles, inspiration lingerie années 90. Minimaliste, moderne, très tendance.', pin: 'slip wedding dress'},
+      {nom: 'Off-Shoulder (Épaules dénudées)', desc: 'Décolleté qui dégage les épaules. Romantique et féminin, met en valeur le buste et les clavicules.', pin: 'off shoulder wedding dress'},
+      {nom: 'Tea-Length (Mi-longue)', desc: 'Longueur aux mollets. Look rétro et léger, idéale pour un mariage champêtre, civil ou en été.', pin: 'tea length wedding dress'},
+      {nom: 'High-Low (Asymétrique)', desc: 'Courte devant, longue derrière. Originale et moderne, parfaite pour un mariage en plein air ou une mariée qui veut danser librement.', pin: 'high low wedding dress'},
+      {nom: 'Midi', desc: 'Longueur aux genoux ou juste en dessous. Moderne et polyvalente, idéale pour un mariage civil, une cérémonie décontractée ou un second look en soirée.', pin: 'midi wedding dress'},
+      {nom: 'Mini', desc: 'Robe courte au-dessus des genoux. Audacieuse et festive, parfaite pour un mariage champêtre, une soirée ou un second look après la cérémonie.', pin: 'mini wedding dress'},
+      {nom: 'Combinaison / Jumpsuit', desc: 'Pantalon fluide ou tailleur. Pour les mariées modernes et décontractées, ou pour la fin de soirée.', pin: 'bridal jumpsuit'}
+    ],
+    budget: {
+      'sous-1500': 'Boutiques en ligne spécialisées, outlets, robes d\'occasion sur sites de seconde main. Compter ~500-1500€.',
+      '1500-3000': 'Gamme moyenne : enseignes spécialisées mariage, collections grand public. Excellent rapport qualité-prix.',
+      '3000-6000': 'Gamme premium : créateurs français et internationaux reconnus. Robes sur mesure possibles.',
+      'plus-6000': 'Haute couture : maisons de prestige internationales. Robe pièce unique.'
+    }
+  },
+
+  // ─── 12. TENUE MARIÉ ─────────────────────────────────────────────────────
+  tenueMarie: {
+    styles: [
+      {nom: 'Costume trois-pièces classique', desc: 'Veste + gilet + pantalon, cravate ou nœud papillon. Élégant et intemporel.'},
+      {nom: 'Smoking', desc: 'Pour mariage chic ou soirée. Noir avec col cranté ou châle, nœud papillon noir.'},
+      {nom: 'Costume de couleur', desc: 'Plus original et très tendance. Apporte du caractère à la silhouette.'},
+      {nom: 'Costume bohème / lin', desc: 'Léger et décontracté. Idéal pour un mariage en été ou sur la plage.'},
+      {nom: 'Frac / queue de pie', desc: 'Très formel. Pour un mariage très chic et solennel.'},
+      {nom: 'Tenue casual chic', desc: 'Chino + chemise + veste. Pour un mariage très décontracté.'},
+      {nom: 'Sur-mesure', desc: 'Costume fait sur mesure pour un ajustement parfait. Compter plusieurs séances d\'essayage.'}
+    ],
+    accessoires: ['Nœud papillon ou cravate (assortis au thème)', 'Pochette de costume colorée', 'Boutons de manchette personnalisés', 'Montre élégante', 'Boutonnière florale (assortie au bouquet de la mariée)', 'Chaussures cuir cirées (richelieu, derby ou monk)', 'Ceinture assortie aux chaussures', 'Chaussettes "fantaisie" pour la photo'],
+    couleurs: 'Pour un mariage en intérieur : marine, anthracite, noir. Pour extérieur en journée : beige, bleu clair, gris perle. Pour mariage d\'hiver : tons foncés (bordeaux, vert sapin).'
+  },
+
+  // ─── 13. BIJOUX MARIÉE ───────────────────────────────────────────────────
+  bijouxMariee: {
+    selonRobe: {
+      'decollete': 'Décolleté plongeant ou bateau → collier court / ras-de-cou (15-40 cm). Pendentif simple ou rivière de pierres.',
+      'bustier': 'Bustier sans bretelles → collier ras-de-cou ou collier draperie. Si vous portez les cheveux relevés : grandes boucles d\'oreille.',
+      'col-haut': 'Col haut, manches longues, dentelle → pas de collier (chargerait). Compensez avec belles boucles d\'oreilles et un bracelet.',
+      'dos-nu': 'Dos-nu spectaculaire → le bijou DEVANT doit rester discret. Optez pour un sautoir qui descend dans le dos, ou rien.',
+      'simple': 'Robe sobre / minimaliste → un beau bijou statement (collier ou boucles). Pas plus de 2 pièces fortes.'
+    },
+    voile: 'Si voile cathédrale (très long) : minimisez les bijoux dans les cheveux. Si voile court : tiare ou peigne fleuri possible. Voile = star, bijoux d\'accompagnement.',
+    coiffure: 'Cheveux relevés (chignon) : assumez les boucles d\'oreille pendantes. Cheveux lâchés : préférez les boucles ras de l\'oreille (chandeliers se perdent dans les cheveux). Tresses : ajoutez des perles ou pierres tressées dans la chevelure.',
+    bouquet: 'Si bouquet très coloré : bijoux discrets neutres. Si bouquet blanc/vert : bijoux peuvent être plus voyants.'
+  },
+
+  // ─── 14. MUSIQUE CÉRÉMONIE ───────────────────────────────────────────────
+  musiqueCer: {
+    'entree-classique': [
+      'Pachelbel - Canon en Ré',
+      'Mendelssohn - Marche nuptiale',
+      'Wagner - Marche nuptiale (Lohengrin)',
+      'Vivaldi - Spring (4 Saisons)',
+      'Bach - Air sur la corde de Sol',
+      'Albinoni - Adagio',
+      'Mozart - Concerto pour clarinette',
+      'Debussy - Clair de Lune',
+      'Massenet - Méditation de Thaïs',
+      'Satie - Gymnopédie n°1'
+    ],
+    'entree-moderne': [
+      'A Thousand Years - Christina Perri',
+      'Marry Me - Train',
+      'All of Me - John Legend',
+      'Make You Feel My Love - Adele',
+      'Can\'t Help Falling in Love - Elvis (cover acoustique)',
+      'Perfect - Ed Sheeran',
+      'Thinking Out Loud - Ed Sheeran',
+      'A Sky Full of Stars - Coldplay',
+      'You Are the Best Thing - Ray LaMontagne',
+      'Better Together - Jack Johnson'
+    ],
+    'voeux': [
+      'Bach - Concerto pour 2 violons (Largo)',
+      'Pachelbel - Canon (version cordes)',
+      'Massenet - Méditation de Thaïs',
+      'River Flows in You - Yiruma',
+      'Comptine d\'un autre été - Yann Tiersen'
+    ],
+    'sortie': [
+      'Marche nuptiale de Mendelssohn (sortie traditionnelle)',
+      'Signed Sealed Delivered - Stevie Wonder',
+      'I\'m Yours - Jason Mraz',
+      'Lovely Day - Bill Withers',
+      'Walking on Sunshine - Katrina',
+      'Best Day of My Life - American Authors',
+      'Happy - Pharrell Williams',
+      'Marry You - Bruno Mars'
+    ],
+    'premiere-danse': [
+      'At Last - Etta James (classique intemporel)',
+      'Thinking Out Loud - Ed Sheeran',
+      'All of Me - John Legend',
+      'Perfect - Ed Sheeran',
+      'You Are the Best Thing - Ray LaMontagne',
+      'L-O-V-E - Nat King Cole',
+      'La Vie en Rose - Édith Piaf',
+      'Can\'t Help Falling in Love - Elvis Presley',
+      'Make You Feel My Love - Adele',
+      'A Thousand Years - Christina Perri'
+    ],
+    'soiree-ambiance': [
+      'Dance Monkey - Tones and I',
+      'Uptown Funk - Bruno Mars',
+      'Shut Up and Dance - Walk the Moon',
+      'I Wanna Dance with Somebody - Whitney Houston',
+      'September - Earth Wind & Fire',
+      'Don\'t Stop Me Now - Queen',
+      'Mr. Brightside - The Killers',
+      'Cheap Thrills - Sia',
+      'Dynamite - BTS',
+      'Bella Ciao (version moderne)'
+    ]
+  },
+
+  // ─── 15. PHOTOS À NE PAS MANQUER ─────────────────────────────────────────
+  photosAneFairePas: {
+    'preparatifs-mariee': [
+      'La robe accrochée à une porte / fenêtre',
+      'Les chaussures + bijoux + parfum mis en scène',
+      'Le faire-part / invitations',
+      'La mariée se faisant maquiller / coiffer',
+      'Détail du maquillage (yeux, lèvres)',
+      'Les demoiselles d\'honneur en peignoirs',
+      'L\'instant où elle enfile sa robe',
+      'Le moment où le père voit la mariée pour la première fois',
+      'Plan large mariée avec les demoiselles'
+    ],
+    'preparatifs-marie': [
+      'Le costume sur un cintre',
+      'Détail des boutons de manchette / cravate',
+      'Le marié se rasant / coiffant',
+      'L\'instant où il enfile sa veste',
+      'Photo de groupe avec les témoins en peignoir',
+      'Le marié seul avec son alliance / sa boutonnière',
+      'L\'arrivée des invités'
+    ],
+    'ceremonie': [
+      'L\'entrée de la mariée avec son père (dos + de face)',
+      'Le visage du marié quand il découvre la mariée',
+      'L\'échange des alliances (gros plan sur les mains)',
+      'Le baiser des mariés',
+      'La sortie sous les pétales / riz',
+      'Les parents en train de pleurer',
+      'Les enfants à la cérémonie',
+      'La salle pleine vue de dos / de devant'
+    ],
+    'cocktail-reception': [
+      'Plan d\'ensemble du buffet / cocktail',
+      'Détail des verres qui trinquent',
+      'Les rires des invités en cercle',
+      'Plan des mariés discutant avec les invités',
+      'Les enfants qui courent / s\'amusent',
+      'Le coucher de soleil avec les mariés en silhouette'
+    ],
+    'reception': [
+      'Plan d\'ensemble de la salle décorée AVANT que les invités arrivent',
+      'Les centres de table et la décoration en détail',
+      'L\'entrée des mariés dans la salle',
+      'Les discours (témoins, parents)',
+      'La découpe du wedding cake (gros plan)',
+      'La première danse',
+      'Le lancer du bouquet (capture la chanceuse !)',
+      'Les invités en train de danser',
+      'Plan large de la piste de danse pleine',
+      'Les feux d\'artifice / lanternes / sparklers',
+      'La sortie des mariés en fin de soirée'
+    ],
+    'couple': [
+      'Séance "couple shooting" avec photographe (1h dans la journée)',
+      'Mariés se regardant les yeux dans les yeux',
+      'Mariés riant ensemble naturellement',
+      'Le marié regardant sa femme s\'éloigner (en marchant)',
+      'Vue de dos main dans la main',
+      'Mariés sous un arbre, à contre-jour',
+      'Photo "trash the dress" en fin de soirée (optionnelle)',
+      'Photo des chaussures côte à côte (sienne + sien)'
+    ]
+  },
+
+  // ─── 16. GESTION DU STRESS ───────────────────────────────────────────────
+  gestionStress: {
+    'avant': [
+      'Préparer un planning J-30, J-7, J-1 et J pour ne rien oublier',
+      'Déléguer à un témoin ou une wedding planner les détails du jour J',
+      'Faire de la méditation / yoga 2 à 3 fois par semaine le dernier mois',
+      'Ne pas faire de régime drastique : votre robe est ajustée le mois précédent',
+      'Dormir 8h les 3 nuits avant le mariage. Pas d\'alcool ni d\'écran après 22h',
+      'Préparer une "trousse de secours" : déodorant, mouchoirs, épingles, mini-couture, ibuprofène, pansements, double de votre maquillage',
+      'Listez les 3 personnes que vous pouvez appeler en cas de panique le jour J',
+      'Faites le point avec votre futur conjoint sur les craintes : la communication désamorce 80% du stress',
+      'Annulez tous vos rendez-vous superflus la dernière semaine'
+    ],
+    'jour-j': [
+      'Prendre un bon petit-déjeuner (œuf, fruits, eau) : vous ne mangerez pas avant 21h en général',
+      'Avoir une bouteille d\'eau à portée de main toute la journée',
+      'Respiration carrée : inspirez 4s, retenez 4s, expirez 4s, retenez 4s. À faire avant la cérémonie',
+      'Ne pas faire de selfie / regarder son téléphone dans la dernière heure',
+      'Avoir une amie ou témoin "dédiée" qui gère les imprévus à votre place',
+      'Acceptez que tout ne soit pas parfait : personne ne remarquera les petits ratés',
+      'Profitez consciemment de 3 moments clés : l\'instant des vœux, la première danse, le coucher du soleil',
+      'Si crise de larmes : pleurez 30 secondes, respirez, reprenez. C\'est OK et normal'
+    ],
+    'apres': [
+      'Bloquez 2-3 jours sans aucun engagement après le mariage : repos absolu',
+      'Acceptez le "post-wedding blues" : c\'est normal de se sentir vide après tant d\'attente',
+      'Faites un débrief positif en couple : 5 meilleurs souvenirs chacun',
+      'Récupérez vos photos / vidéos rapidement, regardez-les ensemble',
+      'Envoyez les remerciements dans le mois (manuscrits c\'est mieux)',
+      'Prévoyez quelque chose à attendre : voyage de noces, projet de couple, etc.'
+    ]
+  },
+
+  // ─── 17. BELLE-FAMILLE & SITUATIONS DÉLICATES ────────────────────────────
+  belleFamille: {
+    'situations': [
+      {nom: 'Parents divorcés en froid', desc: 'Asseyez-les à des tables éloignées. Demandez à un témoin de "veiller" sur l\'ambiance. Soyez clair : "Aujourd\'hui c\'est nous, pas vous." Pour la cérémonie, prévoir l\'entrée avec un seul parent, ou les deux séparément.'},
+      {nom: 'Belle-mère envahissante', desc: 'Donnez-lui une mission précise (gérer les arrivées, le livre d\'or). Elle se sentira utile sans contrôler. Cadrez avec votre conjoint·e en amont : c\'est à lui/elle de parler à sa mère, pas à vous.'},
+      {nom: 'Famille recomposée nombreuse', desc: 'Faire un tableau clair des places. Penser aux beaux-enfants : leur dédier un rôle (porteur d\'alliances, demoiselle d\'honneur). Discours : mentionnez tous les "parents" du couple par leurs prénoms.'},
+      {nom: 'Témoin qui annule à la dernière minute', desc: 'Pas de panique. Promouvoir un.e ami.e proche le jour même. Pas obligé d\'être en costume "officiel". Concentrez-vous sur la cérémonie, pas l\'organisation.'},
+      {nom: 'Conflit familial autour du budget', desc: 'Si famille participe : précisez par écrit qui finance quoi. Privilégier les cadeaux indirects (fleurs, voyage de noces) plutôt que cash. Si tensions : assumer son propre budget pour rester libre.'},
+      {nom: 'Invitations refusées qui font mal', desc: 'Ne pas relancer, ne pas en parler le jour J. Une carte de remerciement après peut suffire. Ne demandez pas pourquoi : ça crée des disputes.'}
+    ],
+    'astuces': [
+      'Toujours communiquer en couple : présentez les décisions à 2, jamais "il/elle a décidé que..."',
+      'Ne jamais critiquer la belle-famille devant son conjoint, même en blaguant',
+      'Inviter chaque parent à participer SYMBOLIQUEMENT (papa choisit la chanson père-fille, maman aide à la décoration)',
+      'Préparer 3 phrases types pour les questions intrusives : "On y travaille", "Merci pour ta sollicitude", "C\'est encore en réflexion"',
+      'Le jour J, désignez UNE personne neutre (témoin) pour gérer les tensions familiales',
+      'Programmer un dîner à 4 (les 2 couples de parents) 6 mois avant : favorise la cohésion'
+    ]
+  },
+
+  // ─── 18. QUESTIONS À POSER AUX PRESTATAIRES ──────────────────────────────
+  questionsPrestataires: {
+    'lieu': [
+      'Quelle est la capacité maximale (assis et debout) ?',
+      'Quels sont les horaires de location (heure d\'entrée, heure de fin) ?',
+      'Y a-t-il une cuisine ou un espace pour le traiteur ?',
+      'La salle est-elle disponible la veille pour les préparatifs / décoration ?',
+      'Y a-t-il un parking et combien de places ?',
+      'Les enfants sont-ils acceptés ? Existe-t-il un espace dédié ?',
+      'Quelles sont les restrictions sonores (heure de fermeture musique) ?',
+      'Y a-t-il un lieu de couchage ou hôtel à proximité ?',
+      'Le traiteur est-il imposé ou peut-on amener le sien ?',
+      'Quels sont les modes de paiement et délais ? Acompte ?'
+    ],
+    'traiteur': [
+      'Combien de menus différents proposez-vous ? Adaptable aux régimes (vegan, sans gluten, halal, casher) ?',
+      'Le prix par personne inclut-il les boissons (champagne, vins, eaux) ?',
+      'Combien de serveurs serez-vous ce jour-là ? Combien d\'invités par serveur ?',
+      'Faites-vous le service à l\'assiette ou en buffet ?',
+      'Apportez-vous la vaisselle, verres, nappes ? Sont-ils inclus ?',
+      'Pouvez-vous me fournir un menu de dégustation avant la signature ?',
+      'Gérez-vous le vin d\'honneur ? Le brunch du lendemain ?',
+      'Quel est le délai pour me fournir le nombre exact d\'invités ?',
+      'Que se passe-t-il en cas d\'annulation ou de réduction du nombre ?',
+      'Avez-vous les autorisations sanitaires nécessaires ?'
+    ],
+    'photographe': [
+      'Combien d\'heures de couverture sont incluses ?',
+      'Combien de photos finales recevrai-je ?',
+      'Sous quel format (numériques HD, tirages, album) ? Délai de livraison ?',
+      'Avez-vous un style "reportage" ou "posé" ?',
+      'Pouvez-vous me montrer 2-3 mariages complets que vous avez shootés ?',
+      'Que se passe-t-il en cas d\'imprévu de votre côté (maladie) ? Avez-vous un remplaçant ?',
+      'Les retouches sont-elles incluses ? Combien ?',
+      'Détenez-vous tous les droits ou puis-je les utiliser librement ?',
+      'Y a-t-il des frais de déplacement supplémentaires ?',
+      'Pouvez-vous coordonner avec le vidéaste si présent ?'
+    ],
+    'dj': [
+      'Avez-vous une playlist suggérée ? Puis-je la personnaliser ?',
+      'Comment gérez-vous les demandes des invités ?',
+      'Apportez-vous votre propre matériel sono / éclairage ? Compatible avec la salle ?',
+      'Avez-vous une animation prévue (jeux, montage live) ?',
+      'Combien d\'heures incluses ? Tarif des heures supplémentaires ?',
+      'En cas de panne matériel, avez-vous un backup ?',
+      'Que faites-vous avant et après la soirée (musique d\'accueil, fin de soirée) ?',
+      'Avez-vous des références récentes que je peux contacter ?',
+      'Comment vous habillez-vous (costume requis ?) ?',
+      'Acompte demandé et conditions d\'annulation ?'
+    ],
+    'fleuriste': [
+      'Avez-vous un portfolio de mariages déjà réalisés que je peux voir ?',
+      'Quelles fleurs sont de saison pour ma date de mariage ?',
+      'Puis-je avoir un devis détaillé par poste (bouquet, centres de table, arche, boutonnières) ?',
+      'Livrez-vous et installez-vous sur place ? Frais inclus ?',
+      'Que se passe-t-il si certaines fleurs ne sont pas disponibles le jour J ?',
+      'Récupérez-vous les vases / structures à la fin du mariage ?',
+      'Les boutonnières et bouquets de demoiselles d\'honneur sont-ils inclus ?',
+      'Délai pour passer la commande définitive ?',
+      'Pouvez-vous me montrer un échantillon ou maquette avant ?',
+      'Acompte et modalités de paiement ?'
+    ]
+  },
+
+  // ─── 19. VŒUX PERSONNALISÉS ────────────────────────────────────────────
+  voeux: {
+    'romantique': [
+      '[Prénom], il y a [X] années, je ne savais pas que mon univers basculerait en te rencontrant. Aujourd\'hui, devant tous ceux qu\'on aime, je te promets de chérir chaque jour à tes côtés.\n\nJe te promets de continuer à te faire rire, même quand la vie sera dure.\nJe te promets d\'être ton meilleur ami, ton plus grand soutien et ton plus grand fan.\nJe te promets de te choisir, encore et encore, chaque jour de ma vie.\n\nJe t\'aime, [Prénom]. Pour toujours.',
+      'Mon amour,\n\nQuand je t\'ai rencontré(e), je n\'ai pas su tout de suite que tu étais celui/celle avec qui je passerais ma vie. Mais peu à peu, jour après jour, tu es devenu(e) mon évidence.\n\nTu es ma maison, mon refuge, ma plus belle aventure.\n\nAujourd\'hui, devant nos familles et nos amis, je te promets de t\'aimer dans la simplicité comme dans les grands moments, dans la joie comme dans les épreuves, dans la santé comme dans la maladie.\n\nJe te choisis, [Prénom], et je continuerai à te choisir tous les jours de ma vie.',
+      '[Prénom],\n\nIl y a [X] ans, on se croisait pour la première fois [lieu de rencontre]. Aujourd\'hui, on s\'engage l\'un envers l\'autre pour le restant de nos jours.\n\nJe te promets :\n— D\'être ton complice dans le rire et tes plus folles aventures\n— D\'être ton épaule dans les moments difficiles\n— De ne jamais cesser d\'apprendre à te connaître\n— De respecter ta personnalité et tes rêves\n— De construire avec toi une vie qui nous ressemble\n\nJe t\'aime de tout mon cœur.'
+    ],
+    'humoristique': [
+      '[Prénom],\n\nJe te promets solennellement :\n— De ne plus laisser traîner mes chaussettes sales dans le salon... la plupart du temps.\n— De faire la vaisselle un dimanche sur deux. Tu choisiras lequel.\n— De ne plus regarder Game of Thrones sans toi (même si ça me coûte beaucoup).\n— De te rappeler que tu as toujours raison, sauf quand tu as tort (ce qui n\'arrive jamais, paraît-il).\n— De t\'aimer absolument, terriblement, follement... et de te le montrer chaque jour.\n\nPour le meilleur, et pour le pire (donc surtout pour le meilleur, on est d\'accord ?).',
+      'Mon amour,\n\nJ\'ai promis à mes témoins que je ne pleurerais pas. Visiblement, je tiens mal mes promesses. Mais celle-là, je vais la tenir :\n\nJe promets de continuer à t\'embêter, de te faire rire (et de rire de mes propres blagues quand toi tu ne ris plus), de te voler la couette au milieu de la nuit, et de t\'aimer comme un fou.\n\nMerci de m\'avoir dit oui. Tu vas pas le regretter. Enfin, j\'espère.'
+    ],
+    'court': [
+      '[Prénom], je te choisis aujourd\'hui, je te choisirai demain, et je te choisirai chaque jour de notre vie. Pour le meilleur et pour le pire, je t\'aime.',
+      'Toi, moi. Pour toujours.\nJe t\'aime, [Prénom].',
+      '[Prénom],\nJe te promets ma main pour traverser la vie, mon épaule pour reposer ta tête, et mon cœur pour toujours.'
+    ],
+    'religieux': [
+      'Devant Dieu et devant les hommes, je te prends, [Prénom], pour époux/épouse.\n\nJe promets de t\'aimer, de te respecter, de t\'être fidèle dans le bonheur et dans les épreuves, dans la santé et dans la maladie, et de chérir notre union tous les jours de ma vie.\n\nQue Dieu nous bénisse et bénisse notre union.'
+    ]
+  },
+
+  // ─── 20. REMERCIEMENTS POST-MARIAGE ────────────────────────────────────
+  remerciements: {
+    'classique': [
+      'Cher(e) [Prénom],\n\n[Prénom 1] et [Prénom 2] souhaitent te remercier de tout cœur pour ta présence à leur mariage le [date]. Ta venue, ta joie et ton cadeau ont rendu ce jour inoubliable.\n\nAvec toute notre affection,\n[Prénom 1] & [Prénom 2]',
+      'Merci d\'avoir partagé avec nous l\'un des plus beaux jours de notre vie. Votre présence, votre rire et votre affection ont contribué à faire de ce mariage un souvenir précieux.\n\nAvec toute notre reconnaissance,\n[Prénom 1] & [Prénom 2]'
+    ],
+    'cadeau': [
+      'Cher(e) [Prénom],\n\nUn immense merci pour [type de cadeau] que tu nous as offert. C\'est une attention qui nous touche profondément et que nous chérirons longtemps.\n\nNous garderons un merveilleux souvenir de ce jour, et de toi à nos côtés.\n\nAvec toute notre affection,\n[Prénom 1] & [Prénom 2]'
+    ],
+    'aide-jour-j': [
+      'Cher(e) [Prénom],\n\nSans toi, ce jour n\'aurait pas eu la même saveur. Tu as été [rôle : témoin / demoiselle / organisateur]... mais surtout, tu as été là.\n\nMerci pour ton temps, ton énergie, ton soutien sans faille avant et pendant le mariage. Nous ne saurons jamais comment te remercier suffisamment.\n\nAvec toute notre tendresse,\n[Prénom 1] & [Prénom 2]'
+    ]
+  },
+
+  // ─── 21. INVITÉS VENANT DE LOIN ───────────────────────────────────────
+  invitesLoin: {
+    'logement': [
+      'Réservez un bloc de chambres dans un hôtel proche du lieu de réception, à des tarifs négociés. Compter ~10-15 % de remise en mentionnant le mariage.',
+      'Communiquer 3 options : un hôtel chic, un hôtel standard, un Airbnb / gîte (avec photos et tarifs). Chaque budget trouve son option.',
+      'Pour les amis très proches : prévoir 1-2 chambres dans votre propre logement, ou louer un grand gîte avec eux.',
+      'Si lieu de réception isolé : penser à un système de navettes avec horaires précis (cocktail-réception et retour soirée).',
+      'Pour les enfants : prévoir un babysitting (au sein du lieu ou en amont), ou indiquer les hôtels acceptant les enfants.'
+    ],
+    'invitations': [
+      'Envoyer le save-the-date 6 mois minimum à l\'avance pour qu\'ils puissent organiser leur voyage et hébergement.',
+      'Dans le faire-part, inclure : adresse exacte du lieu, parking, transports, hôtels recommandés (3 options), planning détaillé du week-end (si plusieurs jours).',
+      'Créer un site mariage simple sur une plateforme gratuite avec toutes les infos pratiques : horaires, lieux, code vestimentaire, FAQ.',
+      'Pour les invités étrangers : envoyer aussi une version anglaise du faire-part et des infos pratiques.'
+    ],
+    'attentions': [
+      'Préparer un kit de bienvenue dans chaque chambre : eau, snack, programme du week-end, plan, numéro de téléphone d\'urgence.',
+      'Organiser un dîner décontracté la veille du mariage (rehearsal dinner) pour les invités venus de loin — c\'est leur dire "Merci d\'être venus".',
+      'Le lendemain : prévoir un brunch ou un café-croissants tranquille avant leur départ.',
+      'Recommander des activités touristiques dans la région : balades, restaurants, monuments — utile s\'ils restent un peu plus.',
+      'Si invités étrangers : prévoir un point d\'accueil avec quelqu\'un de bilingue pour répondre à leurs questions.'
+    ]
+  },
+
+  // ─── 22. LISTE DE MARIAGE / CAGNOTTE ──────────────────────────────────
+  listeCadeaux: {
+    'cagnotte-en-ligne': [
+      {nom: 'Cagnotte en ligne mixte', desc: 'Plateformes qui combinent produits + voyage + projets. Généralement gratuites pour le couple, prélèvent ~3 % sur les contributions. Pratique pour récolter pour un projet commun.'},
+      {nom: 'Site mariage tout-en-un', desc: 'Certaines plateformes combinent site mariage et liste cadeaux. Gratuit. Pratique si vous voulez aussi un site dédié pour informer vos invités.'},
+      {nom: 'Liste en grand magasin', desc: 'Liste traditionnelle de produits chez un grand magasin avec scanette. Pas de frais. Pratique pour électroménager et arts de la table.'},
+      {nom: 'Liste en magasin de décoration', desc: 'Listes mariage dans une enseigne d\'ameublement / décoration. Très simple. Pratique pour aménagement de votre futur foyer.'},
+      {nom: 'Cagnotte voyage spécialisée', desc: 'Plateformes dédiées au voyage de noces : les invités contribuent à une étape du voyage (vol, nuit d\'hôtel, excursion).'}
+    ],
+    'idees': [
+      'Voyage de noces : la plus populaire. Précisez une destination ou laissez libre.',
+      'Projet précis : "Notre future maison", "Notre futur enfant" (avec photos pour donner vie).',
+      'Liste mixte produits + voyage : 60 % d\'invités l\'apprécient car ils choisissent ce qui leur parle.',
+      'Cagnotte libre : utile mais perçue comme moins personnelle. Préférable de cibler.',
+      'Don à une association : pour les couples qui ont déjà tout. Très apprécié et touchant.'
+    ],
+    'tips': [
+      'Privilégier 30 cadeaux à 50€ qu\'un seul cadeau à 1500€ — les invités préfèrent diversité',
+      'Bien équilibrer les prix : 30 % en petit budget (20-50€), 40 % moyen (50-150€), 30 % gros (150€+)',
+      'Renouveler la liste pendant le compte à rebours (les invités achètent en plusieurs vagues)',
+      'Mentionner la liste dans le faire-part de façon élégante : "Pour ceux qui souhaitent nous offrir un cadeau, notre liste est ici : [lien]"',
+      'Préparer dans le mois qui suit des remerciements personnalisés (cf. service "Remerciements")'
+    ]
+  },
+
+  // ─── 23. PRÉPARATION CIVILE (mairie) ──────────────────────────────────
+  prepCivile: {
+    'documents': [
+      'Acte de naissance de chaque futur époux (moins de 3 mois)',
+      'Pièce d\'identité valide (carte d\'identité ou passeport)',
+      'Justificatif de domicile (moins de 3 mois) : facture EDF/eau/téléphone',
+      'Liste des témoins (1 ou 2 par marié(e), majeurs)',
+      'Pièce d\'identité de chaque témoin (photocopie)',
+      'Si remariage : copie intégrale de l\'acte de mariage précédent et jugement de divorce',
+      'Si veuvage : acte de décès du conjoint précédent',
+      'Si étranger : certificat de coutume + acte de naissance traduit'
+    ],
+    'etapes': [
+      'J-12 mois : choisir la mairie (lieu d\'habitation d\'un des deux ou des parents)',
+      'J-6 mois : rendez-vous à la mairie pour retirer le dossier',
+      'J-3 mois : déposer le dossier complet avec toutes les pièces',
+      'J-2 mois : publication des bans (10 jours obligatoires)',
+      'J-1 mois : audition par l\'officier d\'état civil (parfois conjointe, parfois individuelle)',
+      'Jour J : cérémonie civile devant l\'officier d\'état civil et les témoins',
+      'J+0 : signature des registres, livret de famille remis'
+    ],
+    'questions-officier': [
+      'L\'officier va vous demander si vous consentez librement au mariage',
+      'Vérifier votre identité, votre adresse, vos professions',
+      'Vous demander si vous avez fait un contrat de mariage (si oui, l\'apporter)',
+      'Vous lire les articles 212 à 215 du Code civil (devoirs des époux)',
+      'L\'audition obligatoire vérifie l\'absence de mariage forcé ou de complaisance'
+    ]
+  },
+
+  // ─── 24. PRÉPARATION RELIGIEUSE ───────────────────────────────────────
+  prepReligieuse: {
+    'catholique': [
+      'J-12 mois minimum : prendre contact avec le prêtre de la paroisse (lieu d\'habitation ou du mariage)',
+      'Participer aux séances de préparation au mariage (CPM) : 5 à 7 séances sur 6 mois en moyenne',
+      'Fournir l\'acte de baptême de chaque futur époux (moins de 6 mois)',
+      'Acte de confirmation (si vous l\'avez)',
+      'Pour mariage mixte (avec non-baptisé) ou mariage de chrétiens d\'autres confessions : dispense à demander',
+      'Audition pastorale (entretien avec le prêtre, parfois plusieurs)',
+      'Choisir les textes, les lectures, les chants avec le prêtre et la chorale',
+      'Possibilité de demander des engagements personnalisés en plus des vœux traditionnels'
+    ],
+    'protestant': [
+      'Prendre contact avec le pasteur du lieu de cérémonie 6-12 mois avant',
+      'Cérémonie souvent plus simple et personnalisable (textes libres possibles)',
+      'Pas de séances de préparation aussi strictes (mais entretiens recommandés)',
+      'Acceptation des mariages mixtes (avec catholique ou non-baptisé) plus large'
+    ],
+    'juif': [
+      'Prendre contact avec le rabbin de la synagogue 12 mois minimum avant',
+      'Cours de mariage juif (sur tradition, Halakha, vie de couple) : ~3-6 mois',
+      'Demander la "Ketouba" (contrat de mariage juif) avec le rabbin',
+      'Mariage civil obligatoire AVANT le mariage religieux',
+      'Choix du jour : pas de Shabbat, fêtes ou jours de jeûne'
+    ],
+    'musulman': [
+      'Prendre contact avec l\'imam de la mosquée du lieu',
+      'Acte de Nikah (contrat) en présence de 2 témoins musulmans (Walis)',
+      'Préparer le Mahr (dot symbolique offerte à l\'épouse)',
+      'Mariage civil obligatoire AVANT le Nikah pour reconnaissance légale en France'
+    ],
+    'orthodoxe': [
+      'Prendre contact avec le prêtre orthodoxe 6 mois avant',
+      'Acte de baptême orthodoxe des deux époux',
+      'Mariage civil obligatoire AVANT le mariage religieux',
+      'Cérémonie traditionnelle avec couronnes et danse autour de l\'autel'
+    ]
+  },
+
+  // ─── 25. CONSEILS WEDDING DAY (le jour J pas-à-pas) ───────────────────
+  weddingDay: {
+    'reveil': [
+      'Réveil tranquille avec petit-déjeuner copieux (œufs, fruits, eau)',
+      'Pas d\'alcool au petit-déjeuner même s\'il y a la tentation',
+      'Boire au moins 1 L d\'eau le matin pour éviter la déshydratation',
+      'Bain ou douche relaxant avec huile essentielle (lavande, ylang-ylang)',
+      'Yoga doux ou étirements (10 minutes) pour relâcher les tensions',
+      'Écouter une playlist apaisante choisie en amont',
+      'Éviter les écrans (téléphone, réseaux sociaux) avant la cérémonie'
+    ],
+    'preparatifs': [
+      'Coiffure : prévoir 1h30 à 2h (mariée) — apporter inspirations photos',
+      'Maquillage : 1h en moyenne — faire un essai 1 mois avant !',
+      'Habillage : 30-45 min (robe lacée ou complexe peut être plus long)',
+      'Prévoir un déjeuner léger entre maquillage et habillage (salade légère, fruits)',
+      'Photos des préparatifs : 30-45 min réservées pour le photographe',
+      'Avoir une amie ou témoin "dédiée" pour gérer les imprévus',
+      'Ne pas oublier : trousse de secours, le carnet de vœux, les alliances'
+    ],
+    'arrivee': [
+      'Prévoir 15 minutes de marge avant la cérémonie',
+      'Arrivée avec véhicule de cérémonie : 5-10 minutes avant',
+      'Briefing rapide avec le maître de cérémonie',
+      'Photos avant l\'entrée (mariée avec père, témoins prêts)',
+      'Hydratation discrète juste avant l\'entrée',
+      'Respiration carrée : inspirer 4s, retenir 4s, expirer 4s, retenir 4s'
+    ],
+    'apres': [
+      'Photos officielles : 30-45 minutes immédiatement après la sortie',
+      'Pots de fleurs, brunch lendemain, sleep-in généreux',
+      'Ne pas ouvrir tous les cadeaux le soir (épuisant) : étaler sur quelques jours',
+      'Boire beaucoup d\'eau (l\'alcool de la soirée déshydrate énormément)',
+      'Garder votre robe : faire un nettoyage spécialisé dans la semaine (taches sèchent)',
+      'Première chose à faire : récupérer photos/vidéos auprès du photographe',
+      'Profitez du calme du lendemain : juste vous deux, sans organisation'
+    ]
+  },
+
+  // ─── 26. ENFANTS AU MARIAGE ───────────────────────────────────────────
+  enfants: {
+    'roles': [
+      {nom: 'Porteur d\'alliances', desc: 'Pour enfants 4-8 ans. Porte les anneaux sur un coussin. Préparer un coussin en amont, faire un test 30 min avant.'},
+      {nom: 'Demoiselle d\'honneur enfant', desc: 'Pour fillettes 4-10 ans. Robe assortie au cortège, marche devant la mariée avec un panier de pétales.'},
+      {nom: 'Petit page d\'honneur', desc: 'Pour garçons 4-8 ans. Petit costume assorti, marche avec la demoiselle d\'honneur.'},
+      {nom: 'Lecteur(rice)', desc: 'Pour enfants 10-15 ans. Lit un texte court à la cérémonie (poème, citation). Choisir un texte adapté à leur âge.'},
+      {nom: 'Photographe junior', desc: 'Donner un appareil photo jetable / numérique simple à chaque enfant : ils prennent leurs propres photos, souvent géniales.'},
+      {nom: 'Animateur d\'animations', desc: 'Demander à un enfant plus grand de gérer une animation (quiz, gâteau).'}
+    ],
+    'occuper': [
+      'Coin enfants dédié : couvertures au sol, jouets, livres, peluches. Coût : 0-100 €.',
+      'Animateur professionnel : prend en charge les enfants pendant le cocktail et le repas. Coût : 200-450 €/jour.',
+      'Kit d\'activités sur chaque table enfant : crayons, cahier de coloriage personnalisé, autocollants, mini-jouet. Coût : 5-8 €/enfant.',
+      'Vidéos / films dans une salle dédiée (le soir tard surtout).',
+      'Pinata, lâcher de bonbons, chasse au trésor : animations courtes pour briser la routine du dîner.',
+      'Table dédiée "kids" avec menu enfant (poulet/frites/pâtes) servi en premier pour éviter l\'attente.'
+    ],
+    'tips': [
+      'Annoncer le nombre exact d\'enfants au lieu et au traiteur 1 mois avant',
+      'Prévoir des sièges adaptés (chaises hautes pour les bébés, rehausseurs pour les petits)',
+      'Demander aux parents de prévoir un sac de change / pyjama pour la fin de soirée',
+      'Si bébés : pièce calme avec lit pliant pour la sieste',
+      'Pour mariage long (12h+) : penser au babysitting (avec carte d\'identité des parents)',
+      'Privilégier menu enfant plus simple, servi plus tôt qu\'aux adultes'
+    ]
+  },
+
+  // ─── 27. TRADITIONS RÉGIONALES FRANÇAISES ─────────────────────────────
+  traditions: {
+    'sud-ouest': [
+      'Vin d\'honneur très long (2h+) avec spécialités gasconnes : foie gras, magret séché, croquignoles',
+      'Le "Tour de table" : chaque table accueille les mariés pour un verre, parcours dansant',
+      'Plat d\'honneur : confit de canard ou cassoulet de Castelnaudary',
+      'Galette des rois revisitée (mariage en hiver), pièce montée croquembouche en été',
+      'Bandas (orchestre de cuivres) en soirée pour danse traditionnelle'
+    ],
+    'bretagne': [
+      'Galettes / crêpes proposées en milieu de nuit (~minuit) — tradition de "soupe à l\'oignon" remplacée',
+      'Far breton et kouign-amann en buffet de desserts',
+      'Bigouden (coiffe traditionnelle) pour mariage très traditionnel',
+      'Danse breton (gavotte) en début de soirée',
+      'Cidre en remplacement du champagne pour cocktail'
+    ],
+    'provence': [
+      '"Treize desserts" symboliques : nougats, fruits secs, mendiants — apportés en fin de repas',
+      'Mariage en plein air sous une tonnelle d\'oliviers',
+      'Aïoli géant en plat de partage',
+      'Lavande tressée dans les bouquets et cheveux',
+      'Pétanque organisée en cocktail (mini-tournoi avec récompenses)'
+    ],
+    'alsace': [
+      'Vin d\'Alsace au lieu du champagne (Riesling, Gewürztraminer)',
+      'Kougelhof en pièce montée',
+      'Choucroute mariage en hiver, baeckeoffe pour mariage rural',
+      'Lampions colorés et couronne de fleurs pour la mariée',
+      'Polka et valse en début de soirée (orchestre traditionnel)'
+    ],
+    'corse': [
+      'Mariage à l\'église village + grand rassemblement familial',
+      'Polyphonies corses pendant la cérémonie (extrêmement émouvant)',
+      'Charcuterie corse (figatellu, lonzu, coppa) en cocktail',
+      'Veau corse en plat principal',
+      'Fiadone (gâteau au brocciu) en dessert',
+      'Marche des mariés dans le village au son des instruments'
+    ]
+  },
+
+  // ─── 28. INSTANTS-ÉMOTION (moments à ne pas manquer) ──────────────────
+  emotion: [
+    {nom: 'L\'entrée de la mariée', desc: 'C\'est l\'instant où le marié découvre la mariée. Préparer le marié à ce moment : pas de selfie, pas de regard au sol. Juste vivre.'},
+    {nom: 'Le "first look"', desc: 'Tradition moderne : mariés se voient en privé avant la cérémonie. Bouleversant. Prévoir 15-20 min avec le photographe.'},
+    {nom: 'Les vœux personnalisés', desc: 'Si vous ne les avez pas écrits, prenez 1h tranquille la semaine d\'avant. C\'est l\'âme de la cérémonie.'},
+    {nom: 'L\'échange des alliances', desc: 'Faire ce geste en silence, sans précipitation. Le photographe doit capter le détail des mains.'},
+    {nom: 'Le baiser de mariage', desc: 'Un seul vrai baiser long et tendre, regard dans le regard avant et après. Pas un "becquette" gêné !'},
+    {nom: 'La sortie sous les pétales', desc: 'Garder pétales/riz/bulles pour ce moment précis. Photo iconique.'},
+    {nom: 'Le coucher de soleil', desc: 'Réserver 15 min avec le photographe pour des photos couple à la "golden hour" (1h avant coucher du soleil).'},
+    {nom: 'La première danse', desc: 'Le moment intime au milieu de la fête. Choisir une chanson qui vous parle. Possible de prendre des cours.'},
+    {nom: 'Le discours du père / parents', desc: 'Souvent très émouvant. Préparer un mouchoir et accepter de pleurer.'},
+    {nom: 'Le dernier moment seuls', desc: 'À la fin de la soirée, prendre 10 minutes seuls quelque part dans le lieu pour respirer ensemble.'}
+  ],
+
+  // ─── 29. PROBLÈMES FRÉQUENTS & SOLUTIONS ──────────────────────────────
+  problemes: [
+    {pb: 'Pluie le jour J', sol: 'Avoir un plan B en intérieur prêt. Acheter des parapluies blancs/transparents (jolies photos sous la pluie). Tente extérieure de secours. La pluie le jour du mariage porte bonheur !'},
+    {pb: 'Témoin malade ou absent', sol: 'Identifier un remplaçant possible (ami proche). Pas grave si pas de discours préparé : un témoignage spontané est touchant.'},
+    {pb: 'Robe tachée juste avant la cérémonie', sol: 'Trousse de secours : lingettes nettoyantes textile spécifiques, bicarbonate de soude, talc pour absorber graisses. Si grosse tache : voile/châle pour camoufler.'},
+    {pb: 'Retard d\'un prestataire', sol: 'Avoir contact du prestataire et d\'un backup (DJ amateur ami, photographe ami). Réorganiser horaires (vin d\'honneur prolongé).'},
+    {pb: 'Invité ivre / problématique', sol: 'Avoir 1-2 personnes "veilleuses" (témoin discret). Discrètement faire raccompagner. Ne pas en faire un drame le jour J.'},
+    {pb: 'Bagarre familiale', sol: 'Préparer en amont : ne pas asseoir les conflits à la même table. Un témoin neutre arbitre en cas de tension.'},
+    {pb: 'Allergie / malaise d\'invité', sol: 'Trousse premiers secours (pansements, ibuprofène, antihistaminiques). Numéro du SAMU local (15) à connaître.'},
+    {pb: 'Panne sono / lumière', sol: 'Vérifier que le DJ a un backup matériel. Sinon : playlist Spotify sur téléphone + enceinte Bluetooth de secours.'},
+    {pb: 'Mariée stressée / pleure', sol: 'Une amie ou témoin "dédiée" la rassure dans une pièce calme 5 minutes. Eau fraîche, respiration, paroles douces.'},
+    {pb: 'Discours interminable', sol: 'Avoir un signal discret avec le DJ (musique douce en fond) pour suggérer la fin.'}
+  ],
+
+  // ─── 30. CHECKLIST 10 MINUTES AVANT CÉRÉMONIE ─────────────────────────
+  checklistAvant: [
+    'Alliances : qui les a ? Les voir physiquement.',
+    'Vos vœux écrits : dans votre poche ou avec un témoin.',
+    'Stylo et papier : pour la signature des registres.',
+    'Mouchoirs (pour les larmes).',
+    'Maquillage retouché (rouge à lèvres, fond de teint).',
+    'Coiffure vérifiée (pas un cheveu rebelle).',
+    'Voile/diadème bien fixé.',
+    'Téléphone éteint ou en silencieux.',
+    'Photo de groupe famille proche : organisée et annoncée.',
+    'Personne en charge de demander aux invités d\'éteindre leur téléphone pendant la cérémonie.',
+    'Numéro du DJ / photographe / lieu en cas d\'urgence.',
+    'Respiration profonde 3 fois. Sourire. Profiter.'
+  ]
+};
+
+
+const MENU_ENGINE = (function(){
+
+  // Niveaux de budget : eco=1, standard=2, luxe=3
+  const BUDGET_LEVEL = { eco:1, standard:2, luxe:3 };
+
+  // ─── CATALOGUE ─────────────────────────────────────────────────────────
+  // f = flags (ce que le plat contient) ; b = budget minimum (1/2/3) ;
+  // st = styles ; sa = saisons. Si st ou sa = null => tous compatibles.
+  // Styles : romantique, boheme, champetre, chic, moderne, minimaliste
+  // Saisons : printemps, ete, automne, hiver
+
+  const C = {
+    // ════════════ BOUCHÉES DE VIN D'HONNEUR (nourriture) ════════════
+    vinhonneur: [
+      // ── Nouveaux ajouts (froides raffinées) ──
+      {nom:'Mini-tartelettes chèvre-miel-noix', b:1, st:['champetre','romantique','boheme'], sa:['automne'], f:['gluten','lactose','noix']},
+      {nom:'Mini-tartelettes oignon confit et parmesan', b:1, st:['champetre','romantique','chic'], sa:['automne','hiver'], f:['gluten','lactose']},
+      {nom:'Verrines avocat-crevette-agrumes', b:2, st:['moderne','chic','romantique'], sa:['printemps','ete'], f:['fruitsmer']},
+      {nom:'Verrines concombre-menthe-feta', b:1, st:['moderne','boheme','minimaliste'], sa:['ete'], f:['lactose']},
+      {nom:'Verrines saumon fumé-aneth-citron', b:2, st:['chic','moderne','romantique'], sa:null, f:['poisson']},
+      {nom:'Verrines burrata-tomates confites-basilic', b:2, st:['chic','romantique','moderne'], sa:['ete'], f:['lactose']},
+      {nom:'Mini-wraps poulet César', b:1, st:['moderne','champetre'], sa:null, f:['gluten','viande','lactose']},
+      {nom:'Mini-wraps saumon et fromage frais', b:2, st:['moderne','chic'], sa:null, f:['gluten','poisson','lactose']},
+      {nom:'Mini-clubs sandwich gastronomiques', b:2, st:['moderne','chic','champetre'], sa:null, f:['gluten','viande']},
+      {nom:'Toasts crème truffée et parmesan', b:2, st:['chic','romantique'], sa:['automne','hiver'], f:['gluten','lactose']},
+      {nom:'Toasts chèvre frais et betterave', b:1, st:['moderne','champetre','minimaliste','nature'], sa:['automne','hiver'], f:['gluten','lactose']},
+      {nom:'Canapés concombre-crabe', b:2, st:['chic','moderne'], sa:['printemps','ete'], f:['gluten','fruitsmer']},
+      {nom:'Cuillères de ceviche de poisson', b:2, st:['moderne','chic','minimaliste'], sa:['ete'], f:['poisson']},
+      {nom:'Carpaccio de betterave et chèvre en bouchée', b:1, st:['moderne','minimaliste','nature'], sa:['automne','hiver'], f:['lactose']},
+      {nom:'Mini-brochettes mozzarella-tomate cerise-pesto', b:1, st:['champetre','romantique','boheme'], sa:['ete'], f:['lactose','noix']},
+      {nom:'Mini-brochettes crevette-mangue', b:2, st:['moderne','chic','boheme'], sa:['ete'], f:['fruitsmer']},
+      {nom:'Tartines burrata et légumes grillés', b:2, st:['chic','champetre','moderne'], sa:['ete'], f:['gluten','lactose']},
+      {nom:'Tartines ricotta citronnée et saumon', b:2, st:['chic','moderne','romantique'], sa:null, f:['gluten','poisson','lactose']},
+      {nom:'Houmous colorés (betterave, poivron, herbes)', b:1, st:['boheme','moderne','nature'], sa:null, f:[]},
+      {nom:'Tapenade verte et noire sur crostini', b:1, st:['champetre','boheme','minimaliste'], sa:['ete'], f:['gluten']},
+      {nom:'Rillettes de thon maison sur toast', b:1, st:['champetre','moderne'], sa:null, f:['gluten','poisson']},
+      {nom:'Mini-tartares végétaux raffinés', b:1, st:['moderne','minimaliste','boheme','nature'], sa:['printemps','ete'], f:[]},
+      // ── Nouveaux ajouts (chaudes élégantes) ──
+      {nom:'Mini-quiches premium (truffe, saumon, légumes grillés)', b:2, st:['chic','moderne','romantique'], sa:null, f:['gluten','lactose','oeuf','poisson']},
+      {nom:'Mini-feuilletés champignons-parmesan', b:1, st:['champetre','romantique','chic'], sa:['automne','hiver'], f:['gluten','lactose']},
+      {nom:'Cromesquis au fromage truffé', b:2, st:['chic','moderne'], sa:['automne','hiver'], f:['gluten','lactose']},
+      {nom:'Mini-grilled cheese premium', b:1, st:['moderne','champetre'], sa:['automne','hiver'], f:['gluten','lactose']},
+      {nom:'Crevettes croustillantes panko', b:2, st:['moderne','chic'], sa:null, f:['gluten','fruitsmer']},
+      {nom:'Gambas panées à la coco', b:2, st:['moderne','boheme','chic'], sa:['ete'], f:['gluten','fruitsmer']},
+      {nom:'Brochettes de bœuf teriyaki', b:2, st:['moderne'], sa:null, f:['viande','gluten']},
+      {nom:'Mini-tacos gourmet', b:1, st:['boheme','moderne'], sa:null, f:['gluten','viande']},
+      {nom:'Empanadas viande ou légumes', b:1, st:['boheme','moderne','champetre'], sa:null, f:['gluten','viande']},
+      {nom:'Samoussas raffinés', b:1, st:['boheme','moderne'], sa:null, f:['gluten']},
+      {nom:'Raviolis frits croustillants', b:1, st:['moderne','boheme'], sa:null, f:['gluten']},
+      {nom:'Mini-gratins dauphinois individuels', b:1, st:['champetre','romantique'], sa:['automne','hiver'], f:['lactose']},
+      // ── Inspirations italiennes ──
+      {nom:'Antipasti premium en bouchée', b:2, st:['chic','romantique','moderne'], sa:['ete'], f:['lactose']},
+      {nom:'Bruschettas variées', b:1, st:['champetre','boheme','moderne'], sa:['ete'], f:['gluten']},
+      {nom:'Arancini truffe-mozzarella', b:2, st:['chic','moderne','romantique'], sa:['automne','hiver'], f:['gluten','lactose']},
+      {nom:'Mini-cônes de charcuterie italienne', b:2, st:['chic','champetre','moderne'], sa:null, f:['porc']},
+      {nom:'Copeaux de parmesan au balsamique', b:1, st:['chic','minimaliste','moderne'], sa:null, f:['lactose']},
+      {nom:'Mini-pâtes servies en verrine', b:1, st:['moderne','champetre','romantique'], sa:null, f:['gluten']},
+      // ── Inspirations méditerranéennes / orientales ──
+      {nom:'Mezze raffinés (houmous, baba ganoush, falafels)', b:1, st:['boheme','moderne'], sa:null, f:[]},
+      {nom:'Labneh aux herbes et huile d\'olive', b:1, st:['boheme','minimaliste','nature'], sa:null, f:['lactose']},
+      {nom:'Mini-pitas garnies', b:1, st:['boheme','moderne'], sa:null, f:['gluten']},
+      {nom:'Feuilles de vigne farcies', b:1, st:['boheme','nature'], sa:['ete'], f:[]},
+      {nom:'Halloumi grillé en brochette', b:1, st:['boheme','moderne','champetre'], sa:['ete'], f:['lactose']},
+      {nom:'Briouates au fromage ou à la viande', b:1, st:['boheme'], sa:null, f:['gluten','lactose','viande']},
+      {nom:'Pastilla miniature', b:2, st:['boheme','chic'], sa:['automne','hiver'], f:['gluten','viande','noix']},
+      {nom:'Mini-tajines de dégustation', b:1, st:['boheme'], sa:['automne','hiver'], f:[]},
+      // ── Fruits de mer & premium ──
+      {nom:'Huîtres ouvertes minute', b:3, st:['chic','moderne'], sa:['automne','hiver'], f:['fruitsmer']},
+      {nom:'Mini lobster rolls', b:3, st:['chic','moderne'], sa:['ete'], f:['gluten','fruitsmer']},
+      {nom:'Langoustines snackées sur cuillère', b:3, st:['chic','moderne'], sa:['automne','hiver'], f:['fruitsmer']},
+      {nom:'Blinis aux œufs de poisson', b:3, st:['chic','romantique'], sa:['hiver'], f:['gluten','poisson','lactose']},
+      {nom:'Crevettes cocktail revisitées', b:2, st:['moderne','chic','romantique'], sa:null, f:['fruitsmer']},
+      {nom:'Mini-toasts crabe et citron', b:2, st:['chic','moderne'], sa:['printemps','ete'], f:['gluten','fruitsmer']},
+      // ── Végétariennes chic ──
+      {nom:'Mini-tartes aux légumes grillés', b:1, st:['champetre','boheme','moderne'], sa:['ete','automne'], f:['gluten','lactose']},
+      {nom:'Millefeuille de légumes et fromage frais', b:2, st:['moderne','chic','minimaliste'], sa:['printemps','ete'], f:['lactose']},
+      {nom:'Brochettes de légumes marinés', b:1, st:['boheme','champetre','nature','minimaliste'], sa:['ete'], f:[]},
+      {nom:'Mini-burgers végétariens', b:1, st:['moderne','boheme'], sa:null, f:['gluten','lactose']},
+      {nom:'Bouchées patate douce et feta', b:1, st:['boheme','moderne','champetre'], sa:['automne','hiver'], f:['lactose']},
+      {nom:'Champignons farcis aux herbes', b:1, st:['champetre','boheme','nature'], sa:['automne'], f:['gluten']},
+      {nom:'Verrines de gaspacho premium', b:1, st:['moderne','chic','minimaliste'], sa:['ete'], f:[]},
+      {nom:'Mini avocado toasts gastronomiques', b:1, st:['moderne','minimaliste','boheme'], sa:['printemps','ete'], f:['gluten']},
+      {nom:'Toast ricotta-miel-thym', b:1, st:['champetre','romantique','minimaliste'], sa:null, f:['gluten','lactose']},
+      // ── Existants ──
+      {nom:'Mini-focaccia garnie aux légumes du soleil', b:1, st:['boheme','champetre','moderne'], sa:['ete'], f:['gluten']},
+      {nom:'Cuillère de burrata et tomates anciennes', b:2, st:['chic','romantique','moderne'], sa:['ete'], f:['lactose']},
+      {nom:'Verrine saumon-avocat', b:1, st:['moderne','chic','romantique','minimaliste'], sa:null, f:['poisson']},
+      {nom:'Verrine crevettes et agrumes', b:2, st:['chic','moderne','romantique'], sa:['printemps','ete'], f:['fruitsmer']},
+      {nom:'Cuillère de tartare de saumon à l\'aneth', b:2, st:['chic','moderne','romantique'], sa:null, f:['poisson']},
+      {nom:'Cuillère de tartare de thon au sésame', b:2, st:['moderne','chic'], sa:['ete'], f:['poisson']},
+      {nom:'Mini wraps au poulet', b:1, st:['moderne','champetre','boheme'], sa:null, f:['gluten','viande']},
+      {nom:'Blinis au saumon fumé', b:2, st:['chic','romantique','moderne'], sa:['automne','hiver'], f:['gluten','poisson','lactose']},
+      {nom:'Toast foie gras et figues', b:3, st:['chic','romantique'], sa:['automne','hiver'], f:['gluten']},
+      {nom:'Toast chèvre et miel', b:1, st:['champetre','romantique','boheme'], sa:null, f:['gluten','lactose']},
+      {nom:'Toast avocat et feta', b:1, st:['moderne','minimaliste','boheme'], sa:['printemps','ete'], f:['gluten','lactose']},
+      {nom:'Mini-bagels au saumon', b:2, st:['moderne','chic'], sa:null, f:['gluten','poisson','lactose']},
+      {nom:'Mini-sandwich gourmet', b:1, st:['moderne','champetre'], sa:null, f:['gluten']},
+      {nom:'Club sandwich miniature', b:1, st:['moderne','champetre'], sa:null, f:['gluten','viande']},
+      {nom:'Canapé tomate-mozzarella', b:1, st:['champetre','romantique','boheme'], sa:['ete'], f:['gluten','lactose']},
+      {nom:'Bruschetta tomate-basilic', b:1, st:['champetre','boheme','moderne'], sa:['ete'], f:['gluten']},
+      {nom:'Tartine burrata et tomates confites', b:2, st:['chic','moderne','romantique'], sa:['ete','automne'], f:['gluten','lactose']},
+      {nom:'Mini-brochettes melon et jambon cru', b:1, st:['champetre','romantique'], sa:['ete'], f:['porc']},
+      {nom:'Carpaccio de bœuf et parmesan', b:2, st:['chic','moderne','romantique'], sa:null, f:['viande','lactose']},
+      {nom:'Mini-tartare de légumes', b:1, st:['moderne','minimaliste','boheme','nature'], sa:['printemps','ete'], f:[]},
+      {nom:'Houmous et pita miniatures', b:1, st:['boheme','moderne'], sa:null, f:['gluten']},
+      {nom:'Guacamole et chips artisanales', b:1, st:['boheme','moderne'], sa:null, f:[]},
+      {nom:'Tapenade sur crostini', b:1, st:['champetre','boheme','minimaliste'], sa:['ete'], f:['gluten']},
+      {nom:'Rillettes de poisson sur toast', b:1, st:['champetre','moderne'], sa:null, f:['gluten','poisson']},
+      {nom:'Verrine de gaspacho andalou', b:1, st:['boheme','moderne','minimaliste'], sa:['ete'], f:[]},
+      {nom:'Cuillère de betterave et chèvre frais', b:1, st:['moderne','minimaliste','nature'], sa:['automne','hiver'], f:['lactose']},
+      // ── Chaudes ──
+      {nom:'Mini-burgers gourmet', b:2, st:['moderne','champetre'], sa:null, f:['gluten','viande','lactose']},
+      {nom:'Mini-croque-monsieur à la truffe', b:2, st:['chic','moderne'], sa:['automne','hiver'], f:['gluten','lactose']},
+      {nom:'Gougères au fromage', b:1, st:['champetre','romantique','chic'], sa:['automne','hiver'], f:['gluten','lactose','oeuf']},
+      {nom:'Mini-quiches', b:1, st:['champetre','romantique'], sa:null, f:['gluten','lactose','oeuf']},
+      {nom:'Feuilletés chèvre-épinards', b:1, st:['champetre','boheme','moderne'], sa:null, f:['gluten','lactose']},
+      {nom:'Tempura de légumes', b:1, st:['moderne','minimaliste'], sa:null, f:['gluten']},
+      {nom:'Mini-brochettes satay de poulet', b:2, st:['moderne','boheme'], sa:null, f:['viande','noix']},
+      {nom:'Arancini croustillants', b:1, st:['moderne','boheme','chic'], sa:null, f:['gluten','lactose']},
+      {nom:'Mini-pizzas artisanales', b:1, st:['champetre','boheme','moderne'], sa:null, f:['gluten','lactose']},
+      {nom:'Beignets de crevettes', b:2, st:['moderne','chic'], sa:null, f:['gluten','fruitsmer']},
+      {nom:'Cromesquis au fromage', b:1, st:['champetre','moderne'], sa:['automne','hiver'], f:['gluten','lactose']},
+      {nom:'Mini-tacos', b:1, st:['boheme','moderne'], sa:null, f:['gluten','viande']},
+      {nom:'Gyozas vapeur', b:1, st:['moderne'], sa:null, f:['gluten']},
+      {nom:'Falafels et sauce sésame', b:1, st:['boheme','moderne','minimaliste'], sa:null, f:[]},
+      {nom:'Saint-Jacques snackées', b:3, st:['chic','moderne'], sa:['automne','hiver'], f:['fruitsmer']},
+      {nom:'Crevettes croustillantes', b:2, st:['moderne','chic','boheme'], sa:null, f:['gluten','fruitsmer']},
+      {nom:'Mini-fish & chips', b:1, st:['moderne','champetre'], sa:null, f:['gluten','poisson']},
+      {nom:'Yakitori de poulet', b:2, st:['moderne'], sa:null, f:['viande','gluten']},
+      {nom:'Macarons salés au foie gras', b:3, st:['chic','romantique'], sa:['automne','hiver'], f:['oeuf','noix']},
+      {nom:'Polenta croustillante aux herbes', b:1, st:['champetre','boheme','minimaliste','nature'], sa:['automne','hiver'], f:[]},
+      {nom:'Boulettes de pois chiches épicées', b:1, st:['boheme','moderne','nature'], sa:null, f:[]},
+    ],
+
+    entrees: [
+      // ── Ajouts gastronomiques ──
+      {nom:'Foie gras poêlé, figues rôties et réduction balsamique', b:3, st:['chic','romantique'], sa:['automne','hiver'], f:['gluten']},
+      {nom:'Foie gras mi-cuit, chutney mangue-passion et pain d\'épices', b:3, st:['chic','romantique','moderne'], sa:['automne','hiver'], f:['gluten']},
+      {nom:'Œuf parfait, crème de parmesan, émulsion truffée et noisettes', b:2, st:['chic','romantique','moderne'], sa:['automne','hiver'], f:['oeuf','lactose','noix']},
+      {nom:'Volaille fermière confite, crème de maïs fumé et pickles', b:2, st:['chic','moderne','champetre'], sa:['automne'], f:['viande','lactose']},
+      {nom:'Tartare de bœuf maturé, jaune confit et croustillant parmesan', b:2, st:['chic','moderne'], sa:null, f:['viande','oeuf','lactose']},
+      {nom:'Carpaccio de canard fumé, betteraves rôties et chèvre fouetté', b:2, st:['chic','romantique','champetre'], sa:['automne','hiver'], f:['viande','lactose']},
+      {nom:'Velouté truffé de saison', b:2, st:['chic','romantique'], sa:['automne','hiver'], f:['lactose']},
+      {nom:'Tartare de saumon aux agrumes, avocat et sésame noir', b:2, st:['moderne','chic'], sa:['printemps','ete'], f:['poisson']},
+      {nom:'Gravlax de saumon, crème aneth-citron et concombre', b:2, st:['chic','moderne','romantique'], sa:['printemps','hiver'], f:['poisson','lactose']},
+      {nom:'Langoustines snackées, bisque légère et espuma de crustacés', b:3, st:['chic','moderne'], sa:['automne','hiver'], f:['fruitsmer']},
+      {nom:'Ceviche de daurade, leche de tigre passion-coriandre', b:2, st:['moderne','chic','minimaliste'], sa:['ete'], f:['poisson']},
+      {nom:'Ravioles ouvertes de légumes, beurre noisette et sauge', b:2, st:['romantique','moderne','chic'], sa:['printemps','automne'], f:['gluten','lactose']},
+      {nom:'Tarte fine de légumes oubliés, crème de chèvre et miel', b:1, st:['champetre','boheme','moderne'], sa:['automne'], f:['gluten','lactose']},
+      {nom:'Risotto crémeux aux asperges, citron confit et parmesan', b:2, st:['romantique','moderne','chic'], sa:['printemps'], f:['lactose']},
+      {nom:'Antipasti raffinés (légumes grillés, mozzarella, olives)', b:1, st:['boheme','champetre','moderne'], sa:['ete'], f:['lactose']},
+      {nom:'Salade caprese premium (burrata, tomates anciennes, pesto)', b:2, st:['romantique','champetre','moderne','chic'], sa:['ete'], f:['lactose']},
+      {nom:'Saumon gravlax à l\'aneth', b:2, st:['chic','moderne','romantique'], sa:['printemps','hiver'], f:['poisson']},
+      {nom:'Tartare de saumon à la mangue', b:2, st:['moderne','chic'], sa:['printemps','ete'], f:['poisson']},
+      {nom:'Carpaccio de Saint-Jacques aux agrumes', b:3, st:['chic','moderne','romantique'], sa:['automne','hiver'], f:['fruitsmer']},
+      {nom:'Burrata et tomates anciennes', b:2, st:['chic','romantique','champetre','moderne'], sa:['ete'], f:['lactose']},
+      {nom:'Salade de chèvre chaud chic', b:1, st:['champetre','romantique','boheme'], sa:['printemps','automne'], f:['gluten','lactose']},
+      {nom:'Salade de homard aux agrumes', b:3, st:['chic'], sa:['printemps','ete'], f:['fruitsmer']},
+      {nom:'Carpaccio de bœuf et parmesan', b:2, st:['chic','moderne','romantique'], sa:null, f:['viande','lactose']},
+      {nom:'Duo avocat-crevettes', b:2, st:['moderne','chic','romantique'], sa:['printemps','ete'], f:['fruitsmer']},
+      {nom:'Terrine maison et pickles', b:1, st:['champetre','boheme'], sa:['automne','hiver'], f:['viande','porc']},
+      {nom:'Tartare de légumes grillés', b:1, st:['boheme','moderne','minimaliste','nature'], sa:['ete'], f:[]},
+      {nom:'Assiette méditerranéenne (mezze)', b:1, st:['boheme','moderne'], sa:['ete'], f:[]},
+      {nom:'Salade italienne raffinée (mozzarella, roquette, tomates)', b:1, st:['romantique','champetre','moderne'], sa:['ete'], f:['lactose']},
+      {nom:'Velouté froid de saison', b:1, st:['moderne','minimaliste','boheme'], sa:['ete'], f:[]},
+      {nom:'Ceviche de poisson au citron vert', b:2, st:['moderne','chic','minimaliste'], sa:['printemps','ete'], f:['poisson']},
+      {nom:'Carpaccio de betterave, roquette et balsamique', b:1, st:['moderne','minimaliste','nature'], sa:['automne','hiver'], f:[]},
+      // ── Chaudes ──
+      {nom:'Velouté de potimarron à la truffe', b:2, st:['chic','romantique','champetre'], sa:['automne','hiver'], f:['lactose']},
+      {nom:'Ravioles à la crème de parmesan', b:2, st:['romantique','chic','moderne'], sa:['automne','hiver'], f:['gluten','lactose']},
+      {nom:'Risotto crémeux aux champignons', b:2, st:['romantique','moderne','chic'], sa:['automne'], f:['lactose']},
+      {nom:'Saint-Jacques poêlées, purée de céleri', b:3, st:['chic','romantique','moderne'], sa:['automne','hiver'], f:['fruitsmer','lactose']},
+      {nom:'Feuilleté de saumon à l\'oseille', b:2, st:['chic','romantique'], sa:['printemps','hiver'], f:['gluten','poisson','lactose']},
+      {nom:'Tatin de légumes et chèvre', b:1, st:['champetre','boheme','moderne'], sa:['automne'], f:['gluten','lactose']},
+      {nom:'Cassolette de fruits de mer', b:3, st:['chic','romantique'], sa:['hiver'], f:['fruitsmer','lactose']},
+      {nom:'Gratin raffiné de légumes', b:1, st:['champetre','romantique','nature'], sa:['automne','hiver'], f:['lactose']},
+      {nom:'Œuf parfait, crème de champignons', b:2, st:['moderne','chic','romantique','minimaliste'], sa:['automne','hiver'], f:['oeuf','lactose']},
+      {nom:'Soupe à l\'oignon revisitée', b:1, st:['champetre','moderne'], sa:['hiver'], f:['gluten','lactose']},
+      {nom:'Asperges vertes, œuf mollet et parmesan', b:2, st:['minimaliste','moderne','chic','romantique'], sa:['printemps'], f:['oeuf','lactose']},
+      {nom:'Velouté de petits pois à la menthe', b:1, st:['romantique','champetre','minimaliste'], sa:['printemps'], f:['lactose']},
+      // ── Végétal (repli restrictions) ──
+      {nom:'Buddha bowl de légumes grillés et tahini', b:1, st:['boheme','moderne','minimaliste','nature'], sa:['printemps','ete'], f:[]},
+      {nom:'Salade de lentilles, grenade et herbes fraîches', b:1, st:['boheme','nature','minimaliste'], sa:['automne','hiver'], f:[]},
+      {nom:'Velouté de légumes de saison, huile parfumée', b:1, st:['minimaliste','champetre','nature'], sa:['automne','hiver'], f:[]},
+      {nom:'Tartare d\'avocat, mangue et tomate', b:2, st:['moderne','chic','minimaliste'], sa:['ete'], f:[]},
+    ],
+
+    plats: [
+      // ── Ajouts gastronomiques ──
+      {nom:'Filet de bœuf Rossini, foie gras poêlé et jus au porto', b:3, st:['chic','romantique'], sa:['automne','hiver'], f:['viande','lactose','alcool']},
+      {nom:'Filet de bœuf, sauce morilles et purée truffée', b:3, st:['chic','romantique'], sa:['automne','hiver'], f:['viande','lactose']},
+      {nom:'Joue de bœuf braisée au vin rouge, mousseline de pommes de terre', b:2, st:['champetre','romantique','chic'], sa:['automne','hiver'], f:['viande','lactose','alcool']},
+      {nom:'Veau basse température, jus aux girolles et gratin dauphinois', b:2, st:['chic','romantique','champetre'], sa:['automne'], f:['viande','lactose']},
+      {nom:'Médaillon de veau, sauce forestière et primeurs rôtis', b:2, st:['chic','romantique'], sa:['printemps','automne'], f:['viande','lactose']},
+      {nom:'Suprême de volaille farci aux morilles, mousseline de céleri', b:2, st:['chic','romantique','champetre'], sa:['automne','hiver'], f:['viande','lactose']},
+      {nom:'Suprême de volaille aux cèpes, jus crémé', b:2, st:['chic','champetre','romantique'], sa:['automne'], f:['viande','lactose']},
+      {nom:'Ballotine de volaille aux champignons, sauce vin jaune', b:2, st:['chic','romantique'], sa:['automne','hiver'], f:['viande','lactose','alcool']},
+      {nom:'Pintade rôtie, purée de panais et sauce foie gras légère', b:3, st:['chic','romantique'], sa:['automne','hiver'], f:['viande','lactose']},
+      {nom:'Volaille jaune sauce champagne, asperges vertes rôties', b:2, st:['chic','romantique','moderne'], sa:['printemps'], f:['viande','lactose','alcool']},
+      {nom:'Magret de canard, réduction fruits rouges-poivre timut, patate douce', b:2, st:['chic','champetre','romantique'], sa:['automne','hiver'], f:['viande']},
+      {nom:'Canette rôtie, figues caramélisées et jus épicé', b:2, st:['chic','romantique'], sa:['automne'], f:['viande']},
+      {nom:'Carré d\'agneau en croûte d\'herbes, jus au thym et gratin', b:3, st:['chic','romantique'], sa:['printemps','hiver'], f:['viande','gluten','lactose']},
+      {nom:'Agneau confit 12 heures, légumes racines glacés, jus au romarin', b:2, st:['chic','champetre','romantique'], sa:['hiver','automne'], f:['viande']},
+      {nom:'Bar rôti sur peau, beurre blanc au champagne et risotto citronné', b:3, st:['chic','moderne','romantique'], sa:['printemps','hiver'], f:['poisson','lactose','alcool']},
+      {nom:'Dos de cabillaud nacré, émulsion crustacés et primeurs', b:2, st:['chic','moderne','romantique'], sa:['printemps','hiver'], f:['poisson','fruitsmer']},
+      {nom:'Saint-Pierre rôti, mousseline de chou-fleur et sauce safranée', b:3, st:['chic','romantique','moderne'], sa:['hiver','automne'], f:['poisson','lactose']},
+      {nom:'Lotte rôtie au beurre noisette, risotto crémeux parmesan', b:3, st:['chic','moderne'], sa:['automne','hiver'], f:['poisson','lactose']},
+      {nom:'Saumon mi-cuit, crème citron-aneth, asperges et grenaille', b:2, st:['moderne','chic','romantique','minimaliste'], sa:['printemps'], f:['poisson','lactose']},
+      {nom:'Gambas flambées, bisque légère et riz noir croustillant', b:3, st:['chic','moderne'], sa:['ete','automne'], f:['fruitsmer','alcool']},
+      {nom:'Homard rôti, beurre citronné et mousseline truffée', b:3, st:['chic','romantique'], sa:['printemps','ete'], f:['fruitsmer','lactose']},
+      {nom:'Wellington végétal aux champignons et épinards', b:2, st:['moderne','boheme','chic'], sa:['automne','hiver'], f:['gluten','lactose']},
+      {nom:'Gnocchis maison, crème de sauge, noisettes grillées et parmesan', b:1, st:['romantique','moderne','champetre'], sa:['automne','hiver'], f:['gluten','lactose','noix']},
+      {nom:'Aubergine rôtie miso-miel, yaourt citronné et herbes fraîches', b:1, st:['moderne','boheme','minimaliste','nature'], sa:['ete','automne'], f:['lactose']},
+      {nom:'Polenta crémeuse, légumes grillés et sauce champignons', b:1, st:['champetre','moderne','nature'], sa:['automne','hiver'], f:['lactose']},
+      {nom:'Osso buco à la milanaise, risotto safrané', b:2, st:['chic','champetre','romantique'], sa:['automne','hiver'], f:['viande','lactose']},
+      {nom:'Linguine aux fruits de mer', b:2, st:['moderne','romantique','chic'], sa:['ete'], f:['gluten','fruitsmer']},
+      {nom:'Ravioli ricotta-épinards, sauce tomate-basilic', b:1, st:['romantique','champetre','moderne'], sa:null, f:['gluten','lactose']},
+      {nom:'Aubergines alla parmigiana', b:1, st:['champetre','boheme','moderne'], sa:['ete','automne'], f:['lactose']},
+      {nom:'Risotto à la truffe, champignons sauvages et parmesan affiné', b:3, st:['chic','romantique','moderne'], sa:['automne','hiver'], f:['lactose']},
+      {nom:'Magret de canard au miel et épices', b:2, st:['chic','champetre','romantique'], sa:['automne','hiver'], f:['viande']},
+      {nom:'Suprême de volaille, crème truffée', b:2, st:['chic','romantique','moderne'], sa:['automne','hiver'], f:['viande','lactose']},
+      {nom:'Poulet rôti gastronomique aux herbes', b:1, st:['champetre','nature','romantique'], sa:null, f:['viande']},
+      {nom:'Veau, sauce forestière', b:2, st:['chic','romantique','champetre'], sa:['automne','hiver'], f:['viande','lactose']},
+      {nom:'Agneau confit aux herbes', b:2, st:['chic','champetre','romantique'], sa:['printemps','hiver'], f:['viande']},
+      {nom:'Porc fermier basse température', b:1, st:['champetre','moderne'], sa:['automne','hiver'], f:['viande','porc']},
+      {nom:'Bœuf bourguignon chic', b:1, st:['champetre','romantique'], sa:['automne','hiver'], f:['viande','alcool']},
+      {nom:'Blanquette de veau revisitée', b:1, st:['champetre','romantique'], sa:['hiver'], f:['viande','lactose']},
+      {nom:'Filet mignon, sauce moutarde à l\'ancienne', b:2, st:['champetre','chic','moderne'], sa:null, f:['viande','lactose']},
+      {nom:'Ballotine de volaille farcie', b:2, st:['chic','romantique','champetre'], sa:['printemps','automne'], f:['viande']},
+      {nom:'Canette rôtie, jus réduit', b:2, st:['chic','romantique'], sa:['automne','hiver'], f:['viande']},
+      {nom:'Souris d\'agneau confite, ratatouille', b:2, st:['champetre','romantique'], sa:['ete'], f:['viande']},
+      {nom:'Côte de porc grillée, légumes d\'été', b:1, st:['champetre'], sa:['ete'], f:['viande','porc']},
+      {nom:'Brochettes de volaille marinée, semoule', b:1, st:['champetre','boheme'], sa:['ete'], f:['viande']},
+      // ── Poissons ──
+      {nom:'Saumon rôti, citron et aneth', b:2, st:['moderne','chic','romantique','minimaliste'], sa:['printemps','hiver'], f:['poisson']},
+      {nom:'Cabillaud, beurre blanc et légumes glacés', b:2, st:['chic','romantique','moderne'], sa:['printemps','hiver'], f:['poisson','lactose']},
+      {nom:'Bar de ligne rôti aux herbes', b:3, st:['chic','moderne'], sa:['ete','printemps'], f:['poisson']},
+      {nom:'Dorade grillée, légumes méditerranéens', b:2, st:['moderne','boheme','minimaliste'], sa:['ete'], f:['poisson']},
+      {nom:'Saint-Pierre, sauce champagne', b:3, st:['chic','romantique'], sa:['hiver'], f:['poisson','lactose','alcool']},
+      {nom:'Homard rôti au beurre demi-sel', b:3, st:['chic'], sa:['printemps','ete'], f:['fruitsmer','lactose']},
+      {nom:'Gambas grillées, riz parfumé', b:2, st:['moderne','boheme','chic'], sa:['ete'], f:['fruitsmer']},
+      {nom:'Lotte, sauce safranée', b:3, st:['chic','moderne'], sa:['automne','hiver'], f:['poisson']},
+      {nom:'Thon snacké au sésame', b:2, st:['moderne','chic','minimaliste'], sa:['ete','printemps'], f:['poisson']},
+      {nom:'Turbot rôti aux morilles', b:3, st:['chic','moderne'], sa:['hiver','printemps'], f:['poisson','lactose']},
+      // ── Végétarien / vegan ──
+      {nom:'Risotto à la truffe et champignons', b:2, st:['romantique','moderne','chic'], sa:['automne','hiver'], f:['lactose']},
+      {nom:'Ravioles de légumes, bouillon parfumé', b:1, st:['moderne','romantique','boheme'], sa:['printemps','automne'], f:['gluten']},
+      {nom:'Curry de légumes au lait de coco, riz basmati', b:1, st:['boheme','moderne','nature'], sa:['automne','hiver'], f:[]},
+      {nom:'Aubergine farcie aux légumes et herbes', b:1, st:['boheme','moderne','nature','minimaliste'], sa:['ete','automne'], f:[]},
+      {nom:'Wellington végétal en croûte', b:2, st:['moderne','boheme','chic'], sa:['automne','hiver'], f:['gluten','lactose']},
+      {nom:'Gnocchis, sauce crémeuse au parmesan', b:1, st:['romantique','moderne','champetre'], sa:['automne','hiver'], f:['gluten','lactose']},
+      {nom:'Lasagnes de légumes gratinées', b:1, st:['champetre','boheme','moderne'], sa:['automne','hiver'], f:['gluten','lactose']},
+      {nom:'Tajine de légumes aux épices douces', b:1, st:['boheme','nature'], sa:['hiver','automne'], f:[]},
+      {nom:'Buddha bowl premium aux légumes de saison', b:1, st:['moderne','minimaliste','boheme','nature'], sa:['printemps','ete'], f:[]},
+      {nom:'Steak de chou-fleur rôti, condiment herbes', b:1, st:['moderne','minimaliste','nature'], sa:['automne','hiver'], f:[]},
+      {nom:'Polenta crémeuse aux champignons', b:1, st:['champetre','moderne','nature'], sa:['automne','hiver'], f:['lactose']},
+      {nom:'Burger végétarien gourmet', b:1, st:['moderne','boheme'], sa:null, f:['gluten','lactose']},
+      {nom:'Légumes primeurs rôtis, boulgour et tahini', b:1, st:['boheme','nature','moderne','minimaliste'], sa:['printemps'], f:['gluten']},
+      {nom:'Wok de légumes croquants et tofu mariné', b:1, st:['moderne','minimaliste','boheme'], sa:['printemps','ete'], f:['gluten']},
+      {nom:'Légumes d\'été rôtis, quinoa aux herbes', b:1, st:['boheme','moderne','minimaliste','nature'], sa:['ete'], f:[]},
+    ],
+
+    accompagnements: [
+      // ── Ajouts gastronomiques ──
+      {nom:'Mousseline de panais', b:2, st:['chic','romantique','moderne'], sa:['automne','hiver'], f:['lactose']},
+      {nom:'Mousseline de céleri-rave', b:2, st:['chic','romantique','moderne'], sa:['automne','hiver'], f:['lactose']},
+      {nom:'Pommes Anna', b:2, st:['chic','romantique'], sa:null, f:['lactose']},
+      {nom:'Mini-légumes rôtis au miel et thym', b:2, st:['chic','moderne','champetre'], sa:null, f:[]},
+      {nom:'Risotto parmesan-citron', b:2, st:['romantique','moderne','chic'], sa:['printemps','ete'], f:['lactose']},
+      {nom:'Écrasé de pommes de terre à l\'huile de truffe', b:2, st:['chic','romantique','moderne'], sa:['automne','hiver'], f:[]},
+      {nom:'Poêlée de girolles et champignons sauvages', b:2, st:['chic','champetre','romantique'], sa:['automne'], f:['lactose']},
+      {nom:'Gratin dauphinois', b:1, st:['champetre','romantique','chic'], sa:['automne','hiver'], f:['lactose']},
+      {nom:'Pommes grenaille rôties au thym', b:1, st:null, sa:null, f:[]},
+      {nom:'Légumes glacés', b:1, st:['chic','romantique','moderne'], sa:null, f:['lactose']},
+      {nom:'Ratatouille raffinée', b:1, st:['champetre','boheme','nature'], sa:['ete'], f:[]},
+      {nom:'Asperges rôties', b:2, st:['chic','moderne','minimaliste'], sa:['printemps'], f:[]},
+      {nom:'Riz parfumé', b:1, st:['boheme','moderne'], sa:null, f:[]},
+      {nom:'Risotto au parmesan', b:2, st:['romantique','chic','moderne'], sa:null, f:['lactose']},
+      {nom:'Écrasé de pommes de terre à l\'huile d\'olive', b:1, st:['minimaliste','moderne','nature'], sa:null, f:[]},
+      {nom:'Purée de patate douce', b:1, st:['boheme','moderne'], sa:['automne','hiver'], f:[]},
+      {nom:'Poêlée de légumes de saison', b:1, st:null, sa:null, f:[]},
+      {nom:'Haricots verts fins persillés', b:1, st:['chic','romantique','champetre'], sa:['ete'], f:['lactose']},
+      {nom:'Tagliatelles fraîches', b:1, st:['romantique','moderne','champetre'], sa:null, f:['gluten','oeuf']},
+      {nom:'Légumes méditerranéens grillés', b:1, st:['boheme','moderne','nature'], sa:['ete'], f:[]},
+      {nom:'Quinoa aux herbes et grenade', b:1, st:['moderne','boheme','minimaliste','nature'], sa:null, f:[]},
+      {nom:'Polenta crémeuse aux herbes', b:1, st:['champetre','moderne'], sa:['automne','hiver'], f:['lactose']},
+    ],
+
+    salades: [
+      {nom:'Salade César revisitée au poulet', b:1, st:['moderne','champetre'], sa:null, f:['gluten','lactose','oeuf','viande']},
+      {nom:'Taboulé libanais aux herbes fraîches', b:1, st:['boheme','champetre','nature'], sa:['printemps','ete'], f:['gluten']},
+      {nom:'Salade de quinoa, légumes croquants et feta', b:1, st:['moderne','boheme'], sa:['printemps','ete'], f:['lactose']},
+      {nom:'Salade de tomates anciennes et mozzarella', b:2, st:['chic','romantique','champetre'], sa:['ete'], f:['lactose']},
+      {nom:'Salade de lentilles et vinaigrette moutarde', b:1, st:['champetre','boheme','nature'], sa:['automne','hiver'], f:[]},
+      {nom:'Roquette, poire, parmesan et noix', b:2, st:['chic','romantique'], sa:['automne'], f:['lactose','noix']},
+      {nom:'Salade de pousses, agrumes et avocat', b:1, st:['moderne','minimaliste'], sa:['printemps','hiver'], f:[]},
+      {nom:'Salade grecque (concombre, feta, olives)', b:1, st:['boheme','champetre'], sa:['ete'], f:['lactose']},
+      {nom:'Coleslaw maison croquant', b:1, st:['champetre','moderne'], sa:null, f:['oeuf']},
+      {nom:'Salade de riz sauvage, mangue et cajou', b:1, st:['boheme','moderne'], sa:['ete'], f:['noix']},
+      {nom:'Salade de betteraves rôties et roquette', b:1, st:['moderne','minimaliste','nature'], sa:['automne','hiver'], f:[]},
+      {nom:'Salade méditerranéenne aux légumes grillés', b:1, st:['boheme','moderne','nature'], sa:['ete'], f:[]},
+    ],
+
+    desserts: [
+      // ── Ajouts gastronomiques ──
+      {nom:'Entremets vanille-tonka, insert framboise', b:2, st:['chic','romantique','moderne'], sa:['printemps','ete'], f:['gluten','lactose','oeuf']},
+      {nom:'Sphère chocolat, cœur coulant caramel', b:3, st:['chic','moderne','romantique'], sa:['automne','hiver'], f:['gluten','lactose','oeuf']},
+      {nom:'Millefeuille minute à la vanille bourbon', b:2, st:['chic','romantique','moderne'], sa:null, f:['gluten','lactose','oeuf']},
+      {nom:'Dôme chocolat-praliné croustillant', b:2, st:['chic','romantique','moderne'], sa:['automne','hiver'], f:['gluten','lactose','oeuf','noix']},
+      {nom:'Tarte citron-yuzu meringuée revisitée', b:2, st:['moderne','chic','minimaliste'], sa:['printemps','ete'], f:['gluten','lactose','oeuf']},
+      {nom:'Vacherin glacé aux fruits rouges', b:3, st:['chic','romantique'], sa:['ete','hiver'], f:['lactose','oeuf']},
+      {nom:'Opéra revisité café-noisette', b:2, st:['chic','romantique','moderne'], sa:['automne','hiver'], f:['gluten','lactose','oeuf','noix']},
+      {nom:'Poire pochée aux épices, mousse vanille', b:1, st:['romantique','champetre','minimaliste'], sa:['automne','hiver'], f:['lactose']},
+      {nom:'Fraisier premium à la vanille bourbon', b:2, st:['romantique','chic','champetre'], sa:['printemps','ete'], f:['gluten','lactose','oeuf']},
+      {nom:'Entremets chocolat-noisette', b:2, st:['chic','romantique','moderne'], sa:['automne','hiver'], f:['gluten','lactose','oeuf','noix']},
+      {nom:'Cannoli siciliens à la ricotta', b:1, st:['boheme','champetre','moderne'], sa:null, f:['gluten','lactose','oeuf']},
+      {nom:'Tarte au citron à l\'italienne', b:1, st:['romantique','moderne','champetre'], sa:['printemps','ete'], f:['gluten','lactose','oeuf']},
+      {nom:'Millefeuille vanille', b:2, st:['chic','romantique'], sa:null, f:['gluten','lactose','oeuf']},
+      {nom:'Opéra café-chocolat', b:2, st:['chic','romantique','moderne'], sa:['automne','hiver'], f:['gluten','lactose','oeuf','noix']},
+      {nom:'Pavlova aux fruits rouges', b:2, st:['romantique','moderne','minimaliste','champetre'], sa:['printemps','ete'], f:['lactose','oeuf']},
+      {nom:'Moelleux au chocolat', b:1, st:['romantique','moderne','minimaliste'], sa:['automne','hiver'], f:['gluten','lactose','oeuf']},
+      {nom:'Entremets vanille-framboise', b:2, st:['romantique','chic','moderne'], sa:['printemps','ete'], f:['gluten','lactose','oeuf']},
+      {nom:'Cheesecake premium aux fruits', b:2, st:['moderne','boheme','chic'], sa:['ete'], f:['gluten','lactose','oeuf']},
+      {nom:'Tiramisu chic', b:1, st:['romantique','moderne','minimaliste'], sa:null, f:['gluten','lactose','oeuf']},
+      {nom:'Profiteroles, sauce chocolat', b:2, st:['romantique','champetre','chic'], sa:['automne','hiver'], f:['gluten','lactose','oeuf']},
+      {nom:'Panna cotta aux fruits rouges', b:1, st:['minimaliste','romantique','moderne'], sa:['printemps','ete'], f:['lactose']},
+      {nom:'Crème brûlée à la vanille', b:1, st:['romantique','chic','champetre'], sa:['automne','hiver'], f:['lactose','oeuf']},
+      {nom:'Fraisier à la crème mousseline', b:2, st:['romantique','chic','champetre'], sa:['printemps','ete'], f:['gluten','lactose','oeuf']},
+      {nom:'Paris-Brest revisité', b:2, st:['chic','romantique','moderne'], sa:['automne','hiver'], f:['gluten','lactose','oeuf','noix']},
+      {nom:'Fondant chocolat cœur coulant', b:2, st:['romantique','chic','moderne'], sa:['automne','hiver'], f:['gluten','lactose','oeuf']},
+      {nom:'Charlotte aux framboises', b:2, st:['romantique','champetre'], sa:['printemps','ete'], f:['gluten','lactose','oeuf']},
+      {nom:'Tarte tatin et glace vanille', b:1, st:['champetre','romantique'], sa:['automne','hiver'], f:['gluten','lactose','oeuf']},
+      {nom:'Vacherin glacé vanille-marrons', b:3, st:['chic','romantique'], sa:['hiver'], f:['lactose','oeuf']},
+      {nom:'Sphère chocolat grand cru, cœur coulant', b:3, st:['chic','moderne'], sa:['automne','hiver'], f:['lactose','oeuf','noix']},
+      {nom:'Assiette de mignardises maison', b:3, st:['chic','romantique','moderne'], sa:null, f:['gluten','lactose','oeuf']},
+      // ── Vegan / SG (repli) ──
+      {nom:'Salade de fruits frais de saison au sirop léger', b:1, st:['minimaliste','moderne','boheme','champetre','nature'], sa:null, f:[]},
+      {nom:'Sorbet plein fruit et fruits frais', b:1, st:['minimaliste','moderne','boheme'], sa:['printemps','ete'], f:[]},
+      {nom:'Mousse au chocolat noir vegan', b:1, st:['moderne','boheme','minimaliste'], sa:['automne','hiver'], f:[]},
+      {nom:'Crumble de fruits sans gluten et coulis', b:1, st:['champetre','boheme','nature'], sa:['automne','hiver'], f:[]},
+      {nom:'Panna cotta vegan au lait de coco et fruits rouges', b:2, st:['moderne','chic','minimaliste'], sa:['printemps','ete'], f:[]},
+      {nom:'Tarte fine aux pommes sans gluten', b:1, st:['champetre','romantique','nature'], sa:['automne','hiver'], f:[]},
+    ],
+
+    fromages: [
+      {nom:'Plateau de fromages français classiques', b:2, st:null, sa:null, f:['lactose']},
+      {nom:'Plateau de fromages affinés premium et fruits secs', b:3, st:['chic','romantique'], sa:null, f:['lactose','noix']},
+      {nom:'Plateau de chèvres frais, secs et cendrés', b:1, st:['champetre','minimaliste','nature','boheme'], sa:null, f:['lactose']},
+      {nom:'Plateau de fromages italiens (parmesan, burrata, mozzarella)', b:2, st:['moderne','chic','romantique'], sa:null, f:['lactose']},
+      {nom:'Plateau de fromages fermiers régionaux et pain aux noix', b:1, st:['champetre','boheme','nature'], sa:null, f:['lactose','gluten','noix']},
+      {nom:'Plateau mixte international d\'exception', b:3, st:['chic','moderne'], sa:null, f:['lactose']},
+    ],
+
+    bouchees_froides: [
+      {nom:'Mini-focaccia garnie aux légumes du soleil', b:1, st:['boheme','champetre','moderne'], sa:['ete'], f:['gluten']},
+      {nom:'Cuillère de burrata et tomates anciennes', b:2, st:['chic','romantique','moderne'], sa:['ete'], f:['lactose']},
+      {nom:'Verrine crevettes et agrumes', b:2, st:['chic','moderne'], sa:['printemps','ete'], f:['fruitsmer']},
+      {nom:'Cuillère de tartare de saumon', b:2, st:['chic','moderne','romantique'], sa:null, f:['poisson']},
+      {nom:'Cuillère de tartare de thon au sésame', b:2, st:['moderne','chic'], sa:['ete'], f:['poisson']},
+      {nom:'Blinis au saumon fumé', b:2, st:['chic','romantique','moderne'], sa:['automne','hiver'], f:['gluten','poisson','lactose']},
+      {nom:'Toast foie gras et figues', b:3, st:['chic','romantique'], sa:['automne','hiver'], f:['gluten']},
+      {nom:'Toast chèvre et miel', b:1, st:['champetre','romantique','boheme'], sa:null, f:['gluten','lactose']},
+      {nom:'Toast avocat et feta', b:1, st:['moderne','minimaliste','boheme'], sa:['printemps','ete'], f:['gluten','lactose']},
+      {nom:'Canapé tomate-mozzarella', b:1, st:['champetre','romantique','boheme'], sa:['ete'], f:['gluten','lactose']},
+      {nom:'Bruschetta tomate-basilic', b:1, st:['champetre','boheme','moderne'], sa:['ete'], f:['gluten']},
+      {nom:'Tartine burrata et tomates confites', b:2, st:['chic','moderne','romantique'], sa:['ete','automne'], f:['gluten','lactose']},
+      {nom:'Mini-brochettes melon et jambon cru', b:1, st:['champetre','romantique'], sa:['ete'], f:['porc']},
+      {nom:'Carpaccio de bœuf et parmesan', b:2, st:['chic','moderne','romantique'], sa:null, f:['viande','lactose']},
+      {nom:'Houmous et pita miniatures', b:1, st:['boheme','moderne','minimaliste'], sa:null, f:['gluten']},
+      {nom:'Guacamole et chips artisanales', b:1, st:['boheme','moderne'], sa:null, f:[]},
+      {nom:'Tapenade sur crostini', b:1, st:['champetre','boheme','minimaliste'], sa:['ete'], f:['gluten']},
+      {nom:'Mini-tartare de légumes', b:1, st:['moderne','minimaliste','boheme','nature'], sa:['printemps','ete'], f:[]},
+      {nom:'Verrine de gaspacho andalou', b:1, st:['boheme','moderne','minimaliste'], sa:['ete'], f:[]},
+      {nom:'Mini-wraps végétariens', b:1, st:['boheme','moderne'], sa:null, f:['gluten']},
+      {nom:'Cuillère de betterave et pomme verte', b:1, st:['moderne','minimaliste','nature'], sa:['automne','hiver'], f:[]},
+    ],
+    bouchees_chaudes: [
+      {nom:'Mini-burgers gourmet', b:2, st:['moderne','champetre'], sa:null, f:['gluten','viande','lactose']},
+      {nom:'Mini-croque-monsieur à la truffe', b:2, st:['chic','moderne'], sa:['automne','hiver'], f:['gluten','lactose']},
+      {nom:'Gougères au fromage', b:1, st:['champetre','romantique','chic'], sa:['automne','hiver'], f:['gluten','lactose','oeuf']},
+      {nom:'Mini-quiches', b:1, st:['champetre','romantique'], sa:null, f:['gluten','lactose','oeuf']},
+      {nom:'Feuilletés chèvre-épinards', b:1, st:['champetre','boheme','moderne'], sa:null, f:['gluten','lactose']},
+      {nom:'Tempura de légumes', b:1, st:['moderne','minimaliste'], sa:null, f:['gluten']},
+      {nom:'Mini-brochettes satay de poulet', b:2, st:['moderne','boheme'], sa:null, f:['viande','noix']},
+      {nom:'Arancini croustillants', b:1, st:['moderne','boheme','chic'], sa:null, f:['gluten','lactose']},
+      {nom:'Mini-pizzas artisanales', b:1, st:['champetre','boheme','moderne'], sa:null, f:['gluten','lactose']},
+      {nom:'Beignets de crevettes', b:2, st:['moderne','chic'], sa:null, f:['gluten','fruitsmer']},
+      {nom:'Mini-tacos', b:1, st:['boheme','moderne'], sa:null, f:['gluten','viande']},
+      {nom:'Gyozas vapeur', b:1, st:['moderne'], sa:null, f:['gluten']},
+      {nom:'Falafels et sauce sésame', b:1, st:['boheme','moderne','minimaliste'], sa:null, f:[]},
+      {nom:'Saint-Jacques snackées', b:3, st:['chic','moderne'], sa:['automne','hiver'], f:['fruitsmer']},
+      {nom:'Crevettes croustillantes', b:2, st:['moderne','chic','boheme'], sa:null, f:['gluten','fruitsmer']},
+      {nom:'Yakitori de poulet', b:2, st:['moderne'], sa:null, f:['viande','gluten']},
+      {nom:'Polenta croustillante aux herbes', b:1, st:['champetre','boheme','minimaliste','nature'], sa:['automne','hiver'], f:[]},
+      {nom:'Boulettes de pois chiches épicées', b:1, st:['boheme','moderne','nature'], sa:null, f:[]},
+    ],
+    mini_desserts: [
+      {nom:'Macarons assortis', b:2, st:['chic','romantique','moderne'], sa:null, f:['lactose','oeuf','noix']},
+      {nom:'Cupcakes décorés', b:1, st:['moderne','boheme','champetre'], sa:null, f:['gluten','lactose','oeuf']},
+      {nom:'Mini-tartes au citron', b:2, st:['chic','moderne','romantique'], sa:['printemps','ete'], f:['gluten','lactose','oeuf']},
+      {nom:'Brownies', b:1, st:['moderne','champetre','boheme'], sa:['automne','hiver'], f:['gluten','lactose','oeuf','noix']},
+      {nom:'Cookies premium', b:1, st:['moderne','champetre','boheme'], sa:null, f:['gluten','lactose','oeuf']},
+      {nom:'Choux garnis vanille', b:2, st:['romantique','chic'], sa:null, f:['gluten','lactose','oeuf']},
+      {nom:'Mini-cheesecakes', b:2, st:['moderne','boheme','chic'], sa:null, f:['gluten','lactose','oeuf']},
+      {nom:'Mignardises françaises', b:2, st:['chic','romantique'], sa:null, f:['gluten','lactose','oeuf']},
+      {nom:'Cake pops chocolatés', b:1, st:['moderne','boheme'], sa:null, f:['gluten','lactose','oeuf']},
+      {nom:'Verrines de mousse au chocolat', b:1, st:['romantique','moderne','minimaliste'], sa:null, f:['lactose','oeuf']},
+      {nom:'Verrines de fruits frais et chantilly', b:1, st:['champetre','romantique'], sa:['printemps','ete'], f:['lactose']},
+      {nom:'Brochettes de fruits frais', b:1, st:['minimaliste','moderne','boheme','nature'], sa:['printemps','ete'], f:[]},
+      {nom:'Sorbets plein fruit', b:1, st:['minimaliste','moderne','nature'], sa:['printemps','ete'], f:[]},
+      {nom:'Mousse de coco et fruits de la passion', b:1, st:['moderne','boheme','minimaliste'], sa:['ete'], f:[]},
+      {nom:'Mini-fondants au chocolat', b:1, st:['romantique','moderne'], sa:['automne','hiver'], f:['gluten','lactose','oeuf']},
+    ],
+
+    foodtruck: [
+      {nom:'Burgers gourmets (bœuf Angus, cheddar affiné)', b:2, st:['moderne','champetre'], sa:null, f:['gluten','viande','lactose']},
+      {nom:'Bao buns au porc effiloché et pickles', b:2, st:['moderne'], sa:null, f:['gluten','viande','porc']},
+      {nom:'Tacos mexicains au poulet et guacamole', b:1, st:['boheme','moderne'], sa:null, f:['gluten','viande']},
+      {nom:'Pizzas napolitaines au feu de bois', b:1, st:['champetre','boheme','moderne'], sa:null, f:['gluten','lactose']},
+      {nom:'Bowls poke saumon-avocat-edamame', b:2, st:['moderne','minimaliste'], sa:['printemps','ete'], f:['poisson']},
+      {nom:'Galettes bretonnes garnies (sarrasin)', b:1, st:['champetre','boheme'], sa:null, f:['lactose','oeuf']},
+      {nom:'Falafels et houmous en pita', b:1, st:['boheme','moderne'], sa:null, f:['gluten']},
+      {nom:'Croque-monsieur gourmet à la truffe', b:2, st:['chic','moderne'], sa:['automne','hiver'], f:['gluten','lactose']},
+      {nom:'Fish & chips, sauce tartare maison', b:1, st:['moderne','champetre'], sa:null, f:['gluten','poisson','oeuf']},
+      {nom:'Frites de patate douce et sauces maison', b:1, st:null, sa:null, f:[]},
+      {nom:'Wok de nouilles sautées aux légumes', b:1, st:['moderne','boheme'], sa:null, f:['gluten']},
+      {nom:'Kebab gourmet à l\'agneau et légumes grillés', b:2, st:['boheme','moderne'], sa:null, f:['gluten','viande']},
+      {nom:'Arepas vénézuéliennes garnies (sans gluten)', b:1, st:['boheme','moderne'], sa:null, f:[]},
+      {nom:'Quesadillas végétariennes au fromage', b:1, st:['boheme','moderne'], sa:null, f:['gluten','lactose']},
+      {nom:'Hot-dogs premium', b:1, st:['moderne','champetre'], sa:null, f:['gluten','viande']},
+      {nom:'Raclette en cône', b:2, st:['champetre','moderne'], sa:['hiver'], f:['lactose']},
+    ],
+
+    // ════════════ BOISSONS ════════════
+    boissons: {
+      classiques: {
+        vinHonneur:['Champagne brut', 'Crémant rosé', 'Kir', 'Jus de fruits frais', 'Eaux plate et pétillante'],
+        repas:'Vins en accord (1 bouteille pour 3 personnes), eaux à volonté',
+        soft:'Sodas, jus de fruits, eaux aromatisées',
+        digestif:'Champagne, marc, eaux-de-vie'
+      },
+      premium: {
+        vinHonneur:['Champagne millésimé', 'Grand crémant', 'Cocktails au champagne', 'Jus pressés haut de gamme', 'Eaux fines'],
+        repas:'Vins d\'appellation prestigieuse en accord avec chaque plat (sommelier conseillé)',
+        soft:'Jus pressés artisanaux, limonades maison, eaux fines',
+        digestif:'Champagne millésimé, vieux rhums, cognacs'
+      },
+      sansalcool: {
+        vinHonneur:['Mocktails créatifs', 'Pétillant sans alcool', 'Jus pressés', 'Thés glacés maison', 'Kombuchas'],
+        repas:'Eaux fines plates et pétillantes, jus de raisin, jus de pomme pétillant',
+        soft:'Sodas artisanaux, limonades, infusions glacées',
+        digestif:'Infusions, thés rares, chocolat chaud (hiver)'
+      },
+      cocktailsignature: {
+        vinHonneur:['2 cocktails signature personnalisés aux prénoms des mariés', 'Champagne', 'Version sans alcool des cocktails', 'Eaux aromatisées'],
+        repas:'Vins en accord + bar à cocktails ouvert en soirée',
+        soft:'Mocktails signature, sodas premium',
+        digestif:'Bar à cocktails, shooters festifs'
+      }
+    }
+  };
+
+  // ─── HELPERS ──────────────────────────────────────────────────────────
+  function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+  function shuffle(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+  // Un plat est-il compatible avec style/saison/budget ?
+  function compatible(dish, style, saison, budgetLvl){
+    if(dish.b > budgetLvl) return false;            // trop cher pour le budget
+    if(dish.st && !dish.st.includes(style)) return false;
+    if(dish.sa && !dish.sa.includes(saison)) return false;
+    return true;
+  }
+
+  // Un plat respecte-t-il les restrictions ? (aucun flag interdit)
+  function passesRestrictions(dish, forbiddenFlags){
+    return !dish.f.some(flag => forbiddenFlags.has(flag));
+  }
+
+  // Convertit les restrictions cochées en flags interdits
+  function buildForbiddenFlags(restrictions){
+    const forbidden = new Set();
+    if(restrictions.includes('vegetarien')){ ['viande','porc','poisson','fruitsmer'].forEach(f=>forbidden.add(f)); }
+    if(restrictions.includes('vegan')){ ['viande','porc','poisson','fruitsmer','lactose','oeuf'].forEach(f=>forbidden.add(f)); }
+    if(restrictions.includes('sansgluten')) forbidden.add('gluten');
+    if(restrictions.includes('sanslactose')) forbidden.add('lactose');
+    if(restrictions.includes('halal')){ forbidden.add('porc'); forbidden.add('alcool'); }
+    if(restrictions.includes('casher')){ forbidden.add('porc'); forbidden.add('fruitsmer'); }
+    if(restrictions.includes('allergie-noix')) forbidden.add('noix');
+    return forbidden;
+  }
+
+  // Sélectionne 1 plat d'une catégorie compatible + respectant restrictions.
+  // Stratégie de repli intelligente : si rien ne respecte tout, on relâche
+  // d'abord la saison, puis le style, mais JAMAIS les restrictions.
+  function selectDish(category, style, saison, budgetLvl, forbidden, excludeNames){
+    excludeNames = excludeNames || new Set();
+    const pool = C[category];
+    // Niveau 1 : tout respecté
+    let cands = pool.filter(d => compatible(d,style,saison,budgetLvl) && passesRestrictions(d,forbidden) && !excludeNames.has(d.nom));
+    if(cands.length) return pick(cands);
+    // Niveau 2 : relâcher la saison
+    cands = pool.filter(d => (!d.st||d.st.includes(style)) && d.b<=budgetLvl && passesRestrictions(d,forbidden) && !excludeNames.has(d.nom));
+    if(cands.length) return pick(cands);
+    // Niveau 3 : relâcher le style (garder budget + restrictions)
+    cands = pool.filter(d => d.b<=budgetLvl && passesRestrictions(d,forbidden) && !excludeNames.has(d.nom));
+    if(cands.length) return pick(cands);
+    // Niveau 4 : relâcher le budget (garder restrictions — essentiel)
+    cands = pool.filter(d => passesRestrictions(d,forbidden) && !excludeNames.has(d.nom));
+    if(cands.length) return pick(cands);
+    // Niveau 5 : on autorise les déjà-utilisés (dernier recours absolu)
+    cands = pool.filter(d => passesRestrictions(d,forbidden) && !excludeNames.has(d.nom));
+    if(cands.length) return pick(cands);
+    return null; // aucune option restante distincte : la section aura moins d'items
+  }
+
+  // Sélectionne N plats distincts d'une catégorie (jamais de doublon)
+  function selectMany(category, count, style, saison, budgetLvl, forbidden){
+    const used = new Set();
+    const out = [];
+    for(let i=0;i<count;i++){
+      const d = selectDish(category, style, saison, budgetLvl, forbidden, used);
+      if(d && !used.has(d.nom)){ out.push(d.nom); used.add(d.nom); }
+    }
+    // Si on n'a pas atteint le count (pool trop petit après restrictions),
+    // on renvoie ce qu'on a, sans répéter. Mieux vaut 3 vrais plats que 6 avec doublons.
+    return out;
+  }
+
+  // ─── GÉNÉRATEUR PRINCIPAL ───────────────────────────────────────────────
+  // params: {style, saison, budget(eco/standard/luxe), format, boissons, restrictions[], invites}
+  function generate(params){
+    const style = params.style || 'romantique';
+    const saison = params.saison || 'printemps';
+    const budgetKey = params.budget || 'standard';
+    const budgetLvl = BUDGET_LEVEL[budgetKey] || 2;
+    const format = params.format || 'assiette';
+    const boissonsKey = params.boissons || 'classiques';
+    const restrictions = params.restrictions || [];
+    const invites = params.invites || 80;
+    const forbidden = buildForbiddenFlags(restrictions);
+
+    const out = { style, saison, budgetKey, format, sections: [] };
+
+    // ─── VIN D'HONNEUR (nourriture) — présent dans TOUS les formats sauf le
+    //     cocktail dînatoire (où les bouchées constituent déjà tout le repas). ───
+    const nbBouchees = budgetLvl === 1 ? 5 : budgetLvl === 2 ? 7 : 9;
+    if(format !== 'cocktail'){
+      const vh = selectMany('vinhonneur', nbBouchees, style, saison, budgetLvl, forbidden);
+      out.sections.push({titre:'Vin d\'honneur · '+nbBouchees+' bouchées/pers conseillées', items:vh});
+    }
+
+    // Structure selon le FORMAT
+    if(format === 'assiette'){
+      const entree = selectDish('entrees', style, saison, budgetLvl, forbidden);
+      const plat = selectDish('plats', style, saison, budgetLvl, forbidden);
+      const dessert = selectDish('desserts', style, saison, budgetLvl, forbidden);
+      out.sections.push({titre:'Entrée', items:[entree?entree.nom:'À composer avec le traiteur']});
+      out.sections.push({titre:'Plat principal', items:[plat?plat.nom:'À composer avec le traiteur']});
+      if(budgetLvl>=2){ const fromage=selectDish('fromages',style,saison,budgetLvl,forbidden); if(fromage) out.sections.push({titre:'Fromage', items:[fromage.nom]}); }
+      out.sections.push({titre:'Dessert', items:[dessert?dessert.nom:'À composer avec le traiteur']});
+    }
+    else if(format === 'buffet'){
+      out.sections.push({titre:'Salades & entrées', items:selectMany('salades',3,style,saison,budgetLvl,forbidden).concat(selectMany('entrees',2,style,saison,budgetLvl,forbidden))});
+      out.sections.push({titre:'Plats chauds', items:selectMany('plats',3,style,saison,budgetLvl,forbidden)});
+      out.sections.push({titre:'Accompagnements', items:selectMany('accompagnements',3,style,saison,budgetLvl,forbidden)});
+      const from = selectMany('fromages',2,style,saison,budgetLvl,forbidden); if(from.length) out.sections.push({titre:'Fromages', items:from});
+      out.sections.push({titre:'Desserts', items:selectMany('desserts',4,style,saison,budgetLvl,forbidden)});
+    }
+    else if(format === 'cocktail'){
+      // Le cocktail dînatoire EST le repas : plus de bouchées, pas de vin d'honneur séparé
+      out.sections.push({titre:'Pièces froides', items:selectMany('bouchees_froides',7,style,saison,budgetLvl,forbidden)});
+      out.sections.push({titre:'Pièces chaudes', items:selectMany('bouchees_chaudes',7,style,saison,budgetLvl,forbidden)});
+      out.sections.push({titre:'Mini-desserts', items:selectMany('mini_desserts',5,style,saison,budgetLvl,forbidden)});
+    }
+    else if(format === 'foodtruck'){
+      out.sections.push({titre:'Stands food-truck', items:selectMany('foodtruck',4,style,saison,budgetLvl,forbidden)});
+      out.sections.push({titre:'À grignoter', items:selectMany('bouchees_froides',3,style,saison,budgetLvl,forbidden)});
+      out.sections.push({titre:'Desserts nomades', items:selectMany('mini_desserts',3,style,saison,budgetLvl,forbidden)});
+    }
+    else if(format === 'garden'){
+      out.sections.push({titre:'Buffet de salades raffinées', items:selectMany('salades',4,style,saison,budgetLvl,forbidden)});
+      out.sections.push({titre:'Plats à partager', items:selectMany('plats',2,style,saison,budgetLvl,forbidden).concat(selectMany('accompagnements',2,style,saison,budgetLvl,forbidden))});
+      const from = selectMany('fromages',2,style,saison,budgetLvl,forbidden); if(from.length) out.sections.push({titre:'Fromages', items:from});
+      out.sections.push({titre:'Desserts de jardin', items:selectMany('mini_desserts',3,style,saison,budgetLvl,forbidden).concat(selectMany('desserts',1,style,saison,budgetLvl,forbidden))});
+    }
+
+    // Boissons
+    out.boissons = C.boissons[boissonsKey] || C.boissons.classiques;
+
+    return out;
+  }
+
+  return { generate, _catalogue: C };
+})();
+
+function pinterestUrl(query){return 'https://www.pinterest.com/search/pins/?q='+encodeURIComponent(query);}
+
 function renderAssistant(){
   const cont=document.getElementById('assistant-content');
   if(!cont)return;
