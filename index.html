@@ -281,7 +281,7 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(62,24,40,0.45);z-index:400;align-items:center;justify-content:center;padding:18px;}
 .modal-overlay.open{display:flex;}
-.modal-box{background:#fff;border-radius:18px;padding:26px;width:100%;max-width:440px;max-height:85vh;overflow-y:auto;box-shadow:0 24px 80px rgba(62,24,40,0.25);}
+.modal-box{background:#fff;border-radius:18px;padding:26px;width:100%;max-width:560px;max-height:85vh;overflow-y:auto;box-shadow:0 24px 80px rgba(62,24,40,0.25);}
 .modal-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--dark);margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;}
 .modal-x{background:none;border:none;font-size:20px;color:var(--tl);cursor:pointer;line-height:1;}
 .m-field{margin-bottom:12px;}
@@ -297,7 +297,29 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 .picker-opt.sel{background:var(--pink-pale);color:var(--pink);font-weight:700;}
 .m-pick{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'Lora',serif;font-size:13px;color:var(--dark);outline:none;background:var(--bg);text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;}
 .m-pick:hover{border-color:var(--pink);}
-.card{background:#fff;border:1px solid #f0e8ec;border-radius:16px;}
+.card{background:#fff;border:1px solid #f0e8ec;border-radius:16px;margin-bottom:14px;}
+/* Espacement et lisibilité du contenu Assistant */
+#assist-content .card{padding:20px 22px !important;}
+#assist-content .assist-card{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:13px 16px;margin-bottom:10px;}
+#assist-content .assist-card-body{font-size:13px;color:var(--mid);line-height:1.7;margin-top:3px;}
+#assist-content .assist-card-title{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--dark);margin-bottom:5px;}
+/* Liens Pinterest inline (générés avec style en dur) → forcer le style bouton rose */
+#assist-content a[href*="pinterest"]{display:inline-block !important;padding:8px 15px !important;background:var(--pink-pale) !important;border:1.5px solid var(--pink-light) !important;border-radius:10px !important;text-decoration:none !important;color:var(--pink-dark) !important;font-size:12px !important;font-weight:700 !important;font-family:'Lora',serif !important;margin-top:8px;transition:background .15s;}
+#assist-content a[href*="pinterest"]:hover{background:var(--pink) !important;color:#fff !important;border-color:var(--pink) !important;}
+#assist-content p{line-height:1.7;margin-bottom:10px;color:var(--mid);}
+#assist-content ol,#assist-content ul{padding-left:22px;margin-bottom:12px;line-height:1.8;}
+#assist-content li{margin-bottom:6px;color:var(--mid);}
+#assist-content h3,#assist-content h4{margin:18px 0 8px;}
+#assist-content > div > div{margin-bottom:4px;}
+/* Boutons Assistant bien identifiables (Pinterest, actions) */
+#assist-content .btn-sec{display:inline-flex;align-items:center;gap:6px;background:var(--pink-pale) !important;border:1.5px solid var(--pink-light) !important;color:var(--pink-dark) !important;border-radius:10px;padding:9px 16px !important;font-family:'Lora',serif;font-size:13px;font-weight:700;cursor:pointer;margin:6px 6px 6px 0;transition:background .15s;}
+#assist-content .btn-sec:hover{background:var(--pink) !important;color:#fff !important;border-color:var(--pink) !important;}
+#assist-content button{font-family:'Lora',serif;}
+/* Séparation visuelle entre blocs de style/morphologie */
+#assist-content .assist-block{padding:14px 0;border-bottom:1px solid var(--border);}
+#assist-content .assist-block:last-child{border-bottom:none;}
+.btn-sec{display:inline-flex;align-items:center;gap:6px;background:var(--pink-pale);border:1.5px solid var(--pink-light);color:var(--pink-dark);border-radius:10px;padding:9px 16px;font-family:'Lora',serif;font-size:13px;font-weight:700;cursor:pointer;margin:6px 6px 6px 0;}
+.btn-sec:hover{background:var(--pink);color:#fff;border-color:var(--pink);}
 #assist-content ol,#assist-content ul{padding-left:24px;}
 .btn-sec{padding:9px 16px;border:1.5px solid var(--border);border-radius:10px;background:#fff;color:var(--mid);font-family:'Lora',serif;font-size:13px;cursor:pointer;}
 .btn-sec:hover{background:var(--pink-pale);}
@@ -905,6 +927,41 @@ fAuth.onAuthStateChanged(window.firebaseAuth,user=>{
 
 <script>
 let USER={}, GUESTS=[], BUDGET=[], CHECKLIST=[], NOTES='', VENDORS_FAV=[], VENDORS_CHO=[], TABLES=[], DRIVE_URL='', DECO_CHECKED={}, DECO_CUSTOM={}, MENUQTY={}, MENU=[];
+const MONTHS=["12 à 18 mois avant","9 à 12 mois avant","6 à 9 mois avant","3 à 6 mois avant","2 à 3 mois avant","1 mois avant","2 semaines avant","1 semaine avant","La veille","Jour J","Après le mariage"];
+const DEF_TASKS=[
+  {id:1,text:"Choisir la date du mariage",done:false,month:"12 à 18 mois avant"},{id:2,text:"Définir le budget total",done:false,month:"12 à 18 mois avant"},{id:3,text:"Déterminer le nombre d'invités",done:false,month:"12 à 18 mois avant"},{id:4,text:"Établir une liste d'invités provisoire",done:false,month:"12 à 18 mois avant"},{id:5,text:"Rechercher des lieux de réception",done:false,month:"12 à 18 mois avant"},{id:6,text:"Visiter plusieurs lieux",done:false,month:"12 à 18 mois avant"},{id:7,text:"Signer le contrat du lieu",done:false,month:"12 à 18 mois avant"},{id:8,text:"Réserver la mairie",done:false,month:"12 à 18 mois avant"},{id:9,text:"Définir le thème et les couleurs",done:false,month:"12 à 18 mois avant"},{id:10,text:"Rechercher un traiteur",done:false,month:"12 à 18 mois avant"},{id:11,text:"Rechercher un photographe",done:false,month:"12 à 18 mois avant"},{id:12,text:"Rechercher un DJ ou groupe",done:false,month:"12 à 18 mois avant"},
+  {id:13,text:"Envoyer les Save the Date",done:false,month:"9 à 12 mois avant"},{id:14,text:"Choisir les témoins",done:false,month:"9 à 12 mois avant"},{id:15,text:"Choisir les demoiselles d'honneur / garçons d'honneur",done:false,month:"9 à 12 mois avant"},{id:16,text:"Leur proposer officiellement leur rôle",done:false,month:"9 à 12 mois avant"},{id:17,text:"Commencer les essayages",done:false,month:"9 à 12 mois avant"},{id:18,text:"Choisir la robe de mariée",done:false,month:"9 à 12 mois avant"},{id:19,text:"Choisir le costume",done:false,month:"9 à 12 mois avant"},{id:20,text:"Réserver le traiteur",done:false,month:"9 à 12 mois avant"},{id:21,text:"Réserver le photographe",done:false,month:"9 à 12 mois avant"},{id:22,text:"Réserver le DJ / groupe",done:false,month:"9 à 12 mois avant"},{id:23,text:"Réserver un vidéaste",done:false,month:"9 à 12 mois avant"},{id:24,text:"Contacter un fleuriste",done:false,month:"9 à 12 mois avant"},{id:25,text:"Réserver le coiffeur",done:false,month:"9 à 12 mois avant"},{id:26,text:"Réserver le maquilleur",done:false,month:"9 à 12 mois avant"},
+  {id:27,text:"Rechercher des hébergements invités",done:false,month:"6 à 9 mois avant"},{id:28,text:"Réserver des logements",done:false,month:"6 à 9 mois avant"},{id:29,text:"Choisir les alliances",done:false,month:"6 à 9 mois avant"},{id:30,text:"Lancer la création des faire-part",done:false,month:"6 à 9 mois avant"},{id:31,text:"Définir le menu avec le traiteur",done:false,month:"6 à 9 mois avant"},{id:32,text:"Prévoir les régimes alimentaires",done:false,month:"6 à 9 mois avant"},{id:33,text:"Choisir les boissons",done:false,month:"6 à 9 mois avant"},{id:34,text:"Réserver le gâteau",done:false,month:"6 à 9 mois avant"},{id:35,text:"Réserver les transports (navettes, voiture)",done:false,month:"6 à 9 mois avant"},{id:36,text:"Réserver les animations (photobooth, enfants…)",done:false,month:"6 à 9 mois avant"},{id:37,text:"Choisir la décoration principale",done:false,month:"6 à 9 mois avant"},{id:38,text:"Prévenir les témoins concernant l'organisation des EVJF / EVG",done:false,month:"6 à 9 mois avant"},
+  {id:39,text:"Envoyer les faire-part",done:false,month:"3 à 6 mois avant"},{id:40,text:"Acheter les accessoires (chaussures, bijoux…)",done:false,month:"3 à 6 mois avant"},{id:41,text:"Finaliser la décoration",done:false,month:"3 à 6 mois avant"},{id:42,text:"Commander les éléments de papeterie",done:false,month:"3 à 6 mois avant"},{id:43,text:"Prévoir les centres de table",done:false,month:"3 à 6 mois avant"},{id:44,text:"Organiser les animations",done:false,month:"3 à 6 mois avant"},{id:45,text:"Réaliser un essai coiffure",done:false,month:"3 à 6 mois avant"},{id:46,text:"Réaliser un essai maquillage",done:false,month:"3 à 6 mois avant"},{id:47,text:"Commencer le plan de table",done:false,month:"3 à 6 mois avant"},{id:48,text:"Préparer les discours",done:false,month:"3 à 6 mois avant"},
+  {id:49,text:"Relancer les invités sans réponse",done:false,month:"2 à 3 mois avant"},{id:50,text:"Finaliser la liste des invités",done:false,month:"2 à 3 mois avant"},{id:51,text:"Ajuster le plan de table",done:false,month:"2 à 3 mois avant"},{id:52,text:"Confirmer les prestataires",done:false,month:"2 à 3 mois avant"},{id:53,text:"Commander les cadeaux invités",done:false,month:"2 à 3 mois avant"},{id:54,text:"Préparer les livrets de cérémonie",done:false,month:"2 à 3 mois avant"},{id:55,text:"Planifier le déroulé précis du jour J",done:false,month:"2 à 3 mois avant"},{id:56,text:"Prévoir les musiques clés",done:false,month:"2 à 3 mois avant"},
+  {id:57,text:"Donner le nombre d'invités final au traiteur",done:false,month:"1 mois avant"},{id:58,text:"Finaliser le plan de table",done:false,month:"1 mois avant"},{id:59,text:"Finaliser le planning du jour J",done:false,month:"1 mois avant"},{id:60,text:"Préparer les paiements prestataires",done:false,month:"1 mois avant"},{id:61,text:"Vérifier les tenues complètes",done:false,month:"1 mois avant"},{id:62,text:"Faire les derniers essayages",done:false,month:"1 mois avant"},{id:63,text:"Vérifier tous les contrats",done:false,month:"1 mois avant"},{id:64,text:"S'amuser à l'EVJF / EVG",done:false,month:"1 mois avant"},
+  {id:65,text:"Récupérer la robe et le costume",done:false,month:"2 semaines avant"},{id:66,text:"Récupérer les alliances",done:false,month:"2 semaines avant"},{id:67,text:"Vérifier que tout est en ordre avec les prestataires",done:false,month:"2 semaines avant"},{id:68,text:"Préparer les éléments de décoration",done:false,month:"2 semaines avant"},{id:69,text:"Organiser la logistique finale",done:false,month:"2 semaines avant"},
+  {id:70,text:"Tester les chaussures",done:false,month:"1 semaine avant"},{id:71,text:"Vérifier la météo",done:false,month:"1 semaine avant"},{id:72,text:"Finaliser le plan de table imprimé",done:false,month:"1 semaine avant"},{id:73,text:"Préparer tous les éléments à transporter",done:false,month:"1 semaine avant"},{id:74,text:"Briefer les proches (rôles, timing)",done:false,month:"1 semaine avant"},{id:75,text:"Se reposer",done:false,month:"1 semaine avant"},
+  {id:76,text:"Installer la décoration",done:false,month:"La veille"},{id:77,text:"Vérifier les tenues",done:false,month:"La veille"},{id:78,text:"Préparer les alliances",done:false,month:"La veille"},{id:79,text:"Préparer les affaires du lendemain",done:false,month:"La veille"},{id:80,text:"Relire le planning",done:false,month:"La veille"},{id:81,text:"Se coucher tôt",done:false,month:"La veille"},
+  {id:82,text:"Se préparer calmement",done:false,month:"Jour J"},{id:83,text:"Accueillir les prestataires",done:false,month:"Jour J"},{id:84,text:"Suivre le planning",done:false,month:"Jour J"},{id:85,text:"Déléguer la gestion",done:false,month:"Jour J"},{id:86,text:"Profiter pleinement de la journée",done:false,month:"Jour J"},
+  {id:87,text:"Envoyer les remerciements (dans le mois)",done:false,month:"Après le mariage"},{id:88,text:"Trier et sélectionner les photos pour un album",done:false,month:"Après le mariage"},{id:89,text:"Régler les derniers paiements",done:false,month:"Après le mariage"},{id:90,text:"Mettre à jour les documents administratifs",done:false,month:"Après le mariage"}
+];
+const DEF_BUDGET=[
+  {id:1,cat:"Lieu de réception",est:2000,reel:0},
+  {id:2,cat:"Traiteur",est:2000,reel:0},
+  {id:3,cat:"Photographe",est:500,reel:0},
+  {id:4,cat:"Vidéaste",est:500,reel:0},
+  {id:5,cat:"DJ ou groupe de musique",est:1000,reel:0},
+  {id:6,cat:"Officiant de cérémonie",est:100,reel:0},
+  {id:7,cat:"Fleuriste",est:600,reel:0},
+  {id:8,cat:"Boutique de robe de mariée",est:2000,reel:0},
+  {id:9,cat:"Costumier / tailleur",est:1000,reel:0},
+  {id:10,cat:"Coiffeur(se)",est:200,reel:0},
+  {id:11,cat:"Maquilleur(se)",est:100,reel:0},
+  {id:12,cat:"Accessoiriste",est:100,reel:0},
+  {id:13,cat:"Location de matériel",est:1000,reel:0},
+  {id:14,cat:"Animateurs",est:800,reel:0},
+  {id:15,cat:"Faire-parts / Imprimeur",est:100,reel:0},
+  {id:16,cat:"Location de véhicule",est:500,reel:0},
+  {id:17,cat:"Navettes / transport invités",est:500,reel:0},
+  {id:18,cat:"Hébergement des invités",est:2000,reel:0}
+];
+
 const DEF_MENU=[{id:1,section:"Vin d'honneur / Cocktail",items:[{id:11,text:"Champagne & vins"},{id:12,text:"Cocktails & softs"},{id:13,text:"Amuse-bouches (canapés, verrines, petits fours)"}]},{id:2,section:"Entrée",items:[{id:21,text:"Froide ou chaude (foie gras, tartare de poisson, salade raffinée...)"}]},{id:3,section:"Plat principal",items:[{id:31,text:"Viande, poisson ou option végétarienne"},{id:32,text:"Accompagnements (légumes, féculents)"}]},{id:4,section:"Fromage",items:[{id:41,text:"Plateau de fromages variés"},{id:42,text:"Salade"}]},{id:5,section:"Dessert",items:[{id:51,text:"Pièce montée, Wedding cake ou dessert à l'assiette"}]}];
 let _cdTimer=null;
 
@@ -1294,6 +1351,7 @@ function renderChecklist(){
       <button class="m-pick" style="width:auto;min-width:150px;" onclick="pickTaskMonth()">${window._newTaskMonth} <span style="color:var(--tl);">▾</span></button>
       <button class="btn" onclick="addTask()">+ Ajouter</button>
     </div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:14px;"><button class="btn-outline" style="font-size:12px;padding:6px 14px;" onclick="resetTasks()">↺ Restaurer les tâches par défaut</button></div>
     ${monthsWithTasks.length?monthsWithTasks.map(m=>{
       const tasks=grouped[m];
       return`<div style="margin-bottom:20px;">
@@ -1310,6 +1368,20 @@ function renderChecklist(){
 }
 
 
+async function pickTaskMonth(){
+  window._newTaskText=document.getElementById('new-task-text')?.value||'';
+  const opts=(window._monthOpts&&window._monthOpts.length?window._monthOpts:MONTHS).concat(['Personnalisé']);
+  const uniq=[...new Set(opts)];
+  const v=await appPicker('Période',uniq,window._newTaskMonth);
+  if(v!==null&&v!==undefined)window._newTaskMonth=v;
+  renderChecklist();
+}
+async function resetTasks(){
+  if(await appConfirm('Réinitialiser les tâches par défaut ? Vos modifications seront perdues.')){
+    CHECKLIST=DEF_TASKS.map(t=>({...t,done:false}));
+    saveData('tasks',CHECKLIST);renderChecklist();renderDashboard();
+  }
+}
 function addTask(){
   const txt=document.getElementById('new-task-text').value.trim();
   const month=window._newTaskMonth||(window._monthOpts||[])[0]||'Autres';
@@ -1351,6 +1423,7 @@ function renderBudget(){
       <input id="new-bgt-est" class="m-input" type="number" placeholder="Budget estimé €" style="width:160px;">
       <button class="btn" onclick="addBudgetCat()">+ Ajouter</button>
     </div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:14px;"><button class="btn-outline" style="font-size:12px;padding:6px 14px;" onclick="resetBudget()">↺ Restaurer les catégories par défaut</button></div>
     ${BUDGET.length?BUDGET.map(item=>{
       const est=parseFloat(item.est||item.budget||0), reel=parseFloat(item.reel||0), paye=parseFloat(item.paye||0);
       const pct=est>0?Math.min(reel/est*100,100):0;
@@ -1377,6 +1450,12 @@ function renderBudget(){
 }
 
 
+async function resetBudget(){
+  if(await appConfirm('Restaurer les catégories par défaut ? Les catégories ajoutées seront supprimées.')){
+    BUDGET=DEF_BUDGET.map(d=>({...d,reel:0,paye:0}));
+    saveData('budget',BUDGET);renderBudget();renderDashboard();
+  }
+}
 function addBudgetCat(){
   const cat=document.getElementById('new-bgt-cat').value.trim();
   const est=Number(document.getElementById('new-bgt-est').value)||0;
@@ -1695,8 +1774,8 @@ function renderSeating(){
       <button class="btn" onclick="addTable()">+ Table</button>
     </div>
     <div class="section-actions">
-      <button class="btn-outline" onclick="autoSeatAll()">Placement automatique</button>
-      <button class="btn-outline" onclick="openConflictsModal()">Ne pas placer côte à côte${SEAT_CONFLICTS.length?' ('+SEAT_CONFLICTS.length+')':''}</button>
+      <button class="btn-outline" onclick="openAutoSeatModal()">Placement automatique</button>
+      <button class="btn-outline" id="pan-toggle" onclick="togglePanMode()">✋ Déplacer le plan</button>
       <button class="btn-outline" onclick="resetSeating()">Réinitialiser</button>
       <button class="btn-outline" onclick="exportPlanPDF()">Export PDF</button>
       <span style="font-size:12px;color:var(--tl);margin-left:auto;">${unseated.length} invité${unseated.length>1?'s':''} non placé${unseated.length>1?'s':''}</span>
@@ -1726,6 +1805,14 @@ function renderSeating(){
 
 // Visualisation dessinée — même géométrie que l'application
 // Visualisation dessinée — même géométrie que l'application
+let panMode=false;
+function togglePanMode(){
+  panMode=!panMode;
+  const btn=document.getElementById('pan-toggle');
+  if(btn){btn.style.background=panMode?'var(--pink)':'';btn.style.color=panMode?'#fff':'';btn.style.borderColor=panMode?'var(--pink)':'';}
+  const wrap=document.getElementById('tp-visual');
+  if(wrap)wrap.style.cursor=panMode?'grab':'default';
+}
 function drawPlanVisual(){
   const wrap=document.getElementById('tp-visual');
   if(!wrap)return;
@@ -1739,21 +1826,24 @@ function drawPlanVisual(){
     const placed=GUESTS.filter(g=>g.seatTableId===t.id);
     const n=Math.min(t.seats||6,12);
     const isR=t.shape==='round',isSq=t.shape==='square';
-    const cx=t.x+70,cy=t.y+70;
+    // Conteneur du groupe table+chaises, positionné en (t.x,t.y), centre interne à (70,70)
+    const group=document.createElement('div');
+    group.style.cssText=`position:absolute;left:${t.x}px;top:${t.y}px;width:140px;height:140px;`;
+    const cx=70,cy=70;
     let placedIdx=0;
     for(let i=0;i<n;i++){
       let sx,sy;
       if(isR){const orbit=RND/2+GAP+SEAT/2;const a=(i/n)*2*Math.PI-Math.PI/2;sx=cx+orbit*Math.cos(a);sy=cy+orbit*Math.sin(a);}
       else if(isSq){const perSide=Math.ceil(n/4);const side=Math.floor(i/perSide);const idxOnSide=i%perSide;const realPerSide=(side===3)?(n-3*perSide):perSide;const step=SQ/(Math.max(realPerSide,1)+1);const pos=step*(idxOnSide+1);const off=SQ/2+GAP;if(side===0){sx=cx-SQ/2+pos;sy=cy-off;}else if(side===1){sx=cx+off;sy=cy-SQ/2+pos;}else if(side===2){sx=cx-SQ/2+pos;sy=cy+off;}else{sx=cx-off;sy=cy-SQ/2+pos;}}
       else{const half=Math.ceil(n/2);const isTop=i<half;const cnt=isTop?half:(n-half);const idx=isTop?i:i-half;const step=TW/(Math.max(cnt,1)+1);sx=cx-TW/2+step*(idx+1);sy=isTop?cy-(TH/2+GAP+SEAT/2):cy+(TH/2+GAP+SEAT/2);}
-      const hidden=t.hiddenSeats.includes(i);
-      if(hidden)continue;
+      if(t.hiddenSeats.includes(i))continue;
       const g=placed[placedIdx];if(g)placedIdx++;
       const seat=document.createElement('div');
       seat.style.cssText=`position:absolute;left:${sx-SEAT/2}px;top:${sy-SEAT/2}px;width:${SEAT}px;height:${SEAT}px;border-radius:50%;${g?'background:var(--pink);border:1.5px solid var(--pink-dark);':'background:#fff;border:1.5px dashed var(--pink-light);'}display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;font-weight:700;cursor:pointer;z-index:5;`;
-      if(g){seat.textContent=(g.nom||'?').split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase();seat.title=g.nom;seat.onclick=ev=>{ev.stopPropagation();openSeatMenu(t.id,i,g.id);};}
-      else{seat.title='Chaise libre';seat.onclick=ev=>{ev.stopPropagation();openSeatMenu(t.id,i,null);};}
-      inner.appendChild(seat);
+      const seatIdx=i;
+      if(g){seat.textContent=(g.nom||'?').split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase();seat.title=g.nom;seat.onclick=ev=>{ev.stopPropagation();if(!panMode)openSeatMenu(t.id,seatIdx,g.id);};}
+      else{seat.title='Chaise libre';seat.onclick=ev=>{ev.stopPropagation();if(!panMode)openSeatMenu(t.id,seatIdx,null);};}
+      group.appendChild(seat);
     }
     const tbl=document.createElement('div');
     let w,h2,br;
@@ -1763,29 +1853,38 @@ function drawPlanVisual(){
     tbl.title=`${t.nom} — glisser pour déplacer, cliquer pour renommer`;
     let dragging=false,moved=false,sx0=0,sy0=0,ox=t.x,oy=t.y;
     tbl.addEventListener('pointerdown',e=>{
+      if(panMode)return;
       dragging=true;moved=false;sx0=e.clientX;sy0=e.clientY;ox=t.x;oy=t.y;
       try{tbl.setPointerCapture(e.pointerId);}catch(_){}
-      tbl.style.cursor='grabbing';tbl.style.zIndex='20';e.preventDefault();e.stopPropagation();
+      tbl.style.cursor='grabbing';group.style.zIndex='30';e.preventDefault();e.stopPropagation();
     });
     tbl.addEventListener('pointermove',e=>{
       if(!dragging)return;
       const dx=e.clientX-sx0,dy=e.clientY-sy0;
       if(Math.abs(dx)>4||Math.abs(dy)>4)moved=true;
       t.x=Math.max(0,ox+dx);t.y=Math.max(0,oy+dy);
-      // Déplacer juste cet élément + ses chaises sans tout redessiner : on bouge le conteneur table
-      const ncx=t.x+70,ncy=t.y+70;
-      tbl.style.left=(ncx-w/2)+'px';tbl.style.top=(ncy-h2/2)+'px';
+      // Déplacer tout le groupe (table + chaises) ensemble
+      group.style.left=t.x+'px';group.style.top=t.y+'px';
     });
     tbl.addEventListener('pointerup',e=>{
       if(!dragging)return;
-      dragging=false;tbl.style.cursor='grab';tbl.style.zIndex='10';
-      if(moved){saveData('tables',TABLES);drawPlanVisual();}
-      else{renameTable(t.id);}
+      dragging=false;tbl.style.cursor='grab';group.style.zIndex='';
+      if(moved){saveData('tables',TABLES);}
+      else if(!panMode){renameTable(t.id);}
     });
-    inner.appendChild(tbl);
+    group.appendChild(tbl);
+    inner.appendChild(group);
   });
   wrap.innerHTML='';
   wrap.appendChild(inner);
+  // Mode pan : faire défiler la zone au glisser
+  if(panMode){
+    let panning=false,px=0,py=0,sl=0,st=0;
+    wrap.onpointerdown=e=>{if(e.target!==wrap&&e.target!==inner)return;panning=true;px=e.clientX;py=e.clientY;sl=wrap.scrollLeft;st=wrap.scrollTop;wrap.style.cursor='grabbing';};
+    wrap.onpointermove=e=>{if(!panning)return;wrap.scrollLeft=sl-(e.clientX-px);wrap.scrollTop=st-(e.clientY-py);};
+    wrap.onpointerup=()=>{panning=false;wrap.style.cursor='grab';};
+    wrap.onpointerleave=()=>{panning=false;};
+  }else{wrap.onpointerdown=null;wrap.onpointermove=null;wrap.onpointerup=null;}
 }
 
 // Menu d'une chaise : placer / retirer / masquer
@@ -1842,21 +1941,23 @@ function unseatGuest(gid){
   if(g){g.seatTableId=null;g.seatIdx=null;saveData('guests',GUESTS);renderSeating();}
 }
 
-function openConflictsModal(){
+function openAutoSeatModal(){
   const names=GUESTS.map(g=>g.nom).filter(Boolean);
-  openModal(`
-    <div class="modal-title">Ne pas placer côte à côte <button class="modal-x" onclick="closeModal()">×</button></div>
-    <div style="font-size:12px;color:var(--tl);margin-bottom:14px;line-height:1.6;">Indiquez les paires d'invités à ne jamais placer à la même table lors du placement automatique.</div>
-    <div id="conflicts-list">${renderConflictsList()}</div>
-    <div class="m-field" style="margin-top:16px;"><label class="m-label">Ajouter une paire</label>
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        <button class="m-pick" id="cf-a" onclick="pickConflict('a')">Premier invité ▾</button>
-        <button class="m-pick" id="cf-b" onclick="pickConflict('b')">Second invité ▾</button>
-        <button class="btn" onclick="addConflict()">Ajouter la paire</button>
-      </div>
-    </div>
-    <div class="m-actions"><button class="btn-outline" onclick="closeModal()">Fermer</button></div>`);
   window._cfA=null;window._cfB=null;
+  openModal(`
+    <div class="modal-title">Placement automatique <button class="modal-x" onclick="closeModal()">×</button></div>
+    <div style="font-size:13px;color:var(--mid);line-height:1.6;margin-bottom:16px;">Les invités confirmés seront placés en priorité. Vous pouvez d'abord indiquer les paires de personnes à ne pas placer à la même table.</div>
+    <div style="font-family:'Playfair Display',serif;font-size:15px;color:var(--dark);margin-bottom:8px;">Ne pas placer ensemble</div>
+    <div id="conflicts-list">${renderConflictsList()}</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;">
+      <button class="m-pick" id="cf-a" onclick="pickConflict('a')">Premier invité ▾</button>
+      <button class="m-pick" id="cf-b" onclick="pickConflict('b')">Second invité ▾</button>
+      <button class="btn-outline" onclick="addConflict()">+ Ajouter la paire</button>
+    </div>
+    <div class="m-actions" style="margin-top:20px;">
+      <button class="btn" style="flex:1;" onclick="runAutoSeat()">Lancer le placement</button>
+      <button class="btn-outline" onclick="closeModal()">Annuler</button>
+    </div>`);
 }
 function renderConflictsList(){
   if(!SEAT_CONFLICTS.length)return '<div style="font-size:13px;color:var(--tl);font-style:italic;">Aucune paire définie.</div>';
@@ -1880,18 +1981,17 @@ function addConflict(){
   document.getElementById('conflicts-list').innerHTML=renderConflictsList();
   document.getElementById('cf-a').innerHTML='Premier invité ▾';
   document.getElementById('cf-b').innerHTML='Second invité ▾';
-  renderSeating();
 }
 function delConflict(i){
   SEAT_CONFLICTS.splice(i,1);saveData('seat_conflicts',SEAT_CONFLICTS);
   const list=document.getElementById('conflicts-list');if(list)list.innerHTML=renderConflictsList();
-  renderSeating();
 }
 function conflictsAtTable(tableId,guestName){
   const mates=GUESTS.filter(g=>g.seatTableId===tableId).map(g=>g.nom);
   return SEAT_CONFLICTS.some(p=>(p[0]===guestName&&mates.includes(p[1]))||(p[1]===guestName&&mates.includes(p[0])));
 }
-function autoSeatAll(){
+function runAutoSeat(){
+  closeModal();
   if(!TABLES.length){appAlert2('Créez d\'abord des tables.');return;}
   const order=['confirmée','en attente','déclinée'];
   const unseated=GUESTS.filter(g=>!g.seatTableId).sort((a,b)=>order.indexOf(a.presence||'en attente')-order.indexOf(b.presence||'en attente'));
@@ -1901,9 +2001,7 @@ function autoSeatAll(){
     for(const t of TABLES){
       const cap=t.seats||6;
       const count=GUESTS.filter(x=>x.seatTableId===t.id).length;
-      if(count<cap&&!conflictsAtTable(t.id,g.nom)){
-        g.seatTableId=t.id;placed=true;break;
-      }
+      if(count<cap&&!conflictsAtTable(t.id,g.nom)){g.seatTableId=t.id;placed=true;break;}
     }
     if(!placed)notPlaced++;
   });
@@ -2306,7 +2404,7 @@ function renderDecor(){
   if(!el)return;
   const data=getDecoData();
   window._decoCats=Object.keys(data);
-  el.innerHTML=window._decoCats.map((cat,ci)=>{
+  el.innerHTML='<div style="display:flex;justify-content:flex-end;margin-bottom:14px;"><button class="btn-outline" style="font-size:12px;padding:6px 14px;" onclick="resetDecorations()">↺ Restaurer les décorations par défaut</button></div>'+window._decoCats.map((cat,ci)=>{
     const items=data[cat];
     const done=items.filter((_,i)=>DECO_CHECKED[cat+i]).length;
     return`<div class="panel" style="margin-bottom:14px;padding:0;overflow:hidden;">
@@ -2329,6 +2427,12 @@ function renderDecor(){
       </div>
     </div>`;
   }).join('');
+}
+async function resetDecorations(){
+  if(await appConfirm('Réinitialiser les décorations par défaut ? Vos modifications seront perdues.')){
+    DECO_CHECKED={};DECO_CUSTOM={};
+    saveData('deco',DECO_CHECKED);saveData('deco_custom',DECO_CUSTOM);renderDecor();
+  }
 }
 function toggleDecoIdx(ci,i,checked){
   const cat=window._decoCats[ci];
@@ -2501,107 +2605,84 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusKm){
   const wrap=document.getElementById('vnd-results-wrap');
   if(!wrap)return;
   wrap.innerHTML='<p style="text-align:center;padding:20px;font-size:13px;color:var(--tl);">Recherche en cours…</p>';
+  const radiusMeters=radiusKm*1000;
   const results=[];const seen=new Set();
   const hav=(a,b,c2,d)=>{const R=6371,dLat=(c2-a)*Math.PI/180,dLon=(d-b)*Math.PI/180,x=Math.sin(dLat/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c2*Math.PI/180)*Math.sin(dLon/2)**2;return Math.round(R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))*10)/10;};
   function addPlace(nom,adresse,tel,site,plat,plng){
     const key=(nom||'').toLowerCase().trim();
     if(!nom||nom.length<3||seen.has(key))return;
     const la=parseFloat(plat),lo=parseFloat(plng);
-    if(!isNaN(la)&&!isNaN(lo)&&la!==0&&lo!==0){
+    const hasCoords=!isNaN(la)&&!isNaN(lo)&&la!==0&&lo!==0;
+    if(hasCoords){
       const dist=hav(lat,lng,la,lo);
       if(dist>radiusKm)return;
       seen.add(key);
       results.push({id:Date.now()+Math.random(),nom,categorie:catLabel,adresse:adresse||'',tel:tel||'',site:site||'',distance:dist,notes:''});
+    }else{
+      const dept=(document.getElementById('vnd-postal')?.value||'').trim().substring(0,2);
+      if(!dept||!adresse||!adresse.includes(dept))return;
+      seen.add(key);
+      results.push({id:Date.now()+Math.random(),nom,categorie:catLabel,adresse:adresse||'',tel:tel||'',site:site||'',distance:null,notes:''});
     }
   }
-  async function srcNominatim(){
-    const nt={salle:['salle mariage','domaine mariage','château mariage'],traiteur:['traiteur mariage'],photographe:['photographe mariage'],videaste:['vidéaste mariage'],dj:['DJ mariage'],fleuriste:['fleuriste mariage'],patisserie:['pâtisserie mariage','wedding cake'],robe:['boutique mariage','robe mariée'],costume:['costume mariage'],coiffeur:['coiffeur mariage'],beaute:['maquillage mariage'],bijou:['bijouterie alliance'],imprimeur:['faire-part mariage'],voiture:['voiture mariage'],hotel:['hôtel mariage'],decor:['décoration mariage']};
-    const terms=(nt[catKey]||[catLabel+' mariage']).slice(0,2);
-    const deg=radiusKm/60;
-    await Promise.allSettled(terms.map(async term=>{
+  const MIRRORS=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://overpass.openstreetmap.fr/api/interpreter'];
+  const cat=VND_CATEGORIES[catKey];
+  // 1. Overpass par tags (le système validé dans l'app)
+  async function srcOverpassTags(){
+    const parts=cat.tags.map(tag=>{const [k,v]=tag.split('=');return `node["${k}"="${v}"](around:${radiusMeters},${lat},${lng});way["${k}"="${v}"](around:${radiusMeters},${lat},${lng});`;}).join('');
+    const oq=`[out:json][timeout:25];(${parts});out center 60;`;
+    for(const mir of MIRRORS){
       try{
-        const ctrl=new AbortController();setTimeout(()=>ctrl.abort(),10000);
-        const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(term)}&format=json&limit=30&addressdetails=1&countrycodes=fr,be,ch,lu&viewbox=${lng-deg},${lat+deg},${lng+deg},${lat-deg}&bounded=0`,{signal:ctrl.signal,headers:{'Accept-Language':'fr'}});
-        if(!r.ok)return;
+        const ctrl=new AbortController();setTimeout(()=>ctrl.abort(),20000);
+        const r=await fetch(mir+'?data='+encodeURIComponent(oq),{signal:ctrl.signal});
+        if(!r.ok)continue;
         const d=await r.json();
-        d.forEach(e=>{const a=e.address||{};addPlace((e.display_name||'').split(',')[0].trim(),[a.road,a.postcode,a.city||a.town||a.village].filter(Boolean).join(' '),'','',e.lat,e.lon);});
+        (d.elements||[]).filter(e=>e.tags&&e.tags.name).forEach(e=>{
+          addPlace(e.tags.name,[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:postcode'],e.tags['addr:city']].filter(Boolean).join(' '),e.tags.phone||e.tags['contact:phone'],e.tags.website||e.tags['contact:website'],e.lat||(e.center&&e.center.lat),e.lon||(e.center&&e.center.lon));
+        });
+        return;
       }catch(e){}
-    }));
+    }
   }
+  // 2. Annuaire des entreprises (recherche-entreprises.api.gouv.fr) — comme l'app
   async function srcAnnuaire(){
     const qMap={
-      salle:['château','manoir','prieuré','salle','domaine'],
-      traiteur:['traiteur'],photographe:['photographe'],videaste:['vidéaste','videaste'],
-      dj:['dj mariage','dj soirée','dj animation','disc jockey','sonorisation mariage'],
-      fleuriste:['fleuriste','fleurs'],patisserie:['pâtisserie','patisserie','pâtissier'],
-      robe:['mariage','mariée','nuptiale','noces','bridal','wedding','robe','couture'],
-      costume:['smoking','costume','costumier','location tenue','celio','devred','izac'],
-      coiffeur:['coiffeur','coiffure'],beaute:['maquillage','esthétique','esthetique'],
-      bijou:['bijouterie','joaillerie','orfèvrerie'],imprimeur:['faire-part','imprimerie','papeterie'],
-      voiture:['limousine','voiture mariage','location voiture mariage'],
-      hotel:['hôtel','hotel','gîte','gite','hébergement','chambre hôtes','logis'],
-      decor:['décoration','decoration','maisons du monde','centrakor','gifi']
+      salle:['château','manoir','prieuré','salle','domaine'],traiteur:['traiteur'],photographe:['photographe'],
+      videaste:['vidéaste','videaste'],dj:['dj mariage','disc jockey','sonorisation'],fleuriste:['fleuriste'],
+      patisserie:['pâtisserie','pâtissier'],robe:['mariage','mariée','nuptiale','bridal','couture'],
+      costume:['costume','smoking','tailleur'],coiffeur:['coiffeur','coiffure'],beaute:['maquillage','esthétique'],
+      bijou:['bijouterie','joaillerie'],imprimeur:['faire-part','imprimerie'],voiture:['limousine','location voiture'],
+      hotel:['hôtel','gîte','chambre hôtes'],decor:['décoration']
     };
-    const catFilters={
-      salle:['salle polyvalente','salle des fêtes','salle réception','château','manoir','prieuré','abbaye','domaine de','domaine du','domaine les','domaine la'],
-      traiteur:['traiteur'],photographe:['photographe'],videaste:['vidéaste','videaste'],
-      dj:['dj mariage','dj soirée','dj animation','dj événement','disc jockey','sonorisation mariage'],
-      fleuriste:['fleuriste','fleurs'],patisserie:['pâtisserie','patisserie','pâtissier','patissier'],
-      robe:['mariage','mariée','mariee','nuptiale','nuptial','noces','bridal','wedding','couture','robe'],
-      costume:['smoking','costume','costumier','location tenue','celio','devred','izac'],
-      coiffeur:['coiffeur','coiffure','coiff'],beaute:['maquillage','esthétique','esthetique'],
-      bijou:['bijouterie','joaillerie','orfèvrerie','orfevrerie'],imprimeur:['faire-part','imprimerie','papeterie'],
-      voiture:['limousine','voiture mariage','location voiture mariage'],
-      hotel:['hôtel','hotel','gîte','gite','hébergement','hebergement','chambre','logis','auberge'],
-      decor:['décoration','decoration','maisons du monde','centrakor','gifi']
-    };
-    const terms=(qMap[catKey]||[catLabel+' mariage']).slice(0,4);
+    const terms=(qMap[catKey]||[catLabel]).slice(0,3);
     const postalVal=(document.getElementById('vnd-postal')?.value||'').trim();
-    const m2=postalVal.match(/\b(\d{2})\d{0,3}\b/);
-    let dept=m2?m2[1]:'';
-    if(!dept){
-      // déduire le département depuis les coords via reverse nominatim
-      try{const rr=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`,{headers:{'Accept-Language':'fr'}});const dd=await rr.json();dept=(dd.address?.postcode||'').substring(0,2);}catch(e){}
-    }
+    let dept=(postalVal.match(/\b(\d{2})/)||[])[1]||'';
+    if(!dept){try{const rr=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,{headers:{'Accept-Language':'fr'}});const dd=await rr.json();dept=(dd.address&&dd.address.postcode||'').substring(0,2);}catch(e){}}
     if(!dept)return;
-    const depts=new Set([dept]);
-    const n=parseInt(dept);
+    const depts=new Set([dept]);const n=parseInt(dept);
     if(radiusKm>30){[-1,1].forEach(d=>depts.add(String(n+d).padStart(2,'0')));}
-    if(radiusKm>60){[-2,2].forEach(d=>depts.add(String(n+d).padStart(2,'0')));}
     const deptStr=[...depts].join(',');
-    const EXCL_NAF=['64','65','66','68','69','70','84','85','86','87','88','91','92','94','99'];
-    const filters=catFilters[catKey]||[];
     await Promise.allSettled(terms.map(async term=>{
       try{
         const ctrl=new AbortController();setTimeout(()=>ctrl.abort(),10000);
-        const url=`https://recherche-entreprises.api.gouv.fr/search?q=${encodeURIComponent(term)}&departement=${deptStr}&per_page=20&etat_administratif=A`;
-        const r=await fetch(url,{signal:ctrl.signal,headers:{'Accept':'application/json'}});
+        const r=await fetch(`https://recherche-entreprises.api.gouv.fr/search?q=${encodeURIComponent(term)}&departement=${deptStr}&per_page=15&etat_administratif=A`,{signal:ctrl.signal});
         if(!r.ok)return;
         const data=await r.json();
         (data.results||[]).forEach(e=>{
-          const naf=(e.activite_principale||'').substring(0,2);
-          if(EXCL_NAF.includes(naf))return;
-          const nomDisplay=e.nom_complet||e.nom_raison_sociale||'';
-          if(!nomDisplay||nomDisplay.length<2)return;
-          if(filters.length>0){const nl=nomDisplay.toLowerCase();if(!filters.some(f=>nl.includes(f)))return;}
-          const localEtabs=(e.matching_etablissements||[]).filter(m=>[...depts].some(d=>m.code_postal&&m.code_postal.startsWith(d)));
-          if(localEtabs.length>0){
-            localEtabs.forEach(m=>{
-              const coords=(m.coordonnees||'').split(',');
-              const adresse=m.adresse||[m.code_postal,m.libelle_commune].filter(Boolean).join(' ');
-              addPlace(nomDisplay,adresse,'','',coords[0]||lat,coords[1]||lng);
-            });
-          }
+          const nomD=e.nom_complet||e.nom_raison_sociale||'';
+          if(!nomD||nomD.length<3)return;
+          const locEtabs=(e.matching_etablissements||[]).filter(m=>[...depts].some(d=>m.code_postal&&m.code_postal.startsWith(d)));
+          locEtabs.forEach(m=>{const coords=(m.coordonnees||'').split(',');addPlace(nomD,m.adresse||[m.code_postal,m.libelle_commune].filter(Boolean).join(' '),'','',coords[0]||lat,coords[1]||lng);});
         });
       }catch(e){}
     }));
   }
-  await Promise.allSettled([srcNominatim(),srcAnnuaire()]);
-  const sorted=results.sort((a,b)=>(a.distance||999)-(b.distance||999)).slice(0,40);
+  await Promise.allSettled([srcOverpassTags(),srcAnnuaire()]);
+  const sorted=results.sort((a,b)=>(a.distance==null?999:a.distance)-(b.distance==null?999:b.distance)).slice(0,40);
   window._vndResults=sorted;
   if(!sorted.length){
     const gmUrl=`https://www.google.com/maps/search/${encodeURIComponent(catLabel+' mariage')}/@${lat},${lng},12z`;
-    wrap.innerHTML=`<div class="panel" style="text-align:center;"><p style="font-size:13px;color:var(--tl);margin-bottom:14px;">Aucun résultat trouvé. Essayez un rayon plus large ou un autre code postal.</p><a href="${gmUrl}" target="_blank" class="btn" style="text-decoration:none;display:inline-block;">Chercher sur Google Maps</a></div>`;
+    wrap.innerHTML=`<div class="panel" style="text-align:center;"><p style="font-size:13px;color:var(--tl);margin-bottom:14px;">Aucun résultat trouvé. Essayez un rayon plus large.</p><a href="${gmUrl}" target="_blank" class="btn" style="text-decoration:none;display:inline-block;">Chercher sur Google Maps</a></div>`;
     return;
   }
   wrap.innerHTML=`<div class="panel"><div class="panel-title">${sorted.length} résultat${sorted.length>1?'s':''} — ${catLabel}</div>${sorted.map(v=>vndCard(v,'result')).join('')}</div>`;
