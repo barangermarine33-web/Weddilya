@@ -12,7 +12,7 @@
   --bg:#fdf8f5; --dark:#3e1828; --mid:#7a4050; --gold:#c9a84c;
   --white:#ffffff; --border:#f5d5e0;
   --gn:#5a8a6a; --am:#c47a2a; --rd:#c43a3a; --tl:#b07080;
-  --sidebar-w:240px; --topbar-h:60px; --band-h:96px;
+  --sidebar-w:270px; --topbar-h:60px; --band-h:96px;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
@@ -255,7 +255,7 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 .data-table tr:hover td{background:var(--pink-pale);}
 
 /* ── Budget ── */
-.budget-item{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--bg);border-radius:12px;border:1px solid var(--border);font-size:13px;margin-bottom:8px;}
+.budget-item{display:flex;align-items:center;gap:12px;padding:16px 18px;background:#fff;border-radius:14px;border:1px solid var(--border);font-size:13px;margin-bottom:10px;box-shadow:0 2px 10px rgba(212,96,122,0.04);}
 .budget-item-cat{flex:1;font-weight:700;color:var(--dark);}
 .budget-item-bg{color:var(--tl);}
 .budget-item-sp{color:var(--pink);font-weight:700;}
@@ -620,7 +620,7 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
       </svg>
       Weddilya
     </a>
-    <button class="power-btn" onclick="doLogout()" title="Se déconnecter" aria-label="Se déconnecter">
+    <button class="power-btn" onclick="openSettingsPage()" title="Paramètres" aria-label="Paramètres">
       <svg viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 11-12.73 0M12 2v10"/></svg>
     </button>
   </header>
@@ -1142,47 +1142,45 @@ function renderDashboard(){
 
 // ══ CHECKLIST ══
 function renderChecklist(){
-  const el=document.getElementById('checklist-content');
-  if(!el)return;
+  const el2=document.getElementById('checklist-content');
+  if(!el2)return;
+  const esc=s=>(s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+  const done=CHECKLIST.filter(t=>t.done).length, tot=CHECKLIST.length, pct=tot?Math.round(done/tot*100):0;
   const months=[...new Set(CHECKLIST.map(t=>t.month||'Autres'))];
   const monthOpts=(months.length?months:['12 à 18 mois avant','9 à 12 mois avant','6 à 9 mois avant','4 à 6 mois avant','2 à 4 mois avant','1 à 2 mois avant','Dernières semaines','Jour J']);
   window._monthOpts=monthOpts;
   if(!window._newTaskMonth||!monthOpts.includes(window._newTaskMonth))window._newTaskMonth=monthOpts[0];
-  const done=CHECKLIST.filter(t=>t.done).length;
-  el.innerHTML=`
-    <div class="panel" style="margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+  const grouped=CHECKLIST.reduce((a,t)=>{(a[t.month||'Autres']=a[t.month||'Autres']||[]).push(t);return a;},{});
+  const monthsWithTasks=months.filter(m=>grouped[m]&&grouped[m].length);
+  el2.innerHTML=`
+    <div class="panel" style="margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;">
       <div>
-        <div style="font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mid);margin-bottom:4px;">Progression</div>
-        <div style="font-family:'Playfair Display',serif;font-size:26px;color:var(--dark);"><span style="color:var(--pink);">${done}</span> / ${CHECKLIST.length}</div>
+        <div style="font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--tl);margin-bottom:4px;">Progression</div>
+        <div style="font-family:'Playfair Display',serif;font-size:28px;color:var(--dark);">${done}<span style="font-size:14px;color:var(--tl);"> / ${tot}</span></div>
       </div>
-      <div style="flex:1;min-width:160px;max-width:300px;"><div class="progress-bar" style="height:8px;"><div class="progress-fill" style="width:${CHECKLIST.length?Math.round(done/CHECKLIST.length*100):0}%"></div></div></div>
+      <svg viewBox="0 0 36 36" width="68" height="68"><circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--border)" stroke-width="3"/><circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--pink)" stroke-width="3" stroke-dasharray="${pct} 100" stroke-linecap="round" transform="rotate(-90 18 18)"/><text x="18" y="22" text-anchor="middle" font-size="8" fill="var(--dark)" font-family="Playfair Display,serif" font-weight="bold">${pct}%</text></svg>
     </div>
     <div class="section-actions">
       <input id="new-task-text" class="m-input" placeholder="Ajouter une tâche…" value="${(window._newTaskText||'').replace(/"/g,'&quot;')}" style="flex:1;min-width:180px;max-width:380px;">
-      <button class="m-pick" style="width:auto;min-width:150px;" onclick="pickTaskMonth()">${window._newTaskMonth||monthOpts[0]} <span style="color:var(--tl);">▾</span></button>
+      <button class="m-pick" style="width:auto;min-width:150px;" onclick="pickTaskMonth()">${window._newTaskMonth} <span style="color:var(--tl);">▾</span></button>
       <button class="btn" onclick="addTask()">+ Ajouter</button>
     </div>
-    ${months.length?months.map(m=>{
-      const tasks=CHECKLIST.filter(t=>(t.month||'Autres')===m);
+    ${monthsWithTasks.length?monthsWithTasks.map(m=>{
+      const tasks=grouped[m];
       return`<div style="margin-bottom:20px;">
-        <div style="font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--tl);padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:8px;">${m} <span style="color:var(--pink);">(${tasks.filter(t=>t.done).length}/${tasks.length})</span></div>
+        <div style="font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--pink);letter-spacing:.5px;padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:8px;">${esc(m)} <span style="font-size:12px;color:var(--tl);font-weight:400;font-family:'Lora',serif;">(${tasks.filter(t=>t.done).length}/${tasks.length})</span></div>
         ${tasks.map(t=>`<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;font-size:14px;color:${t.done?'var(--tl)':'var(--dark)'};" onmouseover="this.style.background='var(--pink-pale)'" onmouseout="this.style.background=''">
-          <div onclick="toggleTask(${t.id})" style="width:20px;height:20px;border-radius:50%;cursor:pointer;${t.done?'background:var(--gn);border:2px solid var(--gn);':'border:2px solid var(--border);'}flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+          <div onclick="toggleTask(${t.id})" style="width:20px;height:20px;border-radius:50%;cursor:pointer;${t.done?'background:var(--pink);border:2px solid var(--pink);':'border:2px solid var(--border);'}flex-shrink:0;display:flex;align-items:center;justify-content:center;">
             ${t.done?'<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><path d="M5 12l4 4L19 7"/></svg>':''}
           </div>
-          <span onclick="toggleTask(${t.id})" style="flex:1;cursor:pointer;${t.done?'text-decoration:line-through;':''}">${t.text||''}</span>
+          <span onclick="toggleTask(${t.id})" style="flex:1;cursor:pointer;${t.done?'text-decoration:line-through;':''}">${esc(t.text)}</span>
           <button onclick="delTask(${t.id})" style="background:none;border:none;color:var(--tl);cursor:pointer;font-size:15px;line-height:1;padding:4px;">×</button>
         </div>`).join('')}
       </div>`;
     }).join(''):'<div style="color:var(--tl);font-size:14px;">Aucune tâche pour le moment.</div>'}`;
 }
 
-async function pickTaskMonth(){
-  window._newTaskText=document.getElementById('new-task-text')?.value||'';
-  const v=await appPicker('Période',window._monthOpts||[],window._newTaskMonth);
-  if(v){window._newTaskMonth=v;}
-  renderChecklist();
-}
+
 function addTask(){
   const txt=document.getElementById('new-task-text').value.trim();
   const month=window._newTaskMonth||(window._monthOpts||[])[0]||'Autres';
@@ -1203,46 +1201,52 @@ function toggleTask(id){
 
 // ══ BUDGET ══
 function renderBudget(){
-  const el=document.getElementById('budget-content');
-  if(!el)return;
-  const tb=BUDGET.reduce((s,b)=>s+(parseFloat(b.est||b.budget)||0),0);
-  const ts=BUDGET.reduce((s,b)=>s+(parseFloat(b.reel!==undefined?b.reel:(b.depense||0))||0),0);
-  const pct=tb>0?Math.round(ts/tb*100):0;
-  el.innerHTML=`
-    <div class="panel" style="margin-bottom:20px;">
-      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:16px;">
-        <div><div style="font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tl);margin-bottom:4px;">Budget estimé</div><div style="font-family:'Playfair Display',serif;font-size:32px;color:var(--pink);">${tb.toLocaleString('fr-FR')} €</div></div>
-        <div style="text-align:right;"><div style="font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tl);margin-bottom:4px;">Dépensé</div><div style="font-family:'Playfair Display',serif;font-size:32px;color:var(--dark);">${ts.toLocaleString('fr-FR')} €</div></div>
-      </div>
-      <div class="progress-bar" style="height:8px;"><div class="progress-fill" style="width:${Math.min(pct,100)}%"></div></div>
-      <div style="text-align:right;font-size:12px;color:var(--tl);margin-top:6px;">${pct}% du budget utilisé</div>
+  const el2=document.getElementById('budget-content');
+  if(!el2)return;
+  const fmt=n=>Math.round(n).toLocaleString('fr-FR');
+  const tE=BUDGET.reduce((s,i)=>s+(parseFloat(i.est||i.budget)||0),0);
+  const tR=BUDGET.reduce((s,i)=>s+(parseFloat(i.reel)||0),0);
+  const tP=BUDGET.reduce((s,i)=>s+(parseFloat(i.paye)||0),0);
+  const reste=tR-tP;
+  el2.innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+      <div class="panel" style="text-align:center;padding:18px;"><div style="font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tl);margin-bottom:6px;">Budget estimé total</div><div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--dark);">${fmt(tE)} €</div></div>
+      <div class="panel" style="text-align:center;padding:18px;"><div style="font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tl);margin-bottom:6px;">Budget réel total</div><div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--pink);">${fmt(tR)} €</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;">
+      <div style="background:#f0f8f2;border:1px solid #c8e6d0;border-radius:16px;padding:18px;text-align:center;"><div style="font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tl);margin-bottom:6px;">Déjà payé</div><div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--gn);">${fmt(tP)} €</div></div>
+      <div style="background:#fff8f0;border:1px solid #f0d8b8;border-radius:16px;padding:18px;text-align:center;"><div style="font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tl);margin-bottom:6px;">Reste à payer</div><div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--am);">${fmt(reste>0?reste:0)} €</div></div>
     </div>
     <div class="section-actions">
-      <input id="new-bgt-cat" class="m-input" placeholder="Nouvelle catégorie…" style="flex:1;min-width:160px;max-width:300px;">
+      <input id="new-bgt-cat" class="m-input" placeholder="Nouvelle catégorie" style="flex:1;min-width:160px;max-width:300px;">
       <input id="new-bgt-est" class="m-input" type="number" placeholder="Budget estimé €" style="width:160px;">
       <button class="btn" onclick="addBudgetCat()">+ Ajouter</button>
     </div>
-    ${BUDGET.length?BUDGET.map(b=>{
-      const est=parseFloat(b.est||b.budget||0), reel=parseFloat(b.reel!==undefined?b.reel:(b.depense||0))||0;
-      const p=est>0?Math.min(Math.round(reel/est*100),100):0;
-      const paye=parseFloat(b.paye||0)||0;
-      const restant=Math.max((reel||est)-paye,0);
-      const inputStyle="width:100%;padding:7px 8px;border:1.5px solid var(--border);border-radius:8px;font-family:'Lora',serif;font-size:13px;outline:none;background:#fff;text-align:right;";
-      return`<div class="budget-item" style="flex-direction:column;align-items:stretch;gap:10px;">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <input value="${(b.cat||b.category||b.categorie||'').replace(/"/g,'&quot;')}" onchange="updBudgetCat(${b.id},this.value)" style="flex:1;padding:7px 10px;border:1.5px solid transparent;border-radius:8px;font-family:'Lora',serif;font-size:14px;font-weight:700;color:var(--dark);outline:none;background:transparent;" onfocus="this.style.borderColor='var(--pink)';this.style.background='#fff';" onblur="this.style.borderColor='transparent';this.style.background='transparent';">
-          <button onclick="delBudgetCat(${b.id})" style="background:none;border:none;color:var(--tl);cursor:pointer;font-size:15px;padding:4px;">×</button>
+    ${BUDGET.length?BUDGET.map(item=>{
+      const est=parseFloat(item.est||item.budget||0), reel=parseFloat(item.reel||0), paye=parseFloat(item.paye||0);
+      const pct=est>0?Math.min(reel/est*100,100):0;
+      const over=reel>est&&est>0;
+      const r=reel-paye;
+      const inputStyle="width:100%;border:none;border-bottom:1.5px solid var(--pink-pale);padding:6px 4px;font-size:13px;font-weight:700;outline:none;background:transparent;text-align:left;";
+      return`<div class="panel" style="padding:16px 18px;margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <input value="${(item.cat||item.category||'').replace(/"/g,'&quot;')}" onchange="updBudgetCat(${item.id},this.value)" style="font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--pink);border:none;border-bottom:1px dashed var(--border);background:transparent;outline:none;padding-bottom:2px;flex:1;margin-right:10px;">
+          <div style="display:flex;gap:8px;align-items:center;flex-shrink:0;">
+            <span style="font-size:10px;font-weight:700;color:${over?'var(--rd)':'var(--gn)'};background:${over?'#fff0f0':'#f0f8f2'};border-radius:20px;padding:3px 10px;">${over?'Dépassé':Math.round(pct)+'%'}</span>
+            <button onclick="delBudgetCat(${item.id})" style="background:none;border:none;color:var(--tl);cursor:pointer;font-size:15px;">×</button>
+          </div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;">
-          <div><div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--tl);margin-bottom:4px;">Estimé</div><input type="number" value="${est}" onchange="updBudget(${b.id},'est',this.value)" style="${inputStyle}color:var(--dark);"></div>
-          <div><div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--tl);margin-bottom:4px;">Coût réel</div><input type="number" value="${reel}" onchange="updBudget(${b.id},'reel',this.value)" style="${inputStyle}color:var(--dark);"></div>
-          <div><div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--tl);margin-bottom:4px;">Déjà payé</div><input type="number" value="${paye}" onchange="updBudget(${b.id},'paye',this.value)" style="${inputStyle}color:var(--gn);font-weight:700;"></div>
-          <div><div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--tl);margin-bottom:4px;">Restant à payer</div><div style="padding:7px 8px;font-family:'Lora',serif;font-size:13px;color:var(--pink);font-weight:700;text-align:right;background:var(--pink-pale);border-radius:8px;">${restant.toLocaleString('fr-FR')} €</div></div>
+        <div style="height:6px;background:var(--pink-pale);border-radius:3px;margin-bottom:12px;overflow:hidden;"><div style="height:100%;width:${pct}%;background:${over?'var(--rd)':'linear-gradient(90deg,var(--pink-dark),var(--pink))'};border-radius:3px;"></div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+          <div><div style="font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--tl);margin-bottom:3px;">Budget estimé</div><input type="number" value="${est||''}" placeholder="0" onchange="updBudget(${item.id},'est',this.value)" style="${inputStyle}color:var(--mid);"></div>
+          <div><div style="font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--tl);margin-bottom:3px;">Budget réel</div><input type="number" value="${reel||''}" placeholder="0" onchange="updBudget(${item.id},'reel',this.value)" style="${inputStyle}color:var(--pink);"></div>
+          <div><div style="font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--tl);margin-bottom:3px;">Déjà payé</div><input type="number" value="${paye||''}" placeholder="0" onchange="updBudget(${item.id},'paye',this.value)" style="${inputStyle}color:var(--gn);"></div>
         </div>
-        <div class="progress-bar"><div class="progress-fill" style="width:${p}%"></div></div>
+        <div style="margin-top:8px;text-align:right;font-size:11px;color:var(--tl);">Reste à payer : <strong style="color:${r>0?'var(--am)':'var(--gn)'};">${fmt(r>0?r:0)} €</strong></div>
       </div>`;
     }).join(''):'<div style="color:var(--tl);font-size:14px;padding:16px 0;">Aucune catégorie de budget.</div>'}`;
 }
+
 
 function addBudgetCat(){
   const cat=document.getElementById('new-bgt-cat').value.trim();
@@ -1442,7 +1446,7 @@ function openGuestModal(id){
     <div class="m-field"><label class="m-label">Email</label><input class="m-input" id="gm-email" type="email" value="${(g.email||'').replace(/"/g,'&quot;')}" placeholder="email@…"></div>
     <div class="m-field"><label class="m-label">Adresse postale</label><input class="m-input" id="gm-adresse" value="${(g.adresse||'').replace(/"/g,'&quot;')}" placeholder="N° rue, ville, code postal…"></div>
     <div class="m-actions">
-      <button class="btn" onclick="saveGuestModal(${g.id})">Enregistrer</button>
+      <button class="btn" onclick="event.stopPropagation();saveGuestModal(${g.id})">Enregistrer</button>
       <button class="btn-outline" onclick="closeModal()">Fermer</button>
       <button class="btn-outline" style="border-color:var(--rd);color:var(--rd);margin-left:auto;" onclick="delGuest(${g.id})">Supprimer</button>
     </div>`);
@@ -1478,7 +1482,10 @@ function saveGuestModal(id){
   g.regime=window._gm.regime;
   g.email=document.getElementById('gm-email').value.trim();
   g.adresse=document.getElementById('gm-adresse').value.trim();
-  saveData('guests',GUESTS);closeModal();renderGuests();renderSeating();renderMenu();renderDashboard();
+  saveData('guests',GUESTS);
+  closeModal();
+  // Re-render au prochain tick pour éviter que le clic se propage à une ligne du tableau
+  setTimeout(()=>{renderGuests();renderSeating();renderMenu();renderDashboard();},0);
 }
 
 async function delGuest(id){
@@ -1589,86 +1596,60 @@ function renderSeating(){
 }
 
 // Visualisation dessinée — même géométrie que l'application
+// Visualisation dessinée — même géométrie que l'application
 function drawPlanVisual(){
   const wrap=document.getElementById('tp-visual');
   if(!wrap)return;
   const RND=68,SQ=72,TW=120,TH=58,SEAT=24,GAP=10;
-  let maxX=600,maxY=400;
-  TABLES.forEach(t=>{maxX=Math.max(maxX,t.x+260);maxY=Math.max(maxY,t.y+240);});
+  let maxX=900,maxY=600;
+  TABLES.forEach(t=>{maxX=Math.max(maxX,t.x+300);maxY=Math.max(maxY,t.y+300);});
   const inner=document.createElement('div');
   inner.style.cssText=`position:relative;width:${maxX}px;height:${maxY}px;`;
   TABLES.forEach(t=>{
+    if(!t.hiddenSeats)t.hiddenSeats=[];
     const placed=GUESTS.filter(g=>g.seatTableId===t.id);
     const n=Math.min(t.seats||6,12);
     const isR=t.shape==='round',isSq=t.shape==='square';
     const cx=t.x+70,cy=t.y+70;
-    // Chaises
+    let placedIdx=0;
     for(let i=0;i<n;i++){
       let sx,sy;
-      if(isR){
-        const orbit=RND/2+GAP+SEAT/2;
-        const a=(i/n)*2*Math.PI-Math.PI/2;
-        sx=cx+orbit*Math.cos(a);sy=cy+orbit*Math.sin(a);
-      }else if(isSq){
-        const perSide=Math.ceil(n/4);
-        const side=Math.floor(i/perSide);
-        const idxOnSide=i%perSide;
-        const realPerSide=(side===3)?(n-3*perSide):perSide;
-        const step=SQ/(Math.max(realPerSide,1)+1);
-        const pos=step*(idxOnSide+1);
-        const off=SQ/2+GAP;
-        if(side===0){sx=cx-SQ/2+pos;sy=cy-off;}
-        else if(side===1){sx=cx+off;sy=cy-SQ/2+pos;}
-        else if(side===2){sx=cx-SQ/2+pos;sy=cy+off;}
-        else{sx=cx-off;sy=cy-SQ/2+pos;}
-      }else{
-        const half=Math.ceil(n/2);
-        const isTop=i<half;
-        const cnt=isTop?half:(n-half);
-        const idx=isTop?i:i-half;
-        const step=TW/(Math.max(cnt,1)+1);
-        sx=cx-TW/2+step*(idx+1);
-        sy=isTop?cy-(TH/2+GAP+SEAT/2):cy+(TH/2+GAP+SEAT/2);
-      }
-      const g=placed[i];
+      if(isR){const orbit=RND/2+GAP+SEAT/2;const a=(i/n)*2*Math.PI-Math.PI/2;sx=cx+orbit*Math.cos(a);sy=cy+orbit*Math.sin(a);}
+      else if(isSq){const perSide=Math.ceil(n/4);const side=Math.floor(i/perSide);const idxOnSide=i%perSide;const realPerSide=(side===3)?(n-3*perSide):perSide;const step=SQ/(Math.max(realPerSide,1)+1);const pos=step*(idxOnSide+1);const off=SQ/2+GAP;if(side===0){sx=cx-SQ/2+pos;sy=cy-off;}else if(side===1){sx=cx+off;sy=cy-SQ/2+pos;}else if(side===2){sx=cx-SQ/2+pos;sy=cy+off;}else{sx=cx-off;sy=cy-SQ/2+pos;}}
+      else{const half=Math.ceil(n/2);const isTop=i<half;const cnt=isTop?half:(n-half);const idx=isTop?i:i-half;const step=TW/(Math.max(cnt,1)+1);sx=cx-TW/2+step*(idx+1);sy=isTop?cy-(TH/2+GAP+SEAT/2):cy+(TH/2+GAP+SEAT/2);}
+      const hidden=t.hiddenSeats.includes(i);
+      if(hidden)continue;
+      const g=placed[placedIdx];if(g)placedIdx++;
       const seat=document.createElement('div');
       seat.style.cssText=`position:absolute;left:${sx-SEAT/2}px;top:${sy-SEAT/2}px;width:${SEAT}px;height:${SEAT}px;border-radius:50%;${g?'background:var(--pink);border:1.5px solid var(--pink-dark);':'background:#fff;border:1.5px dashed var(--pink-light);'}display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;font-weight:700;cursor:pointer;z-index:5;`;
-      if(g){
-        seat.textContent=(g.nom||'?').split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase();
-        seat.title=g.nom+' — cliquer pour retirer';
-        seat.onclick=ev=>{ev.stopPropagation();unseatGuest(g.id);};
-      }else{
-        seat.title='Chaise libre — cliquer pour placer un invité';
-        seat.onclick=ev=>{ev.stopPropagation();pickSeatGuest(t.id);};
-      }
+      if(g){seat.textContent=(g.nom||'?').split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase();seat.title=g.nom;seat.onclick=ev=>{ev.stopPropagation();openSeatMenu(t.id,i,g.id);};}
+      else{seat.title='Chaise libre';seat.onclick=ev=>{ev.stopPropagation();openSeatMenu(t.id,i,null);};}
       inner.appendChild(seat);
     }
-    // Table
     const tbl=document.createElement('div');
     let w,h2,br;
-    if(isR){w=RND;h2=RND;br='50%';}
-    else if(isSq){w=SQ;h2=SQ;br='10px';}
-    else{w=TW;h2=TH;br='10px';}
-    tbl.style.cssText=`position:absolute;left:${cx-w/2}px;top:${cy-h2/2}px;width:${w}px;height:${h2}px;border-radius:${br};background:var(--pink-pale);border:2px solid var(--pink);display:flex;align-items:center;justify-content:center;text-align:center;font-family:'Lora',serif;font-size:9px;font-weight:700;color:var(--pink-dark);cursor:grab;user-select:none;padding:4px;touch-action:none;`;
+    if(isR){w=RND;h2=RND;br='50%';}else if(isSq){w=SQ;h2=SQ;br='10px';}else{w=TW;h2=TH;br='10px';}
+    tbl.style.cssText=`position:absolute;left:${cx-w/2}px;top:${cy-h2/2}px;width:${w}px;height:${h2}px;border-radius:${br};background:var(--pink-pale);border:2px solid var(--pink);display:flex;align-items:center;justify-content:center;text-align:center;font-family:'Lora',serif;font-size:9px;font-weight:700;color:var(--pink-dark);cursor:grab;user-select:none;padding:4px;touch-action:none;z-index:10;`;
     tbl.textContent=t.nom||'Table';
-    tbl.title=`${t.nom} — ${placed.length}/${t.seats} places · cliquer pour renommer, glisser pour déplacer`;
-    // Drag + clic = renommer (si pas de déplacement)
-    let dragging=false,moved=false,startPX=0,startPY=0,origX=t.x,origY=t.y;
+    tbl.title=`${t.nom} — glisser pour déplacer, cliquer pour renommer`;
+    let dragging=false,moved=false,sx0=0,sy0=0,ox=t.x,oy=t.y;
     tbl.addEventListener('pointerdown',e=>{
-      dragging=true;moved=false;startPX=e.clientX;startPY=e.clientY;origX=t.x;origY=t.y;
-      tbl.setPointerCapture(e.pointerId);tbl.style.cursor='grabbing';e.preventDefault();
+      dragging=true;moved=false;sx0=e.clientX;sy0=e.clientY;ox=t.x;oy=t.y;
+      try{tbl.setPointerCapture(e.pointerId);}catch(_){}
+      tbl.style.cursor='grabbing';tbl.style.zIndex='20';e.preventDefault();e.stopPropagation();
     });
     tbl.addEventListener('pointermove',e=>{
       if(!dragging)return;
-      const dx=e.clientX-startPX,dy=e.clientY-startPY;
+      const dx=e.clientX-sx0,dy=e.clientY-sy0;
       if(Math.abs(dx)>4||Math.abs(dy)>4)moved=true;
-      t.x=Math.max(0,origX+dx);
-      t.y=Math.max(0,origY+dy);
-      drawPlanVisual();
+      t.x=Math.max(0,ox+dx);t.y=Math.max(0,oy+dy);
+      // Déplacer juste cet élément + ses chaises sans tout redessiner : on bouge le conteneur table
+      const ncx=t.x+70,ncy=t.y+70;
+      tbl.style.left=(ncx-w/2)+'px';tbl.style.top=(ncy-h2/2)+'px';
     });
     tbl.addEventListener('pointerup',e=>{
       if(!dragging)return;
-      dragging=false;
+      dragging=false;tbl.style.cursor='grab';tbl.style.zIndex='10';
       if(moved){saveData('tables',TABLES);drawPlanVisual();}
       else{renameTable(t.id);}
     });
@@ -1676,6 +1657,22 @@ function drawPlanVisual(){
   });
   wrap.innerHTML='';
   wrap.appendChild(inner);
+}
+
+// Menu d'une chaise : placer / retirer / masquer
+async function openSeatMenu(tableId,seatIdx,guestId){
+  const t=TABLES.find(x=>x.id===tableId);if(!t)return;
+  if(!t.hiddenSeats)t.hiddenSeats=[];
+  const opts=[];
+  if(guestId){opts.push({value:'retirer',label:'Retirer cet invité'});}
+  else{opts.push({value:'placer',label:'Placer un invité'});}
+  opts.push({value:'masquer',label:'Masquer cette chaise'});
+  if(t.hiddenSeats.length)opts.push({value:'afficher',label:'Réafficher toutes les chaises'});
+  const v=await appPicker('Chaise',opts,null);
+  if(v==='retirer'&&guestId)unseatGuest(guestId);
+  else if(v==='placer')pickSeatGuest(tableId);
+  else if(v==='masquer'){if(!t.hiddenSeats.includes(seatIdx)){t.hiddenSeats.push(seatIdx);saveData('tables',TABLES);renderSeating();}}
+  else if(v==='afficher'){t.hiddenSeats=[];saveData('tables',TABLES);renderSeating();}
 }
 
 async function renameTable(id){
@@ -2249,11 +2246,11 @@ function renderVendors(){
     <div class="panel" style="margin-bottom:16px;">
       <div class="panel-title">Rechercher un prestataire</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px;margin-bottom:12px;">
-        ${cats.map(([k,cat])=>`<button data-catkey="${k}" class="vnd-cat-btn" onclick="searchByCategory('${k}','${cat.label}')" style="background:var(--bg);color:var(--dark);border:1px solid var(--border);border-radius:10px;padding:9px 10px;cursor:pointer;font-size:12px;font-weight:600;font-family:'Lora',serif;text-align:left;transition:all .15s;">${cat.label}</button>`).join('')}
+        ${cats.map(([k,cat])=>`<button data-catkey="${k}" class="vnd-cat-btn" onclick="selectCategory('${k}','${cat.label}')" style="background:var(--bg);color:var(--dark);border:1px solid var(--border);border-radius:10px;padding:9px 10px;cursor:pointer;font-size:12px;font-weight:600;font-family:'Lora',serif;text-align:left;transition:all .15s;">${cat.label}</button>`).join('')}
       </div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
-        <input type="text" id="vnd-postal" placeholder="Code postal ou ville (ex : 57000)" class="m-input" style="flex:1;min-width:160px;" onkeydown="if(event.key==='Enter')searchByPostal()">
-        <button class="btn" onclick="searchByPostal()">Rechercher</button>
+        <input type="text" id="vnd-postal" placeholder="Code postal ou ville (ex : 57000)" class="m-input" style="flex:1;min-width:160px;" onkeydown="if(event.key==='Enter')doVendorSearch()">
+        <button class="btn" onclick="doVendorSearch()">Rechercher</button>
       </div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
         <label style="font-size:11px;color:var(--tl);font-weight:700;flex-shrink:0;">Rayon :</label>
@@ -2343,24 +2340,8 @@ async function addManualVendor(zone){
   renderVendors();
 }
 
-async function searchByPostal(){
-  const postal=document.getElementById('vnd-postal')?.value.trim();
-  if(!postal){appAlert2('Entrez un code postal ou une ville.');return;}
-  const status=document.getElementById('vnd-location-status');
-  if(status)status.textContent='Recherche du lieu…';
-  try{
-    const res=await fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(postal+' France')+'&format=json&limit=1',{headers:{'Accept-Language':'fr'}});
-    const data=await res.json();
-    if(!data||!data.length){if(status)status.textContent='Lieu non trouvé.';return;}
-    window._userLat=parseFloat(data[0].lat);window._userLng=parseFloat(data[0].lon);
-    const name=data[0].display_name.split(',').slice(0,2).join(', ');
-    if(status)status.textContent='Lieu défini : '+name;
-    if(window._activeCatKey)await searchByCategory(window._activeCatKey,window._activeCatLabel);
-    else if(status)status.textContent+=' — sélectionnez une catégorie.';
-  }catch(e){if(status)status.textContent='Erreur de géocodage.';}
-}
 
-async function searchByCategory(catKey,catLabel){
+function selectCategory(catKey,catLabel){
   window._activeCatKey=catKey;window._activeCatLabel=catLabel;
   document.querySelectorAll('.vnd-cat-btn').forEach(b=>{
     const active=b.getAttribute('data-catkey')===catKey;
@@ -2368,13 +2349,23 @@ async function searchByCategory(catKey,catLabel){
     b.style.borderColor=active?'var(--pink)':'var(--border)';
     b.style.color=active?'var(--pink)':'var(--dark)';
   });
-  if(!window._userLat||!window._userLng){
-    const status=document.getElementById('vnd-location-status');
-    if(status)status.textContent='Indiquez d\'abord un code postal puis cliquez sur Rechercher.';
-    return;
-  }
-  const radiusKm=parseInt(document.getElementById('vnd-radius')?.value||20);
-  await runCategorySearch(catKey,catLabel,window._userLat,window._userLng,radiusKm);
+}
+// Lancé UNIQUEMENT par le bouton Rechercher
+async function doVendorSearch(){
+  if(!window._activeCatKey){await appAlert2('Sélectionnez d\'abord un type de prestataire.');return;}
+  const postal=document.getElementById('vnd-postal')?.value.trim();
+  if(!postal){await appAlert2('Entrez un code postal ou une ville.');return;}
+  const status=document.getElementById('vnd-location-status');
+  if(status)status.textContent='Recherche du lieu…';
+  try{
+    const res=await fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(postal+' France')+'&format=json&limit=1',{headers:{'Accept-Language':'fr'}});
+    const data=await res.json();
+    if(!data||!data.length){if(status)status.textContent='Lieu non trouvé.';return;}
+    window._userLat=parseFloat(data[0].lat);window._userLng=parseFloat(data[0].lon);
+    if(status)status.textContent='Lieu : '+data[0].display_name.split(',').slice(0,2).join(', ');
+    const radiusKm=parseInt(document.getElementById('vnd-radius')?.value||20);
+    await runCategorySearch(window._activeCatKey,window._activeCatLabel,window._userLat,window._userLng,radiusKm);
+  }catch(e){if(status)status.textContent='Erreur de géocodage.';}
 }
 
 async function runCategorySearch(catKey,catLabel,lat,lng,radiusKm){
@@ -2488,14 +2479,62 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusKm){
 }
 
 // ══ AVATAR MENU ══
-function openSettings(){
-  const p1=prompt('Votre prénom :',USER.p1);if(p1===null)return;
-  const p2=prompt('Prénom partenaire :',USER.p2);if(p2===null)return;
-  const wDate=prompt('Date du mariage (YYYY-MM-DD) :',USER.wDate);if(wDate===null)return;
+function openSettingsPage(){
+  openModal(`
+    <div class="modal-title">Paramètres <button class="modal-x" onclick="closeModal()">×</button></div>
+    <div class="m-field"><label class="m-label">Marié·e 1</label><input class="m-input" id="set-p1" value="${(USER.p1||'').replace(/"/g,'&quot;')}"></div>
+    <div class="m-field"><label class="m-label">Marié·e 2</label><input class="m-input" id="set-p2" value="${(USER.p2||'').replace(/"/g,'&quot;')}"></div>
+    <div class="m-field"><label class="m-label">Date du mariage</label><input class="m-input" type="date" id="set-date" value="${USER.wDate||''}"></div>
+    <div class="m-field"><label class="m-label">Nouveau mot de passe</label><input class="m-input" type="password" id="set-pass" placeholder="Laisser vide pour ne pas changer"></div>
+    <div class="m-actions">
+      <button class="btn" onclick="saveSettingsPage()">Enregistrer</button>
+      <button class="btn-outline" onclick="closeModal()">Annuler</button>
+    </div>
+    <div style="border-top:1px solid var(--border);margin:20px 0 14px;"></div>
+    <div style="font-family:'Playfair Display',serif;font-size:16px;color:var(--dark);margin-bottom:6px;">Partenaire</div>
+    <div style="font-size:12px;color:var(--tl);font-style:italic;margin-bottom:6px;">Générez un lien à partager à votre partenaire.</div>
+    <button class="btn" style="width:100%;" onclick="generatePartnerLink()">Générer un lien d'invitation</button>
+    <div style="border-top:1px solid var(--border);margin:18px 0 14px;"></div>
+    <button class="btn-outline" style="width:100%;" onclick="doLogout()">Se déconnecter</button>
+    <div style="border-top:1px solid var(--border);margin:18px 0 14px;"></div>
+    <div style="display:flex;gap:18px;justify-content:center;font-size:11px;margin-bottom:14px;">
+      <a href="#" onclick="return false;" style="color:var(--tl);">Politique de confidentialité</a>
+      <a href="#" onclick="return false;" style="color:var(--tl);">CGU</a>
+      <a href="#" onclick="return false;" style="color:var(--tl);">Cookies</a>
+    </div>
+    <div style="font-size:11px;color:var(--tl);font-style:italic;margin-bottom:10px;">La suppression de compte est définitive. Toutes vos données seront effacées.</div>
+    <button class="btn-outline" style="width:100%;border-color:var(--rd);color:var(--rd);" onclick="deleteAccountWeb()">Supprimer mon compte</button>`);
+}
+async function saveSettingsPage(){
+  const p1=document.getElementById('set-p1').value.trim();
+  const p2=document.getElementById('set-p2').value.trim();
+  const wDate=document.getElementById('set-date').value;
+  const np=document.getElementById('set-pass').value;
   USER.p1=p1||USER.p1;USER.p2=p2||USER.p2;USER.wDate=wDate||USER.wDate;
   const {doc,setDoc}=window.firebaseLib;
-  setDoc(doc(window.firebaseDB,'userData',window._activeDataDocId),{p1:USER.p1,p2:USER.p2,wDate:USER.wDate},{merge:true});
-  initApp();
+  try{await setDoc(doc(window.firebaseDB,'userData',window._activeDataDocId),{p1:USER.p1,p2:USER.p2,wDate:USER.wDate,email:USER.email},{merge:true});}catch(e){}
+  if(np){
+    try{await window.firebaseAuthLib.updatePassword(window.firebaseAuth.currentUser,np);await appAlert2('Mot de passe mis à jour.');}
+    catch(e){await appAlert2('Mot de passe non modifié : reconnectez-vous puis réessayez.');}
+  }
+  closeModal();initApp();
+}
+async function generatePartnerLink(){
+  const docId=window._activeDataDocId;
+  if(!docId){await appAlert2('Connectez-vous d\'abord.');return;}
+  const token=btoa(docId+'|'+Date.now()).replace(/=/g,'');
+  const link=location.origin+location.pathname+'?invite='+encodeURIComponent(token);
+  try{await navigator.clipboard.writeText(link);await appAlert2('Lien copié ! Partagez-le à votre partenaire (valable 7 jours).');}
+  catch(e){await appAlert2('Lien : '+link);}
+}
+async function deleteAccountWeb(){
+  if(!(await appConfirm('Supprimer définitivement votre compte et toutes vos données ? Cette action est irréversible.')))return;
+  try{
+    const {doc,deleteDoc}=window.firebaseLib;
+    if(window._activeDataDocId)await deleteDoc(doc(window.firebaseDB,'userData',window._activeDataDocId));
+    await window.firebaseAuthLib.deleteUser(window.firebaseAuth.currentUser);
+    closeModal();showView('landing');
+  }catch(e){await appAlert2('Pour supprimer le compte, reconnectez-vous puis réessayez.');}
 }
 
 
