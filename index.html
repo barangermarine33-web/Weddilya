@@ -144,7 +144,7 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 .auth-left-tagline em{font-style:italic;color:var(--pink-light);}
 .auth-left-sub{font-family:'Lora',serif;font-size:14px;color:rgba(255,255,255,0.5);line-height:1.8;margin-top:16px;}
 .auth-right{background:white;padding:60px;display:flex;align-items:center;justify-content:center;}
-.auth-box{width:100%;max-width:420px;}
+.auth-box{width:100%;max-width:420px;box-sizing:border-box;overflow:hidden;}
 .auth-back{display:flex;align-items:center;gap:8px;font-family:'Lora',serif;font-size:13px;color:var(--mid);cursor:pointer;margin-bottom:40px;transition:color 0.2s;}
 .auth-back:hover{color:var(--pink);}
 .auth-back svg{width:16px;height:16px;stroke:currentColor;fill:none;}
@@ -156,7 +156,7 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 .auth-form{display:flex;flex-direction:column;gap:14px;}
 .auth-input-wrap{display:flex;flex-direction:column;gap:6px;}
 .auth-label{font-family:'Josefin Sans',sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--mid);}
-.auth-input{padding:13px 16px;border:1.5px solid var(--border);border-radius:11px;font-family:'Lora',serif;font-size:14px;color:var(--dark);outline:none;background:var(--bg);transition:border-color 0.2s;}
+.auth-input{padding:13px 16px;border:1.5px solid var(--border);border-radius:11px;font-family:'Lora',serif;font-size:14px;color:var(--dark);outline:none;background:var(--bg);transition:border-color 0.2s;box-sizing:border-box;width:100%;}
 .auth-input:focus{border-color:var(--pink);}
 .auth-input::placeholder{color:var(--tl);}
 .auth-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
@@ -341,6 +341,34 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 .hamburger-btn:hover{background:var(--pink-pale);}
 .sidebar-overlay{display:none;position:fixed;inset:0;top:calc(var(--topbar-h) + var(--band-h));background:rgba(62,24,40,0.35);z-index:240;}
 .sidebar-overlay.open{display:block;}
+
+/* ── Prestataires (design embelli) ── */
+.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:16px;}
+.cat-chip{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--border);border-radius:13px;padding:11px 13px;cursor:pointer;font-size:13px;font-weight:600;color:var(--dark);transition:all .18s;font-family:'Lora',serif;text-align:left;}
+.cat-chip:hover{border-color:var(--pink-light);background:var(--pink-pale);}
+.cat-chip.active{background:linear-gradient(135deg,var(--pink-pale),#fff);border-color:var(--pink);box-shadow:0 2px 12px rgba(212,96,122,0.12);}
+.cat-chip .ic{width:32px;height:32px;border-radius:9px;background:var(--pink-pale);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.cat-chip.active .ic{background:var(--pink);}
+.cat-chip .ic svg{width:17px;height:17px;stroke:var(--pink);fill:none;stroke-width:1.7;}
+.cat-chip.active .ic svg{stroke:#fff;}
+.vnd-card2{border:1px solid var(--border);border-radius:15px;overflow:hidden;margin-bottom:11px;background:#fff;transition:box-shadow .2s;}
+.vnd-card2:hover{box-shadow:0 4px 18px rgba(212,96,122,0.1);}
+.vnd-head{display:flex;align-items:center;gap:11px;padding:14px 16px;background:linear-gradient(135deg,var(--pink-pale),#fff);}
+.vnd-badge{background:rgba(212,96,122,0.12);color:var(--pink-dark);font-size:10px;border-radius:20px;padding:4px 11px;font-weight:700;flex-shrink:0;}
+.vnd-name{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--dark);flex:1;min-width:0;}
+.vnd-dist{background:#f0f8f0;color:var(--gn);border-radius:8px;padding:4px 9px;font-size:11px;font-weight:700;flex-shrink:0;}
+.vnd-body2{padding:13px 16px;}
+.vnd-addr{font-size:12px;color:var(--tl);margin-bottom:11px;line-height:1.5;}
+.price-row{display:flex;align-items:center;gap:9px;margin-bottom:11px;}
+.price-row label{font-size:11px;color:var(--tl);font-weight:700;flex-shrink:0;}
+.price-input{flex:1;border:1.5px solid var(--border);border-radius:9px;padding:8px 11px;font-size:13px;outline:none;background:#fffafc;font-family:'Lora',serif;min-width:0;}
+.price-input:focus{border-color:var(--pink);}
+.vnd-actions{display:flex;gap:8px;}
+.btn-choose{flex:1;background:#fff;border:1.5px solid var(--gn);color:var(--gn);border-radius:10px;padding:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Lora',serif;}
+.btn-fav2{flex:1;background:var(--pink-pale);border:1.5px solid var(--pink-light);color:var(--pink-dark);border-radius:10px;padding:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Lora',serif;}
+.btn-x2{background:none;border:none;color:var(--tl);cursor:pointer;font-size:17px;width:34px;flex-shrink:0;}
+.count-badge{background:var(--pink-pale);color:var(--pink-dark);font-size:12px;font-weight:700;border-radius:20px;padding:3px 11px;margin-left:8px;}
+
 @media(min-width:901px){
   :root{--sidebar-w:330px;}
   /* Boost global : tout le contenu de l'app + pop-ups agrandi d'un cran */
@@ -422,6 +450,10 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
   .footer-links{flex-wrap:wrap;gap:16px;}
   .auth-wrap{grid-template-columns:1fr;}
   .auth-left{display:none;}
+  .auth-right{padding:40px 22px;}
+  .auth-row{grid-template-columns:1fr;}
+  .auth-input,.auth-box,.auth-form,.auth-input-wrap{max-width:100%;box-sizing:border-box;}
+  .auth-tab{font-size:12px;padding:10px 6px;}
   .widgets-row{grid-template-columns:1fr 1fr;}
   .app-main{padding:20px 16px;}
 }
@@ -605,7 +637,7 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
       <div class="auth-box">
         <div class="auth-back" onclick="showView('landing')">
           <svg viewBox="0 0 24 24" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-          Retour au site
+          Retour
         </div>
         <div class="auth-title" id="auth-title">Bon retour</div>
         <div class="auth-subtitle" id="auth-subtitle">Connectez-vous à votre espace Weddilya</div>
@@ -853,7 +885,7 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
       <!-- PRESTATAIRES -->
       <div class="tab-page" id="tab-vendors">
         <div class="page-title">Mes <em>prestataires</em></div>
-        <div class="page-sub">Favoris et recherche par catégorie</div>
+        <div class="page-sub">Trouvez et organisez les professionnels de votre mariage</div>
         <div id="vendors-content"></div>
       </div>
 
@@ -2488,6 +2520,26 @@ const VND_CATEGORIES = {
 const VCOLS={Photographe:"#7a5a9a",Traiteur:"#5a8a5a",Salle:"#9a5a3a",Fleuriste:"#c4697e","DJ / Musique":"#3a6a9a","Wedding Planner":"#8a6a2a",Autre:"#6a6a6a"};
 let sortFav='alpha', sortCho='alpha';
 
+const VND_ICONS={
+  salle:'<path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/>',
+  traiteur:'<path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4z"/>',
+  photographe:'<path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/>',
+  videaste:'<path d="M23 7l-7 5 7 5zM1 5h15v14H1z"/>',
+  dj:'<circle cx="5.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="15.5" r="2.5"/><path d="M8 17V5l12-2v12"/>',
+  fleuriste:'<circle cx="12" cy="12" r="2.5"/><path d="M12 9.5C12 6 10 4 12 2c2 2 0 4 0 7.5zM9.5 12C6 12 4 14 2 12c2-2 4 0 7.5 0zM14.5 12c3.5 0 5.5-2 7.5 0-2 2-4 0-7.5 0zM12 14.5c0 3.5 2 5.5 0 7.5-2-2 0-4 0-7.5z"/>',
+  patisserie:'<path d="M3 11h18M5 11V8a7 7 0 0114 0v3M4 11h16v2a4 4 0 01-4 4H8a4 4 0 01-4-4zM7 17v3M17 17v3"/>',
+  robe:'<path d="M8 2l4 4 4-4M12 6v4M8 10l-3 5 7 7 7-7-3-5"/>',
+  costume:'<path d="M16 3l-4 7-4-7M6 3v18h12V3M9 3l3 5 3-5"/>',
+  coiffeur:'<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4L8.12 15.88M14.47 14.48L20 20M8.12 8.12L12 12"/>',
+  beaute:'<path d="M12 2l2 7h7l-5.5 4 2 7L12 16l-5.5 4 2-7L3 9h7z"/>',
+  bijou:'<path d="M6 3h12l4 6-10 12L2 9z"/>',
+  imprimeur:'<path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/>',
+  voiture:'<path d="M5 17H3v-5l2-5h14l2 5v5h-2M5 17a2 2 0 104 0M15 17a2 2 0 104 0"/>',
+  hotel:'<path d="M3 21h18M5 21V7h14v14M9 9h2M13 9h2M9 13h2M13 13h2"/>',
+  decor:'<path d="M12 2v6M12 22v-6M4 12H2M22 12h-2M6 6L4 4M18 6l2-2M6 18l-2 2M18 18l2 2M12 8a4 4 0 100 8 4 4 0 000-8z"/>'
+};
+function vndIcon(k){return VND_ICONS[k]||'<circle cx="12" cy="12" r="9"/>';}
+
 function renderVendors(){
   const el2=document.getElementById('vendors-content');
   if(!el2)return;
@@ -2495,8 +2547,8 @@ function renderVendors(){
   el2.innerHTML=`
     <div class="panel" style="margin-bottom:18px;">
       <div class="panel-title">Rechercher un prestataire</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(135px,1fr));gap:6px;margin-bottom:14px;">
-        ${cats.map(([k,cat])=>`<button data-catkey="${k}" class="vnd-cat-btn" onclick="selectCategory('${k}','${cat.label}')" style="background:#fdf8f5;color:var(--dark);border:1px solid var(--border);border-radius:10px;padding:9px 11px;cursor:pointer;font-size:12px;font-weight:600;font-family:'Lora',serif;text-align:left;transition:all .15s;">${cat.label}</button>`).join('')}
+      <div class="cat-grid">
+        ${cats.map(([k,cat])=>`<button data-catkey="${k}" class="vnd-cat-btn cat-chip" onclick="selectCategory('${k}','${cat.label}')"><span class="ic"><svg viewBox="0 0 24 24">${vndIcon(k)}</svg></span>${cat.label}</button>`).join('')}
       </div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
         <input type="text" id="vnd-postal" placeholder="Code postal ou ville" class="m-input" style="flex:1;min-width:150px;" onkeydown="if(event.key==='Enter')doVendorSearch()">
@@ -2511,12 +2563,12 @@ function renderVendors(){
     </div>
     <div id="vnd-results-wrap" style="margin-bottom:18px;"></div>
     <div class="panel" style="margin-bottom:16px;">
-      <div class="panel-title">Prestataires favoris <span class="badge b-pk">${VENDORS_FAV.length}</span></div>
+      <div class="panel-title">Prestataires favoris <span class="count-badge">${VENDORS_FAV.length}</span></div>
       <div style="display:flex;justify-content:flex-end;margin-bottom:10px;"><button class="btn-outline" style="font-size:11px;padding:5px 12px;" onclick="addManualVendor('fav')">+ Ajouter manuellement</button></div>
       <div id="vnd-favs"></div>
     </div>
     <div class="panel">
-      <div class="panel-title">Prestataires choisis <span class="badge b-gn">${VENDORS_CHO.length}</span></div>
+      <div class="panel-title">Prestataires choisis <span class="count-badge" style="background:#f0f8f0;color:var(--gn);">${VENDORS_CHO.length}</span></div>
       <div style="display:flex;justify-content:flex-end;margin-bottom:10px;"><button class="btn-outline" style="font-size:11px;padding:5px 12px;" onclick="addManualVendor('cho')">+ Ajouter manuellement</button></div>
       <div id="vnd-chosen"></div>
     </div>`;
@@ -2531,21 +2583,24 @@ function vSort(arr,mode){
   return a;
 }
 function vndFavCard(v,zone){
-  const c=VCOLS[v.categorie]||'var(--pink)';
-  return `<div class="card" style="padding:12px 14px;margin-bottom:8px;">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-      ${v.categorie?`<span style="background:${c}20;color:${c};font-size:10px;border-radius:20px;padding:3px 10px;font-weight:700;flex-shrink:0;">${v.categorie}</span>`:''}
-      <span style="font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:var(--dark);flex:1;">${(v.nom||'').replace(/</g,'&lt;')}</span>
-      ${v.distance!=null?`<span style="background:#f0f8f0;color:var(--gn);border-radius:8px;padding:3px 8px;font-size:11px;font-weight:700;">${v.distance} km</span>`:''}
+  const isCho=zone==='cho';
+  const headBg=isCho?'linear-gradient(135deg,#f0f8f0,#fff)':'linear-gradient(135deg,var(--pink-pale),#fff)';
+  const badgeStyle=isCho?'background:rgba(90,138,106,0.12);color:var(--gn);':'';
+  return `<div class="vnd-card2">
+    <div class="vnd-head" style="background:${headBg};">
+      ${v.categorie?`<span class="vnd-badge" style="${badgeStyle}">${v.categorie}</span>`:''}
+      <span class="vnd-name">${(v.nom||'').replace(/</g,'&lt;')}</span>
+      ${v.distance!=null?`<span class="vnd-dist">${v.distance} km</span>`:''}
     </div>
-    ${v.adresse?`<div style="font-size:12px;color:var(--tl);margin-bottom:8px;">${(v.adresse||'').replace(/</g,'&lt;')}</div>`:''}
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-      <span style="font-size:11px;color:var(--tl);font-weight:700;flex-shrink:0;">Prix :</span>
-      <input type="text" value="${(v.prix_perso||'').replace(/"/g,'&quot;')}" placeholder="Indiquer le prix…" onchange="updVndPrice(${v.id},'${zone}',this.value)" style="flex:1;border:1px solid var(--border);border-radius:7px;padding:5px 9px;font-size:12px;outline:none;background:#fffafc;">
-    </div>
-    <div style="display:flex;gap:6px;">
-      ${zone==='fav'?`<button class="btn-outline" style="flex:1;font-size:11px;padding:6px 10px;border-color:var(--gn);color:var(--gn);" onclick="movToChosen(${v.id})">Choisir ce prestataire</button><button style="background:none;border:none;color:var(--tl);cursor:pointer;font-size:16px;" onclick="removFav(${v.id})">×</button>`
-        :`<button class="btn-outline" style="flex:1;font-size:11px;padding:6px 10px;" onclick="movToFav(${v.id})">↩ Remettre en favori</button><button style="background:none;border:none;color:var(--tl);cursor:pointer;font-size:16px;" onclick="removCho(${v.id})">×</button>`}
+    <div class="vnd-body2">
+      ${v.adresse?`<div class="vnd-addr">${(v.adresse||'').replace(/</g,'&lt;')}</div>`:''}
+      <div class="price-row"><label>Prix :</label><input class="price-input" value="${(v.prix_perso||'').replace(/"/g,'&quot;')}" placeholder="Indiquer le prix…" onchange="updVndPrice(${v.id},'${zone}',this.value)"></div>
+      <div class="vnd-actions">
+        ${isCho
+          ? `<button class="btn-fav2" onclick="movToFav(${v.id})">↩ Remettre en favori</button>`
+          : `<button class="btn-choose" onclick="movToChosen(${v.id})">Choisir ce prestataire</button>`}
+        <button class="btn-x2" onclick="${isCho?'removCho':'removFav'}(${v.id})">×</button>
+      </div>
     </div>
   </div>`;
 }
@@ -2759,47 +2814,33 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
 
 function renderVndResults(query){
   const r=window._vndResults||[];const wrap=el('vnd-results-wrap');if(!wrap||!r.length)return;
-  // Construction d'une URL Google Maps de fallback pour la query complète
-  // (utile si OSM n'a pas tout — l'utilisateur peut compléter via Google)
-  const lat=window._userLat, lng=window._userLng;
-  const googleSearchUrl = (lat&&lng)
-    ? `https://www.google.com/search?q=${encodeURIComponent(query + " mariage")}`
-    : `https://www.google.com/search?q=${encodeURIComponent(query + " mariage")}`;
-
-  const fewResults = r.length < 8;
-
-  wrap.innerHTML=`<div style="font-family:Playfair Display,serif;font-size:15px;color:${tx};margin-bottom:6px;">${r.length} résultat${r.length>1?'s':''} pour "${h(query)}"</div>`+
-  `<div style="font-size:11px;color:${tl};margin-bottom:10px;font-style:italic;"></div>`+
+  const googleSearchUrl=`https://www.google.com/search?q=${encodeURIComponent(query + " mariage")}`;
+  wrap.innerHTML=`<div class="panel"><div class="panel-title">${r.length} résultat${r.length>1?'s':''} — ${h(query)}</div>`+
   r.map((v,i)=>{
-    const c=VCOLS[v.categorie]||pk;
+    const inFav=VENDORS_FAV.find(f=>f.nom===v.nom);
     const mapsUrl=v.lat&&v.lng?`https://www.google.com/maps/search/?api=1&query=${v.lat},${v.lng}`:'';
-    return`<div class="card" style="margin-bottom:8px;overflow:hidden;">
-      <div onclick="toggleVndResult(${i})" style="padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;background:linear-gradient(135deg,${sf},#fff);">
-        <span style="background:${c}20;color:${c};font-size:10px;border-radius:20px;padding:3px 10px;font-weight:700;flex-shrink:0;">${h(v.categorie)}</span>
-        <span style="font-family:Playfair Display,serif;font-size:14px;font-weight:700;color:${tx};flex:1;">${h(v.nom)}</span>
-        ${v.distance!=null?`<span style="background:#f0f8f0;color:${gn};border-radius:8px;padding:3px 8px;font-size:11px;font-weight:700;flex-shrink:0;"> ${v.distance} km</span>`:''}
-        <span style="font-size:13px;color:${tl};">▼</span>
+    return`<div class="vnd-card2">
+      <div class="vnd-head" onclick="toggleVndResult(${i})" style="cursor:pointer;">
+        <span class="vnd-badge">${h(v.categorie)}</span>
+        <span class="vnd-name">${h(v.nom)}</span>
+        ${v.distance!=null?`<span class="vnd-dist">${v.distance} km</span>`:''}
+        <span style="font-size:12px;color:var(--tl);flex-shrink:0;">▼</span>
       </div>
-      <div id="vnd-detail-${i}" style="display:none;padding:12px 14px;border-top:1px solid ${br};">
-        ${v.adresse?`<div style="font-size:12px;color:${tl};margin-bottom:8px;line-height:1.5;"> ${h(v.adresse)}</div>`:''}
-        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-          ${v.tel?`<a href="tel:${v.tel}" style="background:${sf};color:${pk};border-radius:8px;padding:6px 10px;font-size:11px;text-decoration:none;font-weight:700;"> ${h(v.tel)}</a>`:''}
+      <div id="vnd-detail-${i}" style="display:none;" class="vnd-body2">
+        ${v.adresse?`<div class="vnd-addr">${h(v.adresse)}</div>`:''}
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:11px;">
+          ${v.tel?`<a href="tel:${v.tel}" style="background:var(--pink-pale);color:var(--pink-dark);border-radius:9px;padding:7px 12px;font-size:11px;text-decoration:none;font-weight:700;">${h(v.tel)}</a>`:''}
           ${v.site
-            ? `<a href="https://${v.site.replace(/^https?:\/\//,'')}" target="_blank" rel="noopener" style="background:${sf};color:${pk};border-radius:8px;padding:6px 10px;font-size:11px;text-decoration:none;font-weight:700;"> Site web</a>`
-            : `<a href="https://www.google.com/search?q=${encodeURIComponent('"'+v.nom+'"')}" target="_blank" rel="noopener" style="background:${sf};color:${pk};border-radius:8px;padding:6px 10px;font-size:11px;text-decoration:none;font-weight:700;"> Trouver le site</a>`}
-          ${mapsUrl?`<a href="${mapsUrl}" target="_blank" rel="noopener" style="background:#f0f8f0;color:${gn};border-radius:8px;padding:6px 10px;font-size:11px;text-decoration:none;font-weight:700;">️ Itinéraire</a>`:''}
+            ? `<a href="https://${v.site.replace(/^https?:\/\//,'')}" target="_blank" rel="noopener" style="background:var(--pink-pale);color:var(--pink-dark);border-radius:9px;padding:7px 12px;font-size:11px;text-decoration:none;font-weight:700;">Site web</a>`
+            : `<a href="https://www.google.com/search?q=${encodeURIComponent('"'+v.nom+'"')}" target="_blank" rel="noopener" style="background:var(--pink-pale);color:var(--pink-dark);border-radius:9px;padding:7px 12px;font-size:11px;text-decoration:none;font-weight:700;">Trouver le site</a>`}
+          ${mapsUrl?`<a href="${mapsUrl}" target="_blank" rel="noopener" style="background:#f0f8f0;color:var(--gn);border-radius:9px;padding:7px 12px;font-size:11px;text-decoration:none;font-weight:700;">Itinéraire</a>`:''}
         </div>
-        <button onclick="addToFav(${i})" style="width:100%;background:${VENDORS_FAV.find(f=>f.nom===v.nom)?'#f0f8f0':'linear-gradient(135deg,'+pk+',#b84060)'};color:${VENDORS_FAV.find(f=>f.nom===v.nom)?gn:'#fff'};border:none;border-radius:9px;padding:9px;cursor:pointer;font-size:13px;font-weight:700;font-family:Lora,serif;">
-          ${VENDORS_FAV.find(f=>f.nom===v.nom)?' Déjà dans les favoris':'+ Ajouter aux favoris'}
-        </button>
+        <button onclick="addToFav(${i})" class="${inFav?'btn-choose':'btn-fav2'}" style="width:100%;${inFav?'border-color:var(--gn);color:var(--gn);':''}">${inFav?'Déjà dans les favoris':'+ Ajouter aux favoris'}</button>
       </div>
     </div>`;
   }).join('')+
-  // Lien Google Maps en bas pour compléter (OSM est incomplet sur certains commerces)
-  `<a href="${googleSearchUrl}" target="_blank" rel="noopener" style="display:block;margin-top:14px;padding:12px;background:linear-gradient(135deg,#fff8ec,#fef5e0);border:1.5px solid ${gd}50;border-radius:12px;text-align:center;text-decoration:none;color:${tx};font-size:13px;font-weight:700;font-family:Lora,serif;">
-     Voir plus de résultats sur Google
-    <div style="font-size:10px;color:${tl};font-weight:400;margin-top:3px;font-style:italic;">Google a souvent plus de prestataires qu'OpenStreetMap</div>
-  </a>`;
+  `<a href="${googleSearchUrl}" target="_blank" rel="noopener" style="display:block;margin-top:14px;padding:13px;background:linear-gradient(135deg,#fff8ec,#fef5e0);border:1.5px solid ${gd}50;border-radius:12px;text-align:center;text-decoration:none;color:var(--dark);font-size:13px;font-weight:700;font-family:'Lora',serif;">Voir plus de résultats sur Google</a>`+
+  `</div>`;
 }
 
 async function searchByPostal(){
@@ -2825,13 +2866,9 @@ async function searchByCategory(catKey,catLabel){
   const cat=VND_CATEGORIES[catKey];
   if(!cat){console.warn('Catégorie inconnue:',catKey);return;}
   window._activeCatKey=catKey;window._activeCatLabel=catLabel;
-  // Mettre en rose le bouton actif
+  // Surbrillance via la classe .active (design chips)
   document.querySelectorAll('.vnd-cat-btn').forEach(b=>{
-    const active=b.getAttribute('data-catkey')===catKey;
-    b.style.background=active?sf:'transparent';
-    b.style.borderColor=active?pk:br;
-    b.style.fontWeight=active?'700':'600';
-    b.style.color=active?pk:tx;
+    b.classList.toggle('active',b.getAttribute('data-catkey')===catKey);
   });
   // Ne lancer la recherche que si une position est déjà connue
   if(window._userLat&&window._userLng){
@@ -2859,8 +2896,8 @@ function updVndPrice(id,zone,val){
 function openSettingsPage(){
   openModal(`
     <div class="modal-title">Paramètres <button class="modal-x" onclick="closeModal()">×</button></div>
-    <div class="m-field"><label class="m-label">Marié·e 1</label><input class="m-input" id="set-p1" value="${(USER.p1||'').replace(/"/g,'&quot;')}"></div>
-    <div class="m-field"><label class="m-label">Marié·e 2</label><input class="m-input" id="set-p2" value="${(USER.p2||'').replace(/"/g,'&quot;')}"></div>
+    <div class="m-field"><label class="m-label">Votre prénom</label><input class="m-input" id="set-p1" value="${(USER.p1||'').replace(/"/g,'&quot;')}"></div>
+    <div class="m-field"><label class="m-label">Prénom partenaire</label><input class="m-input" id="set-p2" value="${(USER.p2||'').replace(/"/g,'&quot;')}"></div>
     <div class="m-field"><label class="m-label">Date du mariage</label><input class="m-input" type="date" id="set-date" value="${USER.wDate||''}"></div>
     <div class="m-field"><label class="m-label">Nouveau mot de passe</label><input class="m-input" type="password" id="set-pass" placeholder="Laisser vide pour ne pas changer"></div>
     <div class="m-actions">
