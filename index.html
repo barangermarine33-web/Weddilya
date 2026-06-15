@@ -211,7 +211,7 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 .dl-btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:11px;border-radius:11px;background:linear-gradient(135deg,var(--pink-dark),var(--pink));color:#fff;border:none;cursor:pointer;font-family:'Lora',serif;font-size:12.5px;font-weight:700;box-shadow:0 3px 12px rgba(212,96,122,0.25);}
 .dl-btn svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2;}
 .dl-sub{font-size:10px;color:var(--tl);text-align:center;margin-top:6px;}
-.sidebar-section-title{font-family:'Josefin Sans',sans-serif;font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:var(--tl);padding:0 20px;margin:16px 0 6px;}
+.sidebar-section-title{font-family:'Josefin Sans',sans-serif;font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:var(--pink-dark);padding:0 20px;margin:16px 0 6px;}
 .sidebar-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;font-family:'Lora',serif;font-size:13px;color:var(--mid);transition:background 0.15s,color 0.15s;border-left:3px solid transparent;position:relative;}
 .sidebar-item:hover{background:var(--pink-pale);color:var(--pink);}
 .sidebar-item.active{background:var(--pink-pale);color:var(--pink);border-left-color:var(--pink);font-weight:700;}
@@ -234,7 +234,7 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 .progress-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--pink-dark),var(--pink));transition:width .6s;}
 .panels-row{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin-bottom:24px;}
 .panel{background:white;border-radius:16px;padding:22px 24px;box-shadow:0 2px 16px rgba(212,96,122,0.05);border:1px solid var(--border);}
-.panel-title{font-family:'Playfair Display',serif;font-size:16px;color:var(--dark);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
+.panel-title{font-family:'Playfair Display',serif;font-size:16px;color:var(--pink-dark);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
 .panel-link{font-size:12px;color:var(--pink);font-family:'Lora',serif;cursor:pointer;font-weight:700;}
 .task-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px dashed var(--border);font-size:13px;}
 .task-row:last-child{border-bottom:none;}
@@ -1649,14 +1649,18 @@ function openGuestModal(id){
   openModal(`
     <div class="modal-title">${g.nom||'Invité'} <button class="modal-x" onclick="closeModal()">×</button></div>
     <div class="m-field"><label class="m-label">Nom complet</label><input class="m-input" id="gm-nom" value="${(g.nom||'').replace(/"/g,'&quot;')}"></div>
-    ${pickField('cote','Côté',window._gm.cote==='p1'?USER.p1:USER.p2)}
-    ${pickField('role','Rôle',window._gm.role)}
-    ${pickField('age','Âge',window._gm.age)}
-    ${pickField('inv','Invitation',window._gm.inv)}
-    ${pickField('pres','Présence',window._gm.pres)}
-    ${pickField('regime','Régime alimentaire',window._gm.regime)}
-    <div class="m-field"><label class="m-label">Email</label><input class="m-input" id="gm-email" type="email" value="${(g.email||'').replace(/"/g,'&quot;')}" placeholder="email@…"></div>
-    <div class="m-field"><label class="m-label">Adresse postale</label><input class="m-input" id="gm-adresse" value="${(g.adresse||'').replace(/"/g,'&quot;')}" placeholder="N° rue, ville, code postal…"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      ${pickField('cote','Côté',window._gm.cote==='p1'?USER.p1:USER.p2)}
+      ${pickField('role','Rôle',window._gm.role)}
+      ${pickField('age','Âge',window._gm.age)}
+      ${pickField('regime','Régime alimentaire',window._gm.regime)}
+      ${pickField('inv','Invitation',window._gm.inv)}
+      ${pickField('pres','Présence',window._gm.pres)}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="m-field"><label class="m-label">Email</label><input class="m-input" id="gm-email" type="email" value="${(g.email||'').replace(/"/g,'&quot;')}" placeholder="email@…"></div>
+      <div class="m-field"><label class="m-label">Adresse postale</label><input class="m-input" id="gm-adresse" value="${(g.adresse||'').replace(/"/g,'&quot;')}" placeholder="N° rue, ville…"></div>
+    </div>
     <div class="m-actions">
       <button class="btn" onclick="event.stopPropagation();saveGuestModal(${g.id})">Enregistrer</button>
       <button class="btn-outline" onclick="closeModal()">Fermer</button>
@@ -2455,24 +2459,25 @@ function addDecoIdx(ci){
 }
 
 // ══ PRESTATAIRES ══
-const VND_CATEGORIES={
-  salle:{label:'Salle / Domaine',tags:['amenity=events_venue','amenity=conference_centre','amenity=community_centre','tourism=hotel','historic=castle','building=castle','leisure=resort']},
-  traiteur:{label:'Traiteur',tags:['shop=caterer','craft=caterer','craft=catering','amenity=catering']},
-  photographe:{label:'Photographe',tags:['shop=photo','craft=photographer','office=photographer']},
-  videaste:{label:'Vidéaste',tags:['craft=videographer','office=videographer','shop=video']},
-  dj:{label:'DJ / Musique',tags:['craft=musical_instrument','shop=musical_instrument','office=dj','shop=music']},
-  fleuriste:{label:'Fleuriste',tags:['shop=florist']},
-  patisserie:{label:'Pâtisserie',tags:['shop=bakery','shop=pastry','shop=confectionery','craft=confectioner']},
-  robe:{label:'Robe mariée',tags:['shop=wedding_contract','shop=bridal']},
-  costume:{label:'Costume',tags:['craft=tailor','shop=tailor','shop=clothes']},
-  coiffeur:{label:'Coiffeur',tags:['shop=hairdresser']},
-  beaute:{label:'Maquillage',tags:['shop=beauty','shop=cosmetics','leisure=spa']},
-  bijou:{label:'Bijouterie',tags:['shop=jewelry']},
-  imprimeur:{label:'Imprimeur',tags:['shop=stationery','shop=copyshop','craft=printer']},
-  voiture:{label:'Voiture',tags:['amenity=car_rental','shop=car']},
-  hotel:{label:'Hébergement',tags:['tourism=hotel','tourism=guest_house','tourism=apartment','tourism=hostel']},
-  decor:{label:'Décoration',tags:['shop=interior_decoration','craft=upholsterer','office=event_management']}
+const VND_CATEGORIES = {
+  salle:       {label:'Lieu/Salle',         tags:['amenity=events_venue','amenity=conference_centre','amenity=community_centre','tourism=hotel','historic=castle','building=castle','leisure=resort']},
+  traiteur:    {label:'Traiteur',           tags:['shop=caterer','craft=caterer','craft=catering','amenity=catering']},
+  photographe: {label:'Photographe',        tags:['shop=photo','craft=photographer','office=photographer']},
+  videaste:    {label:'Vidéaste',           tags:['craft=videographer','office=videographer','shop=video']},
+  dj:          {label:'DJ/Musique',         tags:['craft=musical_instrument','shop=musical_instrument','office=dj','shop=music']},
+  fleuriste:   {label:'Fleuriste',          tags:['shop=florist']},
+  patisserie:  {label:'Pâtisserie/Cake',    tags:['shop=bakery','shop=pastry','shop=confectionery','craft=confectioner']},
+  robe:        {label:'Robe mariée',        tags:['shop=wedding_contract','shop=bridal']},
+  costume:     {label:'Costume/Tailleur',   tags:['craft=tailor','shop=tailor','shop=clothes']},
+  coiffeur:    {label:'Coiffeur',           tags:['shop=hairdresser']},
+  beaute:      {label:'Maquillage/Beauté',  tags:['shop=beauty','shop=cosmetics','leisure=spa']},
+  bijou:       {label:'Bijoutier',          tags:['shop=jewelry']},
+  imprimeur:   {label:'Imprimeur',          tags:['shop=stationery','shop=copyshop','craft=printer']},
+  voiture:     {label:'Véhicule',           tags:['amenity=car_rental','shop=car']},
+  hotel:       {label:'Hébergement',        tags:['tourism=hotel','tourism=guest_house','tourism=apartment','tourism=hostel']},
+  decor:       {label:'Décoration',         tags:['shop=interior_decoration','craft=upholsterer','office=event_management']}
 };
+const VCOLS={Photographe:"#7a5a9a",Traiteur:"#5a8a5a",Salle:"#9a5a3a",Fleuriste:"#c4697e","DJ / Musique":"#3a6a9a","Wedding Planner":"#8a6a2a",Autre:"#6a6a6a"};
 let sortFav='alpha', sortCho='alpha';
 
 function renderVendors(){
@@ -2480,13 +2485,13 @@ function renderVendors(){
   if(!el2)return;
   const cats=Object.entries(VND_CATEGORIES);
   el2.innerHTML=`
-    <div class="panel" style="margin-bottom:16px;">
+    <div class="panel" style="margin-bottom:18px;">
       <div class="panel-title">Rechercher un prestataire</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px;margin-bottom:12px;">
-        ${cats.map(([k,cat])=>`<button data-catkey="${k}" class="vnd-cat-btn" onclick="selectCategory('${k}','${cat.label}')" style="background:var(--bg);color:var(--dark);border:1px solid var(--border);border-radius:10px;padding:9px 10px;cursor:pointer;font-size:12px;font-weight:600;font-family:'Lora',serif;text-align:left;transition:all .15s;">${cat.label}</button>`).join('')}
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(135px,1fr));gap:6px;margin-bottom:14px;">
+        ${cats.map(([k,cat])=>`<button data-catkey="${k}" class="vnd-cat-btn" onclick="selectCategory('${k}','${cat.label}')" style="background:#fdf8f5;color:var(--dark);border:1px solid var(--border);border-radius:10px;padding:9px 11px;cursor:pointer;font-size:12px;font-weight:600;font-family:'Lora',serif;text-align:left;transition:all .15s;">${cat.label}</button>`).join('')}
       </div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
-        <input type="text" id="vnd-postal" placeholder="Code postal ou ville (ex : 57000)" class="m-input" style="flex:1;min-width:160px;" onkeydown="if(event.key==='Enter')doVendorSearch()">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+        <input type="text" id="vnd-postal" placeholder="Code postal ou ville" class="m-input" style="flex:1;min-width:150px;" onkeydown="if(event.key==='Enter')doVendorSearch()">
         <button class="btn" onclick="doVendorSearch()">Rechercher</button>
       </div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
@@ -2495,125 +2500,90 @@ function renderVendors(){
         <span id="vnd-radius-val" style="font-size:12px;color:var(--dark);font-weight:700;min-width:50px;text-align:right;">20 km</span>
       </div>
       <div id="vnd-location-status" style="font-size:11px;color:var(--tl);min-height:16px;"></div>
-      <p style="font-size:11px;color:var(--tl);font-style:italic;margin-top:6px;">Choisissez une catégorie puis indiquez un code postal. Données OpenStreetMap & annuaire des entreprises, triées par distance.</p>
     </div>
-    <div id="vnd-results-wrap" style="margin-bottom:16px;"></div>
+    <div id="vnd-results-wrap" style="margin-bottom:18px;"></div>
     <div class="panel" style="margin-bottom:16px;">
       <div class="panel-title">Prestataires favoris <span class="badge b-pk">${VENDORS_FAV.length}</span></div>
-      <div style="display:flex;justify-content:flex-end;margin-bottom:8px;"><button class="btn-outline" style="font-size:11px;padding:5px 12px;" onclick="addManualVendor('fav')">+ Ajouter manuellement</button></div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:10px;"><button class="btn-outline" style="font-size:11px;padding:5px 12px;" onclick="addManualVendor('fav')">+ Ajouter manuellement</button></div>
       <div id="vnd-favs"></div>
     </div>
     <div class="panel">
       <div class="panel-title">Prestataires choisis <span class="badge b-gn">${VENDORS_CHO.length}</span></div>
-      <div style="display:flex;justify-content:flex-end;margin-bottom:8px;"><button class="btn-outline" style="font-size:11px;padding:5px 12px;" onclick="addManualVendor('cho')">+ Ajouter manuellement</button></div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:10px;"><button class="btn-outline" style="font-size:11px;padding:5px 12px;" onclick="addManualVendor('cho')">+ Ajouter manuellement</button></div>
       <div id="vnd-chosen"></div>
     </div>`;
   renderFavs();renderChosen();
 }
 
-function vndCard(v,zone){
-  const dist=v.distance!=null?`${v.distance} km`:'';
-  const actions=zone==='fav'
-    ? `<button class="btn-outline" style="font-size:11px;padding:5px 10px;border-color:var(--gn);color:var(--gn);" onclick="movToChosen('${v.id}')">Choisir</button><button style="background:none;border:none;color:var(--tl);cursor:pointer;font-size:15px;" onclick="removFav('${v.id}')">×</button>`
-    : (zone==='cho'
-      ? `<button class="btn-outline" style="font-size:11px;padding:5px 10px;" onclick="movToFav('${v.id}')">↩ Favori</button><button style="background:none;border:none;color:var(--tl);cursor:pointer;font-size:15px;" onclick="removCho('${v.id}')">×</button>`
-      : `<button class="btn" style="font-size:11px;padding:6px 12px;" onclick="addToFav('${v.id}')">+ Favori</button>`);
-  return `<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border:1px solid var(--border);border-radius:12px;margin-bottom:8px;">
-    <div style="flex:1;min-width:0;">
-      <div style="font-size:13px;font-weight:700;color:var(--dark);">${(v.nom||'').replace(/</g,'&lt;')}</div>
-      <div style="font-size:11px;color:var(--tl);margin-top:2px;">${v.categorie||''}${v.adresse?' · '+v.adresse.replace(/</g,'&lt;'):''}</div>
-      ${v.tel||v.site?`<div style="font-size:11px;color:var(--pink);margin-top:2px;">${v.tel||''}${v.site?(v.tel?' · ':'')+'<a href="'+(v.site.startsWith('http')?v.site:'https://'+v.site)+'" target="_blank" style="color:var(--pink);">site web</a>':''}</div>`:''}
-    </div>
-    ${dist?`<span class="badge b-gn" style="white-space:nowrap;">${dist}</span>`:''}
-    <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">${actions}</div>
-  </div>`;
-}
-
 function vSort(arr,mode){
   const a=[...arr];
   if(mode==='alpha')a.sort((x,y)=>(x.nom||'').localeCompare(y.nom||'','fr'));
-  else if(mode==='distance')a.sort((x,y)=>(x.distance||999)-(y.distance||999));
+  else if(mode==='distance')a.sort((x,y)=>(x.distance==null?999:x.distance)-(y.distance==null?999:y.distance));
+  else if(mode==='prix')a.sort((x,y)=>(parseFloat(x.prix_perso)||999999)-(parseFloat(y.prix_perso)||999999));
   return a;
+}
+function vndFavCard(v,zone){
+  const c=VCOLS[v.categorie]||'var(--pink)';
+  return `<div class="card" style="padding:12px 14px;margin-bottom:8px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      ${v.categorie?`<span style="background:${c}20;color:${c};font-size:10px;border-radius:20px;padding:3px 10px;font-weight:700;flex-shrink:0;">${v.categorie}</span>`:''}
+      <span style="font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:var(--dark);flex:1;">${(v.nom||'').replace(/</g,'&lt;')}</span>
+      ${v.distance!=null?`<span style="background:#f0f8f0;color:var(--gn);border-radius:8px;padding:3px 8px;font-size:11px;font-weight:700;">${v.distance} km</span>`:''}
+    </div>
+    ${v.adresse?`<div style="font-size:12px;color:var(--tl);margin-bottom:8px;">${(v.adresse||'').replace(/</g,'&lt;')}</div>`:''}
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+      <span style="font-size:11px;color:var(--tl);font-weight:700;flex-shrink:0;">Prix :</span>
+      <input type="text" value="${(v.prix_perso||'').replace(/"/g,'&quot;')}" placeholder="Indiquer le prix…" onchange="updVndPrice(${v.id},'${zone}',this.value)" style="flex:1;border:1px solid var(--border);border-radius:7px;padding:5px 9px;font-size:12px;outline:none;background:#fffafc;">
+    </div>
+    <div style="display:flex;gap:6px;">
+      ${zone==='fav'?`<button class="btn-outline" style="flex:1;font-size:11px;padding:6px 10px;border-color:var(--gn);color:var(--gn);" onclick="movToChosen(${v.id})">Choisir ce prestataire</button><button style="background:none;border:none;color:var(--tl);cursor:pointer;font-size:16px;" onclick="removFav(${v.id})">×</button>`
+        :`<button class="btn-outline" style="flex:1;font-size:11px;padding:6px 10px;" onclick="movToFav(${v.id})">↩ Remettre en favori</button><button style="background:none;border:none;color:var(--tl);cursor:pointer;font-size:16px;" onclick="removCho(${v.id})">×</button>`}
+    </div>
+  </div>`;
 }
 function renderFavs(){
   const d=document.getElementById('vnd-favs');if(!d)return;
   d.innerHTML=VENDORS_FAV.length===0
     ?'<div style="background:var(--bg);border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;color:var(--tl);font-size:13px;font-style:italic;">Ajoutez vos prestataires favoris ici</div>'
-    :vSort(VENDORS_FAV,sortFav).map(v=>vndCard(v,'fav')).join('');
+    :vSort(VENDORS_FAV,sortFav).map(v=>vndFavCard(v,'fav')).join('');
 }
 function renderChosen(){
   const d=document.getElementById('vnd-chosen');if(!d)return;
   d.innerHTML=VENDORS_CHO.length===0
     ?'<div style="background:var(--bg);border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;color:var(--tl);font-size:13px;font-style:italic;">Vos prestataires confirmés apparaîtront ici</div>'
-    :vSort(VENDORS_CHO,sortCho).map(v=>vndCard(v,'cho')).join('');
+    :vSort(VENDORS_CHO,sortCho).map(v=>vndFavCard(v,'cho')).join('');
 }
-
-function addToFav(id){
-  const v=(window._vndResults||[]).find(r=>String(r.id)===String(id));
-  if(!v)return;
-  if(!VENDORS_FAV.find(f=>f.nom===v.nom)){VENDORS_FAV.push(v);saveData('vfav',VENDORS_FAV);renderFavs();renderVendors();}
-}
-function movToChosen(id){
-  const v=VENDORS_FAV.find(f=>String(f.id)===String(id));if(!v)return;
-  VENDORS_FAV=VENDORS_FAV.filter(f=>String(f.id)!==String(id));
-  if(!VENDORS_CHO.find(c2=>c2.nom===v.nom))VENDORS_CHO.push(v);
-  saveData('vfav',VENDORS_FAV);saveData('vcho',VENDORS_CHO);renderVendors();
-}
-function movToFav(id){
-  const v=VENDORS_CHO.find(c2=>String(c2.id)===String(id));if(!v)return;
-  VENDORS_CHO=VENDORS_CHO.filter(c2=>String(c2.id)!==String(id));
-  if(!VENDORS_FAV.find(f=>f.nom===v.nom))VENDORS_FAV.push(v);
-  saveData('vfav',VENDORS_FAV);saveData('vcho',VENDORS_CHO);renderVendors();
-}
+function movToChosen(id){const v=VENDORS_FAV.find(f=>String(f.id)===String(id));if(!v)return;VENDORS_FAV=VENDORS_FAV.filter(f=>String(f.id)!==String(id));if(!VENDORS_CHO.find(c2=>String(c2.id)===String(id)))VENDORS_CHO.push(v);saveData('vfav',VENDORS_FAV);saveData('vcho',VENDORS_CHO);renderVendors();}
+function movToFav(id){const v=VENDORS_CHO.find(c2=>String(c2.id)===String(id));if(!v)return;VENDORS_CHO=VENDORS_CHO.filter(c2=>String(c2.id)!==String(id));if(!VENDORS_FAV.find(f=>String(f.id)===String(id)))VENDORS_FAV.push(v);saveData('vfav',VENDORS_FAV);saveData('vcho',VENDORS_CHO);renderVendors();}
 function removFav(id){VENDORS_FAV=VENDORS_FAV.filter(f=>String(f.id)!==String(id));saveData('vfav',VENDORS_FAV);renderVendors();}
 function removCho(id){VENDORS_CHO=VENDORS_CHO.filter(c2=>String(c2.id)!==String(id));saveData('vcho',VENDORS_CHO);renderVendors();}
-
 async function addManualVendor(zone){
   const nom=await appPrompt('Nom du prestataire','');
   if(!nom||!nom.trim())return;
-  const v={id:Date.now()+Math.random(),nom:nom.trim(),categorie:'',adresse:'',tel:'',site:'',distance:null,notes:''};
-  if(zone==='fav'){VENDORS_FAV.push(v);saveData('vfav',VENDORS_FAV);}
-  else{VENDORS_CHO.push(v);saveData('vcho',VENDORS_CHO);}
+  const v={id:Date.now()+Math.random(),nom:nom.trim(),categorie:'',adresse:'',tel:'',site:'',distance:null,prix_perso:'',notes:''};
+  if(zone==='fav'){VENDORS_FAV.push(v);saveData('vfav',VENDORS_FAV);}else{VENDORS_CHO.push(v);saveData('vcho',VENDORS_CHO);}
   renderVendors();
 }
+function selectCategory(catKey,catLabel){searchByCategory(catKey,catLabel);}
 
-
-function selectCategory(catKey,catLabel){
-  window._activeCatKey=catKey;window._activeCatLabel=catLabel;
-  document.querySelectorAll('.vnd-cat-btn').forEach(b=>{
-    const active=b.getAttribute('data-catkey')===catKey;
-    b.style.background=active?'var(--pink-pale)':'var(--bg)';
-    b.style.borderColor=active?'var(--pink)':'var(--border)';
-    b.style.color=active?'var(--pink)':'var(--dark)';
-  });
-}
-// Lancé UNIQUEMENT par le bouton Rechercher
 async function doVendorSearch(){
   if(!window._activeCatKey){await appAlert2('Sélectionnez d\'abord un type de prestataire.');return;}
-  const postal=document.getElementById('vnd-postal')?.value.trim();
-  if(!postal){await appAlert2('Entrez un code postal ou une ville.');return;}
-  const status=document.getElementById('vnd-location-status');
-  if(status)status.textContent='Recherche du lieu…';
-  try{
-    const res=await fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(postal+' France')+'&format=json&limit=1',{headers:{'Accept-Language':'fr'}});
-    const data=await res.json();
-    if(!data||!data.length){if(status)status.textContent='Lieu non trouvé.';return;}
-    window._userLat=parseFloat(data[0].lat);window._userLng=parseFloat(data[0].lon);
-    if(status)status.textContent='Lieu : '+data[0].display_name.split(',').slice(0,2).join(', ');
-    const radiusKm=parseInt(document.getElementById('vnd-radius')?.value||20);
-    await runCategorySearch(window._activeCatKey,window._activeCatLabel,window._userLat,window._userLng,radiusKm);
-  }catch(e){if(status)status.textContent='Erreur de géocodage.';}
+  await searchByPostal();
 }
 
-async function runCategorySearch(catKey,catLabel,lat,lng,radiusKm){
-  const wrap=document.getElementById('vnd-results-wrap');
+async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
+  const wrap=el('vnd-results-wrap');
   if(!wrap)return;
-  wrap.innerHTML='<p style="text-align:center;padding:20px;font-size:13px;color:var(--tl);">Recherche en cours…</p>';
-  const radiusMeters=radiusKm*1000;
+  wrap.innerHTML=`<p style="text-align:center;padding:20px;font-size:13px;color:${tl};">Recherche en cours…</p>`;
+  window._vndLogs=[];
+  const log=(msg)=>{window._vndLogs=window._vndLogs||[];window._vndLogs.push(msg);console.log('[VND]',msg);};
+
+  const radiusKm=Math.round(radiusMeters/1000);
   const results=[];const seen=new Set();
-  const hav=(a,b,c2,d)=>{const R=6371,dLat=(c2-a)*Math.PI/180,dLon=(d-b)*Math.PI/180,x=Math.sin(dLat/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c2*Math.PI/180)*Math.sin(dLon/2)**2;return Math.round(R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))*10)/10;};
+
+  function hav(a,b,c,d){const R=6371,dLat=(c-a)*Math.PI/180,dLon=(d-b)*Math.PI/180,x=Math.sin(dLat/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dLon/2)**2;return Math.round(R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))*10)/10;}
   function addPlace(nom,adresse,tel,site,plat,plng){
-    const key=(nom||'').toLowerCase().trim();
+    const key=nom.toLowerCase().trim();
     if(!nom||nom.length<3||seen.has(key))return;
     const la=parseFloat(plat),lo=parseFloat(plng);
     const hasCoords=!isNaN(la)&&!isNaN(lo)&&la!==0&&lo!==0;
@@ -2621,75 +2591,260 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusKm){
       const dist=hav(lat,lng,la,lo);
       if(dist>radiusKm)return;
       seen.add(key);
-      results.push({id:Date.now()+Math.random(),nom,categorie:catLabel,adresse:adresse||'',tel:tel||'',site:site||'',distance:dist,notes:''});
-    }else{
-      const dept=(document.getElementById('vnd-postal')?.value||'').trim().substring(0,2);
+      results.push({id:Date.now()+Math.random(),nom,categorie:catLabel,adresse:adresse||'',tel:tel||'',site:site||'',distance:dist,lat:la,lng:lo,notes:''});
+    } else {
+      const dept=(el('vnd-postal')?.value||'').trim().substring(0,2);
       if(!dept||!adresse||!adresse.includes(dept))return;
       seen.add(key);
-      results.push({id:Date.now()+Math.random(),nom,categorie:catLabel,adresse:adresse||'',tel:tel||'',site:site||'',distance:null,notes:''});
+      results.push({id:Date.now()+Math.random(),nom,categorie:catLabel,adresse:adresse||'',tel:tel||'',site:site||'',distance:null,lat:lat,lng:lng,notes:''});
     }
   }
+
   const MIRRORS=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://overpass.openstreetmap.fr/api/interpreter'];
   const cat=VND_CATEGORIES[catKey];
-  // 1. Overpass par tags (le système validé dans l'app)
+
   async function srcOverpassTags(){
-    const parts=cat.tags.map(tag=>{const [k,v]=tag.split('=');return `node["${k}"="${v}"](around:${radiusMeters},${lat},${lng});way["${k}"="${v}"](around:${radiusMeters},${lat},${lng});`;}).join('');
-    const oq=`[out:json][timeout:25];(${parts});out center 60;`;
-    for(const mir of MIRRORS){
-      try{
-        const ctrl=new AbortController();setTimeout(()=>ctrl.abort(),20000);
-        const r=await fetch(mir+'?data='+encodeURIComponent(oq),{signal:ctrl.signal});
-        if(!r.ok)continue;
-        const d=await r.json();
-        (d.elements||[]).filter(e=>e.tags&&e.tags.name).forEach(e=>{
-          addPlace(e.tags.name,[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:postcode'],e.tags['addr:city']].filter(Boolean).join(' '),e.tags.phone||e.tags['contact:phone'],e.tags.website||e.tags['contact:website'],e.lat||(e.center&&e.center.lat),e.lon||(e.center&&e.center.lon));
-        });
-        return;
-      }catch(e){}
-    }
+    if(!cat)return;
+    const fp=cat.tags.map(t=>{const[k,v]=t.split('=');return `node["${k}"="${v}"](around:${radiusMeters},${lat},${lng});way["${k}"="${v}"](around:${radiusMeters},${lat},${lng});`;}).join('');
+    const oq=`[out:json][timeout:25];(${fp});out center 80;`;
+    for(const m of MIRRORS){try{const c=new AbortController();setTimeout(()=>c.abort(),20000);const r=await fetch(m+'?data='+encodeURIComponent(oq),{signal:c.signal});if(!r.ok){log('Overpass tags HTTP '+r.status);continue;}const d=await r.json();const n=(d.elements||[]).filter(e=>e.tags?.name).length;log('Overpass tags OK: '+n);(d.elements||[]).filter(e=>e.tags?.name).forEach(e=>{addPlace(e.tags.name,[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' '),e.tags.phone||e.tags['contact:phone'],e.tags.website||e.tags['contact:website'],e.lat||(e.center?.lat),e.lon||(e.center?.lon));});return;}catch(e){log('Overpass tags ERR: '+e.message);}}
   }
-  // 2. Annuaire des entreprises (recherche-entreprises.api.gouv.fr) — comme l'app
+
+  async function srcOverpassName(){
+    const nkw={
+      salle:['mariage','réception','domaine','château','noces'],
+      traiteur:['traiteur','mariage'],photographe:['photographe','mariage'],
+      videaste:['vidéaste','mariage'],dj:['dj','mariage','animation'],
+      fleuriste:['fleur','mariage'],patisserie:['pâtisserie','mariage','wedding'],
+      robe:['mariage','mariée','bridal','wedding','noces','nuptiale'],costume:['mariage','smoking'],
+      coiffeur:['coiff','mariage'],beaute:['maquill','mariage'],
+      bijou:['bijou','mariage','alliance'],imprimeur:['imprim','mariage','faire-part'],
+      voiture:['mariage','limousine'],hotel:['hôtel','hotel','mariage'],decor:['mariage','décor']
+    };
+    const kws=(nkw[catKey]||['mariage']).slice(0,3);
+    await Promise.allSettled(kws.map(async kw=>{
+      for(const m of MIRRORS){try{const c=new AbortController();setTimeout(()=>c.abort(),15000);const nq=`[out:json][timeout:20];(node["name"~"${kw}",i](around:${radiusMeters},${lat},${lng});way["name"~"${kw}",i](around:${radiusMeters},${lat},${lng}););out center 40;`;const r=await fetch(m+'?data='+encodeURIComponent(nq),{signal:c.signal});if(!r.ok)continue;const d=await r.json();const n=(d.elements||[]).filter(e=>e.tags?.name).length;log('Overpass "'+kw+'": '+n);(d.elements||[]).filter(e=>e.tags?.name).forEach(e=>{addPlace(e.tags.name,[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' '),e.tags.phone,e.tags.website,e.lat||(e.center?.lat),e.lon||(e.center?.lon));});return;}catch(e){log('Overpass "'+kw+'" ERR: '+e.message);}}
+    }));
+  }
+
+  async function srcNominatim(){
+    const nt={
+      salle:['salle mariage','domaine mariage','château mariage'],
+      traiteur:['traiteur mariage'],photographe:['photographe mariage'],
+      videaste:['vidéaste mariage'],dj:['DJ mariage','animation mariage'],
+      fleuriste:['fleuriste mariage'],patisserie:['pâtisserie mariage','wedding cake'],
+      robe:['boutique mariage','robe mariée','robe noces','robe nuptiale'],costume:['costume mariage'],
+      coiffeur:['coiffeur mariage'],beaute:['maquillage mariage'],
+      bijou:['bijouterie mariage','alliance mariage'],
+      imprimeur:['faire-part mariage'],voiture:['voiture mariage'],
+      hotel:['hôtel mariage'],decor:['décoration mariage','wedding planner']
+    };
+    const terms=(nt[catKey]||[catLabel+' mariage']).slice(0,2);
+    await Promise.allSettled(terms.map(async term=>{
+      try{
+        const c=new AbortController();setTimeout(()=>c.abort(),10000);
+        const deg=radiusKm/60;
+        const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(term)}&format=json&limit=30&addressdetails=1&countrycodes=fr,be,ch,lu&viewbox=${lng-deg},${lat+deg},${lng+deg},${lat-deg}&bounded=0`,{signal:c.signal,headers:{'Accept-Language':'fr'}});
+        if(!r.ok){log('Nominatim HTTP '+r.status);return;}
+        const d=await r.json();
+        d.forEach(e=>{const a=e.address||{};addPlace((e.display_name||'').split(',')[0].trim(),[a.road,a.postcode,a.city||a.town||a.village].filter(Boolean).join(' '),'','',e.lat,e.lon);});
+        log('Nominatim "'+term+'": '+results.length);
+      }catch(e){log('Nominatim ERR: '+e.message);}
+    }));
+  }
+
   async function srcAnnuaire(){
     const qMap={
-      salle:['château','manoir','prieuré','salle','domaine'],traiteur:['traiteur'],photographe:['photographe'],
-      videaste:['vidéaste','videaste'],dj:['dj mariage','disc jockey','sonorisation'],fleuriste:['fleuriste'],
-      patisserie:['pâtisserie','pâtissier'],robe:['mariage','mariée','nuptiale','bridal','couture'],
-      costume:['costume','smoking','tailleur'],coiffeur:['coiffeur','coiffure'],beaute:['maquillage','esthétique'],
-      bijou:['bijouterie','joaillerie'],imprimeur:['faire-part','imprimerie'],voiture:['limousine','location voiture'],
-      hotel:['hôtel','gîte','chambre hôtes'],decor:['décoration']
+      salle:       ['château','manoir','prieuré','salle','domaine'],
+      traiteur:    ['traiteur'],
+      photographe: ['photographe'],
+      videaste:    ['vidéaste','videaste'],
+      dj:          ['dj mariage','dj soirée','dj animation','dj événement','disc jockey','sonorisation mariage'],
+      fleuriste:   ['fleuriste','fleurs'],
+      patisserie:  ['pâtisserie','patisserie','pâtissier','patissier'],
+      robe:        ['mariage','mariée','nuptiale','noces','bridal','wedding','robe','couture'],
+      costume:     ['smoking','costume','costumier','location tenue','father','celio','devred','izac','hugo boss'],
+      coiffeur:    ['coiffeur','coiffure'],
+      beaute:      ['maquillage','esthétique','esthetique'],
+      bijou:       ['bijouterie','joaillerie','orfèvrerie'],
+      imprimeur:   ['faire-part','imprimerie','papeterie'],
+      voiture:     ['limousine','voiture mariage','location voiture mariage','myweddingcar','retro mariage','wedrivit','roadstr','classic rent'],
+      hotel:       ['hôtel','hotel','gîte','gite','hébergement','chambre hôtes','logis'],
+      decor:       ['décoration','decoration','jour de fete','jour de fête','vegaooparty','maisons du monde','ikea','centrakor','gifi','etsy']
     };
-    const terms=(qMap[catKey]||[catLabel]).slice(0,3);
-    const postalVal=(document.getElementById('vnd-postal')?.value||'').trim();
-    let dept=(postalVal.match(/\b(\d{2})/)||[])[1]||'';
-    if(!dept){try{const rr=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,{headers:{'Accept-Language':'fr'}});const dd=await rr.json();dept=(dd.address&&dd.address.postcode||'').substring(0,2);}catch(e){}}
-    if(!dept)return;
-    const depts=new Set([dept]);const n=parseInt(dept);
-    if(radiusKm>30){[-1,1].forEach(d=>depts.add(String(n+d).padStart(2,'0')));}
+    const terms=(qMap[catKey]||[catLabel+' mariage']).slice(0,4);
+    const postalVal=(el('vnd-postal')?.value||'').trim();
+    const dept=postalVal.length>=2?postalVal.substring(0,2):'';
+    if(!dept){log('Annuaire: pas de département');return;}
+    const depts=new Set([dept]);
+    const n=parseInt(dept);
+    if(radiusKm>30){[-1,1].forEach(i=>depts.add(String(n+i).padStart(2,'0')));}
+    if(radiusKm>60){[-2,2].forEach(i=>depts.add(String(n+i).padStart(2,'0')));}
     const deptStr=[...depts].join(',');
     await Promise.allSettled(terms.map(async term=>{
       try{
-        const ctrl=new AbortController();setTimeout(()=>ctrl.abort(),10000);
-        const r=await fetch(`https://recherche-entreprises.api.gouv.fr/search?q=${encodeURIComponent(term)}&departement=${deptStr}&per_page=15&etat_administratif=A`,{signal:ctrl.signal});
-        if(!r.ok)return;
+        const c=new AbortController();setTimeout(()=>c.abort(),10000);
+        const url=`https://recherche-entreprises.api.gouv.fr/search?q=${encodeURIComponent(term)}&departement=${deptStr}&per_page=20&etat_administratif=A`;
+        const r=await fetch(url,{signal:c.signal,headers:{'Accept':'application/json'}});
+        if(!r.ok){log('Annuaire "'+term+'" HTTP '+r.status);return;}
         const data=await r.json();
+        log('Annuaire "'+term+'": '+(data.total_results||0));
+        const EXCL_NAF=['64','65','66','68','69','70','84','85','86','87','88','91','92','94','99'];
+        const catFilters={
+          salle:       ['salle polyvalente','salle des fêtes','salle réception','château','manoir','prieuré','abbaye','domaine de','domaine du','domaine les','domaine la'],
+          traiteur:    ['traiteur'],
+          photographe: ['photographe'],
+          videaste:    ['vidéaste','videaste'],
+          dj:          ['dj mariage','dj soirée','dj animation','dj événement','disc jockey','sonorisation mariage'],
+          fleuriste:   ['fleuriste','fleurs'],
+          patisserie:  ['pâtisserie','patisserie','pâtissier','patissier'],
+          robe:        ['mariage','mariée','mariee','nuptiale','nuptial','noces','bridal','wedding','couture','robe'],
+          costume:     ['smoking','costume','costumier','location tenue','father','celio','devred','izac','hugo boss'],
+          coiffeur:    ['coiffeur','coiffure','coiff'],
+          beaute:      ['maquillage','esthétique','esthetique'],
+          bijou:       ['bijouterie','joaillerie','orfèvrerie','orfevrerie'],
+          imprimeur:   ['faire-part','imprimerie','papeterie'],
+          voiture:     ['limousine','voiture mariage','location voiture mariage','myweddingcar','retro mariage','wedrivit','roadstr','classic rent'],
+          hotel:       ['hôtel','hotel','gîte','gite','hébergement','hebergement','chambre','logis','auberge'],
+          decor:       ['décoration','decoration','jour de fete','jour de fête','vegaooparty','maisons du monde','ikea','centrakor','gifi','etsy']
+        };
+        const filters=catFilters[catKey]||[];
         (data.results||[]).forEach(e=>{
-          const nomD=e.nom_complet||e.nom_raison_sociale||'';
-          if(!nomD||nomD.length<3)return;
-          const locEtabs=(e.matching_etablissements||[]).filter(m=>[...depts].some(d=>m.code_postal&&m.code_postal.startsWith(d)));
-          locEtabs.forEach(m=>{const coords=(m.coordonnees||'').split(',');addPlace(nomD,m.adresse||[m.code_postal,m.libelle_commune].filter(Boolean).join(' '),'','',coords[0]||lat,coords[1]||lng);});
+          const naf=(e.activite_principale||'').substring(0,2);
+          if(EXCL_NAF.includes(naf))return;
+          const nomDisplay=e.nom_complet||e.nom_raison_sociale||'';
+          if(!nomDisplay||nomDisplay.length<2)return;
+          if(filters.length>0){
+            const nomLower=nomDisplay.toLowerCase();
+            if(!filters.some(f=>nomLower.includes(f)))return;
+          }
+          const deptSet=[...depts];
+          const localEtabs=(e.matching_etablissements||[]).filter(m=>
+            deptSet.some(d=>m.code_postal&&m.code_postal.startsWith(d))
+          );
+          if(localEtabs.length>0){
+            localEtabs.forEach(m=>{
+              const coords=(m.coordonnees||'').split(',');
+              const adresse=m.adresse||[m.code_postal,m.libelle_commune].filter(Boolean).join(' ');
+              addPlace(nomDisplay,adresse,'','',coords[0],coords[1]);
+            });
+          }
         });
-      }catch(e){}
+        log('Annuaire "'+term+'" filtre: '+results.length);
+      }catch(e){log('Annuaire "'+term+'" ERR: '+e.message);}
     }));
   }
-  await Promise.allSettled([srcOverpassTags(),srcAnnuaire()]);
-  const sorted=results.sort((a,b)=>(a.distance==null?999:a.distance)-(b.distance==null?999:b.distance)).slice(0,40);
+
+  await Promise.allSettled([srcNominatim(), srcAnnuaire()]);
+
+  const sorted=results.sort((a,b)=>(a.distance||999)-(b.distance||999)).slice(0,40);
   window._vndResults=sorted;
+  console.log('[VND]',(window._vndLogs||[]).join(' | '),'| Total:',sorted.length);
+
   if(!sorted.length){
     const gmUrl=`https://www.google.com/maps/search/${encodeURIComponent(catLabel+' mariage')}/@${lat},${lng},12z`;
-    wrap.innerHTML=`<div class="panel" style="text-align:center;"><p style="font-size:13px;color:var(--tl);margin-bottom:14px;">Aucun résultat trouvé. Essayez un rayon plus large.</p><a href="${gmUrl}" target="_blank" class="btn" style="text-decoration:none;display:inline-block;">Chercher sur Google Maps</a></div>`;
+    wrap.innerHTML=`<div style="padding:20px;text-align:center;"><p style="font-size:13px;color:${tl};margin-bottom:16px;">Aucun résultat trouvé.<br><span style="font-size:11px;">Essaie un rayon plus large ou un autre code postal.</span></p><a href="${gmUrl}" target="_blank" style="display:block;padding:13px;background:${sf};border:1px solid ${br};border-radius:14px;text-decoration:none;color:${pk};font-size:13px;font-weight:700;font-family:Lora,serif;text-align:center;">Chercher sur Google Maps</a></div>`;
     return;
   }
-  wrap.innerHTML=`<div class="panel"><div class="panel-title">${sorted.length} résultat${sorted.length>1?'s':''} — ${catLabel}</div>${sorted.map(v=>vndCard(v,'result')).join('')}</div>`;
+  renderVndResults(catLabel);
+}
+
+function renderVndResults(query){
+  const r=window._vndResults||[];const wrap=el('vnd-results-wrap');if(!wrap||!r.length)return;
+  // Construction d'une URL Google Maps de fallback pour la query complète
+  // (utile si OSM n'a pas tout — l'utilisateur peut compléter via Google)
+  const lat=window._userLat, lng=window._userLng;
+  const googleSearchUrl = (lat&&lng)
+    ? `https://www.google.com/search?q=${encodeURIComponent(query + " mariage")}`
+    : `https://www.google.com/search?q=${encodeURIComponent(query + " mariage")}`;
+
+  const fewResults = r.length < 8;
+
+  wrap.innerHTML=`<div style="font-family:Playfair Display,serif;font-size:15px;color:${tx};margin-bottom:6px;">${r.length} résultat${r.length>1?'s':''} pour "${h(query)}"</div>`+
+  `<div style="font-size:11px;color:${tl};margin-bottom:10px;font-style:italic;"></div>`+
+  r.map((v,i)=>{
+    const c=VCOLS[v.categorie]||pk;
+    const mapsUrl=v.lat&&v.lng?`https://www.google.com/maps/search/?api=1&query=${v.lat},${v.lng}`:'';
+    return`<div class="card" style="margin-bottom:8px;overflow:hidden;">
+      <div onclick="toggleVndResult(${i})" style="padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;background:linear-gradient(135deg,${sf},#fff);">
+        <span style="background:${c}20;color:${c};font-size:10px;border-radius:20px;padding:3px 10px;font-weight:700;flex-shrink:0;">${h(v.categorie)}</span>
+        <span style="font-family:Playfair Display,serif;font-size:14px;font-weight:700;color:${tx};flex:1;">${h(v.nom)}</span>
+        ${v.distance!=null?`<span style="background:#f0f8f0;color:${gn};border-radius:8px;padding:3px 8px;font-size:11px;font-weight:700;flex-shrink:0;"> ${v.distance} km</span>`:''}
+        <span style="font-size:13px;color:${tl};">▼</span>
+      </div>
+      <div id="vnd-detail-${i}" style="display:none;padding:12px 14px;border-top:1px solid ${br};">
+        ${v.adresse?`<div style="font-size:12px;color:${tl};margin-bottom:8px;line-height:1.5;"> ${h(v.adresse)}</div>`:''}
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+          ${v.tel?`<a href="tel:${v.tel}" style="background:${sf};color:${pk};border-radius:8px;padding:6px 10px;font-size:11px;text-decoration:none;font-weight:700;"> ${h(v.tel)}</a>`:''}
+          ${v.site
+            ? `<a href="https://${v.site.replace(/^https?:\/\//,'')}" target="_blank" rel="noopener" style="background:${sf};color:${pk};border-radius:8px;padding:6px 10px;font-size:11px;text-decoration:none;font-weight:700;"> Site web</a>`
+            : `<a href="https://www.google.com/search?q=${encodeURIComponent('"'+v.nom+'"')}" target="_blank" rel="noopener" style="background:${sf};color:${pk};border-radius:8px;padding:6px 10px;font-size:11px;text-decoration:none;font-weight:700;"> Trouver le site</a>`}
+          ${mapsUrl?`<a href="${mapsUrl}" target="_blank" rel="noopener" style="background:#f0f8f0;color:${gn};border-radius:8px;padding:6px 10px;font-size:11px;text-decoration:none;font-weight:700;">️ Itinéraire</a>`:''}
+        </div>
+        <button onclick="addToFav(${i})" style="width:100%;background:${VENDORS_FAV.find(f=>f.nom===v.nom)?'#f0f8f0':'linear-gradient(135deg,'+pk+',#b84060)'};color:${VENDORS_FAV.find(f=>f.nom===v.nom)?gn:'#fff'};border:none;border-radius:9px;padding:9px;cursor:pointer;font-size:13px;font-weight:700;font-family:Lora,serif;">
+          ${VENDORS_FAV.find(f=>f.nom===v.nom)?' Déjà dans les favoris':'+ Ajouter aux favoris'}
+        </button>
+      </div>
+    </div>`;
+  }).join('')+
+  // Lien Google Maps en bas pour compléter (OSM est incomplet sur certains commerces)
+  `<a href="${googleSearchUrl}" target="_blank" rel="noopener" style="display:block;margin-top:14px;padding:12px;background:linear-gradient(135deg,#fff8ec,#fef5e0);border:1.5px solid ${gd}50;border-radius:12px;text-align:center;text-decoration:none;color:${tx};font-size:13px;font-weight:700;font-family:Lora,serif;">
+     Voir plus de résultats sur Google
+    <div style="font-size:10px;color:${tl};font-weight:400;margin-top:3px;font-style:italic;">Google a souvent plus de prestataires qu'OpenStreetMap</div>
+  </a>`;
+}
+
+async function searchByPostal(){
+  const postal=el('vnd-postal')?.value.trim();
+  if(!postal){appAlert2('Entrez un code postal ou une ville.');return;}
+  const status=el('vnd-location-status');
+  if(status)status.textContent='Recherche du lieu...';
+  try{
+    const res=await fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(postal+' France')+'&format=json&limit=1&addressdetails=1');
+    const data=await res.json();
+    if(!data||!data.length){if(status)status.textContent='Lieu non trouvé.';return;}
+    const lat=parseFloat(data[0].lat),lng=parseFloat(data[0].lon);
+    window._userLat=lat;window._userLng=lng;window._manualLocation=true;
+    const name=data[0].display_name.split(',').slice(0,2).join(', ');
+    if(status)status.textContent='Lieu défini : '+name;
+    if(window._activeCatKey&&window._activeCatLabel){
+      await searchByCategory(window._activeCatKey,window._activeCatLabel);
+    }else{if(status)status.textContent+=' — Sélectionnez une catégorie';}
+  }catch(e){if(status)status.textContent='Erreur de géocodage.';}
+}
+
+async function searchByCategory(catKey,catLabel){
+  const cat=VND_CATEGORIES[catKey];
+  if(!cat){console.warn('Catégorie inconnue:',catKey);return;}
+  window._activeCatKey=catKey;window._activeCatLabel=catLabel;
+  // Mettre en rose le bouton actif
+  document.querySelectorAll('.vnd-cat-btn').forEach(b=>{
+    const active=b.getAttribute('data-catkey')===catKey;
+    b.style.background=active?sf:'transparent';
+    b.style.borderColor=active?pk:br;
+    b.style.fontWeight=active?'700':'600';
+    b.style.color=active?pk:tx;
+  });
+  // Ne lancer la recherche que si une position est déjà connue
+  if(window._userLat&&window._userLng){
+    const radiusKm=parseInt(el('vnd-radius')?.value||20);
+    await runCategorySearch(catKey,catLabel,window._userLat,window._userLng,radiusKm*1000);
+  } else {
+    const wrap=el('vnd-results-wrap');
+    if(wrap) wrap.innerHTML=`<p style="text-align:center;padding:20px;font-size:13px;color:${tl};">Entrez un code postal et cliquez sur <strong>Rechercher</strong>.</p>`;
+  }
+}
+
+function toggleVndResult(i){
+  const d=el('vnd-detail-'+i);if(d)d.style.display=d.style.display==='none'?'block':'none';
+}
+
+function addToFav(i){const v=window._vndResults?.[i];if(!v||VENDORS_FAV.find(f=>f.nom===v.nom))return;VENDORS_FAV.push({...v,id:Date.now()});saveData('vfav',VENDORS_FAV);renderFavs();if(window._vndResults)renderVndResults(el('vnd-loc')?.value.trim()||'');}
+
+function updVndPrice(id,zone,val){
+  if(zone==='fav')VENDORS_FAV=VENDORS_FAV.map(v=>v.id===id?{...v,prix_perso:val}:v);
+  else VENDORS_CHO=VENDORS_CHO.map(v=>v.id===id?{...v,prix_perso:val}:v);
+  saveData('vfav',VENDORS_FAV);saveData('vcho',VENDORS_CHO);
 }
 
 // ══ AVATAR MENU ══
