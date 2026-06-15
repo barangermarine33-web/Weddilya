@@ -2222,9 +2222,9 @@ function addDecoIdx(ci){
 
 // ══ PRESTATAIRES ══
 const VND_CATEGORIES={
-  salle:{label:'Salle / Domaine',tags:['amenity=events_venue','amenity=community_centre','leisure=hall']},
-  traiteur:{label:'Traiteur',tags:['craft=caterer','shop=deli','amenity=caterer']},
-  photographe:{label:'Photographe',tags:['craft=photographer','shop=photo','office=photographer']},
+  salle:{label:'Salle / Domaine',tags:['amenity=events_venue','amenity=conference_centre','amenity=community_centre','tourism=hotel','historic=castle','building=castle','leisure=resort']},
+  traiteur:{label:'Traiteur',tags:['shop=caterer','craft=caterer','craft=catering','amenity=catering']},
+  photographe:{label:'Photographe',tags:['shop=photo','craft=photographer','office=photographer']},
   videaste:{label:'Vidéaste',tags:['craft=videographer','office=videographer','shop=video']},
   dj:{label:'DJ / Musique',tags:['craft=musical_instrument','shop=musical_instrument','office=dj','shop=music']},
   fleuriste:{label:'Fleuriste',tags:['shop=florist']},
@@ -2408,7 +2408,75 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusKm){
       }catch(e){}
     }));
   }
-  await Promise.allSettled([srcNominatim()]);
+  async function srcAnnuaire(){
+    const qMap={
+      salle:['château','manoir','prieuré','salle','domaine'],
+      traiteur:['traiteur'],photographe:['photographe'],videaste:['vidéaste','videaste'],
+      dj:['dj mariage','dj soirée','dj animation','disc jockey','sonorisation mariage'],
+      fleuriste:['fleuriste','fleurs'],patisserie:['pâtisserie','patisserie','pâtissier'],
+      robe:['mariage','mariée','nuptiale','noces','bridal','wedding','robe','couture'],
+      costume:['smoking','costume','costumier','location tenue','celio','devred','izac'],
+      coiffeur:['coiffeur','coiffure'],beaute:['maquillage','esthétique','esthetique'],
+      bijou:['bijouterie','joaillerie','orfèvrerie'],imprimeur:['faire-part','imprimerie','papeterie'],
+      voiture:['limousine','voiture mariage','location voiture mariage'],
+      hotel:['hôtel','hotel','gîte','gite','hébergement','chambre hôtes','logis'],
+      decor:['décoration','decoration','maisons du monde','centrakor','gifi']
+    };
+    const catFilters={
+      salle:['salle polyvalente','salle des fêtes','salle réception','château','manoir','prieuré','abbaye','domaine de','domaine du','domaine les','domaine la'],
+      traiteur:['traiteur'],photographe:['photographe'],videaste:['vidéaste','videaste'],
+      dj:['dj mariage','dj soirée','dj animation','dj événement','disc jockey','sonorisation mariage'],
+      fleuriste:['fleuriste','fleurs'],patisserie:['pâtisserie','patisserie','pâtissier','patissier'],
+      robe:['mariage','mariée','mariee','nuptiale','nuptial','noces','bridal','wedding','couture','robe'],
+      costume:['smoking','costume','costumier','location tenue','celio','devred','izac'],
+      coiffeur:['coiffeur','coiffure','coiff'],beaute:['maquillage','esthétique','esthetique'],
+      bijou:['bijouterie','joaillerie','orfèvrerie','orfevrerie'],imprimeur:['faire-part','imprimerie','papeterie'],
+      voiture:['limousine','voiture mariage','location voiture mariage'],
+      hotel:['hôtel','hotel','gîte','gite','hébergement','hebergement','chambre','logis','auberge'],
+      decor:['décoration','decoration','maisons du monde','centrakor','gifi']
+    };
+    const terms=(qMap[catKey]||[catLabel+' mariage']).slice(0,4);
+    const postalVal=(document.getElementById('vnd-postal')?.value||'').trim();
+    const m2=postalVal.match(/\b(\d{2})\d{0,3}\b/);
+    let dept=m2?m2[1]:'';
+    if(!dept){
+      // déduire le département depuis les coords via reverse nominatim
+      try{const rr=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`,{headers:{'Accept-Language':'fr'}});const dd=await rr.json();dept=(dd.address?.postcode||'').substring(0,2);}catch(e){}
+    }
+    if(!dept)return;
+    const depts=new Set([dept]);
+    const n=parseInt(dept);
+    if(radiusKm>30){[-1,1].forEach(d=>depts.add(String(n+d).padStart(2,'0')));}
+    if(radiusKm>60){[-2,2].forEach(d=>depts.add(String(n+d).padStart(2,'0')));}
+    const deptStr=[...depts].join(',');
+    const EXCL_NAF=['64','65','66','68','69','70','84','85','86','87','88','91','92','94','99'];
+    const filters=catFilters[catKey]||[];
+    await Promise.allSettled(terms.map(async term=>{
+      try{
+        const ctrl=new AbortController();setTimeout(()=>ctrl.abort(),10000);
+        const url=`https://recherche-entreprises.api.gouv.fr/search?q=${encodeURIComponent(term)}&departement=${deptStr}&per_page=20&etat_administratif=A`;
+        const r=await fetch(url,{signal:ctrl.signal,headers:{'Accept':'application/json'}});
+        if(!r.ok)return;
+        const data=await r.json();
+        (data.results||[]).forEach(e=>{
+          const naf=(e.activite_principale||'').substring(0,2);
+          if(EXCL_NAF.includes(naf))return;
+          const nomDisplay=e.nom_complet||e.nom_raison_sociale||'';
+          if(!nomDisplay||nomDisplay.length<2)return;
+          if(filters.length>0){const nl=nomDisplay.toLowerCase();if(!filters.some(f=>nl.includes(f)))return;}
+          const localEtabs=(e.matching_etablissements||[]).filter(m=>[...depts].some(d=>m.code_postal&&m.code_postal.startsWith(d)));
+          if(localEtabs.length>0){
+            localEtabs.forEach(m=>{
+              const coords=(m.coordonnees||'').split(',');
+              const adresse=m.adresse||[m.code_postal,m.libelle_commune].filter(Boolean).join(' ');
+              addPlace(nomDisplay,adresse,'','',coords[0]||lat,coords[1]||lng);
+            });
+          }
+        });
+      }catch(e){}
+    }));
+  }
+  await Promise.allSettled([srcNominatim(),srcAnnuaire()]);
   const sorted=results.sort((a,b)=>(a.distance||999)-(b.distance||999)).slice(0,40);
   window._vndResults=sorted;
   if(!sorted.length){
