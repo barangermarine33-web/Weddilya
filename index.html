@@ -317,29 +317,52 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 .sidebar-overlay{display:none;position:fixed;inset:0;top:calc(var(--topbar-h) + var(--band-h));background:rgba(62,24,40,0.35);z-index:240;}
 .sidebar-overlay.open{display:block;}
 @media(min-width:901px){
-  .app-main{font-size:15px;}
-  .page-title{font-size:30px;}
-  .page-sub{font-size:15px;}
-  .panel-title{font-size:18px;}
-  .band-names{font-size:16px;}
-  .bcd-num{font-size:30px;}
-  .bcd-lbl{font-size:9px;}
-  .sidebar-item{font-size:15px;padding:11px 22px;}
-  .sidebar-item svg{width:18px;height:18px;}
-  .sidebar-section-title{font-size:10px;}
-  .app-topbar-logo{font-size:18px;}
-  .data-table td{font-size:14px;}
-  .data-table th{font-size:11px;}
-  .widget-value{font-size:34px;}
-  .widget-label{font-size:11px;}
-  .widget-sub{font-size:13px;}
-  .badge{font-size:12px;}
-  .btn{font-size:14px;padding:11px 22px;}
-  .btn-outline{font-size:14px;padding:10px 20px;}
-  .m-input,.m-select,.m-pick{font-size:14px;}
-  .m-label{font-size:11px;}
-  .task-row,.budget-item{font-size:14px;}
-  .dl-btn{font-size:13.5px;}
+  :root{--sidebar-w:330px;}
+  /* Boost global : tout le contenu de l'app agrandi d'un cran via rem */
+  #view-app{font-size:118%;}
+  #view-app .app-main{font-size:1.05rem;}
+  #view-app [style*="font-size:8px"],#view-app [style*="font-size: 8px"]{font-size:11px !important;}
+  #view-app [style*="font-size:9px"],#view-app [style*="font-size: 9px"]{font-size:12px !important;}
+  #view-app [style*="font-size:10px"],#view-app [style*="font-size: 10px"]{font-size:13px !important;}
+  #view-app [style*="font-size:11px"],#view-app [style*="font-size: 11px"]{font-size:14px !important;}
+  #view-app [style*="font-size:12px"],#view-app [style*="font-size: 12px"]{font-size:15px !important;}
+  #view-app [style*="font-size:13px"],#view-app [style*="font-size: 13px"]{font-size:16px !important;}
+  #view-app [style*="font-size:14px"],#view-app [style*="font-size: 14px"]{font-size:17px !important;}
+  #view-app [style*="font-size:15px"],#view-app [style*="font-size: 15px"]{font-size:18px !important;}
+  #view-app [style*="font-size:16px"],#view-app [style*="font-size: 16px"]{font-size:19px !important;}
+  #view-app [style*="font-size:17px"],#view-app [style*="font-size: 17px"]{font-size:20px !important;}
+  #view-app [style*="font-size:18px"],#view-app [style*="font-size: 18px"]{font-size:22px !important;}
+  #view-app [style*="font-size:19px"],#view-app [style*="font-size: 19px"]{font-size:23px !important;}
+  #view-app [style*="font-size:20px"],#view-app [style*="font-size: 20px"]{font-size:24px !important;}
+  #view-app [style*="font-size:22px"],#view-app [style*="font-size: 22px"]{font-size:26px !important;}
+  #view-app [style*="font-size:24px"],#view-app [style*="font-size: 24px"]{font-size:29px !important;}
+  #view-app [style*="font-size:26px"],#view-app [style*="font-size: 26px"]{font-size:31px !important;}
+  #view-app [style*="font-size:28px"],#view-app [style*="font-size: 28px"]{font-size:33px !important;}
+  #view-app [style*="font-size:30px"],#view-app [style*="font-size: 30px"]{font-size:36px !important;}
+  #view-app [style*="font-size:32px"],#view-app [style*="font-size: 32px"]{font-size:38px !important;}
+  .page-title{font-size:32px;}
+  .page-sub{font-size:16px;}
+  .panel-title{font-size:19px;}
+  .band-names{font-size:17px;}
+  .bcd-num{font-size:32px;}
+  .bcd-lbl{font-size:10px;}
+  .sidebar-item{font-size:16px;padding:12px 24px;}
+  .sidebar-item svg{width:19px;height:19px;}
+  .sidebar-section-title{font-size:11px;}
+  .app-topbar-logo{font-size:19px;}
+  .data-table td{font-size:15px;}
+  .data-table th{font-size:12px;}
+  .widget-value{font-size:38px;}
+  .widget-label{font-size:12px;}
+  .widget-sub{font-size:14px;}
+  .badge{font-size:13px;}
+  .btn{font-size:15px;padding:12px 24px;}
+  .btn-outline{font-size:15px;padding:11px 22px;}
+  .m-input,.m-select,.m-pick{font-size:15px;}
+  .m-label{font-size:12px;}
+  .task-row,.budget-item{font-size:15px;}
+  .dl-btn{font-size:14.5px;}
+  .picker-opt,.modal-title{font-size:16px;}
 }
 @media(max-width:900px){
   .hamburger-btn{display:block;}
