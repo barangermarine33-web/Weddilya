@@ -12,7 +12,7 @@
   --bg:#fdf8f5; --dark:#3e1828; --mid:#7a4050; --gold:#c9a84c;
   --white:#ffffff; --border:#f5d5e0;
   --gn:#5a8a6a; --am:#c47a2a; --rd:#c43a3a; --tl:#b07080;
-  --sidebar-w:270px; --topbar-h:60px; --band-h:96px;
+  --sidebar-w:300px; --topbar-h:60px; --band-h:96px;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
@@ -316,6 +316,31 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 .hamburger-btn:hover{background:var(--pink-pale);}
 .sidebar-overlay{display:none;position:fixed;inset:0;top:calc(var(--topbar-h) + var(--band-h));background:rgba(62,24,40,0.35);z-index:240;}
 .sidebar-overlay.open{display:block;}
+@media(min-width:901px){
+  .app-main{font-size:15px;}
+  .page-title{font-size:30px;}
+  .page-sub{font-size:15px;}
+  .panel-title{font-size:18px;}
+  .band-names{font-size:16px;}
+  .bcd-num{font-size:30px;}
+  .bcd-lbl{font-size:9px;}
+  .sidebar-item{font-size:15px;padding:11px 22px;}
+  .sidebar-item svg{width:18px;height:18px;}
+  .sidebar-section-title{font-size:10px;}
+  .app-topbar-logo{font-size:18px;}
+  .data-table td{font-size:14px;}
+  .data-table th{font-size:11px;}
+  .widget-value{font-size:34px;}
+  .widget-label{font-size:11px;}
+  .widget-sub{font-size:13px;}
+  .badge{font-size:12px;}
+  .btn{font-size:14px;padding:11px 22px;}
+  .btn-outline{font-size:14px;padding:10px 20px;}
+  .m-input,.m-select,.m-pick{font-size:14px;}
+  .m-label{font-size:11px;}
+  .task-row,.budget-item{font-size:14px;}
+  .dl-btn{font-size:13.5px;}
+}
 @media(max-width:900px){
   .hamburger-btn{display:block;}
   .app-sidebar{display:block;transform:translateX(-100%);transition:transform .25s ease;z-index:250;box-shadow:4px 0 24px rgba(62,24,40,0.12);}
@@ -498,8 +523,8 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 <footer>
   <span class="footer-logo-text">Weddilya</span>
   <ul class="footer-links">
-    <li><a href="#">Politique de confidentialité</a></li>
-    <li><a href="#">CGU</a></li>
+    <li><a href="#" onclick="openRGPD('privacy');return false;">Politique de confidentialité</a></li>
+    <li><a href="#" onclick="openRGPD('cgu');return false;">CGU</a></li>
     <li><a href="#contact">Contact</a></li>
   </ul>
   <span class="footer-copy">© 2025 Weddilya. Tous droits réservés.</span>
@@ -620,9 +645,22 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
       </svg>
       Weddilya
     </a>
-    <button class="power-btn" onclick="openSettingsPage()" title="Paramètres" aria-label="Paramètres">
-      <svg viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 11-12.73 0M12 2v10"/></svg>
-    </button>
+    <div style="position:relative;margin-left:auto;">
+      <button class="power-btn" style="margin-left:0;" onclick="togglePowerMenu(event)" title="Menu" aria-label="Menu">
+        <svg viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 11-12.73 0M12 2v10"/></svg>
+      </button>
+      <div id="power-menu" style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:#fff;border:1px solid var(--border);border-radius:14px;padding:6px;min-width:180px;box-shadow:0 8px 32px rgba(62,24,40,0.14);z-index:300;">
+        <div onclick="openSettingsPage();closePowerMenu()" style="padding:10px 14px;font-size:13px;font-family:'Lora',serif;cursor:pointer;border-radius:8px;color:var(--dark);display:flex;align-items:center;gap:10px;" onmouseover="this.style.background='var(--pink-pale)'" onmouseout="this.style.background=''">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          Paramètres
+        </div>
+        <div style="height:1px;background:var(--border);margin:4px 0;"></div>
+        <div onclick="doLogout();closePowerMenu()" style="padding:10px 14px;font-size:13px;font-family:'Lora',serif;cursor:pointer;border-radius:8px;color:var(--rd);display:flex;align-items:center;gap:10px;" onmouseover="this.style.background='var(--pink-pale)'" onmouseout="this.style.background=''">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          Se déconnecter
+        </div>
+      </div>
+    </div>
   </header>
 
   <div class="wedding-band">
@@ -935,6 +973,74 @@ async function doForgot(){
     await window.firebaseAuthLib.sendPasswordResetEmail(window.firebaseAuth,email);
     appAlert2('Email de réinitialisation envoyé !');
   }catch(e){appAlert2('Erreur : '+(e.message||e.code));}
+}
+
+function togglePowerMenu(e){
+  if(e)e.stopPropagation();
+  const m=document.getElementById('power-menu');
+  if(m)m.style.display=m.style.display==='none'?'block':'none';
+}
+function closePowerMenu(){const m=document.getElementById('power-menu');if(m)m.style.display='none';}
+document.addEventListener('click',e=>{if(!e.target.closest('#power-menu')&&!e.target.closest('.power-btn'))closePowerMenu();});
+
+const RGPD_CONTENT = {
+  privacy: {
+    title: 'Politique de confidentialité',
+    html: `
+      <p style="margin-bottom:10px;"><strong>Dernière mise à jour :</strong> juin 2026</p>
+      <p style="margin-bottom:10px;"><strong>Responsable du traitement :</strong> Weddilya — contact@weddilya.fr</p>
+      <hr style="border:none;border-top:1px solid #f0d8e0;margin:12px 0;">
+      <p style="margin-bottom:8px;"><strong>Données collectées</strong></p>
+      <p style="margin-bottom:10px;">Weddilya collecte uniquement les données que vous saisissez : adresse email, mot de passe (chiffré), et données de planification (invités, budget, checklist, etc.).</p>
+      <p style="margin-bottom:8px;"><strong>Finalité</strong></p>
+      <p style="margin-bottom:10px;">Vos données sont utilisées exclusivement pour faire fonctionner votre espace de planification de mariage. Elles ne sont jamais vendues ni partagées à des tiers.</p>
+      <p style="margin-bottom:8px;"><strong>Hébergement</strong></p>
+      <p style="margin-bottom:10px;">Vos données sont stockées sur Firebase (Google LLC), dont les serveurs sont situés en Europe. Firebase est conforme au RGPD.</p>
+      <p style="margin-bottom:8px;"><strong>Durée de conservation</strong></p>
+      <p style="margin-bottom:10px;">Vos données sont conservées tant que votre compte est actif. Vous pouvez supprimer votre compte à tout moment depuis les Paramètres.</p>
+      <p style="margin-bottom:8px;"><strong>Vos droits</strong></p>
+      <p style="margin-bottom:10px;">Conformément au RGPD, vous disposez d\'un droit d\'accès, de rectification, d\'effacement et de portabilité de vos données. Pour exercer ces droits : <strong>contact@weddilya.fr</strong></p>
+    `
+  },
+  cgu: {
+    title: 'Conditions générales d\'utilisation',
+    html: `
+      <p style="margin-bottom:10px;"><strong>Dernière mise à jour :</strong> juin 2026</p>
+      <hr style="border:none;border-top:1px solid #f0d8e0;margin:12px 0;">
+      <p style="margin-bottom:8px;"><strong>1. Description du service</strong></p>
+      <p style="margin-bottom:10px;">Weddilya est une application web de planification de mariage accessible sur weddilya.fr. L\'accès nécessite la création d\'un compte gratuit.</p>
+      <p style="margin-bottom:8px;"><strong>2. Utilisation</strong></p>
+      <p style="margin-bottom:10px;">L\'application est destinée à un usage personnel. Toute utilisation commerciale sans autorisation est interdite.</p>
+      <p style="margin-bottom:8px;"><strong>3. Responsabilité</strong></p>
+      <p style="margin-bottom:10px;">Weddilya est fourni "tel quel". Nous ne pouvons être tenus responsables de pertes de données ou d\'interruptions de service.</p>
+      <p style="margin-bottom:8px;"><strong>4. Propriété intellectuelle</strong></p>
+      <p style="margin-bottom:10px;">Le contenu de l\'application (design, code, textes) est la propriété de Weddilya. Toute reproduction est interdite sans autorisation.</p>
+      <p style="margin-bottom:8px;"><strong>5. Contact</strong></p>
+      <p>Pour toute question : <strong>contact@weddilya.fr</strong></p>
+    `
+  },
+  cookies: {
+    title: 'Politique des cookies',
+    html: `
+      <p style="margin-bottom:10px;">Weddilya utilise uniquement des cookies <strong>essentiels</strong> au fonctionnement de l\'application.</p>
+      <hr style="border:none;border-top:1px solid #f0d8e0;margin:12px 0;">
+      <p style="margin-bottom:8px;"><strong>Cookies essentiels (toujours actifs)</strong></p>
+      <p style="margin-bottom:10px;">• Authentification Firebase (maintien de votre session)<br>• Préférences locales (thème, données hors-ligne)</p>
+      <p style="margin-bottom:8px;"><strong>Cookies analytiques</strong></p>
+      <p style="margin-bottom:10px;">Weddilya n\'utilise pas de cookies analytiques ou publicitaires.</p>
+      <p style="margin-bottom:8px;"><strong>Firebase (Google)</strong></p>
+      <p style="margin-bottom:10px;">Firebase peut déposer des cookies techniques pour l\'authentification. Firebase est conforme au RGPD. <a href="https://firebase.google.com/support/privacy" target="_blank" style="color:#d4607a;">En savoir plus</a></p>
+      <p>Contact : <strong>contact@weddilya.fr</strong></p>
+    `
+  }
+}
+
+function openRGPD(type){
+  const data=RGPD_CONTENT[type];
+  if(!data)return;
+  openModal(`<div class="modal-title">${data.title} <button class="modal-x" onclick="closeModal()">×</button></div>
+    <div style="font-size:13px;color:var(--mid);line-height:1.6;max-height:60vh;overflow-y:auto;">${data.html}</div>
+    <div class="m-actions"><button class="btn" style="width:100%;" onclick="closeModal()">Fermer</button></div>`);
 }
 
 async function doLogout(){
@@ -2498,9 +2604,9 @@ function openSettingsPage(){
     <button class="btn-outline" style="width:100%;" onclick="doLogout()">Se déconnecter</button>
     <div style="border-top:1px solid var(--border);margin:18px 0 14px;"></div>
     <div style="display:flex;gap:18px;justify-content:center;font-size:11px;margin-bottom:14px;">
-      <a href="#" onclick="return false;" style="color:var(--tl);">Politique de confidentialité</a>
-      <a href="#" onclick="return false;" style="color:var(--tl);">CGU</a>
-      <a href="#" onclick="return false;" style="color:var(--tl);">Cookies</a>
+      <a href="#" onclick="openRGPD('privacy');return false;" style="color:var(--pink);">Politique de confidentialité</a>
+      <a href="#" onclick="openRGPD('cgu');return false;" style="color:var(--pink);">CGU</a>
+      <a href="#" onclick="openRGPD('cookies');return false;" style="color:var(--pink);">Cookies</a>
     </div>
     <div style="font-size:11px;color:var(--tl);font-style:italic;margin-bottom:10px;">La suppression de compte est définitive. Toutes vos données seront effacées.</div>
     <button class="btn-outline" style="width:100%;border-color:var(--rd);color:var(--rd);" onclick="deleteAccountWeb()">Supprimer mon compte</button>`);
