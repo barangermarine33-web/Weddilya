@@ -1490,7 +1490,7 @@ function renderBudget(){
       <input id="new-bgt-est" class="m-input" type="number" autocomplete="off" data-lpignore="true" placeholder="Budget estimé €" style="width:160px;">
       <button class="btn" onclick="addBudgetCat()">+ Ajouter</button>
     </div>
-    <div style="display:flex;justify-content:flex-end;margin-bottom:14px;"><button class="btn-outline" style="font-size:12px;padding:6px 14px;" onclick="resetBudget()">↺ Restaurer les catégories par défaut</button></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:14px;"><button class="btn-outline" style="font-size:12px;padding:6px 14px;" onclick="exportBudgetPDF()">Export PDF</button><button class="btn-outline" style="font-size:12px;padding:6px 14px;" onclick="resetBudget()">↺ Restaurer les catégories par défaut</button></div>
     ${BUDGET.length?BUDGET.map(item=>{
       const est=parseFloat(item.est||item.budget||0), reel=parseFloat(item.reel||0), paye=parseFloat(item.paye||0);
       const pct=est>0?Math.min(reel/est*100,100):0;
@@ -2390,6 +2390,102 @@ async function exportPlanPDF(){
     setTimeout(()=>{const r=document.getElementById('app-modal-root');if(r){r.style.display='none';r.innerHTML='';}},500);
   }catch(err){
     appAlert('Impossible de générer le PDF (une connexion internet est nécessaire la première fois). Réessaie connectée.','Export PDF');
+  }
+}
+
+async function exportBudgetPDF(){
+  appAlert('Préparation du PDF en cours…','Export');
+  try{
+    const jsPDF = await loadJsPDF();
+    const pdf = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    const pw=pdf.internal.pageSize.getWidth(), ph=pdf.internal.pageSize.getHeight();
+    const _wi=document.getElementById('_wpng')?.src||null;
+    const C_PK=[212,96,122],C_TM=[62,24,40],C_TL=[138,74,96],C_SF=[251,230,238],C_BD=[216,160,184],C_TX=[62,24,40],C_GN=[90,138,106],C_AM=[196,122,42];
+    const setFill=c=>pdf.setFillColor(c[0],c[1],c[2]);
+    const setText=c=>pdf.setTextColor(c[0],c[1],c[2]);
+    const setStroke=c=>pdf.setDrawColor(c[0],c[1],c[2]);
+    const drawFrame=()=>{
+      setFill([255,255,255]);pdf.rect(0,0,pw,ph,'F');
+      const bw=8,steps=20;
+      for(let i=0;i<steps;i++){
+        const t=i/steps;
+        setFill([Math.round(212+38*t),Math.round(96+64*t),Math.round(122+62*t)]);
+        pdf.rect(0,(ph/steps)*i,bw,ph/steps+0.5,'F');
+        setFill([Math.round(240-28*t),Math.round(160-64*t),Math.round(184-62*t)]);
+        pdf.rect(pw-bw,(ph/steps)*i,bw,ph/steps+0.5,'F');
+      }
+    };
+    const drawPageHeader=(subtitle)=>{
+      if(_wi) pdf.addImage(_wi,'PNG',pw/2-36,4,72,16);
+      else { setText(C_PK);pdf.setFont('helvetica','normal');pdf.setFontSize(18);pdf.text('WEDDILYA',pw/2,13,{align:'center',charSpace:3}); }
+      setText(C_TM);pdf.setFont('times','italic');pdf.setFontSize(16);
+      pdf.text(subtitle,pw/2,31,{align:'center'});
+      setStroke(C_PK);pdf.setLineWidth(0.5);pdf.line(pw/2-30,35,pw/2+30,35);
+      setText(C_TL);pdf.setFont('times','normal');pdf.setFontSize(10);
+      pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,42,{align:'center'});
+    };
+    const fmt=n=>Math.round(n).toLocaleString('fr-FR')+' EUR';
+    drawFrame();drawPageHeader('Budget & Depenses');
+
+    // Totaux
+    const tE=BUDGET.reduce((s,i)=>s+(parseFloat(i.est||i.budget)||0),0);
+    const tR=BUDGET.reduce((s,i)=>s+(parseFloat(i.reel)||0),0);
+    const tP=BUDGET.reduce((s,i)=>s+(parseFloat(i.paye)||0),0);
+    const reste=tR-tP;
+    let y=54;
+    const cardW=(pw-16-30)/2, cardX=15+8;
+    const card=(x,yy,label,val,col)=>{
+      setFill([255,255,255]);setStroke(C_BD);pdf.setLineWidth(0.3);
+      pdf.roundedRect(x,yy,cardW,18,3,3,'FD');
+      setText(C_TL);pdf.setFont('helvetica','normal');pdf.setFontSize(8);
+      pdf.text(label.toUpperCase(),x+cardW/2,yy+7,{align:'center'});
+      setText(col);pdf.setFont('times','bold');pdf.setFontSize(14);
+      pdf.text(val,x+cardW/2,yy+14,{align:'center'});
+    };
+    card(cardX,y,'Budget estime total',fmt(tE),C_TM);
+    card(cardX+cardW+4,y,'Budget reel total',fmt(tR),C_PK);
+    y+=22;
+    card(cardX,y,'Deja paye',fmt(tP),C_GN);
+    card(cardX+cardW+4,y,'Reste a payer',fmt(reste>0?reste:0),C_AM);
+    y+=28;
+
+    // En-tête tableau
+    const colX=[cardX, cardX+62, cardX+95, cardX+125, cardX+155];
+    const headers=['Categorie','Estime','Reel','Paye','Reste'];
+    setFill(C_PK);pdf.rect(cardX,y,pw-2*cardX,9,'F');
+    setText([255,255,255]);pdf.setFont('helvetica','bold');pdf.setFontSize(9);
+    headers.forEach((hh,i)=>pdf.text(hh,colX[i]+2,y+6));
+    y+=9;
+
+    pdf.setFont('helvetica','normal');pdf.setFontSize(9);
+    BUDGET.forEach((it,idx)=>{
+      if(y>ph-24){pdf.addPage();drawFrame();drawPageHeader('Budget & Depenses');y=54;}
+      const est=parseFloat(it.est||it.budget||0),reel=parseFloat(it.reel||0),paye=parseFloat(it.paye||0);
+      const r=reel-paye;
+      if(idx%2===0){setFill(C_SF);pdf.rect(cardX,y,pw-2*cardX,8,'F');}
+      setText(C_TX);
+      const nom=(it.cat||it.category||'');
+      pdf.text(nom.length>30?nom.substring(0,29)+'…':nom,colX[0]+2,y+5.5);
+      setText(C_TM);pdf.text(fmt(est),colX[1]+2,y+5.5);
+      setText(C_PK);pdf.text(fmt(reel),colX[2]+2,y+5.5);
+      setText(C_GN);pdf.text(fmt(paye),colX[3]+2,y+5.5);
+      setText(r>0?C_AM:C_GN);pdf.text(fmt(r>0?r:0),colX[4]+2,y+5.5);
+      y+=8;
+    });
+    // Ligne total
+    setStroke(C_PK);pdf.setLineWidth(0.5);pdf.line(cardX,y,pw-cardX,y);y+=2;
+    setFill(C_TM);pdf.rect(cardX,y,pw-2*cardX,9,'F');
+    setText([255,255,255]);pdf.setFont('helvetica','bold');pdf.setFontSize(9);
+    pdf.text('TOTAL',colX[0]+2,y+6);
+    pdf.text(fmt(tE),colX[1]+2,y+6);
+    pdf.text(fmt(tR),colX[2]+2,y+6);
+    pdf.text(fmt(tP),colX[3]+2,y+6);
+    pdf.text(fmt(reste>0?reste:0),colX[4]+2,y+6);
+
+    pdf.save('Weddilya-Budget.pdf');
+    setTimeout(()=>{const r=document.getElementById('app-modal-root');if(r){r.style.display='none';r.innerHTML='';}},500);
+  }catch(err){
+    appAlert('Impossible de generer le PDF (une connexion internet est necessaire la premiere fois). Reessaie connectee.','Export PDF');
   }
 }
 
@@ -5043,9 +5139,28 @@ const MENU_ENGINE = (function(){
 
 function pinterestUrl(query){return 'https://www.pinterest.com/search/pins/?q='+encodeURIComponent(query);}
 
+// Intercepte les <select class="inp"> de l'Assistant pour ouvrir le picker rose au lieu du menu natif
+function setupAssistSelectPickers(){
+  const cont=document.getElementById('assistant-content');
+  if(!cont||cont._assistPickerBound)return;
+  cont._assistPickerBound=true;
+  cont.addEventListener('pointerdown',async e=>{
+    const sel=e.target.closest('select.inp');
+    if(!sel)return;
+    e.preventDefault();
+    const opts=[...sel.options].map(o=>({value:o.value,label:o.textContent}));
+    const v=await appPicker('Choisir',opts,sel.value);
+    if(v!==null&&v!==undefined&&v!==sel.value){
+      sel.value=v;
+      sel.dispatchEvent(new Event('change',{bubbles:true}));
+    }
+  });
+}
+
 function renderAssistant(){
   const cont=document.getElementById('assistant-content');
   if(!cont)return;
+  setupAssistSelectPickers();
   const services=[
     {key:'animations',label:'Animations soirée',desc:'Idées pour égayer la fête'},
     {key:'belleFamille',label:'Belle-famille',desc:'Gérer les situations délicates'},
@@ -5914,6 +6029,7 @@ function assistRenderVoeux(){
 }
 
 // ─── SERVICE : REMERCIEMENTS ───
+
 function assistRemerciements(cont){
   const saved = ld('assist_remerciement_type','classique');
   cont.innerHTML = `<div class="card" style="padding:16px;">
