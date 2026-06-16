@@ -360,6 +360,15 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 .gfilter-menu{position:absolute;top:36px;left:0;background:#fff;border:1px solid var(--border);border-radius:12px;padding:6px;z-index:99;min-width:155px;box-shadow:0 6px 20px rgba(212,96,122,0.18);}
 .gfilter-menu div{padding:9px 13px;font-size:13px;font-family:'Lora',serif;cursor:pointer;color:var(--dark);border-radius:8px;}
 .gfilter-menu div:hover{background:var(--pink-pale);}
+
+/* Boutons plan de table compacts */
+.tp-actions{gap:7px;flex-wrap:wrap;}
+.tp-btn{font-size:12px;padding:8px 13px;width:auto;flex:0 0 auto;}
+@media(max-width:600px){
+  .tp-actions .m-input{font-size:13px;padding:8px 10px;}
+  .tp-btn{font-size:11px;padding:7px 11px;}
+  .tp-actions .btn-outline{font-size:11px;padding:7px 11px;}
+}
 .cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:16px;}
 .cat-chip{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--border);border-radius:13px;padding:11px 13px;cursor:pointer;font-size:13px;font-weight:600;color:var(--dark);transition:all .18s;font-family:'Lora',serif;text-align:left;}
 .cat-chip:hover{border-color:var(--pink-light);background:var(--pink-pale);}
@@ -1933,17 +1942,17 @@ function renderSeating(){
   const unseated=GUESTS.filter(g=>!g.seatTableId);
   const shapeBtn=(v,label)=>`<button onclick="setTpShape('${v}')" class="btn-outline" style="font-size:12px;padding:7px 13px;${tpShape===v?'background:var(--pink);color:#fff;border-color:var(--pink);':''}">${label}</button>`;
   el.innerHTML=`
-    <div class="section-actions">
+    <div class="section-actions tp-actions">
       <input id="new-table-name" class="m-input" placeholder="Nom de la table…" style="flex:1;min-width:140px;max-width:220px;">
       <input id="new-table-seats" class="m-input" type="number" placeholder="Places" value="6" style="width:90px;">
       ${shapeBtn('round','Ronde')}${shapeBtn('rect','Rect.')}${shapeBtn('square','Carrée')}
-      <button class="btn" onclick="addTable()">+ Table</button>
+      <button class="btn tp-btn" onclick="addTable()">+ Table</button>
     </div>
-    <div class="section-actions">
-      <button class="btn-outline" onclick="openAutoSeatModal()">Placement automatique</button>
-      <button class="btn-outline" id="pan-toggle" onclick="togglePanMode()">✋ Déplacer le plan</button>
-      <button class="btn-outline" onclick="resetSeating()">Réinitialiser</button>
-      <button class="btn-outline" onclick="exportPlanPDF()">Export PDF</button>
+    <div class="section-actions tp-actions">
+      <button class="btn-outline tp-btn" onclick="openAutoSeatModal()">Placement auto</button>
+      <button class="btn-outline tp-btn" id="pan-toggle" onclick="togglePanMode()">✋ Déplacer</button>
+      <button class="btn-outline tp-btn" onclick="resetSeating()">Réinitialiser</button>
+      <button class="btn-outline tp-btn" onclick="exportPlanPDF()">Export PDF</button>
       <span style="font-size:12px;color:var(--tl);margin-left:auto;">${unseated.length} invité${unseated.length>1?'s':''} non placé${unseated.length>1?'s':''}</span>
     </div>
     <div id="tp-visual" style="position:relative;background:#fff;border:1.5px solid var(--border);border-radius:16px;height:480px;overflow:auto;margin-bottom:20px;-webkit-overflow-scrolling:touch;"></div>
