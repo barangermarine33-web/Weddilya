@@ -345,8 +345,8 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 .reveal.visible{opacity:1;transform:none;}
 
 /* ── Responsive ── */
-.hamburger-btn{display:none;background:none;border:none;cursor:pointer;color:var(--pink);padding:6px;border-radius:8px;}
-.hamburger-btn svg{width:24px;height:24px;display:block;}
+.hamburger-btn{display:none;width:36px;height:36px;border-radius:10px;border:1.5px solid var(--border);background:#fff;cursor:pointer;color:var(--pink);padding:0;align-items:center;justify-content:center;flex-shrink:0;transition:background .2s;}
+.hamburger-btn svg{width:20px;height:20px;display:block;}
 .hamburger-btn:hover{background:var(--pink-pale);}
 .sidebar-overlay{display:none;position:fixed;inset:0;top:calc(var(--topbar-h) + var(--band-h));background:rgba(62,24,40,0.35);z-index:240;}
 .sidebar-overlay.open{display:block;}
@@ -439,7 +439,7 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
   .picker-opt,.modal-title{font-size:16px;}
 }
 @media(max-width:900px){
-  .hamburger-btn{display:block;}
+  .hamburger-btn{display:flex;}
   .app-sidebar{display:block;transform:translateX(-100%);transition:transform .25s ease;z-index:250;box-shadow:4px 0 24px rgba(62,24,40,0.12);}
   .app-sidebar.open{transform:translateX(0);}
   .app-main{margin-left:0;}
@@ -1477,8 +1477,8 @@ function renderBudget(){
       <div style="background:#fff8f0;border:1px solid #f0d8b8;border-radius:16px;padding:18px;text-align:center;"><div style="font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tl);margin-bottom:6px;">Reste à payer</div><div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--am);">${fmt(reste>0?reste:0)} €</div></div>
     </div>
     <div class="section-actions">
-      <input id="new-bgt-cat" class="m-input" placeholder="Nouvelle catégorie" style="flex:1;min-width:160px;max-width:300px;">
-      <input id="new-bgt-est" class="m-input" type="number" placeholder="Budget estimé €" style="width:160px;">
+      <input id="new-bgt-cat" class="m-input" autocomplete="off" data-lpignore="true" placeholder="Nouvelle catégorie" style="flex:1;min-width:160px;max-width:300px;">
+      <input id="new-bgt-est" class="m-input" type="number" autocomplete="off" data-lpignore="true" placeholder="Budget estimé €" style="width:160px;">
       <button class="btn" onclick="addBudgetCat()">+ Ajouter</button>
     </div>
     <div style="display:flex;justify-content:flex-end;margin-bottom:14px;"><button class="btn-outline" style="font-size:12px;padding:6px 14px;" onclick="resetBudget()">↺ Restaurer les catégories par défaut</button></div>
@@ -1498,9 +1498,9 @@ function renderBudget(){
         </div>
         <div style="height:6px;background:var(--pink-pale);border-radius:3px;margin-bottom:12px;overflow:hidden;"><div style="height:100%;width:${pct}%;background:${over?'var(--rd)':'linear-gradient(90deg,var(--pink-dark),var(--pink))'};border-radius:3px;"></div></div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
-          <div><div style="font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--tl);margin-bottom:3px;">Budget estimé</div><input type="number" value="${est||''}" placeholder="0" onchange="updBudget(${item.id},'est',this.value)" style="${inputStyle}color:var(--mid);"></div>
-          <div><div style="font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--tl);margin-bottom:3px;">Budget réel</div><input type="number" value="${reel||''}" placeholder="0" onchange="updBudget(${item.id},'reel',this.value)" style="${inputStyle}color:var(--pink);"></div>
-          <div><div style="font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--tl);margin-bottom:3px;">Déjà payé</div><input type="number" value="${paye||''}" placeholder="0" onchange="updBudget(${item.id},'paye',this.value)" style="${inputStyle}color:var(--gn);"></div>
+          <div><div style="font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--tl);margin-bottom:3px;">Budget estimé</div><input type="number" value="${est||''}" placeholder="0" autocomplete="off" data-lpignore="true" onchange="updBudget(${item.id},'est',this.value)" style="${inputStyle}color:var(--mid);"></div>
+          <div><div style="font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--tl);margin-bottom:3px;">Budget réel</div><input type="number" value="${reel||''}" placeholder="0" autocomplete="off" data-lpignore="true" onchange="updBudget(${item.id},'reel',this.value)" style="${inputStyle}color:var(--pink);"></div>
+          <div><div style="font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--tl);margin-bottom:3px;">Déjà payé</div><input type="number" value="${paye||''}" placeholder="0" autocomplete="off" data-lpignore="true" onchange="updBudget(${item.id},'paye',this.value)" style="${inputStyle}color:var(--gn);"></div>
         </div>
         <div style="margin-top:8px;text-align:right;font-size:11px;color:var(--tl);">Reste à payer : <strong style="color:${r>0?'var(--am)':'var(--gn)'};">${fmt(r>0?r:0)} €</strong></div>
       </div>`;
@@ -1848,31 +1848,51 @@ async function delGuest(id){
 }
 
 function openAddGuestModal(){
-  window._ngCote='p1';
+  window._ng={cote:'p1',role:'Invité·e',age:'Adulte',inv:'non envoyée',pres:'en attente',regime:'Aucun'};
+  const pickField=(key,label,display)=>`<div class="m-field"><label class="m-label">${label}</label><button class="m-pick" id="ngf-${key}" onclick="pickNG('${key}')">${display} <span style="color:var(--tl);">▾</span></button></div>`;
   openModal(`
     <div class="modal-title">Ajouter un invité <button class="modal-x" onclick="closeModal()">×</button></div>
-    <div class="m-field"><label class="m-label">Nom complet</label><input class="m-input" id="ng-nom" placeholder="Prénom Nom"></div>
-    <div class="m-field"><label class="m-label">Côté</label><div style="display:flex;gap:8px;" id="ng-cote-wrap">
-      <button class="m-pick" style="justify-content:center;border-color:var(--pink);background:var(--pink-pale);color:var(--pink);font-weight:700;" data-v="p1" onclick="selNgCote('p1')">${USER.p1}</button>
-      <button class="m-pick" style="justify-content:center;" data-v="p2" onclick="selNgCote('p2')">${USER.p2}</button>
-    </div></div>
+    <div class="m-field"><label class="m-label">Nom complet</label><input class="m-input" id="ng-nom" placeholder="Prénom Nom" autocomplete="off"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      ${pickField('cote','Côté',USER.p1)}
+      ${pickField('role','Rôle',window._ng.role)}
+      ${pickField('age','Âge',window._ng.age)}
+      ${pickField('regime','Régime alimentaire',window._ng.regime)}
+      ${pickField('inv','Invitation',window._ng.inv)}
+      ${pickField('pres','Présence',window._ng.pres)}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="m-field"><label class="m-label">Email</label><input class="m-input" id="ng-email" type="email" placeholder="email@…" autocomplete="off"></div>
+      <div class="m-field"><label class="m-label">Adresse postale</label><input class="m-input" id="ng-adresse" placeholder="N° rue, ville…" autocomplete="off"></div>
+    </div>
     <div class="m-actions">
       <button class="btn" onclick="confirmAddGuest()">Ajouter</button>
       <button class="btn-outline" onclick="closeModal()">Annuler</button>
     </div>`);
   setTimeout(()=>document.getElementById('ng-nom')?.focus(),50);
 }
-
-function selNgCote(v){
-  window._ngCote=v;
-  document.querySelectorAll('#ng-cote-wrap .m-pick').forEach(b=>{
-    const on=b.dataset.v===v;
-    b.style.borderColor=on?'var(--pink)':'var(--border)';
-    b.style.background=on?'var(--pink-pale)':'var(--bg)';
-    b.style.color=on?'var(--pink)':'var(--dark)';
-    b.style.fontWeight=on?'700':'400';
-  });
+async function pickNG(key){
+  const map={
+    cote:[{value:'p1',label:USER.p1},{value:'p2',label:USER.p2}],
+    role:ROLES, age:['Adulte','Enfant','Bébé'],
+    inv:['non envoyée','envoyée'], pres:['en attente','confirmée','déclinée'],
+    regime:REGIMES
+  };
+  const cur=window._ng[key];
+  const v=await appPicker(({cote:'Côté',role:'Rôle',age:'Âge',inv:'Invitation',pres:'Présence',regime:'Régime alimentaire'})[key],map[key],cur);
+  if(v===null||v===undefined)return;
+  window._ng[key]=v;
+  const btn=document.getElementById('ngf-'+key);
+  if(btn){const disp=key==='cote'?(v==='p1'?USER.p1:USER.p2):v;btn.innerHTML=disp+' <span style="color:var(--tl);">▾</span>';}
 }
+function confirmAddGuest(){
+  const nom=document.getElementById('ng-nom').value.trim();
+  if(!nom)return;
+  const ng=window._ng||{};
+  GUESTS.push({id:Date.now(),nom,cote:ng.cote||'p1',invitation:ng.inv||'non envoyée',presence:ng.pres||'en attente',role:ng.role||'Invité·e',regime:ng.regime||'Aucun',vinHonneur:false,age:ng.age||'Adulte',seatTableId:null,seatIdx:null,email:document.getElementById('ng-email').value.trim(),adresse:document.getElementById('ng-adresse').value.trim()});
+  saveData('guests',GUESTS);closeModal();renderGuests();renderDashboard();
+}
+
 function confirmAddGuest(){
   const nom=document.getElementById('ng-nom').value.trim();
   if(!nom)return;
@@ -1982,12 +2002,14 @@ function drawPlanVisual(){
       if(isR){const orbit=RND/2+GAP+SEAT/2;const a=(i/n)*2*Math.PI-Math.PI/2;sx=cx+orbit*Math.cos(a);sy=cy+orbit*Math.sin(a);}
       else if(isSq){const perSide=Math.ceil(n/4);const side=Math.floor(i/perSide);const idxOnSide=i%perSide;const realPerSide=(side===3)?(n-3*perSide):perSide;const step=SQ/(Math.max(realPerSide,1)+1);const pos=step*(idxOnSide+1);const off=SQ/2+GAP;if(side===0){sx=cx-SQ/2+pos;sy=cy-off;}else if(side===1){sx=cx+off;sy=cy-SQ/2+pos;}else if(side===2){sx=cx-SQ/2+pos;sy=cy+off;}else{sx=cx-off;sy=cy-SQ/2+pos;}}
       else{const half=Math.ceil(n/2);const isTop=i<half;const cnt=isTop?half:(n-half);const idx=isTop?i:i-half;const step=TW/(Math.max(cnt,1)+1);sx=cx-TW/2+step*(idx+1);sy=isTop?cy-(TH/2+GAP+SEAT/2):cy+(TH/2+GAP+SEAT/2);}
-      if(t.hiddenSeats.includes(i))continue;
-      const g=placed[placedIdx];if(g)placedIdx++;
+      const hidden=t.hiddenSeats.includes(i);
+      const g=hidden?null:placed[placedIdx];if(g)placedIdx++;
       const seat=document.createElement('div');
-      seat.style.cssText=`position:absolute;left:${sx-SEAT/2}px;top:${sy-SEAT/2}px;width:${SEAT}px;height:${SEAT}px;border-radius:50%;${g?'background:var(--pink);border:1.5px solid var(--pink-dark);':'background:#fff;border:1.5px dashed var(--pink-light);'}display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;font-weight:700;cursor:pointer;z-index:5;`;
+      const seatBg=hidden?'background:transparent;border:1.5px dotted var(--pink-light);opacity:0.45;':(g?'background:var(--pink);border:1.5px solid var(--pink-dark);':'background:#fff;border:1.5px dashed var(--pink-light);');
+      seat.style.cssText=`position:absolute;left:${sx-SEAT/2}px;top:${sy-SEAT/2}px;width:${SEAT}px;height:${SEAT}px;border-radius:50%;${seatBg}display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;font-weight:700;cursor:pointer;z-index:5;`;
       const seatIdx=i;
-      if(g){seat.textContent=(g.nom||'?').split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase();seat.title=g.nom;seat.onclick=ev=>{ev.stopPropagation();if(!panMode)openSeatMenu(t.id,seatIdx,g.id);};}
+      if(hidden){seat.title='Chaise masquée';seat.onclick=ev=>{ev.stopPropagation();if(!panMode)openSeatMenu(t.id,seatIdx,null);};}
+      else if(g){seat.textContent=(g.nom||'?').split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase();seat.title=g.nom;seat.onclick=ev=>{ev.stopPropagation();if(!panMode)openSeatMenu(t.id,seatIdx,g.id);};}
       else{seat.title='Chaise libre';seat.onclick=ev=>{ev.stopPropagation();if(!panMode)openSeatMenu(t.id,seatIdx,null);};}
       group.appendChild(seat);
     }
@@ -2022,6 +2044,13 @@ function drawPlanVisual(){
     tbl.addEventListener('pointerup',endHandler);
     tbl.addEventListener('pointercancel',endHandler);
     group.appendChild(tbl);
+    // Bouton supprimer la table (avec ses chaises)
+    const del=document.createElement('button');
+    del.innerHTML='×';
+    del.title='Supprimer cette table';
+    del.style.cssText=`position:absolute;left:${cx+w/2-6}px;top:${cy-h2/2-8}px;width:20px;height:20px;border-radius:50%;background:#fff;border:1.5px solid var(--pink-light);color:var(--pink-dark);font-size:13px;line-height:1;cursor:pointer;z-index:15;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 1px 4px rgba(0,0,0,0.1);`;
+    del.onclick=async ev=>{ev.stopPropagation();await deleteTable(t.id);};
+    group.appendChild(del);
     inner.appendChild(group);
   });
   wrap.innerHTML='';
@@ -2056,6 +2085,13 @@ async function renameTable(id){
   const t=TABLES.find(x=>x.id===id);if(!t)return;
   const v=await appPrompt('Nom de la table',t.nom||'');
   if(v!==null&&v.trim()){t.nom=v.trim();saveData('tables',TABLES);renderSeating();}
+}
+async function deleteTable(id){
+  const t=TABLES.find(x=>x.id===id);if(!t)return;
+  if(!(await appConfirm(`Supprimer la table « ${t.nom||'Table'} » et ses chaises ? Les invités placés seront libérés.`)))return;
+  GUESTS.forEach(g=>{if(g.seatTableId===id){g.seatTableId=null;g.seatIdx=null;}});
+  TABLES=TABLES.filter(x=>x.id!==id);
+  saveData('tables',TABLES);saveData('guests',GUESTS);renderSeating();
 }
 function addTable(){
   const nomEl=document.getElementById('new-table-name');
