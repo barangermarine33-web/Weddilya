@@ -194,6 +194,9 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 .bcd-lbl{font-family:'Josefin Sans',sans-serif;font-size:8px;letter-spacing:0.15em;color:var(--mid);text-transform:uppercase;margin-top:2px;}
 @media(max-width:640px){.hm{display:none;}.data-table{min-width:0 !important;}}
 .app-main{max-width:100%;overflow-x:hidden;}
+.tab-page{max-width:900px;margin:0 auto;width:100%;box-sizing:border-box;}
+.panel{box-sizing:border-box;width:100%;}
+#vendors-content,#guests-content,#budget-content,#checklist-content,#decor-content,#menu-content,#seating-content,#album-content,#notes-content,#vendors-content *{box-sizing:border-box;}
 .vnd-cat-btn,.m-input,.m-pick,.m-select{max-width:100%;box-sizing:border-box;}
 #tp-visual{max-width:100%;}
 .section-actions{max-width:100%;}
@@ -284,8 +287,11 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(62,24,40,0.45);z-index:400;align-items:center;justify-content:center;padding:18px;}
 .modal-overlay.open{display:flex;}
-.modal-box{background:#fff;border-radius:18px;padding:26px;width:100%;max-width:560px;max-height:85vh;overflow-y:auto;box-shadow:0 24px 80px rgba(62,24,40,0.25);}
-.modal-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--dark);margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;}
+.modal-box{background:#fff;border-radius:20px;padding:0;width:100%;max-width:560px;max-height:85vh;overflow:hidden;box-shadow:0 24px 80px rgba(62,24,40,0.25);border:1px solid var(--border);}
+.modal-box::before{content:"";display:block;height:5px;background:linear-gradient(90deg,var(--pink-dark),var(--pink),var(--pink-light));}
+.modal-inner{padding:26px;max-height:calc(85vh - 5px);overflow-y:auto;}
+.modal-x{background:var(--pink-pale);border:none;color:var(--pink);width:30px;height:30px;border-radius:50%;font-size:18px;cursor:pointer;line-height:1;flex-shrink:0;}
+.modal-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--pink-dark);margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;}
 .modal-x{background:none;border:none;font-size:20px;color:var(--tl);cursor:pointer;line-height:1;}
 .m-field{margin-bottom:12px;}
 .m-label{font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mid);margin-bottom:5px;display:block;}
@@ -294,7 +300,10 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 .m-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;}
 .picker-overlay{display:none;position:fixed;inset:0;background:rgba(62,24,40,0.45);z-index:450;align-items:center;justify-content:center;padding:18px;}
 .picker-overlay.open{display:flex;}
-.picker-box{background:#fff;border-radius:18px;width:100%;max-width:340px;max-height:72vh;overflow-y:auto;padding:18px;box-shadow:0 24px 80px rgba(62,24,40,0.25);}
+.picker-box{background:#fff;border-radius:20px;width:100%;max-width:340px;max-height:72vh;overflow:hidden;box-shadow:0 24px 80px rgba(62,24,40,0.25);border:1px solid var(--border);}
+.picker-box::before{content:"";display:block;height:5px;background:linear-gradient(90deg,var(--pink-dark),var(--pink),var(--pink-light));}
+.picker-inner{padding:18px;max-height:calc(72vh - 5px);overflow-y:auto;}
+.picker-opt.sel{background:var(--pink-pale);color:var(--pink-dark);font-weight:700;}
 .picker-opt{padding:13px 16px;border-radius:11px;font-family:'Lora',serif;font-size:14px;color:var(--dark);cursor:pointer;display:flex;align-items:center;justify-content:space-between;}
 .picker-opt:hover{background:var(--bg);}
 .picker-opt.sel{background:var(--pink-pale);color:var(--pink);font-weight:700;}
@@ -343,6 +352,14 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 .sidebar-overlay.open{display:block;}
 
 /* ── Prestataires (design embelli) ── */
+
+/* Filtres invités */
+.gfilter{background:#fff;color:var(--tl);border:1.5px solid var(--border);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Lora',serif;transition:all .15s;}
+.gfilter:hover{border-color:var(--pink-light);}
+.gfilter.on{background:var(--pink-pale);color:var(--pink-dark);border-color:var(--pink);}
+.gfilter-menu{position:absolute;top:36px;left:0;background:#fff;border:1px solid var(--border);border-radius:12px;padding:6px;z-index:99;min-width:155px;box-shadow:0 6px 20px rgba(212,96,122,0.18);}
+.gfilter-menu div{padding:9px 13px;font-size:13px;font-family:'Lora',serif;cursor:pointer;color:var(--dark);border-radius:8px;}
+.gfilter-menu div:hover{background:var(--pink-pale);}
 .cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:16px;}
 .cat-chip{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--border);border-radius:13px;padding:11px 13px;cursor:pointer;font-size:13px;font-weight:600;color:var(--dark);transition:all .18s;font-family:'Lora',serif;text-align:left;}
 .cat-chip:hover{border-color:var(--pink-light);background:var(--pink-pale);}
@@ -373,8 +390,8 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
   :root{--sidebar-w:330px;}
   /* Boost global : tout le contenu de l'app + pop-ups agrandi d'un cran */
   #view-app,#modal-overlay,#picker-overlay{font-size:118%;}
-  .modal-box,.picker-box{font-size:16px;}
-  .modal-box div,.picker-box div,.modal-box label,.picker-box label,.modal-box span,.picker-box span,.picker-opt{font-size:16px;}
+  .modal-box,.picker-box,.modal-inner,.picker-inner{font-size:16px;}
+  .modal-inner div,.picker-inner div,.modal-inner label,.picker-inner label,.modal-inner span,.picker-inner span,.picker-opt{font-size:16px;}
   .modal-title{font-size:20px !important;}
   .picker-box .m-label,.modal-box .m-label{font-size:12px;}
   #view-app .app-main{font-size:1.05rem;}
@@ -786,7 +803,7 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
         Menu &amp; quantités
       </div>
       <div class="sidebar-item" data-tab="decor" onclick="showTab('decor',this)">
-        <svg viewBox="0 0 24 24" stroke-width="1.8"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2z"/><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72m2.54-15.38c-3.72 4.35-8.94 5.66-16.88 5.85m19.5 1.9c-3.5-.93-6.63-.82-8.94 0-2.58.92-5.01 2.86-7.44 6.32"/></svg>
+        <svg viewBox="0 0 24 24" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 9c0-4 -2-6 0-8 2 2 0 4 0 8zM9 12c-4 0-6-2-8 0 2 2 4 0 8 0zM15 12c4 0 6-2 8 0-2 2-4 0-8 0zM12 15c0 4 2 6 0 8-2-2 0-4 0-8z"/></svg>
         Décorations
       </div>
       <div class="sidebar-section-title" style="margin-top:8px;">Autres</div>
@@ -1492,7 +1509,7 @@ function renderBudget(){
 
 
 async function resetBudget(){
-  if(await appConfirm('Restaurer les catégories par défaut ? Les catégories ajoutées seront supprimées.')){
+  if(await appConfirm('Restaurer les catégories par défaut ? Vos modifications seront perdues.')){
     BUDGET=DEF_BUDGET.map(d=>({...d,reel:0,paye:0}));
     saveData('budget',BUDGET);renderBudget();renderDashboard();
   }
@@ -1540,13 +1557,77 @@ function renderGuests(){
       <input id="guest-search" type="text" placeholder="Rechercher…" oninput="filterGuests()" style="padding:8px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'Lora',serif;font-size:13px;outline:none;background:var(--bg);margin-left:auto;min-width:140px;flex:1;max-width:240px;">
     </div>
     <div class="panel" style="padding:14px;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+        <button onclick="window._guestSort=(window._guestSort==='az'?'':'az');renderGuests();" class="gfilter ${window._guestSort==='az'?'on':''}">A → Z</button>
+        <div style="position:relative;display:inline-block;">
+          <button onclick="window._showInvMenu=!window._showInvMenu;window._showPresMenu=false;renderGuests();" class="gfilter ${window._guestInv?'on':''}">Invitation ${window._guestInv==='envoyee'?'· Envoyée':window._guestInv==='non'?'· Non envoyée':'▾'}</button>
+          ${window._showInvMenu?`<div class="gfilter-menu">
+            <div onclick="window._guestInv='envoyee';window._showInvMenu=false;renderGuests();">Envoyée</div>
+            <div onclick="window._guestInv='non';window._showInvMenu=false;renderGuests();">Non envoyée</div>
+            <div onclick="window._guestInv='';window._showInvMenu=false;renderGuests();" style="color:var(--tl);">Tous</div>
+          </div>`:''}
+        </div>
+        <div style="position:relative;display:inline-block;">
+          <button onclick="window._showPresMenu=!window._showPresMenu;window._showInvMenu=false;renderGuests();" class="gfilter ${window._guestPres?'on':''}">Présence ${window._guestPres?'· '+window._guestPres.charAt(0).toUpperCase()+window._guestPres.slice(1):'▾'}</button>
+          ${window._showPresMenu?`<div class="gfilter-menu">
+            <div onclick="window._guestPres='confirmée';window._showPresMenu=false;renderGuests();" style="color:var(--gn);">Confirmée</div>
+            <div onclick="window._guestPres='en attente';window._showPresMenu=false;renderGuests();" style="color:var(--am);">En attente</div>
+            <div onclick="window._guestPres='déclinée';window._showPresMenu=false;renderGuests();" style="color:var(--rd);">Déclinée</div>
+            <div onclick="window._guestPres='';window._showPresMenu=false;renderGuests();" style="color:var(--tl);">Tous</div>
+          </div>`:''}
+        </div>
+      </div>
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
         <table class="data-table" style="min-width:480px;">
-          <thead><tr><th>Nom</th><th class="hm">Côté</th><th class="hm">Rôle</th><th>Invitation</th><th>Présence</th><th class="hm">Régime</th></tr></thead>
-          <tbody id="guests-tbody">${renderGuestRows(GUESTS)}</tbody>
+          <thead><tr><th style="width:24px;"></th><th>Nom</th><th class="hm">Côté</th><th class="hm">Rôle</th><th>Invitation</th><th>Présence</th><th class="hm">Régime</th></tr></thead>
+          <tbody id="guests-tbody">${renderGuestRows(applyGuestFilters(GUESTS))}</tbody>
         </table>
       </div>
     </div>`;
+  requestAnimationFrame(initGuestDrag);
+}
+
+function applyGuestFilters(arr){
+  let list=[...arr];
+  if(window._guestInv==='envoyee')list=list.filter(g=>g.invitation==='envoyée');
+  if(window._guestInv==='non')list=list.filter(g=>g.invitation==='non envoyée'||!g.invitation);
+  if(window._guestPres)list=list.filter(g=>(g.presence||'en attente')===window._guestPres);
+  if(window._guestSort==='az')list=list.sort((a,b)=>(a.nom||'').localeCompare(b.nom||'','fr'));
+  return list;
+}
+
+// Déplacement manuel des lignes (drag & drop souris + tactile)
+function initGuestDrag(){
+  const tbody=document.getElementById('guests-tbody');
+  if(!tbody)return;
+  let dragId=null;
+  tbody.querySelectorAll('tr[data-gid]').forEach(tr=>{
+    const handle=tr.querySelector('.drag-handle');
+    if(!handle)return;
+    handle.addEventListener('pointerdown',e=>{
+      e.preventDefault();dragId=tr.getAttribute('data-gid');tr.style.opacity='0.5';
+      const move=ev=>{
+        const el2=document.elementFromPoint(ev.clientX,ev.clientY);
+        const overTr=el2&&el2.closest('tr[data-gid]');
+        if(overTr&&overTr!==tr){
+          const rect=overTr.getBoundingClientRect();
+          const after=ev.clientY>rect.top+rect.height/2;
+          tbody.insertBefore(tr,after?overTr.nextSibling:overTr);
+        }
+      };
+      const up=()=>{
+        tr.style.opacity='';document.removeEventListener('pointermove',move);document.removeEventListener('pointerup',up);
+        // Réordonner GUESTS selon le nouvel ordre du DOM
+        const order=[...tbody.querySelectorAll('tr[data-gid]')].map(r=>r.getAttribute('data-gid'));
+        GUESTS.sort((a,b)=>order.indexOf(String(a.id))-order.indexOf(String(b.id)));
+        window._guestSort='';
+        saveData('guests',GUESTS);
+        dragId=null;
+      };
+      document.addEventListener('pointermove',move);
+      document.addEventListener('pointerup',up);
+    });
+  });
 }
 
 function importGuestsFile(input){
@@ -1602,11 +1683,11 @@ function exportGuestsCSV(){
 }
 
 function renderGuestRows(list){
-  if(!list.length)return'<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--tl);">Aucun invité.</td></tr>';
+  if(!list.length)return'<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--tl);">Aucun invité.</td></tr>';
   return list.map(g=>{
     const pc=g.presence==='confirmée'?'var(--gn)':g.presence==='déclinée'?'var(--rd)':'var(--am)';
     const ic=g.invitation==='envoyée'?'var(--gn)':'var(--tl)';
-    return`<tr style="cursor:pointer;" onclick="openGuestModal(${g.id})"><td><strong>${g.nom||''}</strong></td><td class="hm" style="color:var(--tl);">${g.cote==='p1'?USER.p1:USER.p2}</td><td class="hm" style="color:var(--tl);">${g.role||'Invité·e'}</td><td><span style="color:${ic};font-weight:700;font-size:12px;">${g.invitation==='envoyée'?'Envoyée':'Non envoyée'}</span></td><td><span style="color:${pc};font-weight:700;font-size:12px;">${g.presence||'En attente'}</span></td><td class="hm" style="color:var(--tl);font-size:12px;">${g.regime&&g.regime!=='Aucun'?g.regime:'—'}</td></tr>`;
+    return`<tr data-gid="${g.id}" style="cursor:pointer;"><td class="drag-handle" style="cursor:grab;color:var(--pink-light);text-align:center;touch-action:none;" title="Glisser pour réordonner">⋮⋮</td><td onclick="openGuestModal(${g.id})"><strong>${g.nom||''}</strong></td><td class="hm" onclick="openGuestModal(${g.id})" style="color:var(--tl);">${g.cote==='p1'?USER.p1:USER.p2}</td><td class="hm" onclick="openGuestModal(${g.id})" style="color:var(--tl);">${g.role||'Invité·e'}</td><td onclick="openGuestModal(${g.id})"><span style="color:${ic};font-weight:700;font-size:12px;">${g.invitation==='envoyée'?'Envoyée':'Non envoyée'}</span></td><td onclick="openGuestModal(${g.id})"><span style="color:${pc};font-weight:700;font-size:12px;">${g.presence||'En attente'}</span></td><td class="hm" onclick="openGuestModal(${g.id})" style="color:var(--tl);font-size:12px;">${g.regime&&g.regime!=='Aucun'?g.regime:'—'}</td></tr>`;
   }).join('');
 }
 
@@ -1614,7 +1695,7 @@ const REGIMES=["Aucun","Végétarien","Vegan","Sans gluten","Sans lactose","Hala
 const ROLES=["Invité·e","Témoin","Demoiselle d'honneur","Garçon d'honneur","Enfant d'honneur","Famille proche","Marié","Mariée"];
 
 function openModal(html){
-  document.getElementById('modal-box').innerHTML=html;
+  document.getElementById('modal-box').innerHTML='<div class="modal-inner">'+html+'</div>';
   document.getElementById('modal-overlay').classList.add('open');
 }
 function closeModal(){document.getElementById('modal-overlay').classList.remove('open');}
@@ -1624,8 +1705,13 @@ function appPicker(title,options,current){
     const ov=document.getElementById('picker-overlay');
     const opts=options.map(o=>typeof o==='string'?{value:o,label:o}:o);
     ov.innerHTML=`<div class="picker-box">
-      <div class="modal-title" style="font-size:17px;margin-bottom:12px;">${title} <button class="modal-x" id="pk-x">×</button></div>
-      ${opts.map((o,i)=>`<div class="picker-opt ${o.value===current?'sel':''}" data-i="${i}">${o.label}${o.value===current?'<span style="font-size:15px;">✓</span>':''}</div>`).join('')}
+      <div style="background:linear-gradient(135deg,var(--pink-pale),#fff);padding:15px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-family:'Playfair Display',serif;font-size:17px;color:var(--pink-dark);">${title}</span>
+        <button class="modal-x" id="pk-x">×</button>
+      </div>
+      <div class="picker-inner" style="padding:8px;">
+        ${opts.map((o,i)=>`<div class="picker-opt ${o.value===current?'sel':''}" data-i="${i}">${o.label}${o.value===current?'<span style="font-size:15px;">✓</span>':''}</div>`).join('')}
+      </div>
     </div>`;
     ov.classList.add('open');
     const close=v=>{ov.classList.remove('open');ov.innerHTML='';ov.onclick=null;res(v);};
@@ -1638,8 +1724,16 @@ function appConfirm(msg){
   return new Promise(res=>{
     const ov=document.getElementById('picker-overlay');
     ov.innerHTML=`<div class="picker-box">
-      <div style="font-family:'Lora',serif;font-size:14px;color:var(--dark);line-height:1.7;margin-bottom:18px;">${msg}</div>
-      <div style="display:flex;gap:10px;"><button class="btn" id="pk-ok" style="flex:1;">Confirmer</button><button class="btn-outline" id="pk-no" style="flex:1;">Annuler</button></div>
+      <div style="background:var(--pink-pale);padding:20px 22px 16px;text-align:center;border-bottom:1px solid var(--border);">
+        <div style="width:46px;height:46px;border-radius:50%;background:#fff;border:2px solid var(--pink-light);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--pink)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div style="font-family:'Playfair Display',serif;font-size:18px;color:var(--pink-dark);">Confirmer</div>
+      </div>
+      <div class="picker-inner">
+        <div style="font-family:'Lora',serif;font-size:14px;color:var(--mid);line-height:1.6;margin-bottom:18px;text-align:center;">${msg}</div>
+        <div style="display:flex;gap:10px;"><button class="btn" id="pk-ok" style="flex:1;">Confirmer</button><button class="btn-outline" id="pk-no" style="flex:1;">Annuler</button></div>
+      </div>
     </div>`;
     ov.classList.add('open');
     const close=v=>{ov.classList.remove('open');ov.innerHTML='';ov.onclick=null;res(v);};
@@ -1652,8 +1746,10 @@ function appAlert2(msg){
   return new Promise(res=>{
     const ov=document.getElementById('picker-overlay');
     ov.innerHTML=`<div class="picker-box">
-      <div style="font-family:'Lora',serif;font-size:14px;color:var(--dark);line-height:1.7;margin-bottom:18px;">${msg}</div>
-      <button class="btn" id="pk-ok" style="width:100%;">OK</button>
+      <div class="picker-inner">
+        <div style="font-family:'Lora',serif;font-size:14px;color:var(--dark);line-height:1.7;margin-bottom:18px;">${msg}</div>
+        <button class="btn" id="pk-ok" style="width:100%;">OK</button>
+      </div>
     </div>`;
     ov.classList.add('open');
     const close=()=>{ov.classList.remove('open');ov.innerHTML='';ov.onclick=null;res();};
@@ -1665,9 +1761,13 @@ function appPrompt(title,value){
   return new Promise(res=>{
     const ov=document.getElementById('picker-overlay');
     ov.innerHTML=`<div class="picker-box">
-      <div class="modal-title" style="font-size:17px;margin-bottom:12px;">${title}</div>
-      <input class="m-input" id="pk-input" value="${(value||'').replace(/"/g,'&quot;')}" style="margin-bottom:16px;">
-      <div style="display:flex;gap:10px;"><button class="btn" id="pk-ok" style="flex:1;">Valider</button><button class="btn-outline" id="pk-no" style="flex:1;">Annuler</button></div>
+      <div style="background:linear-gradient(135deg,var(--pink-pale),#fff);padding:15px 20px;border-bottom:1px solid var(--border);">
+        <span style="font-family:'Playfair Display',serif;font-size:17px;color:var(--pink-dark);">${title}</span>
+      </div>
+      <div class="picker-inner">
+        <input class="m-input" id="pk-input" value="${(value||'').replace(/"/g,'&quot;')}" style="margin-bottom:16px;">
+        <div style="display:flex;gap:10px;"><button class="btn" id="pk-ok" style="flex:1;">Valider</button><button class="btn-outline" id="pk-no" style="flex:1;">Annuler</button></div>
+      </div>
     </div>`;
     ov.classList.add('open');
     const inp=ov.querySelector('#pk-input');inp.focus();inp.select();
@@ -1782,9 +1882,10 @@ function confirmAddGuest(){
 
 function filterGuests(){
   const q=(document.getElementById('guest-search')?.value||'').toLowerCase();
-  const filtered=q?GUESTS.filter(g=>(g.nom||'').toLowerCase().includes(q)):GUESTS;
+  let base=applyGuestFilters(GUESTS);
+  const filtered=q?base.filter(g=>(g.nom||'').toLowerCase().includes(q)):base;
   const tbody=document.getElementById('guests-tbody');
-  if(tbody)tbody.innerHTML=renderGuestRows(filtered);
+  if(tbody){tbody.innerHTML=renderGuestRows(filtered);requestAnimationFrame(initGuestDrag);}
 }
 
 // ══ NOTES ══
@@ -2418,7 +2519,19 @@ function renderAlbum(){
         <a href="${DRIVE_URL}" target="_blank" class="btn" style="flex:1;text-decoration:none;text-align:center;">Ouvrir l'album</a>
       </div>
     </div>`:`
-    <div style="background:#fafafa;border:1.5px dashed var(--border);border-radius:14px;padding:28px;text-align:center;color:var(--tl);font-size:13px;">Aucun album configuré pour le moment.</div>`}`;
+    <div style="background:#fafafa;border:1.5px dashed var(--border);border-radius:14px;padding:28px;text-align:center;color:var(--tl);font-size:13px;margin-bottom:16px;">
+      <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="var(--pink-light)" stroke-width="1.5" style="margin-bottom:10px;"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+      <div>Ajoutez votre lien Google Photos ci-dessus pour générer le QR code.</div>
+    </div>`}
+    <div class="panel">
+      <div class="panel-title">Comment créer votre album partagé ?</div>
+      <div style="display:flex;flex-direction:column;gap:12px;font-size:14px;color:var(--mid);line-height:1.5;">
+        <div style="display:flex;gap:10px;"><span style="color:var(--pink);font-weight:700;flex-shrink:0;">①</span><span>Ouvrez <strong style="color:var(--dark);">Google Photos</strong> sur votre téléphone</span></div>
+        <div style="display:flex;gap:10px;"><span style="color:var(--pink);font-weight:700;flex-shrink:0;">②</span><span>Appuyez sur <strong style="color:var(--dark);">Bibliothèque → Albums → +</strong></span></div>
+        <div style="display:flex;gap:10px;"><span style="color:var(--pink);font-weight:700;flex-shrink:0;">③</span><span>Nommez l'album et activez le <strong style="color:var(--dark);">partage collaboratif</strong></span></div>
+        <div style="display:flex;gap:10px;"><span style="color:var(--pink);font-weight:700;flex-shrink:0;">④</span><span>Copiez le lien et collez-le ci-dessus</span></div>
+      </div>
+    </div>`;
 }
 function saveDriveUrl(){
   DRIVE_URL=document.getElementById('drive-url-input').value.trim();
