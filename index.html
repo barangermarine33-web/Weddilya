@@ -2424,7 +2424,7 @@ async function exportBudgetPDF(){
       setText(C_TL);pdf.setFont('times','normal');pdf.setFontSize(10);
       pdf.text(`${USER.p1} & ${USER.p2}  ·  ${USER.wDate||''}`,pw/2,42,{align:'center'});
     };
-    const fmt=n=>Math.round(n).toLocaleString('fr-FR')+' EUR';
+    const fmt=n=>Math.round(n)+' \u20AC';
     drawFrame();drawPageHeader('Budget & Depenses');
 
     // Totaux
@@ -2450,7 +2450,7 @@ async function exportBudgetPDF(){
     y+=28;
 
     // En-tête tableau
-    const colX=[cardX, cardX+62, cardX+95, cardX+125, cardX+155];
+    const colX=[cardX, cardX+58, cardX+85, cardX+112, cardX+139];
     const headers=['Categorie','Estime','Reel','Paye','Reste'];
     setFill(C_PK);pdf.rect(cardX,y,pw-2*cardX,9,'F');
     setText([255,255,255]);pdf.setFont('helvetica','bold');pdf.setFontSize(9);
