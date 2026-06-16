@@ -2048,7 +2048,7 @@ function drawPlanVisual(){
     const del=document.createElement('button');
     del.innerHTML='×';
     del.title='Supprimer cette table';
-    del.style.cssText=`position:absolute;left:${cx+w/2-6}px;top:${cy-h2/2-8}px;width:20px;height:20px;border-radius:50%;background:#fff;border:1.5px solid var(--pink-light);color:var(--pink-dark);font-size:13px;line-height:1;cursor:pointer;z-index:15;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 1px 4px rgba(0,0,0,0.1);`;
+    del.style.cssText=`position:absolute;left:128px;top:6px;width:22px;height:22px;border-radius:50%;background:#fff;border:1.5px solid var(--pink-light);color:var(--pink-dark);font-size:14px;line-height:1;cursor:pointer;z-index:25;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 2px 6px rgba(0,0,0,0.15);`;
     del.onclick=async ev=>{ev.stopPropagation();await deleteTable(t.id);};
     group.appendChild(del);
     inner.appendChild(group);
