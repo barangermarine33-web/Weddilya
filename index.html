@@ -6589,9 +6589,13 @@ function renderRegistry(){
     {k:'share',label:'Partage'}
   ];
   if(!REGISTRY_SUBTAB||REGISTRY_SUBTAB==='home')REGISTRY_SUBTAB='dash';
+  const tabBtn=t=>{
+    const on=REGISTRY_SUBTAB===t.k;
+    return `<button onclick="setRegistrySubtab('${t.k}')" style="background:none;border:none;border-bottom:2px solid ${on?'var(--pink)':'transparent'};font-family:'Playfair Display',serif;font-size:1.05rem;color:${on?'var(--pink-dark)':'var(--tl)'};padding:0 0 13px;margin:0;cursor:pointer;white-space:nowrap;transition:color .15s;">${t.label}</button>`;
+  };
   el.innerHTML=`
-    <div class="reg-tabsA">
-      ${tabs.map(t=>`<a onclick="setRegistrySubtab('${t.k}')" class="${REGISTRY_SUBTAB===t.k?'on':''}">${t.label}</a>`).join('')}
+    <div style="display:flex;gap:30px;border-bottom:1px solid var(--border);margin-bottom:26px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:0;">
+      ${tabs.map(tabBtn).join('')}
     </div>
     <div id="registry-sub"></div>`;
   renderRegistrySub();
