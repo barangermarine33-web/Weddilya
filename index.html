@@ -356,6 +356,18 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 /* Filtres invités */
 
 /* Liste de mariage */
+/* Liste de mariage — accueil en cartes (Option C) */
+.reg-home-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.reg-navcard{background:#fff;border:1px solid var(--border);border-radius:16px;padding:22px 20px;cursor:pointer;transition:all .18s;}
+.reg-navcard:hover{border-color:var(--pink-light);box-shadow:0 8px 28px rgba(212,96,122,0.1);transform:translateY(-2px);}
+.reg-navcard-ic{width:42px;height:42px;border-radius:12px;background:var(--pink-pale);display:flex;align-items:center;justify-content:center;margin-bottom:14px;}
+.reg-navcard-ic svg{width:21px;height:21px;stroke:var(--pink);fill:none;stroke-width:1.8;}
+.reg-navcard h3{font-family:'Playfair Display',serif;font-size:17px;font-weight:400;color:var(--dark);margin-bottom:4px;}
+.reg-navcard p{font-size:12px;color:var(--tl);line-height:1.4;}
+.reg-navcard-stat{font-family:'Playfair Display',serif;font-size:22px;color:var(--pink);margin-top:10px;}
+@media(max-width:900px){.reg-home-grid{grid-template-columns:repeat(2,1fr);gap:12px;}}
+@media(max-width:560px){.reg-home-grid{grid-template-columns:repeat(2,1fr);gap:10px;}.reg-navcard{padding:16px 14px;}.reg-navcard h3{font-size:15px;}.reg-navcard-stat{font-size:18px;}}
+
 .reg-tab{background:#fff;color:var(--tl);border:1.5px solid var(--border);border-radius:20px;padding:7px 15px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Lora',serif;transition:all .15s;}
 .reg-tab:hover{border-color:var(--pink-light);}
 .reg-tab.on{background:var(--pink-pale);color:var(--pink-dark);border-color:var(--pink);}
@@ -6540,9 +6552,9 @@ if(new URLSearchParams(location.search).get('liste')){
 //   RECEIVED {id,invite,type,montant,date,commentaire,fundId,remerciement,dateRemerciement}
 // ═══════════════════════════════════════════════════════════
 
-let REGISTRY_SUBTAB='dash';
+let REGISTRY_SUBTAB='home';
 const GIFT_CATS=['Cuisine','Décoration','Électroménager','Linge de maison','High-tech','Loisirs','Voyage','Jardin','Autre'];
-const GIFT_STATUS={disponible:{label:'Disponible',color:'var(--gn)'},reserve:{label:'Réservé',color:'var(--am)'},offert:{label:'Offert',color:'var(--pink)'},recu:{label:'Reçu',color:'var(--tl)'}};
+const GIFT_STATUS={disponible:{label:'Disponible',color:'var(--gn)'},reserve:{label:'Réservé',color:'var(--am)'},recu:{label:'Reçu',color:'var(--tl)'}};
 const FUND_TYPES={voyage:'Voyage de noces',maison:'Maison',projet:'Projet personnel',libre:'Libre'};
 const RECEIVED_TYPES={cheque:'Chèque',especes:'Espèces',virement:'Virement',materiel:'Cadeau matériel'};
 
@@ -6555,20 +6567,40 @@ function eur(n){return Math.round(n||0)+' €';}
 function renderRegistry(){
   const el=document.getElementById('registry-content');
   if(!el)return;
-  const tabs=[
-    {k:'dash',label:'Tableau de bord'},
-    {k:'gifts',label:'Cadeaux'},
-    {k:'funds',label:'Cagnottes'},
-    {k:'received',label:'Cadeaux reçus'},
-    {k:'thanks',label:'Remerciements'},
-    {k:'share',label:'Partage'}
-  ];
+  if(REGISTRY_SUBTAB==='home'||!REGISTRY_SUBTAB){renderRegistryHome(el);return;}
+  // Vue d'une section : bouton retour + contenu
+  const titles={dash:'Tableau de bord',gifts:'Cadeaux',funds:'Cagnottes',received:'Cadeaux reçus',thanks:'Remerciements',share:'Partage'};
   el.innerHTML=`
-    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;border-bottom:1px solid var(--border);padding-bottom:12px;">
-      ${tabs.map(t=>`<button onclick="setRegistrySubtab('${t.k}')" class="reg-tab ${REGISTRY_SUBTAB===t.k?'on':''}">${t.label}</button>`).join('')}
-    </div>
+    <button onclick="setRegistrySubtab('home')" style="display:inline-flex;align-items:center;gap:7px;background:none;border:none;color:var(--tl);font-family:'Lora',serif;font-size:13px;cursor:pointer;margin-bottom:16px;padding:0;">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Retour à la liste de mariage
+    </button>
+    <div style="font-family:'Playfair Display',serif;font-size:20px;color:var(--pink-dark);margin-bottom:18px;">${titles[REGISTRY_SUBTAB]||''}</div>
     <div id="registry-sub"></div>`;
   renderRegistrySub();
+}
+function renderRegistryHome(el){
+  const nb=GIFTS.length;
+  const dispo=GIFTS.filter(g=>(g.statut||'disponible')==='disponible').length;
+  const reserves=GIFTS.filter(g=>g.statut==='reserve').length;
+  const totalContrib=FUNDS.reduce((s,f)=>s+(f.contributeurs||[]).reduce((a,c)=>a+(parseFloat(c.montant)||0),0),0);
+  const thanked=RECEIVED.filter(r=>r.remerciement==='envoye').length;
+  const cards=[
+    {k:'dash',title:'Tableau de bord',desc:"Vue d'ensemble chiffrée",stat:'→',ic:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>'},
+    {k:'gifts',title:'Cadeaux',desc:'Votre liste à partager',stat:nb,ic:'<path d="M20 12v10H4V12M2 7h20v5H2zM12 22V7"/>'},
+    {k:'funds',title:'Cagnottes',desc:'Voyage, maison, projets',stat:FUNDS.length,ic:'<circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 9.5h4.5a1.5 1.5 0 010 3H10a1.5 1.5 0 000 3h5"/>'},
+    {k:'received',title:'Cadeaux reçus',desc:'Suivi de ce que vous recevez',stat:RECEIVED.length,ic:'<path d="M20 6L9 17l-5-5"/>'},
+    {k:'thanks',title:'Remerciements',desc:'Qui a déjà été remercié',stat:RECEIVED.length?`${thanked}/${RECEIVED.length}`:'0',ic:'<path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>'},
+    {k:'share',title:'Partage',desc:'Lien & QR code pour vos invités',stat:'↗',ic:'<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/>'}
+  ];
+  el.innerHTML=`<div class="reg-home-grid">
+    ${cards.map(c=>`<div class="reg-navcard" onclick="setRegistrySubtab('${c.k}')">
+      <div class="reg-navcard-ic"><svg viewBox="0 0 24 24">${c.ic}</svg></div>
+      <h3>${c.title}</h3>
+      <p>${c.desc}</p>
+      <div class="reg-navcard-stat">${c.stat}</div>
+    </div>`).join('')}
+  </div>`;
 }
 
 function setRegistrySubtab(k){REGISTRY_SUBTAB=k;renderRegistry();}
@@ -6665,6 +6697,8 @@ function saveGift(){
     photo:document.getElementById('gm-photo').value.trim(),
     description:document.getElementById('gm-desc').value.trim()
   };
+  // Si on remet le cadeau en "Disponible", on efface la réservation
+  if(data.statut==='disponible'){data.reservePar='';data.acheteur='';}
   if(e.id){
     GIFTS=GIFTS.map(g=>g.id===e.id?{...g,...data}:g);
   }else{
@@ -6907,8 +6941,8 @@ function toggleThanks(id){
 // ─────────── 5. TABLEAU DE BORD ───────────
 function renderRegDash(el){
   const nb=GIFTS.length;
+  const dispo=GIFTS.filter(g=>(g.statut||'disponible')==='disponible').length;
   const reserves=GIFTS.filter(g=>g.statut==='reserve').length;
-  const offerts=GIFTS.filter(g=>g.statut==='offert').length;
   const recus=GIFTS.filter(g=>g.statut==='recu').length;
   const totalGifts=GIFTS.reduce((s,g)=>s+(parseFloat(g.prix)||0),0);
   const totalContrib=FUNDS.reduce((s,f)=>s+(f.contributeurs||[]).reduce((a,c)=>a+(parseFloat(c.montant)||0),0),0);
@@ -6916,7 +6950,6 @@ function renderRegDash(el){
   const thanked=RECEIVED.filter(r=>r.remerciement==='envoye').length;
   const toThank=RECEIVED.length-thanked;
   const thanksPct=RECEIVED.length?Math.round(thanked/RECEIVED.length*100):0;
-  // plus gros contributeurs (cagnottes + reçus)
   const contribMap={};
   FUNDS.forEach(f=>(f.contributeurs||[]).forEach(c=>{contribMap[c.nom]=(contribMap[c.nom]||0)+(parseFloat(c.montant)||0);}));
   RECEIVED.forEach(r=>{if(r.montant)contribMap[r.invite]=(contribMap[r.invite]||0)+(parseFloat(r.montant)||0);});
@@ -6928,8 +6961,8 @@ function renderRegDash(el){
   el.innerHTML=`
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:16px;">
       ${card('Cadeaux',nb)}
+      ${card('Disponibles',dispo,'var(--gn)')}
       ${card('Réservés',reserves,'var(--am)')}
-      ${card('Offerts',offerts,'var(--pink)')}
       ${card('Reçus',recus,'var(--tl)')}
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px;">
@@ -7155,7 +7188,7 @@ function renderPublicRegistry(){
 }
 function publicGiftCard(g){
   const reserved=g.reservePar||g.statut!=='disponible';
-  return `<div style="background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;${reserved?'opacity:0.6;':''}">
+  return `<div style="background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;${reserved?'opacity:0.75;':''}">
     <div style="height:130px;background:${g.photo?`url('${esc(g.photo)}') center/cover`:'linear-gradient(135deg,var(--pink-pale),#fff)'};display:flex;align-items:center;justify-content:center;">
       ${g.photo?'':'<svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="var(--pink-light)" stroke-width="1.5"><path d="M20 12v10H4V12M2 7h20v5H2zM12 22V7"/></svg>'}
     </div>
@@ -7164,7 +7197,8 @@ function publicGiftCard(g){
       ${g.categorie?`<div style="font-size:11px;color:var(--tl);margin-bottom:4px;">${esc(g.categorie)}</div>`:''}
       ${g.description?`<div style="font-size:12px;color:var(--mid);margin:4px 0;">${esc(g.description).substring(0,80)}</div>`:''}
       ${g.prix?`<div style="font-size:14px;font-weight:700;color:var(--pink);margin:6px 0;">${Math.round(g.prix)} €</div>`:''}
-      ${reserved?`<div style="font-size:12px;color:var(--am);font-weight:700;text-align:center;padding:8px 0;">Déjà réservé</div>`:`
+      ${reserved?`<div style="font-size:12px;color:var(--am);font-weight:700;text-align:center;padding:6px 0;">Déjà réservé</div>
+        ${g.lien?`<a href="${esc(g.lien)}" target="_blank" style="display:block;text-align:center;border:1.5px solid var(--border);border-radius:9px;padding:7px;font-size:11px;color:var(--mid);text-decoration:none;">Voir le cadeau</a>`:''}`:`
         <div style="display:flex;gap:6px;margin-top:8px;">
           ${g.lien?`<a href="${esc(g.lien)}" target="_blank" style="flex:1;text-align:center;border:1.5px solid var(--border);border-radius:9px;padding:7px;font-size:11px;color:var(--mid);text-decoration:none;">Voir</a>`:''}
           <button onclick="reservePublicGift(${g.id})" style="flex:1;background:linear-gradient(135deg,var(--pink-dark),var(--pink));color:#fff;border:none;border-radius:9px;padding:7px;font-size:11px;font-weight:700;cursor:pointer;">Réserver</button>
@@ -7172,22 +7206,49 @@ function publicGiftCard(g){
     </div>
   </div>`;
 }
+// Pop-up personnalisée aux couleurs Weddilya pour la page publique
+function pubPopup(opts){
+  return new Promise(resolve=>{
+    let ov=document.getElementById('pub-popup');
+    if(!ov){ov=document.createElement('div');ov.id='pub-popup';document.body.appendChild(ov);}
+    ov.style.cssText='position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(62,24,40,0.45);';
+    const inputHtml=opts.input?`<input id="pub-popup-input" placeholder="${esc(opts.placeholder||'')}" style="width:100%;box-sizing:border-box;padding:11px 13px;border:1.5px solid var(--border);border-radius:11px;font-size:14px;font-family:'Lora',serif;margin-top:12px;outline:none;">`:'';
+    const btns=opts.buttons.map((b,i)=>`<button data-i="${i}" style="${b.primary?'background:linear-gradient(135deg,var(--pink-dark),var(--pink));color:#fff;border:none;':'background:#fff;border:1.5px solid var(--border);color:var(--mid);'}flex:1;padding:11px;border-radius:11px;font-family:'Lora',serif;font-weight:700;font-size:13px;cursor:pointer;">${esc(b.label)}</button>`).join('');
+    ov.innerHTML=`<div style="background:#fff;border-radius:20px;max-width:380px;width:100%;overflow:hidden;box-shadow:0 24px 80px rgba(62,24,40,0.25);">
+      <div style="height:5px;background:linear-gradient(90deg,var(--pink-dark),var(--pink),var(--pink-light));"></div>
+      <div style="padding:22px;">
+        ${opts.title?`<div style="font-family:'Playfair Display',serif;font-size:18px;color:var(--pink-dark);margin-bottom:8px;">${esc(opts.title)}</div>`:''}
+        ${opts.message?`<div style="font-size:14px;color:var(--mid);line-height:1.5;">${esc(opts.message)}</div>`:''}
+        ${inputHtml}
+        <div style="display:flex;gap:10px;margin-top:18px;">${btns}</div>
+      </div>
+    </div>`;
+    const inp=ov.querySelector('#pub-popup-input');
+    if(inp)setTimeout(()=>inp.focus(),50);
+    ov.querySelectorAll('button[data-i]').forEach(btn=>btn.onclick=()=>{
+      const b=opts.buttons[Number(btn.dataset.i)];
+      const val=inp?inp.value.trim():b.value;
+      ov.remove();
+      resolve(b.value===false?false:(inp?val:b.value));
+    });
+  });
+}
 async function reservePublicGift(giftId){
-  const nom=prompt('Votre nom (pour réserver ce cadeau) :');
-  if(!nom||!nom.trim())return;
-  const acheteur=confirm('Avez-vous déjà acheté ce cadeau ?\n\nOK = oui, déjà acheté\nAnnuler = je le réserve seulement');
+  const nom=await pubPopup({title:'Réserver ce cadeau',message:'Indiquez votre nom pour réserver ce cadeau :',input:true,placeholder:'Votre nom',buttons:[{label:'Annuler',value:false},{label:'Continuer',value:true,primary:true}]});
+  if(!nom||nom===false||!String(nom).trim())return;
+  const acheteur=await pubPopup({title:'Déjà acheté ?',message:'Avez-vous déjà acheté ce cadeau, ou souhaitez-vous seulement le réserver ?',buttons:[{label:'Je le réserve',value:'reserve'},{label:'Déjà acheté',value:'achete',primary:true}]});
   try{
     const {doc,getDoc,setDoc}=window.firebaseLib;
     const ref=doc(window.firebaseDB,'publicRegistries',window._pubId);
     const snap=await getDoc(ref);
     const data=snap.data();
-    data.gifts=(data.gifts||[]).map(g=>g.id===giftId?{...g,reservePar:nom.trim(),statut:acheteur?'offert':'reserve'}:g);
+    data.gifts=(data.gifts||[]).map(g=>g.id===giftId?{...g,reservePar:String(nom).trim(),statut:'reserve',acheteur:acheteur==='achete'?String(nom).trim():''}:g);
     await setDoc(ref,{gifts:data.gifts,_updatedAt:Date.now()},{merge:true});
     window._pubData=data;
     renderPublicRegistry();
-    alert('Merci ! Votre réservation a bien été enregistrée.');
+    await pubPopup({title:'Merci !',message:'Votre réservation a bien été enregistrée.',buttons:[{label:'Fermer',value:true,primary:true}]});
   }catch(e){
-    alert("La réservation n'a pas pu être enregistrée. Réessayez plus tard.");
+    await pubPopup({title:'Oups',message:"La réservation n'a pas pu être enregistrée. Réessayez plus tard.",buttons:[{label:'Fermer',value:true,primary:true}]});
   }
 }
 async function sendPublicMessage(){
@@ -7204,9 +7265,9 @@ async function sendPublicMessage(){
     await setDoc(ref,{messages:msgs,_updatedAt:Date.now()},{merge:true});
     document.getElementById('pub-msg-nom').value='';
     document.getElementById('pub-msg-txt').value='';
-    alert('Message envoyé aux mariés !');
+    await pubPopup({title:'Merci !',message:'Votre message a bien été envoyé aux mariés.',buttons:[{label:'Fermer',value:true,primary:true}]});
   }catch(e){
-    alert("Le message n'a pas pu être envoyé.");
+    await pubPopup({title:'Oups',message:"Le message n'a pas pu être envoyé.",buttons:[{label:'Fermer',value:true,primary:true}]});
   }
 }
 
