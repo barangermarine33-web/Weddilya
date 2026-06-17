@@ -6590,9 +6590,9 @@ function renderRegistry(){
   ];
   if(!REGISTRY_SUBTAB||REGISTRY_SUBTAB==='home')REGISTRY_SUBTAB='dash';
   el.innerHTML=`
-    <nav class="reg-tabsA">
+    <div class="reg-tabsA">
       ${tabs.map(t=>`<a onclick="setRegistrySubtab('${t.k}')" class="${REGISTRY_SUBTAB===t.k?'on':''}">${t.label}</a>`).join('')}
-    </nav>
+    </div>
     <div id="registry-sub"></div>`;
   renderRegistrySub();
 }
