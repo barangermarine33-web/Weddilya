@@ -6591,17 +6591,35 @@ function renderRegistry(){
   if(!REGISTRY_SUBTAB||REGISTRY_SUBTAB==='home')REGISTRY_SUBTAB='dash';
   const tabBtn=t=>{
     const on=REGISTRY_SUBTAB===t.k;
-    return `<button onclick="setRegistrySubtab('${t.k}')" style="background:none;border:none;border-bottom:2px solid ${on?'var(--pink)':'transparent'};font-family:'Playfair Display',serif;font-size:1.05rem;color:${on?'var(--pink-dark)':'var(--tl)'};padding:0 0 13px;margin:0;cursor:pointer;white-space:nowrap;transition:color .15s;">${t.label}</button>`;
+    return `<button data-rtab="${t.k}" onclick="setRegistrySubtab('${t.k}')" style="background:none;border:none;border-bottom:2px solid ${on?'var(--pink)':'transparent'};font-family:'Playfair Display',serif;font-size:1.05rem;color:${on?'var(--pink-dark)':'var(--tl)'};padding:0 0 13px;margin:0;cursor:pointer;white-space:nowrap;transition:color .15s;">${t.label}</button>`;
   };
   el.innerHTML=`
-    <div style="display:flex;gap:30px;border-bottom:1px solid var(--border);margin-bottom:26px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:0;">
+    <div id="reg-subtabs" style="display:flex;gap:30px;border-bottom:1px solid var(--border);margin-bottom:26px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:0;">
       ${tabs.map(tabBtn).join('')}
     </div>
     <div id="registry-sub"></div>`;
   renderRegistrySub();
 }
 
-function setRegistrySubtab(k){REGISTRY_SUBTAB=k;renderRegistry();}
+function setRegistrySubtab(k){
+  REGISTRY_SUBTAB=k;
+  const bar=document.getElementById('reg-subtabs');
+  if(bar){
+    bar.querySelectorAll('button[data-rtab]').forEach(b=>{
+      const on=b.getAttribute('data-rtab')===k;
+      b.style.borderBottomColor=on?'var(--pink)':'transparent';
+      b.style.color=on?'var(--pink-dark)':'var(--tl)';
+      if(on){
+        const bl=b.offsetLeft,bw=b.offsetWidth,sl=bar.scrollLeft,cw=bar.clientWidth;
+        if(bl<sl)bar.scrollLeft=bl-12;
+        else if(bl+bw>sl+cw)bar.scrollLeft=bl+bw-cw+12;
+      }
+    });
+    renderRegistrySub();
+  }else{
+    renderRegistry();
+  }
+}
 
 function renderRegistrySub(){
   const el=document.getElementById('registry-sub');
