@@ -356,17 +356,14 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 /* Filtres invités */
 
 /* Liste de mariage */
-/* Liste de mariage — accueil en cartes (Option C) */
-.reg-home-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
-.reg-navcard{background:#fff;border:1px solid var(--border);border-radius:16px;padding:22px 20px;cursor:pointer;transition:all .18s;}
-.reg-navcard:hover{border-color:var(--pink-light);box-shadow:0 8px 28px rgba(212,96,122,0.1);transform:translateY(-2px);}
-.reg-navcard-ic{width:42px;height:42px;border-radius:12px;background:var(--pink-pale);display:flex;align-items:center;justify-content:center;margin-bottom:14px;}
-.reg-navcard-ic svg{width:21px;height:21px;stroke:var(--pink);fill:none;stroke-width:1.8;}
-.reg-navcard h3{font-family:'Playfair Display',serif;font-size:17px;font-weight:400;color:var(--dark);margin-bottom:4px;}
-.reg-navcard p{font-size:12px;color:var(--tl);line-height:1.4;}
-.reg-navcard-stat{font-family:'Playfair Display',serif;font-size:22px;color:var(--pink);margin-top:10px;}
-@media(max-width:900px){.reg-home-grid{grid-template-columns:repeat(2,1fr);gap:12px;}}
-@media(max-width:560px){.reg-home-grid{grid-template-columns:repeat(2,1fr);gap:10px;}.reg-navcard{padding:16px 14px;}.reg-navcard h3{font-size:15px;}.reg-navcard-stat{font-size:18px;}}
+/* Liste de mariage — onglets soulignés (Option A) */
+.reg-tabsA{display:flex;gap:28px;border-bottom:1px solid var(--border);margin-bottom:24px;flex-wrap:wrap;}
+.reg-tabsA a{font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--tl);text-decoration:none;padding:0 0 14px;position:relative;cursor:pointer;transition:color .15s;}
+.reg-tabsA a:hover{color:var(--mid);}
+.reg-tabsA a.on{color:var(--pink-dark);}
+.reg-tabsA a.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--pink);}
+@media(max-width:560px){.reg-tabsA{gap:16px;}.reg-tabsA a{font-size:15px;padding-bottom:10px;}}
+
 
 .reg-tab{background:#fff;color:var(--tl);border:1.5px solid var(--border);border-radius:20px;padding:7px 15px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Lora',serif;transition:all .15s;}
 .reg-tab:hover{border-color:var(--pink-light);}
@@ -430,6 +427,22 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
   #view-app [style*="font-size:14px"],#view-app [style*="font-size: 14px"], #modal-overlay [style*="font-size:14px"],#view-app [style*="font-size: 14px"], #picker-overlay [style*="font-size:14px"],#view-app [style*="font-size: 14px"]{font-size:17px !important;}
   #view-app [style*="font-size:15px"],#view-app [style*="font-size: 15px"], #modal-overlay [style*="font-size:15px"],#view-app [style*="font-size: 15px"], #picker-overlay [style*="font-size:15px"],#view-app [style*="font-size: 15px"]{font-size:18px !important;}
   #view-app [style*="font-size:16px"],#view-app [style*="font-size: 16px"], #modal-overlay [style*="font-size:16px"],#view-app [style*="font-size: 16px"], #picker-overlay [style*="font-size:16px"],#view-app [style*="font-size: 16px"]{font-size:19px !important;}
+  #public-registry [style*="font-size:10px"],#public-registry [style*="font-size: 10px"]{font-size:13px !important;}
+  #pub-popup [style*="font-size:10px"],#pub-popup [style*="font-size: 10px"]{font-size:13px !important;}
+  #public-registry [style*="font-size:11px"],#public-registry [style*="font-size: 11px"]{font-size:14px !important;}
+  #pub-popup [style*="font-size:11px"],#pub-popup [style*="font-size: 11px"]{font-size:14px !important;}
+  #public-registry [style*="font-size:12px"],#public-registry [style*="font-size: 12px"]{font-size:15px !important;}
+  #pub-popup [style*="font-size:12px"],#pub-popup [style*="font-size: 12px"]{font-size:15px !important;}
+  #public-registry [style*="font-size:13px"],#public-registry [style*="font-size: 13px"]{font-size:16px !important;}
+  #pub-popup [style*="font-size:13px"],#pub-popup [style*="font-size: 13px"]{font-size:16px !important;}
+  #public-registry [style*="font-size:14px"],#public-registry [style*="font-size: 14px"]{font-size:17px !important;}
+  #pub-popup [style*="font-size:14px"],#pub-popup [style*="font-size: 14px"]{font-size:17px !important;}
+  #public-registry [style*="font-size:15px"],#public-registry [style*="font-size: 15px"]{font-size:18px !important;}
+  #pub-popup [style*="font-size:15px"],#pub-popup [style*="font-size: 15px"]{font-size:18px !important;}
+  #public-registry [style*="font-size:16px"],#public-registry [style*="font-size: 16px"]{font-size:19px !important;}
+  #pub-popup [style*="font-size:16px"],#pub-popup [style*="font-size: 16px"]{font-size:19px !important;}
+  #public-registry [style*="font-size:18px"],#public-registry [style*="font-size: 18px"]{font-size:21px !important;}
+  #pub-popup [style*="font-size:18px"],#pub-popup [style*="font-size: 18px"]{font-size:21px !important;}
   #view-app [style*="font-size:17px"],#view-app [style*="font-size: 17px"], #modal-overlay [style*="font-size:17px"],#view-app [style*="font-size: 17px"], #picker-overlay [style*="font-size:17px"],#view-app [style*="font-size: 17px"]{font-size:20px !important;}
   #view-app [style*="font-size:18px"],#view-app [style*="font-size: 18px"], #modal-overlay [style*="font-size:18px"],#view-app [style*="font-size: 18px"], #picker-overlay [style*="font-size:18px"],#view-app [style*="font-size: 18px"]{font-size:22px !important;}
   #view-app [style*="font-size:19px"],#view-app [style*="font-size: 19px"], #modal-overlay [style*="font-size:19px"],#view-app [style*="font-size: 19px"], #picker-overlay [style*="font-size:19px"],#view-app [style*="font-size: 19px"]{font-size:23px !important;}
@@ -6552,7 +6565,7 @@ if(new URLSearchParams(location.search).get('liste')){
 //   RECEIVED {id,invite,type,montant,date,commentaire,fundId,remerciement,dateRemerciement}
 // ═══════════════════════════════════════════════════════════
 
-let REGISTRY_SUBTAB='home';
+let REGISTRY_SUBTAB='dash';
 const GIFT_CATS=['Cuisine','Décoration','Électroménager','Linge de maison','High-tech','Loisirs','Voyage','Jardin','Autre'];
 const GIFT_STATUS={disponible:{label:'Disponible',color:'var(--gn)'},reserve:{label:'Réservé',color:'var(--am)'},recu:{label:'Reçu',color:'var(--tl)'}};
 const FUND_TYPES={voyage:'Voyage de noces',maison:'Maison',projet:'Projet personnel',libre:'Libre'};
@@ -6567,40 +6580,21 @@ function eur(n){return Math.round(n||0)+' €';}
 function renderRegistry(){
   const el=document.getElementById('registry-content');
   if(!el)return;
-  if(REGISTRY_SUBTAB==='home'||!REGISTRY_SUBTAB){renderRegistryHome(el);return;}
-  // Vue d'une section : bouton retour + contenu
-  const titles={dash:'Tableau de bord',gifts:'Cadeaux',funds:'Cagnottes',received:'Cadeaux reçus',thanks:'Remerciements',share:'Partage'};
+  const tabs=[
+    {k:'dash',label:'Tableau de bord'},
+    {k:'gifts',label:'Cadeaux'},
+    {k:'funds',label:'Cagnottes'},
+    {k:'received',label:'Cadeaux reçus'},
+    {k:'thanks',label:'Remerciements'},
+    {k:'share',label:'Partage'}
+  ];
+  if(!REGISTRY_SUBTAB||REGISTRY_SUBTAB==='home')REGISTRY_SUBTAB='dash';
   el.innerHTML=`
-    <button onclick="setRegistrySubtab('home')" style="display:inline-flex;align-items:center;gap:7px;background:none;border:none;color:var(--tl);font-family:'Lora',serif;font-size:13px;cursor:pointer;margin-bottom:16px;padding:0;">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-      Retour à la liste de mariage
-    </button>
-    <div style="font-family:'Playfair Display',serif;font-size:20px;color:var(--pink-dark);margin-bottom:18px;">${titles[REGISTRY_SUBTAB]||''}</div>
+    <nav class="reg-tabsA">
+      ${tabs.map(t=>`<a onclick="setRegistrySubtab('${t.k}')" class="${REGISTRY_SUBTAB===t.k?'on':''}">${t.label}</a>`).join('')}
+    </nav>
     <div id="registry-sub"></div>`;
   renderRegistrySub();
-}
-function renderRegistryHome(el){
-  const nb=GIFTS.length;
-  const dispo=GIFTS.filter(g=>(g.statut||'disponible')==='disponible').length;
-  const reserves=GIFTS.filter(g=>g.statut==='reserve').length;
-  const totalContrib=FUNDS.reduce((s,f)=>s+(f.contributeurs||[]).reduce((a,c)=>a+(parseFloat(c.montant)||0),0),0);
-  const thanked=RECEIVED.filter(r=>r.remerciement==='envoye').length;
-  const cards=[
-    {k:'dash',title:'Tableau de bord',desc:"Vue d'ensemble chiffrée",stat:'→',ic:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>'},
-    {k:'gifts',title:'Cadeaux',desc:'Votre liste à partager',stat:nb,ic:'<path d="M20 12v10H4V12M2 7h20v5H2zM12 22V7"/>'},
-    {k:'funds',title:'Cagnottes',desc:'Voyage, maison, projets',stat:FUNDS.length,ic:'<circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 9.5h4.5a1.5 1.5 0 010 3H10a1.5 1.5 0 000 3h5"/>'},
-    {k:'received',title:'Cadeaux reçus',desc:'Suivi de ce que vous recevez',stat:RECEIVED.length,ic:'<path d="M20 6L9 17l-5-5"/>'},
-    {k:'thanks',title:'Remerciements',desc:'Qui a déjà été remercié',stat:RECEIVED.length?`${thanked}/${RECEIVED.length}`:'0',ic:'<path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>'},
-    {k:'share',title:'Partage',desc:'Lien & QR code pour vos invités',stat:'↗',ic:'<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/>'}
-  ];
-  el.innerHTML=`<div class="reg-home-grid">
-    ${cards.map(c=>`<div class="reg-navcard" onclick="setRegistrySubtab('${c.k}')">
-      <div class="reg-navcard-ic"><svg viewBox="0 0 24 24">${c.ic}</svg></div>
-      <h3>${c.title}</h3>
-      <p>${c.desc}</p>
-      <div class="reg-navcard-stat">${c.stat}</div>
-    </div>`).join('')}
-  </div>`;
 }
 
 function setRegistrySubtab(k){REGISTRY_SUBTAB=k;renderRegistry();}
@@ -7197,8 +7191,10 @@ function publicGiftCard(g){
       ${g.categorie?`<div style="font-size:11px;color:var(--tl);margin-bottom:4px;">${esc(g.categorie)}</div>`:''}
       ${g.description?`<div style="font-size:12px;color:var(--mid);margin:4px 0;">${esc(g.description).substring(0,80)}</div>`:''}
       ${g.prix?`<div style="font-size:14px;font-weight:700;color:var(--pink);margin:6px 0;">${Math.round(g.prix)} €</div>`:''}
-      ${reserved?`<div style="font-size:12px;color:var(--am);font-weight:700;text-align:center;padding:6px 0;">Déjà réservé</div>
-        ${g.lien?`<a href="${esc(g.lien)}" target="_blank" style="display:block;text-align:center;border:1.5px solid var(--border);border-radius:9px;padding:7px;font-size:11px;color:var(--mid);text-decoration:none;">Voir le cadeau</a>`:''}`:`
+      ${reserved?`<div style="font-size:12px;color:var(--am);font-weight:700;text-align:center;padding:6px 0;">${g.acheteur?'Déjà acheté':'Réservé'}${g.reservePar?' par '+esc(g.reservePar):''}</div>
+        ${g.lien?`<a href="${esc(g.lien)}" target="_blank" style="display:block;text-align:center;border:1.5px solid var(--border);border-radius:9px;padding:7px;font-size:11px;color:var(--mid);text-decoration:none;margin-bottom:6px;">Voir le cadeau</a>`:''}
+        ${!g.acheteur?`<button onclick="markBoughtPublic(${g.id})" style="width:100%;background:#fff;border:1.5px solid var(--gn);color:var(--gn);border-radius:9px;padding:7px;font-size:11px;font-weight:700;cursor:pointer;">Je l'ai acheté</button>
+        <button onclick="cancelReservePublic(${g.id})" style="width:100%;background:none;border:none;color:var(--tl);font-size:10px;cursor:pointer;margin-top:5px;text-decoration:underline;">Annuler ma réservation</button>`:''}`:`
         <div style="display:flex;gap:6px;margin-top:8px;">
           ${g.lien?`<a href="${esc(g.lien)}" target="_blank" style="flex:1;text-align:center;border:1.5px solid var(--border);border-radius:9px;padding:7px;font-size:11px;color:var(--mid);text-decoration:none;">Voir</a>`:''}
           <button onclick="reservePublicGift(${g.id})" style="flex:1;background:linear-gradient(135deg,var(--pink-dark),var(--pink));color:#fff;border:none;border-radius:9px;padding:7px;font-size:11px;font-weight:700;cursor:pointer;">Réserver</button>
@@ -7237,18 +7233,30 @@ async function reservePublicGift(giftId){
   const nom=await pubPopup({title:'Réserver ce cadeau',message:'Indiquez votre nom pour réserver ce cadeau :',input:true,placeholder:'Votre nom',buttons:[{label:'Annuler',value:false},{label:'Continuer',value:true,primary:true}]});
   if(!nom||nom===false||!String(nom).trim())return;
   const acheteur=await pubPopup({title:'Déjà acheté ?',message:'Avez-vous déjà acheté ce cadeau, ou souhaitez-vous seulement le réserver ?',buttons:[{label:'Je le réserve',value:'reserve'},{label:'Déjà acheté',value:'achete',primary:true}]});
+  await updatePublicGift(giftId,{reservePar:String(nom).trim(),statut:'reserve',acheteur:acheteur==='achete'?String(nom).trim():''},'Votre réservation a bien été enregistrée.');
+}
+async function markBoughtPublic(giftId){
+  const g=(window._pubData.gifts||[]).find(x=>x.id===giftId);
+  await updatePublicGift(giftId,{acheteur:g&&g.reservePar?g.reservePar:'Invité'},'Merci, c\'est noté : vous avez acheté ce cadeau.');
+}
+async function cancelReservePublic(giftId){
+  const ok=await pubPopup({title:'Annuler la réservation',message:'Confirmez-vous l\'annulation de votre réservation ? Le cadeau redeviendra disponible.',buttons:[{label:'Non',value:false},{label:'Oui, annuler',value:true,primary:true}]});
+  if(!ok)return;
+  await updatePublicGift(giftId,{reservePar:'',statut:'disponible',acheteur:''},'Votre réservation a été annulée.');
+}
+async function updatePublicGift(giftId,patch,successMsg){
   try{
     const {doc,getDoc,setDoc}=window.firebaseLib;
     const ref=doc(window.firebaseDB,'publicRegistries',window._pubId);
     const snap=await getDoc(ref);
     const data=snap.data();
-    data.gifts=(data.gifts||[]).map(g=>g.id===giftId?{...g,reservePar:String(nom).trim(),statut:'reserve',acheteur:acheteur==='achete'?String(nom).trim():''}:g);
+    data.gifts=(data.gifts||[]).map(g=>g.id===giftId?{...g,...patch}:g);
     await setDoc(ref,{gifts:data.gifts,_updatedAt:Date.now()},{merge:true});
     window._pubData=data;
     renderPublicRegistry();
-    await pubPopup({title:'Merci !',message:'Votre réservation a bien été enregistrée.',buttons:[{label:'Fermer',value:true,primary:true}]});
+    await pubPopup({title:'Merci !',message:successMsg,buttons:[{label:'Fermer',value:true,primary:true}]});
   }catch(e){
-    await pubPopup({title:'Oups',message:"La réservation n'a pas pu être enregistrée. Réessayez plus tard.",buttons:[{label:'Fermer',value:true,primary:true}]});
+    await pubPopup({title:'Oups',message:"L'opération n'a pas pu être enregistrée. Réessayez plus tard.",buttons:[{label:'Fermer',value:true,primary:true}]});
   }
 }
 async function sendPublicMessage(){
