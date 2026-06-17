@@ -650,12 +650,12 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
   </div>
   <form class="contact-form reveal" onsubmit="return false;">
     <div class="form-row">
-      <div class="form-group"><label>Prénom</label><input type="text" placeholder="Sophie"></div>
-      <div class="form-group"><label>Nom</label><input type="text" placeholder="Dupont"></div>
+      <div class="form-group"><label>Prénom</label><input type="text" placeholder="Sophie" autocomplete="off" data-form-type="other"></div>
+      <div class="form-group"><label>Nom</label><input type="text" placeholder="Dupont" autocomplete="off" data-form-type="other"></div>
     </div>
-    <div class="form-group"><label>Email</label><input type="email" placeholder="sophie@exemple.fr"></div>
-    <div class="form-group"><label>Sujet</label><input type="text" placeholder="Question sur l'application"></div>
-    <div class="form-group"><label>Message</label><textarea rows="4" placeholder="Votre message..."></textarea></div>
+    <div class="form-group"><label>Email</label><input type="email" placeholder="sophie@exemple.fr" autocomplete="off" data-form-type="other"></div>
+    <div class="form-group"><label>Sujet</label><input type="text" placeholder="Question sur l'application" autocomplete="off" data-form-type="other"></div>
+    <div class="form-group"><label>Message</label><textarea rows="4" placeholder="Votre message..." autocomplete="off" data-form-type="other"></textarea></div>
     <button type="submit" class="btn-submit">Envoyer le message</button>
   </form>
 </section>
@@ -720,7 +720,7 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
               </div>
             </div>
             <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--mid);font-family:'Lora',serif;cursor:pointer;user-select:none;">
-              <input type="checkbox" id="al-remember" style="accent-color:var(--pink);width:15px;height:15px;cursor:pointer;">
+              <input type="checkbox" id="al-remember" style="accent-color:var(--pink);width:15px;height:15px;cursor:pointer;" autocomplete="off" data-form-type="other">
               Se souvenir de moi
             </label>
             <div class="auth-error" id="aerr-login"></div>
@@ -735,25 +735,25 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
             <div class="auth-row">
               <div class="auth-input-wrap">
                 <div class="auth-label">Votre prénom</div>
-                <input class="auth-input" type="text" id="ar-p1" placeholder="Sophie">
+                <input class="auth-input" type="text" id="ar-p1" placeholder="Sophie" autocomplete="off" data-form-type="other">
               </div>
               <div class="auth-input-wrap">
                 <div class="auth-label">Prénom partenaire</div>
-                <input class="auth-input" type="text" id="ar-p2" placeholder="Thomas">
+                <input class="auth-input" type="text" id="ar-p2" placeholder="Thomas" autocomplete="off" data-form-type="other">
               </div>
             </div>
             <div class="auth-input-wrap">
               <div class="auth-label">Date du mariage</div>
-              <input class="auth-input" type="date" id="ar-date">
+              <input class="auth-input" type="date" id="ar-date" autocomplete="off" data-form-type="other">
             </div>
             <div class="auth-input-wrap">
               <div class="auth-label">Email</div>
-              <input class="auth-input" type="email" id="ar-email" placeholder="votre@email.fr">
+              <input class="auth-input" type="email" id="ar-email" placeholder="votre@email.fr" autocomplete="off" data-form-type="other">
             </div>
             <div class="auth-input-wrap">
               <div class="auth-label">Mot de passe</div>
               <div style="position:relative;">
-                <input class="auth-input" type="password" id="ar-pass" placeholder="6 caractères minimum" style="width:100%;padding-right:46px;">
+                <input class="auth-input" type="password" id="ar-pass" placeholder="6 caractères minimum" style="width:100%;padding-right:46px;" autocomplete="off" data-form-type="other">
                 <button type="button" onclick="togglePass('ar-pass',this)" aria-label="Afficher le mot de passe" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--tl);padding:4px;display:flex;">
                   <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
                   <svg class="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="display:none;"><path d="M17.94 17.94A10.07 10.07 0 0112 19c-7 0-11-7-11-7a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 7 11 7a18.5 18.5 0 01-2.16 3.19M14.12 14.12a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
@@ -1462,7 +1462,7 @@ function renderChecklist(){
       <svg viewBox="0 0 36 36" width="68" height="68"><circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--border)" stroke-width="3"/><circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--pink)" stroke-width="3" stroke-dasharray="${pct} 100" stroke-linecap="round" transform="rotate(-90 18 18)"/><text x="18" y="22" text-anchor="middle" font-size="8" fill="var(--dark)" font-family="Playfair Display,serif" font-weight="bold">${pct}%</text></svg>
     </div>
     <div class="section-actions">
-      <input id="new-task-text" class="m-input" placeholder="Ajouter une tâche…" value="${(window._newTaskText||'').replace(/"/g,'&quot;')}" style="flex:1;min-width:180px;max-width:380px;">
+      <input id="new-task-text" class="m-input" placeholder="Ajouter une tâche…" value="${(window._newTaskText||'').replace(/"/g,'&quot;')}" style="flex:1;min-width:180px;max-width:380px;" autocomplete="off" data-form-type="other">
       <button class="m-pick" style="width:auto;min-width:150px;" onclick="pickTaskMonth()">${window._newTaskMonth} <span style="color:var(--tl);">▾</span></button>
       <button class="btn" onclick="addTask()">+ Ajouter</button>
     </div>
@@ -1549,7 +1549,7 @@ function renderBudget(){
       const inputStyle="width:100%;border:none;border-bottom:1.5px solid var(--pink-pale);padding:6px 4px;font-size:13px;font-weight:700;outline:none;background:transparent;text-align:left;";
       return`<div class="panel" style="padding:16px 18px;margin-bottom:10px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-          <input value="${(item.cat||item.category||'').replace(/"/g,'&quot;')}" onchange="updBudgetCat(${item.id},this.value)" style="font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--pink);border:none;border-bottom:1px dashed var(--border);background:transparent;outline:none;padding-bottom:2px;flex:1;margin-right:10px;">
+          <input value="${(item.cat||item.category||'').replace(/"/g,'&quot;')}" onchange="updBudgetCat(${item.id},this.value)" style="font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--pink);border:none;border-bottom:1px dashed var(--border);background:transparent;outline:none;padding-bottom:2px;flex:1;margin-right:10px;" autocomplete="off" data-form-type="other">
           <div style="display:flex;gap:8px;align-items:center;flex-shrink:0;">
             <span style="font-size:10px;font-weight:700;color:${over?'var(--rd)':'var(--gn)'};background:${over?'#fff0f0':'#f0f8f2'};border-radius:20px;padding:3px 10px;">${over?'Dépassé':Math.round(pct)+'%'}</span>
             <button onclick="delBudgetCat(${item.id})" style="background:none;border:none;color:var(--tl);cursor:pointer;font-size:15px;">×</button>
@@ -1611,9 +1611,9 @@ function renderGuests(){
       <button class="btn" onclick="openAddGuestModal()">+ Ajouter un invité</button>
       <a href="https://www.canva.com/fr_fr/" target="_blank" class="btn-outline" style="text-decoration:none;display:inline-block;">Créer mes invitations</a>
       <button class="btn-outline" onclick="document.getElementById('guest-import-file').click()">Importer</button>
-      <input type="file" id="guest-import-file" accept=".csv,.tsv,.txt" style="display:none;" onchange="importGuestsFile(this)">
+      <input type="file" id="guest-import-file" accept=".csv,.tsv,.txt" style="display:none;" onchange="importGuestsFile(this)" autocomplete="off" data-form-type="other">
       <button class="btn-outline" onclick="exportGuestsCSV()">Exporter</button>
-      <input id="guest-search" type="text" placeholder="Rechercher…" oninput="filterGuests()" style="padding:8px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'Lora',serif;font-size:13px;outline:none;background:var(--bg);margin-left:auto;min-width:140px;flex:1;max-width:240px;">
+      <input id="guest-search" type="text" placeholder="Rechercher…" oninput="filterGuests()" style="padding:8px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'Lora',serif;font-size:13px;outline:none;background:var(--bg);margin-left:auto;min-width:140px;flex:1;max-width:240px;" autocomplete="off" data-form-type="other">
     </div>
     <div class="panel" style="padding:14px;">
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
@@ -1824,7 +1824,7 @@ function appPrompt(title,value){
         <span style="font-family:'Playfair Display',serif;font-size:17px;color:var(--pink-dark);">${title}</span>
       </div>
       <div class="picker-inner">
-        <input class="m-input" id="pk-input" value="${(value||'').replace(/"/g,'&quot;')}" style="margin-bottom:16px;">
+        <input class="m-input" id="pk-input" value="${(value||'').replace(/"/g,'&quot;')}" style="margin-bottom:16px;" autocomplete="off" data-form-type="other">
         <div style="display:flex;gap:10px;"><button class="btn" id="pk-ok" style="flex:1;">Valider</button><button class="btn-outline" id="pk-no" style="flex:1;">Annuler</button></div>
       </div>
     </div>`;
@@ -1844,7 +1844,7 @@ function openGuestModal(id){
   const pickField=(key,label,display)=>`<div class="m-field"><label class="m-label">${label}</label><button class="m-pick" id="gmf-${key}" onclick="pickGM('${key}')">${display} <span style="color:var(--tl);">▾</span></button></div>`;
   openModal(`
     <div class="modal-title">${g.nom||'Invité'} <button class="modal-x" onclick="closeModal()">×</button></div>
-    <div class="m-field"><label class="m-label">Nom complet</label><input class="m-input" id="gm-nom" value="${(g.nom||'').replace(/"/g,'&quot;')}"></div>
+    <div class="m-field"><label class="m-label">Nom complet</label><input class="m-input" id="gm-nom" value="${(g.nom||'').replace(/"/g,'&quot;')}" autocomplete="off" data-form-type="other"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
       ${pickField('cote','Côté',window._gm.cote==='p1'?USER.p1:USER.p2)}
       ${pickField('role','Rôle',window._gm.role)}
@@ -1854,8 +1854,8 @@ function openGuestModal(id){
       ${pickField('pres','Présence',window._gm.pres)}
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-      <div class="m-field"><label class="m-label">Email</label><input class="m-input" id="gm-email" type="email" value="${(g.email||'').replace(/"/g,'&quot;')}" placeholder="email@…"></div>
-      <div class="m-field"><label class="m-label">Adresse postale</label><input class="m-input" id="gm-adresse" value="${(g.adresse||'').replace(/"/g,'&quot;')}" placeholder="N° rue, ville…"></div>
+      <div class="m-field"><label class="m-label">Email</label><input class="m-input" id="gm-email" type="email" value="${(g.email||'').replace(/"/g,'&quot;')}" placeholder="email@…" autocomplete="off" data-form-type="other"></div>
+      <div class="m-field"><label class="m-label">Adresse postale</label><input class="m-input" id="gm-adresse" value="${(g.adresse||'').replace(/"/g,'&quot;')}" placeholder="N° rue, ville…" autocomplete="off" data-form-type="other"></div>
     </div>
     <div class="m-actions">
       <button class="btn" onclick="event.stopPropagation();saveGuestModal(${g.id})">Enregistrer</button>
@@ -1972,7 +1972,7 @@ function renderNotes(){
   const el=document.getElementById('notes-content');
   if(!el)return;
   el.innerHTML=`<div class="panel" style="padding:0;overflow:hidden;">
-    <textarea id="notes-area" placeholder="Idées, to-do, citations, contacts… écrivez librement." style="width:100%;min-height:440px;border:none;outline:none;font-family:'Lora',serif;font-size:14px;color:var(--dark);background:transparent;resize:vertical;line-height:1.9;padding:20px 22px;display:block;">${(NOTES||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')}</textarea>
+    <textarea id="notes-area" placeholder="Idées, to-do, citations, contacts… écrivez librement." style="width:100%;min-height:440px;border:none;outline:none;font-family:'Lora',serif;font-size:14px;color:var(--dark);background:transparent;resize:vertical;line-height:1.9;padding:20px 22px;display:block;" autocomplete="off" data-form-type="other">${(NOTES||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')}</textarea>
   </div>
   <div style="font-size:11px;color:var(--tl);margin-top:8px;">Sauvegarde automatique — synchronisé avec l'application.</div>`;
   const ta=document.getElementById('notes-area');
@@ -1993,8 +1993,8 @@ function renderSeating(){
   const shapeBtn=(v,label)=>`<button onclick="setTpShape('${v}')" class="btn-outline" style="font-size:12px;padding:7px 13px;${tpShape===v?'background:var(--pink);color:#fff;border-color:var(--pink);':''}">${label}</button>`;
   el.innerHTML=`
     <div class="section-actions tp-actions">
-      <input id="new-table-name" class="m-input" placeholder="Nom de la table…" style="flex:1;min-width:140px;max-width:220px;">
-      <input id="new-table-seats" class="m-input" type="number" placeholder="Places" value="6" style="width:90px;">
+      <input id="new-table-name" class="m-input" placeholder="Nom de la table…" style="flex:1;min-width:140px;max-width:220px;" autocomplete="off" data-form-type="other">
+      <input id="new-table-seats" class="m-input" type="number" placeholder="Places" value="6" style="width:90px;" autocomplete="off" data-form-type="other">
       ${shapeBtn('round','Ronde')}${shapeBtn('rect','Rect.')}${shapeBtn('square','Carrée')}
       <button class="btn tp-btn" onclick="addTable()">+ Table</button>
     </div>
@@ -2604,8 +2604,8 @@ function renderMenu(){
     <div class="panel" style="margin-bottom:16px;">
       <div class="panel-title" style="justify-content:center;">Répartition des invités</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <div><label class="m-label">Vin d'honneur uniquement</label><input class="m-input" type="number" min="0" id="mnu-h" value="${MENUQTY.honneur}" onchange="saveMenuQty(true,false)"></div>
-        <div><label class="m-label">Présents toute la réception</label><input class="m-input" type="number" min="0" id="mnu-r" value="${MENUQTY.repas}" onchange="saveMenuQty(false,true)"></div>
+        <div><label class="m-label">Vin d'honneur uniquement</label><input class="m-input" type="number" min="0" id="mnu-h" value="${MENUQTY.honneur}" onchange="saveMenuQty(true,false)" autocomplete="off" data-form-type="other"></div>
+        <div><label class="m-label">Présents toute la réception</label><input class="m-input" type="number" min="0" id="mnu-r" value="${MENUQTY.repas}" onchange="saveMenuQty(false,true)" autocomplete="off" data-form-type="other"></div>
       </div>
       <div style="text-align:center;margin-top:10px;font-size:12px;color:var(--tl);">Total : <strong style="color:var(--dark);">${total}</strong> invités</div>
       <div style="display:flex;gap:8px;margin-top:12px;">
@@ -2628,7 +2628,7 @@ function renderMenu(){
     <div class="panel">
       <div class="panel-title" style="justify-content:center;">Menu</div>
       <div style="display:flex;gap:8px;margin-bottom:8px;">
-        <input class="m-input" id="menu-new-cat" placeholder="Nouvelle catégorie…" style="flex:1;">
+        <input class="m-input" id="menu-new-cat" placeholder="Nouvelle catégorie…" style="flex:1;" autocomplete="off" data-form-type="other">
         <button onclick="addMenuCategory()" class="btn" style="padding:8px 16px;">+</button>
       </div>
       <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
@@ -2646,7 +2646,7 @@ function renderMenu(){
               <button onclick="removeMenuItem(${si},${ii})" style="background:none;border:none;color:var(--tl);font-size:16px;cursor:pointer;">×</button>
             </div>`).join('')}
             <div style="display:flex;gap:8px;margin-top:8px;">
-              <input class="m-input" id="menu-add-${si}" placeholder="Ajouter un plat…" style="flex:1;font-size:12px;padding:7px 10px;">
+              <input class="m-input" id="menu-add-${si}" placeholder="Ajouter un plat…" style="flex:1;font-size:12px;padding:7px 10px;" autocomplete="off" data-form-type="other">
               <button onclick="addMenuItem(${si})" class="btn" style="padding:7px 14px;font-size:12px;">+</button>
             </div>
           </div>
@@ -2698,7 +2698,7 @@ function renderAlbum(){
       <div class="panel-title">Lien Google Photos</div>
       <div style="font-size:12px;color:var(--tl);margin-bottom:14px;line-height:1.6;">Collez le lien de votre album partagé pour générer un QR code à imprimer et partager avec vos invités.</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <input class="m-input" id="drive-url-input" type="text" placeholder="https://photos.google.com/share/…" value="${(DRIVE_URL||'').replace(/"/g,'&quot;')}" style="flex:1;min-width:200px;">
+        <input class="m-input" id="drive-url-input" type="text" placeholder="https://photos.google.com/share/…" value="${(DRIVE_URL||'').replace(/"/g,'&quot;')}" style="flex:1;min-width:200px;" autocomplete="off" data-form-type="other">
         <button class="btn" onclick="saveDriveUrl()">Enregistrer</button>
       </div>
     </div>
@@ -2769,11 +2769,11 @@ function renderDecor(){
       </div>
       <div style="padding:8px 18px 14px;">
         ${items.map((item,i)=>`<label style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed var(--border);font-size:13px;color:${DECO_CHECKED[cat+i]?'var(--tl)':'var(--dark)'};cursor:pointer;">
-          <input type="checkbox" ${DECO_CHECKED[cat+i]?'checked':''} onchange="toggleDecoIdx(${ci},${i},this.checked)" style="accent-color:var(--pink);width:17px;height:17px;flex-shrink:0;cursor:pointer;">
+          <input type="checkbox" ${DECO_CHECKED[cat+i]?'checked':''} onchange="toggleDecoIdx(${ci},${i},this.checked)" style="accent-color:var(--pink);width:17px;height:17px;flex-shrink:0;cursor:pointer;" autocomplete="off" data-form-type="other">
           <span style="${DECO_CHECKED[cat+i]?'text-decoration:line-through;':''}">${item}</span>
         </label>`).join('')}
         <div style="display:flex;gap:8px;margin-top:10px;">
-          <input class="m-input" id="deco-add-${ci}" placeholder="Ajouter un élément…" style="flex:1;font-size:12px;padding:8px 12px;">
+          <input class="m-input" id="deco-add-${ci}" placeholder="Ajouter un élément…" style="flex:1;font-size:12px;padding:8px 12px;" autocomplete="off" data-form-type="other">
           <button class="btn-outline" style="font-size:12px;padding:7px 14px;" onclick="addDecoIdx(${ci})">+ Ajouter</button>
         </div>
       </div>
@@ -2855,12 +2855,12 @@ function renderVendors(){
         ${cats.map(([k,cat])=>`<button data-catkey="${k}" class="vnd-cat-btn cat-chip" onclick="selectCategory('${k}','${cat.label}')"><span class="ic"><svg viewBox="0 0 24 24">${vndIcon(k)}</svg></span>${cat.label}</button>`).join('')}
       </div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-        <input type="text" id="vnd-postal" placeholder="Code postal ou ville" class="m-input" style="flex:1;min-width:150px;" onkeydown="if(event.key==='Enter')doVendorSearch()">
+        <input type="text" id="vnd-postal" placeholder="Code postal ou ville" class="m-input" style="flex:1;min-width:150px;" onkeydown="if(event.key==='Enter')doVendorSearch()" autocomplete="off" data-form-type="other">
         <button class="btn" onclick="doVendorSearch()">Rechercher</button>
       </div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
         <label style="font-size:11px;color:var(--tl);font-weight:700;flex-shrink:0;">Rayon :</label>
-        <input type="range" id="vnd-radius" min="5" max="100" step="5" value="20" oninput="document.getElementById('vnd-radius-val').textContent=this.value+' km'" style="flex:1;accent-color:var(--pink);">
+        <input type="range" id="vnd-radius" min="5" max="100" step="5" value="20" oninput="document.getElementById('vnd-radius-val').textContent=this.value+' km'" style="flex:1;accent-color:var(--pink);" autocomplete="off" data-form-type="other">
         <span id="vnd-radius-val" style="font-size:12px;color:var(--dark);font-weight:700;min-width:50px;text-align:right;">20 km</span>
       </div>
       <div id="vnd-location-status" style="font-size:11px;color:var(--tl);min-height:16px;"></div>
@@ -2898,7 +2898,7 @@ function vndFavCard(v,zone){
     </div>
     <div class="vnd-body2">
       ${v.adresse?`<div class="vnd-addr">${(v.adresse||'').replace(/</g,'&lt;')}</div>`:''}
-      <div class="price-row"><label>Prix :</label><input class="price-input" value="${(v.prix_perso||'').replace(/"/g,'&quot;')}" placeholder="Indiquer le prix…" onchange="updVndPrice(${v.id},'${zone}',this.value)"></div>
+      <div class="price-row"><label>Prix :</label><input class="price-input" value="${(v.prix_perso||'').replace(/"/g,'&quot;')}" placeholder="Indiquer le prix…" onchange="updVndPrice(${v.id},'${zone}',this.value)" autocomplete="off" data-form-type="other"></div>
       <div class="vnd-actions">
         ${isCho
           ? `<button class="btn-fav2" onclick="movToFav(${v.id})">↩ Remettre en favori</button>`
@@ -3200,10 +3200,10 @@ function updVndPrice(id,zone,val){
 function openSettingsPage(){
   openModal(`
     <div class="modal-title">Paramètres <button class="modal-x" onclick="closeModal()">×</button></div>
-    <div class="m-field"><label class="m-label">Votre prénom</label><input class="m-input" id="set-p1" value="${(USER.p1||'').replace(/"/g,'&quot;')}"></div>
-    <div class="m-field"><label class="m-label">Prénom partenaire</label><input class="m-input" id="set-p2" value="${(USER.p2||'').replace(/"/g,'&quot;')}"></div>
-    <div class="m-field"><label class="m-label">Date du mariage</label><input class="m-input" type="date" id="set-date" value="${USER.wDate||''}"></div>
-    <div class="m-field"><label class="m-label">Nouveau mot de passe</label><input class="m-input" type="password" id="set-pass" placeholder="Laisser vide pour ne pas changer"></div>
+    <div class="m-field"><label class="m-label">Votre prénom</label><input class="m-input" id="set-p1" value="${(USER.p1||'').replace(/"/g,'&quot;')}" autocomplete="off" data-form-type="other"></div>
+    <div class="m-field"><label class="m-label">Prénom partenaire</label><input class="m-input" id="set-p2" value="${(USER.p2||'').replace(/"/g,'&quot;')}" autocomplete="off" data-form-type="other"></div>
+    <div class="m-field"><label class="m-label">Date du mariage</label><input class="m-input" type="date" id="set-date" value="${USER.wDate||''}" autocomplete="off" data-form-type="other"></div>
+    <div class="m-field"><label class="m-label">Nouveau mot de passe</label><input class="m-input" type="password" id="set-pass" placeholder="Laisser vide pour ne pas changer" autocomplete="off" data-form-type="other"></div>
     <div class="m-actions">
       <button class="btn" onclick="saveSettingsPage()">Enregistrer</button>
       <button class="btn-outline" onclick="closeModal()">Annuler</button>
@@ -5327,7 +5327,7 @@ function assistMenu(cont){
         </div>
         <div>
           <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Nombre d'invités</label>
-          <input id="menu-invites" type="number" class="inp" value="${savedInvites}" min="10" step="5" style="margin-top:4px;">
+          <input id="menu-invites" type="number" class="inp" value="${savedInvites}" min="10" step="5" style="margin-top:4px;" autocomplete="off" data-form-type="other">
         </div>
       </div>
 
@@ -5337,7 +5337,7 @@ function assistMenu(cont){
           ${RESTRIC_OPTS.map(r=>{
             const checked = savedRestric.includes(r);
             return `<label style="display:inline-flex;align-items:center;gap:5px;padding:6px 10px;border-radius:14px;border:1.5px solid ${checked?pk:br};background:${checked?sf:'#fff'};cursor:pointer;font-size:11px;color:${tx};font-weight:600;">
-              <input type="checkbox" value="${r}" class="menu-restric-cb" ${checked?'checked':''} style="margin:0;accent-color:${pk};"> ${RESTRIC_LABELS[r]}
+              <input type="checkbox" value="${r}" class="menu-restric-cb" ${checked?'checked':''} style="margin:0;accent-color:${pk};" autocomplete="off" data-form-type="other"> ${RESTRIC_LABELS[r]}
             </label>`;
           }).join('')}
         </div>
@@ -5574,11 +5574,11 @@ function assistBudget(cont){
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
         <div>
           <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Budget total (€)</label>
-          <input id="bud-total" type="number" class="inp" value="${savedBudget}" min="1000" step="500" style="margin-top:4px;">
+          <input id="bud-total" type="number" class="inp" value="${savedBudget}" min="1000" step="500" style="margin-top:4px;" autocomplete="off" data-form-type="other">
         </div>
         <div>
           <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Nombre d'invités</label>
-          <input id="bud-invites" type="number" class="inp" value="${savedInvites}" min="5" step="5" style="margin-top:4px;">
+          <input id="bud-invites" type="number" class="inp" value="${savedInvites}" min="5" step="5" style="margin-top:4px;" autocomplete="off" data-form-type="other">
         </div>
       </div>
       <button class="btn" onclick="assistGenerateBudget()" style="width:100%;">Calculer la répartition</button>
@@ -5626,15 +5626,15 @@ function assistTimeline(cont){
       <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">⏰ Timeline du jour J</div>
       <div style="margin-bottom:10px;">
         <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Heure de la cérémonie</label>
-        <input id="tl-heure" type="time" class="inp" value="${savedHeure}" style="margin-top:4px;">
+        <input id="tl-heure" type="time" class="inp" value="${savedHeure}" style="margin-top:4px;" autocomplete="off" data-form-type="other">
       </div>
       <div style="margin-bottom:10px;">
         <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Lieu de cérémonie</label>
-        <input id="tl-cer" type="text" class="inp" value="${h(savedCer)}" style="margin-top:4px;">
+        <input id="tl-cer" type="text" class="inp" value="${h(savedCer)}" style="margin-top:4px;" autocomplete="off" data-form-type="other">
       </div>
       <div style="margin-bottom:14px;">
         <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Lieu de réception</label>
-        <input id="tl-rec" type="text" class="inp" value="${h(savedRec)}" style="margin-top:4px;">
+        <input id="tl-rec" type="text" class="inp" value="${h(savedRec)}" style="margin-top:4px;" autocomplete="off" data-form-type="other">
       </div>
       <button class="btn" onclick="assistGenerateTimeline()" style="width:100%;">Générer ma timeline</button>
       <div id="tl-result" style="margin-top:16px;"></div>
@@ -6324,7 +6324,7 @@ function assistChecklistAvant(cont){
     <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:6px;font-weight:700;"> Check-list 10 min avant cérémonie</div>
     <div style="font-size:11px;color:${tl};font-style:italic;margin-bottom:14px;">La dernière vérification avant le grand moment. Coche au fur et à mesure.</div>
     ${list.map((item,i)=>`<label style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;margin-bottom:6px;background:${sf};border-radius:10px;cursor:pointer;">
-      <input type="checkbox" style="margin:3px 0 0;accent-color:${pk};width:16px;height:16px;flex-shrink:0;">
+      <input type="checkbox" style="margin:3px 0 0;accent-color:${pk};width:16px;height:16px;flex-shrink:0;" autocomplete="off" data-form-type="other">
       <span style="font-size:13px;color:${tx};line-height:1.6;">${h(item)}</span>
     </label>`).join('')}
     <div style="margin-top:16px;text-align:center;padding:14px;background:linear-gradient(135deg,#fff8ec,#fef5e0);border-radius:12px;border:1px solid ${gd}40;font-family:Playfair Display,serif;font-style:italic;color:${tm};font-size:14px;">
@@ -6684,7 +6684,7 @@ function openGiftModal(id){
     <div class="m-field"><label class="m-label">Statut</label><button class="m-pick" id="gm-statut" onclick="pickGiftStatut()">${(GIFT_STATUS[window._giftEdit.statut]||GIFT_STATUS.disponible).label} <span style="color:var(--tl);">▾</span></button></div>
     <div class="m-field"><label class="m-label">Lien marchand</label><input class="m-input" id="gm-lien" value="${g&&g.lien?esc(g.lien):''}" placeholder="https://…" autocomplete="off"></div>
     <div class="m-field"><label class="m-label">Photo (URL)</label><input class="m-input" id="gm-photo" value="${g&&g.photo?esc(g.photo):''}" placeholder="https://… (image)" autocomplete="off"></div>
-    <div class="m-field"><label class="m-label">Description</label><textarea class="m-input" id="gm-desc" rows="3" placeholder="Détails, couleur, modèle…">${g&&g.description?esc(g.description):''}</textarea></div>
+    <div class="m-field"><label class="m-label">Description</label><textarea class="m-input" id="gm-desc" rows="3" placeholder="Détails, couleur, modèle…" autocomplete="off" data-form-type="other">${g&&g.description?esc(g.description):''}</textarea></div>
     <div class="m-actions">
       <button class="btn" onclick="saveGift()">${g?'Enregistrer':'Ajouter'}</button>
       <button class="btn-outline" onclick="closeModal()">Annuler</button>
@@ -6861,7 +6861,7 @@ function openReceivedModal(id){
       <div class="m-field"><label class="m-label">Type</label><button class="m-pick" id="rm-type" onclick="pickRecType()">${RECEIVED_TYPES[window._recEdit.type]} <span style="color:var(--tl);">▾</span></button></div>
       <div class="m-field"><label class="m-label">Montant / valeur (€)</label><input class="m-input" id="rm-montant" type="number" value="${r&&r.montant?r.montant:''}" placeholder="0" autocomplete="off"></div>
     </div>
-    <div class="m-field"><label class="m-label">Date de réception</label><input class="m-input" id="rm-date" type="date" value="${r&&r.date?r.date:new Date().toISOString().slice(0,10)}"></div>
+    <div class="m-field"><label class="m-label">Date de réception</label><input class="m-input" id="rm-date" type="date" value="${r&&r.date?r.date:new Date().toISOString().slice(0,10)}" autocomplete="off" data-form-type="other"></div>
     ${fundOpts}
     <div class="m-field"><label class="m-label">Commentaire (facultatif)</label><input class="m-input" id="rm-comment" value="${r&&r.commentaire?esc(r.commentaire):''}" placeholder="Note…" autocomplete="off"></div>
     <div class="m-field"><label class="m-label">Remerciement</label><button class="m-pick" id="rm-merci" onclick="pickRecMerci()">${window._recEdit.remerciement==='envoye'?'Envoyé':'À remercier'} <span style="color:var(--tl);">▾</span></button></div>
@@ -7031,7 +7031,7 @@ function renderRegShare(el){
       <p style="font-size:13px;color:var(--mid);line-height:1.5;margin-bottom:16px;">Envoyez ce lien (ou le QR code) à vos invités. Ils pourront voir vos cadeaux et en réserver, et les réservations apparaîtront automatiquement dans votre liste.</p>
       <img src="${qr}" alt="QR Code" style="width:200px;height:200px;border:1px solid var(--border);border-radius:12px;margin-bottom:16px;">
       <div style="display:flex;gap:8px;max-width:480px;margin:0 auto;">
-        <input class="m-input" id="reg-share-url" value="${url}" readonly style="flex:1;font-size:12px;">
+        <input class="m-input" id="reg-share-url" value="${url}" readonly style="flex:1;font-size:12px;" autocomplete="off" data-form-type="other">
         <button class="btn" style="font-size:12px;padding:0 16px;" onclick="copyRegistryLink()">Copier</button>
       </div>
       <div id="reg-sync-status" style="font-size:12px;color:var(--tl);margin-top:12px;">Publication de la liste…</div>
@@ -7098,8 +7098,27 @@ function addSuggestedGift(s){
 async function syncPublicRegistry(){
   if(!REGISTRY_PUBLIC_ID||!window.firebaseDB||!window.firebaseLib)return false;
   try{
-    const {doc,setDoc}=window.firebaseLib;
-    const publicGifts=GIFTS.map(g=>({id:g.id,nom:g.nom||'',categorie:g.categorie||'',prix:g.prix||0,description:g.description||'',photo:g.photo||'',lien:g.lien||'',statut:g.statut||'disponible',reservePar:g.reservePar||''}));
+    const {doc,setDoc,getDoc}=window.firebaseLib;
+    // Lire l'état public actuel pour préserver les réservations faites par les invités
+    let pubGiftsById={};
+    try{
+      const cur=await getDoc(doc(window.firebaseDB,'publicRegistries',REGISTRY_PUBLIC_ID));
+      if(cur.exists()){(cur.data().gifts||[]).forEach(pg=>{pubGiftsById[pg.id]=pg;});}
+    }catch(e){}
+    const publicGifts=GIFTS.map(g=>{
+      const pub=pubGiftsById[g.id]||{};
+      // Le statut de réservation vient des invités (public), le reste vient des mariés (local)
+      // Sauf si les mariés ont remis "disponible" volontairement (reservePar local vidé)
+      const mariéeReset=(g.statut==='disponible'&&!g.reservePar);
+      return {
+        id:g.id,nom:g.nom||'',categorie:g.categorie||'',prix:g.prix||0,
+        description:g.description||'',photo:g.photo||'',lien:g.lien||'',
+        statut:mariéeReset?'disponible':(pub.statut||g.statut||'disponible'),
+        reservePar:mariéeReset?'':(pub.reservePar||g.reservePar||''),
+        acheteur:mariéeReset?'':(pub.acheteur||g.acheteur||''),
+        resToken:mariéeReset?'':(pub.resToken||g.resToken||'')
+      };
+    });
     await setDoc(doc(window.firebaseDB,'publicRegistries',REGISTRY_PUBLIC_ID),{
       p1:USER.p1||'',p2:USER.p2||'',wDate:USER.wDate||'',
       gifts:publicGifts,
@@ -7196,15 +7215,31 @@ function renderPublicRegistry(){
     </div>
     <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px;margin-top:28px;">
       <div style="font-family:'Playfair Display',serif;font-size:16px;color:var(--dark);margin-bottom:10px;">Laisser un message aux mariés</div>
-      <input id="pub-msg-nom" placeholder="Votre nom" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;margin-bottom:8px;font-family:'Lora',serif;box-sizing:border-box;">
-      <textarea id="pub-msg-txt" placeholder="Votre message…" rows="3" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;margin-bottom:8px;font-family:'Lora',serif;box-sizing:border-box;"></textarea>
+      <input id="pub-msg-nom" placeholder="Votre nom" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;margin-bottom:8px;font-family:'Lora',serif;box-sizing:border-box;" autocomplete="off" data-form-type="other">
+      <textarea id="pub-msg-txt" placeholder="Votre message…" rows="3" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;margin-bottom:8px;font-family:'Lora',serif;box-sizing:border-box;" autocomplete="off" data-form-type="other"></textarea>
       <button onclick="sendPublicMessage()" style="background:linear-gradient(135deg,var(--pink-dark),var(--pink));color:#fff;border:none;border-radius:10px;padding:11px 20px;font-family:'Lora',serif;font-weight:700;cursor:pointer;width:100%;">Envoyer</button>
     </div>
     <div style="text-align:center;margin-top:30px;font-size:11px;color:var(--tl);">Propulsé par Weddilya</div>`;
 }
+function _myReservations(){
+  try{return JSON.parse(localStorage.getItem('wl_myres_'+window._pubId)||'{}');}catch(e){return {};}
+}
+function _saveMyReservation(giftId,token){
+  const m=_myReservations();m[giftId]=token;
+  try{localStorage.setItem('wl_myres_'+window._pubId,JSON.stringify(m));}catch(e){}
+}
+function _removeMyReservation(giftId){
+  const m=_myReservations();delete m[giftId];
+  try{localStorage.setItem('wl_myres_'+window._pubId,JSON.stringify(m));}catch(e){}
+}
+function _isMine(g){
+  const m=_myReservations();
+  return g.resToken&&m[g.id]&&m[g.id]===g.resToken;
+}
 function publicGiftCard(g){
   const reserved=g.reservePar||g.statut!=='disponible';
-  return `<div style="background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;${reserved?'opacity:0.75;':''}">
+  const mine=_isMine(g);
+  return `<div style="background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;${reserved&&!mine?'opacity:0.75;':''}">
     <div style="height:130px;background:${g.photo?`url('${esc(g.photo)}') center/cover`:'linear-gradient(135deg,var(--pink-pale),#fff)'};display:flex;align-items:center;justify-content:center;">
       ${g.photo?'':'<svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="var(--pink-light)" stroke-width="1.5"><path d="M20 12v10H4V12M2 7h20v5H2zM12 22V7"/></svg>'}
     </div>
@@ -7213,10 +7248,10 @@ function publicGiftCard(g){
       ${g.categorie?`<div style="font-size:11px;color:var(--tl);margin-bottom:4px;">${esc(g.categorie)}</div>`:''}
       ${g.description?`<div style="font-size:12px;color:var(--mid);margin:4px 0;">${esc(g.description).substring(0,80)}</div>`:''}
       ${g.prix?`<div style="font-size:14px;font-weight:700;color:var(--pink);margin:6px 0;">${Math.round(g.prix)} €</div>`:''}
-      ${reserved?`<div style="font-size:12px;color:var(--am);font-weight:700;text-align:center;padding:6px 0;">${g.acheteur?'Déjà acheté':'Réservé'}${g.reservePar?' par '+esc(g.reservePar):''}</div>
+      ${reserved?`<div style="font-size:12px;color:var(--am);font-weight:700;text-align:center;padding:6px 0;">${g.acheteur?'Déjà acheté':'Réservé'}${mine?' (par vous)':''}</div>
         ${g.lien?`<a href="${esc(g.lien)}" target="_blank" style="display:block;text-align:center;border:1.5px solid var(--border);border-radius:9px;padding:7px;font-size:11px;color:var(--mid);text-decoration:none;margin-bottom:6px;">Voir le cadeau</a>`:''}
-        ${!g.acheteur?`<button onclick="markBoughtPublic(${g.id})" style="width:100%;background:#fff;border:1.5px solid var(--gn);color:var(--gn);border-radius:9px;padding:7px;font-size:11px;font-weight:700;cursor:pointer;">Je l'ai acheté</button>
-        <button onclick="cancelReservePublic(${g.id})" style="width:100%;background:none;border:none;color:var(--tl);font-size:10px;cursor:pointer;margin-top:5px;text-decoration:underline;">Annuler ma réservation</button>`:''}`:`
+        ${mine?`${!g.acheteur?`<button onclick="markBoughtPublic(${g.id})" style="width:100%;background:#fff;border:1.5px solid var(--gn);color:var(--gn);border-radius:9px;padding:7px;font-size:11px;font-weight:700;cursor:pointer;margin-bottom:5px;">Je l'ai acheté</button>`:''}
+        <button onclick="cancelReservePublic(${g.id})" style="width:100%;background:none;border:none;color:var(--tl);font-size:11px;cursor:pointer;text-decoration:underline;">Annuler ma réservation</button>`:''}`:`
         <div style="display:flex;gap:6px;margin-top:8px;">
           ${g.lien?`<a href="${esc(g.lien)}" target="_blank" style="flex:1;text-align:center;border:1.5px solid var(--border);border-radius:9px;padding:7px;font-size:11px;color:var(--mid);text-decoration:none;">Voir</a>`:''}
           <button onclick="reservePublicGift(${g.id})" style="flex:1;background:linear-gradient(135deg,var(--pink-dark),var(--pink));color:#fff;border:none;border-radius:9px;padding:7px;font-size:11px;font-weight:700;cursor:pointer;">Réserver</button>
@@ -7230,7 +7265,7 @@ function pubPopup(opts){
     let ov=document.getElementById('pub-popup');
     if(!ov){ov=document.createElement('div');ov.id='pub-popup';document.body.appendChild(ov);}
     ov.style.cssText='position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(62,24,40,0.45);';
-    const inputHtml=opts.input?`<input id="pub-popup-input" placeholder="${esc(opts.placeholder||'')}" style="width:100%;box-sizing:border-box;padding:11px 13px;border:1.5px solid var(--border);border-radius:11px;font-size:14px;font-family:'Lora',serif;margin-top:12px;outline:none;">`:'';
+    const inputHtml=opts.input?`<input id="pub-popup-input" placeholder="${esc(opts.placeholder||'')}" style="width:100%;box-sizing:border-box;padding:11px 13px;border:1.5px solid var(--border);border-radius:11px;font-size:14px;font-family:'Lora',serif;margin-top:12px;outline:none;" autocomplete="off" data-form-type="other">`:'';
     const btns=opts.buttons.map((b,i)=>`<button data-i="${i}" style="${b.primary?'background:linear-gradient(135deg,var(--pink-dark),var(--pink));color:#fff;border:none;':'background:#fff;border:1.5px solid var(--border);color:var(--mid);'}flex:1;padding:11px;border-radius:11px;font-family:'Lora',serif;font-weight:700;font-size:13px;cursor:pointer;">${esc(b.label)}</button>`).join('');
     ov.innerHTML=`<div style="background:#fff;border-radius:20px;max-width:380px;width:100%;overflow:hidden;box-shadow:0 24px 80px rgba(62,24,40,0.25);">
       <div style="height:5px;background:linear-gradient(90deg,var(--pink-dark),var(--pink),var(--pink-light));"></div>
@@ -7255,18 +7290,27 @@ async function reservePublicGift(giftId){
   const nom=await pubPopup({title:'Réserver ce cadeau',message:'Indiquez votre nom pour réserver ce cadeau :',input:true,placeholder:'Votre nom',buttons:[{label:'Annuler',value:false},{label:'Continuer',value:true,primary:true}]});
   if(!nom||nom===false||!String(nom).trim())return;
   const acheteur=await pubPopup({title:'Déjà acheté ?',message:'Avez-vous déjà acheté ce cadeau, ou souhaitez-vous seulement le réserver ?',buttons:[{label:'Je le réserve',value:'reserve'},{label:'Déjà acheté',value:'achete',primary:true}]});
-  await updatePublicGift(giftId,{reservePar:String(nom).trim(),statut:'reserve',acheteur:acheteur==='achete'?String(nom).trim():''},'Votre réservation a bien été enregistrée.');
+  const token='t'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+  const ok=await updatePublicGift(giftId,{reservePar:String(nom).trim(),statut:'reserve',acheteur:acheteur==='achete'?String(nom).trim():'',resToken:token},'Votre réservation a bien été enregistrée.',null);
+  if(ok)_saveMyReservation(giftId,token);
+  renderPublicRegistry();
 }
 async function markBoughtPublic(giftId){
   const g=(window._pubData.gifts||[]).find(x=>x.id===giftId);
+  if(!_isMine(g)){await pubPopup({title:'Action impossible',message:"Seule la personne qui a réservé ce cadeau peut le modifier.",buttons:[{label:'Fermer',value:true,primary:true}]});return;}
   await updatePublicGift(giftId,{acheteur:g&&g.reservePar?g.reservePar:'Invité'},'Merci, c\'est noté : vous avez acheté ce cadeau.');
 }
 async function cancelReservePublic(giftId){
-  const ok=await pubPopup({title:'Annuler la réservation',message:'Confirmez-vous l\'annulation de votre réservation ? Le cadeau redeviendra disponible.',buttons:[{label:'Non',value:false},{label:'Oui, annuler',value:true,primary:true}]});
+  const g=(window._pubData.gifts||[]).find(x=>x.id===giftId);
+  if(!_isMine(g)){await pubPopup({title:'Action impossible',message:"Seule la personne qui a réservé ce cadeau peut annuler la réservation.",buttons:[{label:'Fermer',value:true,primary:true}]});return;}
+  const msg=g&&g.acheteur?'Vous aviez indiqué avoir acheté ce cadeau. Confirmez-vous l\'annulation ? Le cadeau redeviendra disponible pour les autres invités.':'Confirmez-vous l\'annulation de votre réservation ? Le cadeau redeviendra disponible.';
+  const ok=await pubPopup({title:'Annuler la réservation',message:msg,buttons:[{label:'Non',value:false},{label:'Oui, annuler',value:true,primary:true}]});
   if(!ok)return;
-  await updatePublicGift(giftId,{reservePar:'',statut:'disponible',acheteur:''},'Votre réservation a été annulée.');
+  const done=await updatePublicGift(giftId,{reservePar:'',statut:'disponible',acheteur:'',resToken:''},'Votre réservation a été annulée.',null);
+  if(done)_removeMyReservation(giftId);
+  renderPublicRegistry();
 }
-async function updatePublicGift(giftId,patch,successMsg){
+async function updatePublicGift(giftId,patch,successMsg,popupAfter){
   try{
     const {doc,getDoc,setDoc}=window.firebaseLib;
     const ref=doc(window.firebaseDB,'publicRegistries',window._pubId);
@@ -7275,10 +7319,12 @@ async function updatePublicGift(giftId,patch,successMsg){
     data.gifts=(data.gifts||[]).map(g=>g.id===giftId?{...g,...patch}:g);
     await setDoc(ref,{gifts:data.gifts,_updatedAt:Date.now()},{merge:true});
     window._pubData=data;
-    renderPublicRegistry();
-    await pubPopup({title:'Merci !',message:successMsg,buttons:[{label:'Fermer',value:true,primary:true}]});
+    if(popupAfter!==null){renderPublicRegistry();await pubPopup({title:'Merci !',message:successMsg,buttons:[{label:'Fermer',value:true,primary:true}]});}
+    else if(successMsg){await pubPopup({title:'Merci !',message:successMsg,buttons:[{label:'Fermer',value:true,primary:true}]});}
+    return true;
   }catch(e){
     await pubPopup({title:'Oups',message:"L'opération n'a pas pu être enregistrée. Réessayez plus tard.",buttons:[{label:'Fermer',value:true,primary:true}]});
+    return false;
   }
 }
 async function sendPublicMessage(){
