@@ -356,6 +356,9 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 /* Filtres invités */
 
 /* Liste de mariage */
+#reg-subtabs{scrollbar-width:none;-ms-overflow-style:none;}
+#reg-subtabs::-webkit-scrollbar{display:none;height:0;width:0;}
+
 /* Liste de mariage — onglets soulignés (Option A) */
 .reg-tabsA{display:flex;gap:28px;border-bottom:1px solid var(--border);margin-bottom:24px;flex-wrap:wrap;}
 .reg-tabsA a{font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--tl);text-decoration:none;padding:0 0 14px;position:relative;cursor:pointer;transition:color .15s;}
@@ -6662,7 +6665,7 @@ function giftCard(g){
       ${g.categorie?`<div style="font-size:11px;color:var(--tl);margin-bottom:6px;">${esc(g.categorie)}</div>`:''}
       ${g.description?`<div style="font-size:12px;color:var(--mid);line-height:1.4;margin-bottom:8px;flex:1;">${esc(g.description).substring(0,90)}${g.description.length>90?'…':''}</div>`:'<div style="flex:1;"></div>'}
       ${g.prix?`<div style="font-size:14px;font-weight:700;color:var(--pink);margin-bottom:8px;">${eur(g.prix)}</div>`:''}
-      ${g.reservePar?`<div style="font-size:11px;color:var(--am);margin-bottom:8px;">Réservé par ${esc(g.reservePar)}</div>`:''}
+      ${g.reservePar?`<div style="font-size:11px;color:var(--am);margin-bottom:8px;">Réservé par ${esc(g.reservePar)}${g.resEmail?` <span style="color:var(--tl);">(${esc(g.resEmail)})</span>`:''}</div>`:''}
       <div style="display:flex;gap:6px;">
         ${g.lien?`<a href="${esc(g.lien)}" target="_blank" class="btn-outline" style="flex:1;text-align:center;font-size:11px;padding:6px;text-decoration:none;">Voir</a>`:''}
         <button class="btn-outline" style="flex:1;font-size:11px;padding:6px;" onclick="openGiftModal(${g.id})">Modifier</button>
@@ -7116,7 +7119,8 @@ async function syncPublicRegistry(){
         statut:mariéeReset?'disponible':(pub.statut||g.statut||'disponible'),
         reservePar:mariéeReset?'':(pub.reservePar||g.reservePar||''),
         acheteur:mariéeReset?'':(pub.acheteur||g.acheteur||''),
-        resToken:mariéeReset?'':(pub.resToken||g.resToken||'')
+        resToken:mariéeReset?'':(pub.resToken||g.resToken||''),
+        resEmail:mariéeReset?'':(pub.resEmail||g.resEmail||'')
       };
     });
     await setDoc(doc(window.firebaseDB,'publicRegistries',REGISTRY_PUBLIC_ID),{
@@ -7191,7 +7195,48 @@ async function initPublicRegistry(){
   }
   return true;
 }
+// ── Identité de l'invité (nom + email) ──
+function _guestIdentity(){
+  try{return JSON.parse(localStorage.getItem('wl_guest_'+window._pubId)||'null');}catch(e){return null;}
+}
+function _saveGuestIdentity(nom,email){
+  try{localStorage.setItem('wl_guest_'+window._pubId,JSON.stringify({nom:nom,email:(email||'').toLowerCase().trim()}));}catch(e){}
+}
+function _normEmail(e){return (e||'').toLowerCase().trim();}
+function changeGuestIdentity(){
+  try{localStorage.removeItem('wl_guest_'+window._pubId);}catch(e){}
+  renderPublicRegistry();
+}
+function renderGuestLogin(){
+  const d=window._pubData;const root=document.getElementById('public-registry');
+  root.innerHTML=`
+    <div style="max-width:420px;margin:40px auto 0;text-align:center;">
+      <div style="font-family:'Josefin Sans',sans-serif;font-size:13px;letter-spacing:0.3em;color:var(--pink);margin-bottom:8px;">WEDDILYA</div>
+      <div style="font-family:'Playfair Display',serif;font-size:26px;color:var(--dark);">${esc(d.p1)} <em style="color:var(--pink);">&</em> ${esc(d.p2)}</div>
+      <div style="font-size:13px;color:var(--tl);margin-top:6px;margin-bottom:28px;">Liste de mariage${d.wDate?' · '+new Date(d.wDate+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}):''}</div>
+      <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;text-align:left;">
+        <div style="font-family:'Playfair Display',serif;font-size:18px;color:var(--dark);margin-bottom:6px;">Bienvenue !</div>
+        <p style="font-size:13px;color:var(--mid);line-height:1.5;margin-bottom:18px;">Indiquez votre nom et votre email pour accéder à la liste. Votre email nous permettra de retrouver vos réservations, même depuis un autre appareil. Il ne sera pas visible par les autres invités.</p>
+        <label style="font-size:12px;color:var(--tl);font-weight:700;display:block;margin-bottom:4px;">Votre nom</label>
+        <input id="gl-nom" placeholder="Ex. Marie Dupont" style="width:100%;box-sizing:border-box;padding:11px 13px;border:1.5px solid var(--border);border-radius:11px;font-size:14px;font-family:'Lora',serif;margin-bottom:14px;outline:none;" autocomplete="off" data-form-type="other">
+        <label style="font-size:12px;color:var(--tl);font-weight:700;display:block;margin-bottom:4px;">Votre email</label>
+        <input id="gl-email" type="email" placeholder="vous@email.com" style="width:100%;box-sizing:border-box;padding:11px 13px;border:1.5px solid var(--border);border-radius:11px;font-size:14px;font-family:'Lora',serif;margin-bottom:18px;outline:none;" autocomplete="off" data-form-type="other">
+        <button onclick="submitGuestLogin()" style="width:100%;background:linear-gradient(135deg,var(--pink-dark),var(--pink));color:#fff;border:none;border-radius:11px;padding:13px;font-family:'Lora',serif;font-weight:700;font-size:14px;cursor:pointer;">Accéder à la liste</button>
+      </div>
+      <div style="text-align:center;margin-top:24px;font-size:11px;color:var(--tl);">Propulsé par Weddilya</div>
+    </div>`;
+}
+async function submitGuestLogin(){
+  const nom=(document.getElementById('gl-nom').value||'').trim();
+  const email=(document.getElementById('gl-email').value||'').trim();
+  if(!nom){await pubPopup({title:'Nom requis',message:'Merci d\'indiquer votre nom.',buttons:[{label:'OK',value:true,primary:true}]});return;}
+  if(!email||!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){await pubPopup({title:'Email invalide',message:'Merci d\'indiquer une adresse email valide.',buttons:[{label:'OK',value:true,primary:true}]});return;}
+  _saveGuestIdentity(nom,email);
+  renderPublicRegistry();
+}
 function renderPublicRegistry(){
+  if(!_guestIdentity()){renderGuestLogin();return;}
+  const me=_guestIdentity();
   const d=window._pubData;const root=document.getElementById('public-registry');
   const gifts=d.gifts||[];const funds=d.funds||[];
   const dispo=gifts.filter(g=>g.statut==='disponible'&&!g.reservePar);
@@ -7200,6 +7245,7 @@ function renderPublicRegistry(){
       <div style="font-family:'Josefin Sans',sans-serif;font-size:13px;letter-spacing:0.3em;color:var(--pink);margin-bottom:8px;">WEDDILYA</div>
       <div style="font-family:'Playfair Display',serif;font-size:26px;color:var(--dark);">${esc(d.p1)} <em style="color:var(--pink);">&</em> ${esc(d.p2)}</div>
       <div style="font-size:13px;color:var(--tl);margin-top:6px;">Liste de mariage${d.wDate?' · '+new Date(d.wDate+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}):''}</div>
+      <div style="font-size:12px;color:var(--mid);margin-top:10px;">Bonjour ${esc(me.nom)} · <span onclick="changeGuestIdentity()" style="color:var(--pink);cursor:pointer;text-decoration:underline;">Ce n'est pas vous ?</span></div>
     </div>
     ${funds.length?`<div style="margin-bottom:24px;">
       <div style="font-family:'Playfair Display',serif;font-size:18px;color:var(--dark);margin-bottom:12px;">Cagnottes</div>
@@ -7215,7 +7261,6 @@ function renderPublicRegistry(){
     </div>
     <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px;margin-top:28px;">
       <div style="font-family:'Playfair Display',serif;font-size:16px;color:var(--dark);margin-bottom:10px;">Laisser un message aux mariés</div>
-      <input id="pub-msg-nom" placeholder="Votre nom" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;margin-bottom:8px;font-family:'Lora',serif;box-sizing:border-box;" autocomplete="off" data-form-type="other">
       <textarea id="pub-msg-txt" placeholder="Votre message…" rows="3" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;margin-bottom:8px;font-family:'Lora',serif;box-sizing:border-box;" autocomplete="off" data-form-type="other"></textarea>
       <button onclick="sendPublicMessage()" style="background:linear-gradient(135deg,var(--pink-dark),var(--pink));color:#fff;border:none;border-radius:10px;padding:11px 20px;font-family:'Lora',serif;font-weight:700;cursor:pointer;width:100%;">Envoyer</button>
     </div>
@@ -7233,6 +7278,8 @@ function _removeMyReservation(giftId){
   try{localStorage.setItem('wl_myres_'+window._pubId,JSON.stringify(m));}catch(e){}
 }
 function _isMine(g){
+  const me=_guestIdentity();
+  if(me&&me.email&&g.resEmail&&_normEmail(g.resEmail)===_normEmail(me.email))return true;
   const m=_myReservations();
   return g.resToken&&m[g.id]&&m[g.id]===g.resToken;
 }
@@ -7287,11 +7334,12 @@ function pubPopup(opts){
   });
 }
 async function reservePublicGift(giftId){
-  const nom=await pubPopup({title:'Réserver ce cadeau',message:'Indiquez votre nom pour réserver ce cadeau :',input:true,placeholder:'Votre nom',buttons:[{label:'Annuler',value:false},{label:'Continuer',value:true,primary:true}]});
-  if(!nom||nom===false||!String(nom).trim())return;
-  const acheteur=await pubPopup({title:'Déjà acheté ?',message:'Avez-vous déjà acheté ce cadeau, ou souhaitez-vous seulement le réserver ?',buttons:[{label:'Je le réserve',value:'reserve'},{label:'Déjà acheté',value:'achete',primary:true}]});
+  const me=_guestIdentity();
+  if(!me){renderPublicRegistry();return;}
+  const acheteur=await pubPopup({title:'Réserver ce cadeau',message:'Réservez ce cadeau en tant que '+me.nom+'. Souhaitez-vous seulement le réserver, ou l\'avez-vous déjà acheté ?',buttons:[{label:'Je le réserve',value:'reserve'},{label:'Déjà acheté',value:'achete',primary:true}]});
+  if(acheteur===false)return;
   const token='t'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
-  const ok=await updatePublicGift(giftId,{reservePar:String(nom).trim(),statut:'reserve',acheteur:acheteur==='achete'?String(nom).trim():'',resToken:token},'Votre réservation a bien été enregistrée.',null);
+  const ok=await updatePublicGift(giftId,{reservePar:me.nom,resEmail:_normEmail(me.email),statut:'reserve',acheteur:acheteur==='achete'?me.nom:'',resToken:token},'Votre réservation a bien été enregistrée.',null);
   if(ok)_saveMyReservation(giftId,token);
   renderPublicRegistry();
 }
@@ -7306,7 +7354,7 @@ async function cancelReservePublic(giftId){
   const msg=g&&g.acheteur?'Vous aviez indiqué avoir acheté ce cadeau. Confirmez-vous l\'annulation ? Le cadeau redeviendra disponible pour les autres invités.':'Confirmez-vous l\'annulation de votre réservation ? Le cadeau redeviendra disponible.';
   const ok=await pubPopup({title:'Annuler la réservation',message:msg,buttons:[{label:'Non',value:false},{label:'Oui, annuler',value:true,primary:true}]});
   if(!ok)return;
-  const done=await updatePublicGift(giftId,{reservePar:'',statut:'disponible',acheteur:'',resToken:''},'Votre réservation a été annulée.',null);
+  const done=await updatePublicGift(giftId,{reservePar:'',statut:'disponible',acheteur:'',resToken:'',resEmail:''},'Votre réservation a été annulée.',null);
   if(done)_removeMyReservation(giftId);
   renderPublicRegistry();
 }
@@ -7328,7 +7376,8 @@ async function updatePublicGift(giftId,patch,successMsg,popupAfter){
   }
 }
 async function sendPublicMessage(){
-  const nom=(document.getElementById('pub-msg-nom').value||'').trim();
+  const me=_guestIdentity();
+  const nom=me?me.nom:'';
   const txt=(document.getElementById('pub-msg-txt').value||'').trim();
   if(!nom||!txt)return;
   try{
@@ -7337,9 +7386,8 @@ async function sendPublicMessage(){
     const snap=await getDoc(ref);
     const data=snap.data();
     const msgs=Array.isArray(data.messages)?data.messages:[];
-    msgs.push({id:Date.now(),nom,message:txt});
+    msgs.push({id:Date.now(),nom,email:me?_normEmail(me.email):'',message:txt});
     await setDoc(ref,{messages:msgs,_updatedAt:Date.now()},{merge:true});
-    document.getElementById('pub-msg-nom').value='';
     document.getElementById('pub-msg-txt').value='';
     await pubPopup({title:'Merci !',message:'Votre message a bien été envoyé aux mariés.',buttons:[{label:'Fermer',value:true,primary:true}]});
   }catch(e){
