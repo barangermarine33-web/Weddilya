@@ -354,6 +354,11 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 /* ── Prestataires (design embelli) ── */
 
 /* Filtres invités */
+
+/* Liste de mariage */
+.reg-tab{background:#fff;color:var(--tl);border:1.5px solid var(--border);border-radius:20px;padding:7px 15px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Lora',serif;transition:all .15s;}
+.reg-tab:hover{border-color:var(--pink-light);}
+.reg-tab.on{background:var(--pink-pale);color:var(--pink-dark);border-color:var(--pink);}
 .gfilter{background:#fff;color:var(--tl);border:1.5px solid var(--border);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Lora',serif;transition:all .15s;}
 .gfilter:hover{border-color:var(--pink-light);}
 .gfilter.on{background:var(--pink-pale);color:var(--pink-dark);border-color:var(--pink);}
@@ -820,6 +825,10 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
         <svg viewBox="0 0 24 24" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
         Assistant
       </div>
+      <div class="sidebar-item" data-tab="registry" onclick="showTab('registry',this)">
+        <svg viewBox="0 0 24 24" stroke-width="1.8"><path d="M20 12v10H4V12M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>
+        Liste de mariage
+      </div>
       <div class="sidebar-item" data-tab="album" onclick="showTab('album',this)">
         <svg viewBox="0 0 24 24" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
         Album
@@ -936,6 +945,13 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
         <div id="assistant-content"></div>
       </div>
 
+      <!-- LISTE DE MARIAGE -->
+      <div class="tab-page" id="tab-registry">
+        <div class="page-title">Liste de <em>mariage</em></div>
+        <div class="page-sub">Cadeaux, cagnottes, cadeaux reçus et remerciements</div>
+        <div id="registry-content"></div>
+      </div>
+
       <!-- ALBUM -->
       <div class="tab-page" id="tab-album">
         <div class="page-title">Album <em>photos</em></div>
@@ -973,14 +989,16 @@ const cfg={
 };
 const app=initializeApp(cfg);
 window.firebaseAuth=fAuth.getAuth(app);
+window._publicMode=!!new URLSearchParams(location.search).get('liste');
 window.firebaseDB=fDB.getFirestore(app,'wedding-dream');
 window.firebaseLib=fDB;
 window.firebaseAuthLib=fAuth;
 // Observer auth
 fAuth.onAuthStateChanged(window.firebaseAuth,user=>{
+  if(window._publicMode)return; // page publique : pas de flux mariés
   if(user){
     showView('app');
-    loadUser(user);
+    loadUser(user).then(()=>{ if(typeof listenPublicReservations==='function') listenPublicReservations(); });
   } else {
     // Ne pas forcer landing si on est sur la page auth
     if(document.getElementById('view-app').classList.contains('active')){
@@ -992,6 +1010,7 @@ fAuth.onAuthStateChanged(window.firebaseAuth,user=>{
 
 <script>
 let USER={}, GUESTS=[], BUDGET=[], CHECKLIST=[], NOTES='', VENDORS_FAV=[], VENDORS_CHO=[], TABLES=[], DRIVE_URL='', DECO_CHECKED={}, DECO_CUSTOM={}, MENUQTY={}, MENU=[];
+let GIFTS=[], FUNDS=[], RECEIVED=[], REGISTRY_MSGS=[], REGISTRY_PUBLIC_ID='';
 const MONTHS=["12 à 18 mois avant","9 à 12 mois avant","6 à 9 mois avant","3 à 6 mois avant","2 à 3 mois avant","1 mois avant","2 semaines avant","1 semaine avant","La veille","Jour J","Après le mariage"];
 const DEF_TASKS=[
   {id:1,text:"Choisir la date du mariage",done:false,month:"12 à 18 mois avant"},{id:2,text:"Définir le budget total",done:false,month:"12 à 18 mois avant"},{id:3,text:"Déterminer le nombre d'invités",done:false,month:"12 à 18 mois avant"},{id:4,text:"Établir une liste d'invités provisoire",done:false,month:"12 à 18 mois avant"},{id:5,text:"Rechercher des lieux de réception",done:false,month:"12 à 18 mois avant"},{id:6,text:"Visiter plusieurs lieux",done:false,month:"12 à 18 mois avant"},{id:7,text:"Signer le contrat du lieu",done:false,month:"12 à 18 mois avant"},{id:8,text:"Réserver la mairie",done:false,month:"12 à 18 mois avant"},{id:9,text:"Définir le thème et les couleurs",done:false,month:"12 à 18 mois avant"},{id:10,text:"Rechercher un traiteur",done:false,month:"12 à 18 mois avant"},{id:11,text:"Rechercher un photographe",done:false,month:"12 à 18 mois avant"},{id:12,text:"Rechercher un DJ ou groupe",done:false,month:"12 à 18 mois avant"},
@@ -1202,7 +1221,7 @@ async function loadUser(firebaseUser){
   const uid=firebaseUser.uid;
   const em=(firebaseUser.email||'');
   let data={}, docId=uid, loadErr=null;
-  const SYNC_PREFIXES=['tasks_','budget_','guests_','tables_','vfav_','vcho_','notes_','menu_','album_','drive_url_','cake_','menuqty_','deco_custom_','deco_'];
+  const SYNC_PREFIXES=['tasks_','budget_','guests_','tables_','vfav_','vcho_','notes_','menu_','album_','drive_url_','cake_','menuqty_','deco_custom_','deco_','gifts_','funds_','received_','registry_msgs_','registry_pubid_'];
   const isSyncKey=k=>SYNC_PREFIXES.some(p=>k.indexOf(p)===0);
   try{
     let snap=await getDoc(doc(window.firebaseDB,'userData',uid));
@@ -1263,6 +1282,11 @@ async function loadUser(firebaseUser){
   TABLES=pick('tables',[]);if(!Array.isArray(TABLES))TABLES=[];
   SEAT_CONFLICTS=pick('seat_conflicts',[]);if(!Array.isArray(SEAT_CONFLICTS))SEAT_CONFLICTS=[];
   DRIVE_URL=pick('drive_url','');if(typeof DRIVE_URL!=='string')DRIVE_URL='';
+  GIFTS=pick('gifts',[]);if(!Array.isArray(GIFTS))GIFTS=[];
+  FUNDS=pick('funds',[]);if(!Array.isArray(FUNDS))FUNDS=[];
+  RECEIVED=pick('received',[]);if(!Array.isArray(RECEIVED))RECEIVED=[];
+  REGISTRY_MSGS=pick('registry_msgs',[]);if(!Array.isArray(REGISTRY_MSGS))REGISTRY_MSGS=[];
+  REGISTRY_PUBLIC_ID=pick('registry_pubid','');if(typeof REGISTRY_PUBLIC_ID!=='string')REGISTRY_PUBLIC_ID='';
   initApp();
   if(loadErr){
     const ds=document.getElementById('dash-sub');
@@ -1301,6 +1325,7 @@ function initApp(){
   renderNotes();
   renderVendors();
   renderAssistant();
+  renderRegistry();
 }
 
 function fmtDate(d){
@@ -6500,8 +6525,679 @@ const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersec
 document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 window.addEventListener('scroll',()=>{document.getElementById('navbar')?.classList.toggle('scrolled',window.scrollY>20);});
 
-// Init : afficher landing par défaut
-showView('landing');
+// Init : page publique (?liste=) ou landing par défaut
+if(new URLSearchParams(location.search).get('liste')){
+  initPublicRegistry();
+}else{
+  showView('landing');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  LISTE DE MARIAGE — Weddilya (côté mariés)
+//  Structures de données :
+//   GIFT     {id,nom,categorie,prix,description,photo,lien,statut,reservePar,acheteur,messageInvite}
+//   FUND     {id,nom,type,objectif,contributeurs:[{id,nom,montant,date,message}]}
+//   RECEIVED {id,invite,type,montant,date,commentaire,fundId,remerciement,dateRemerciement}
+// ═══════════════════════════════════════════════════════════
+
+let REGISTRY_SUBTAB='gifts';
+const GIFT_CATS=['Cuisine','Décoration','Électroménager','Linge de maison','High-tech','Loisirs','Voyage','Jardin','Autre'];
+const GIFT_STATUS={disponible:{label:'Disponible',color:'var(--gn)'},reserve:{label:'Réservé',color:'var(--am)'},offert:{label:'Offert',color:'var(--pink)'},recu:{label:'Reçu',color:'var(--tl)'}};
+const FUND_TYPES={voyage:'Voyage de noces',maison:'Maison',projet:'Projet personnel',libre:'Libre'};
+const RECEIVED_TYPES={cheque:'Chèque',especes:'Espèces',virement:'Virement',materiel:'Cadeau matériel'};
+
+function saveGifts(){saveData('gifts',GIFTS);syncPublicRegistry();}
+function saveFunds(){saveData('funds',FUNDS);}
+function saveReceived(){saveData('received',RECEIVED);}
+
+function eur(n){return Math.round(n||0)+' €';}
+
+function renderRegistry(){
+  const el=document.getElementById('registry-content');
+  if(!el)return;
+  const tabs=[
+    {k:'gifts',label:'Cadeaux'},
+    {k:'funds',label:'Cagnottes'},
+    {k:'received',label:'Cadeaux reçus'},
+    {k:'thanks',label:'Remerciements'},
+    {k:'dash',label:'Tableau de bord'},
+    {k:'share',label:'Partage'}
+  ];
+  el.innerHTML=`
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;border-bottom:1px solid var(--border);padding-bottom:12px;">
+      ${tabs.map(t=>`<button onclick="setRegistrySubtab('${t.k}')" class="reg-tab ${REGISTRY_SUBTAB===t.k?'on':''}">${t.label}</button>`).join('')}
+    </div>
+    <div id="registry-sub"></div>`;
+  renderRegistrySub();
+}
+
+function setRegistrySubtab(k){REGISTRY_SUBTAB=k;renderRegistry();}
+
+function renderRegistrySub(){
+  const el=document.getElementById('registry-sub');
+  if(!el)return;
+  if(REGISTRY_SUBTAB==='gifts')return renderRegGifts(el);
+  if(REGISTRY_SUBTAB==='funds')return renderRegFunds(el);
+  if(REGISTRY_SUBTAB==='received')return renderRegReceived(el);
+  if(REGISTRY_SUBTAB==='thanks')return renderRegThanks(el);
+  if(REGISTRY_SUBTAB==='dash')return renderRegDash(el);
+  if(REGISTRY_SUBTAB==='share')return renderRegShare(el);
+}
+
+// ─────────── 1. CADEAUX ───────────
+function renderRegGifts(el){
+  el.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+      <span style="font-size:13px;color:var(--tl);">${GIFTS.length} cadeau${GIFTS.length>1?'x':''} dans votre liste</span>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-outline" style="font-size:12px;padding:7px 14px;" onclick="suggestGifts()">Suggestions</button>
+        <button class="btn" style="font-size:12px;padding:7px 14px;" onclick="openGiftModal()">+ Ajouter un cadeau</button>
+      </div>
+    </div>
+    ${GIFTS.length?`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;">
+      ${GIFTS.map(g=>giftCard(g)).join('')}
+    </div>`:`<div style="background:#fafafa;border:1.5px dashed var(--border);border-radius:14px;padding:34px;text-align:center;color:var(--tl);">
+      <div style="margin-bottom:8px;">Votre liste de cadeaux est vide.</div>
+      <button class="btn" style="font-size:12px;padding:8px 16px;" onclick="openGiftModal()">+ Ajouter votre premier cadeau</button>
+    </div>`}`;
+}
+
+function giftCard(g){
+  const st=GIFT_STATUS[g.statut]||GIFT_STATUS.disponible;
+  return `<div style="background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(184,64,96,0.06);display:flex;flex-direction:column;">
+    <div style="height:140px;background:${g.photo?`url('${g.photo}') center/cover`:'linear-gradient(135deg,var(--pink-pale),#fff)'};display:flex;align-items:center;justify-content:center;position:relative;">
+      ${g.photo?'':'<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="var(--pink-light)" stroke-width="1.5"><path d="M20 12v10H4V12M2 7h20v5H2zM12 22V7"/></svg>'}
+      <span style="position:absolute;top:8px;right:8px;background:#fff;color:${st.color};font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;box-shadow:0 1px 4px rgba(0,0,0,0.1);">${st.label}</span>
+    </div>
+    <div style="padding:12px 14px;flex:1;display:flex;flex-direction:column;">
+      <div style="font-family:'Playfair Display',serif;font-size:15px;color:var(--dark);margin-bottom:3px;">${esc(g.nom)}</div>
+      ${g.categorie?`<div style="font-size:11px;color:var(--tl);margin-bottom:6px;">${esc(g.categorie)}</div>`:''}
+      ${g.description?`<div style="font-size:12px;color:var(--mid);line-height:1.4;margin-bottom:8px;flex:1;">${esc(g.description).substring(0,90)}${g.description.length>90?'…':''}</div>`:'<div style="flex:1;"></div>'}
+      ${g.prix?`<div style="font-size:14px;font-weight:700;color:var(--pink);margin-bottom:8px;">${eur(g.prix)}</div>`:''}
+      ${g.reservePar?`<div style="font-size:11px;color:var(--am);margin-bottom:8px;">Réservé par ${esc(g.reservePar)}</div>`:''}
+      <div style="display:flex;gap:6px;">
+        ${g.lien?`<a href="${esc(g.lien)}" target="_blank" class="btn-outline" style="flex:1;text-align:center;font-size:11px;padding:6px;text-decoration:none;">Voir</a>`:''}
+        <button class="btn-outline" style="flex:1;font-size:11px;padding:6px;" onclick="openGiftModal(${g.id})">Modifier</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function openGiftModal(id){
+  const g=id?GIFTS.find(x=>x.id===id):null;
+  window._giftEdit={id:id||null,categorie:g?g.categorie:'',statut:g?g.statut:'disponible'};
+  openModal(`
+    <div class="modal-title">${g?'Modifier le cadeau':'Ajouter un cadeau'} <button class="modal-x" onclick="closeModal()">×</button></div>
+    <div class="m-field"><label class="m-label">Nom du cadeau</label><input class="m-input" id="gm-nom" value="${g?esc(g.nom):''}" placeholder="Ex. Service à raclette" autocomplete="off"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="m-field"><label class="m-label">Catégorie</label><button class="m-pick" id="gm-cat" onclick="pickGiftCat()">${g&&g.categorie?esc(g.categorie):'Choisir'} <span style="color:var(--tl);">▾</span></button></div>
+      <div class="m-field"><label class="m-label">Prix estimé (€)</label><input class="m-input" id="gm-prix" type="number" value="${g&&g.prix?g.prix:''}" placeholder="0" autocomplete="off"></div>
+    </div>
+    <div class="m-field"><label class="m-label">Statut</label><button class="m-pick" id="gm-statut" onclick="pickGiftStatut()">${(GIFT_STATUS[window._giftEdit.statut]||GIFT_STATUS.disponible).label} <span style="color:var(--tl);">▾</span></button></div>
+    <div class="m-field"><label class="m-label">Lien marchand</label><input class="m-input" id="gm-lien" value="${g&&g.lien?esc(g.lien):''}" placeholder="https://…" autocomplete="off"></div>
+    <div class="m-field"><label class="m-label">Photo (URL)</label><input class="m-input" id="gm-photo" value="${g&&g.photo?esc(g.photo):''}" placeholder="https://… (image)" autocomplete="off"></div>
+    <div class="m-field"><label class="m-label">Description</label><textarea class="m-input" id="gm-desc" rows="3" placeholder="Détails, couleur, modèle…">${g&&g.description?esc(g.description):''}</textarea></div>
+    <div class="m-actions">
+      <button class="btn" onclick="saveGift()">${g?'Enregistrer':'Ajouter'}</button>
+      <button class="btn-outline" onclick="closeModal()">Annuler</button>
+      ${g?`<button class="btn-outline" style="border-color:var(--rd);color:var(--rd);margin-left:auto;" onclick="deleteGift(${g.id})">Supprimer</button>`:''}
+    </div>`);
+}
+async function pickGiftCat(){
+  const v=await appPicker('Catégorie',GIFT_CATS,window._giftEdit.categorie);
+  if(v){window._giftEdit.categorie=v;document.getElementById('gm-cat').innerHTML=v+' <span style="color:var(--tl);">▾</span>';}
+}
+async function pickGiftStatut(){
+  const opts=Object.keys(GIFT_STATUS).map(k=>({value:k,label:GIFT_STATUS[k].label}));
+  const v=await appPicker('Statut',opts,window._giftEdit.statut);
+  if(v){window._giftEdit.statut=v;document.getElementById('gm-statut').innerHTML=GIFT_STATUS[v].label+' <span style="color:var(--tl);">▾</span>';}
+}
+function saveGift(){
+  const nom=document.getElementById('gm-nom').value.trim();
+  if(!nom)return;
+  const e=window._giftEdit;
+  const data={
+    nom,
+    categorie:e.categorie||'',
+    prix:parseFloat(document.getElementById('gm-prix').value)||0,
+    statut:e.statut||'disponible',
+    lien:document.getElementById('gm-lien').value.trim(),
+    photo:document.getElementById('gm-photo').value.trim(),
+    description:document.getElementById('gm-desc').value.trim()
+  };
+  if(e.id){
+    GIFTS=GIFTS.map(g=>g.id===e.id?{...g,...data}:g);
+  }else{
+    GIFTS.push({id:Date.now(),...data,reservePar:'',acheteur:'',messageInvite:''});
+  }
+  saveGifts();closeModal();renderRegistry();
+}
+async function deleteGift(id){
+  if(!(await appConfirm('Supprimer ce cadeau de votre liste ?')))return;
+  GIFTS=GIFTS.filter(g=>g.id!==id);
+  saveGifts();closeModal();renderRegistry();
+}
+
+// ─────────── 2. CAGNOTTES ───────────
+function renderRegFunds(el){
+  el.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+      <span style="font-size:13px;color:var(--tl);">${FUNDS.length} cagnotte${FUNDS.length>1?'s':''}</span>
+      <button class="btn" style="font-size:12px;padding:7px 14px;" onclick="openFundModal()">+ Créer une cagnotte</button>
+    </div>
+    ${FUNDS.length?FUNDS.map(f=>fundCard(f)).join(''):`<div style="background:#fafafa;border:1.5px dashed var(--border);border-radius:14px;padding:34px;text-align:center;color:var(--tl);">
+      Aucune cagnotte pour le moment. Créez-en une pour votre voyage de noces, votre futur logement…
+    </div>`}`;
+}
+function fundCard(f){
+  const collecte=(f.contributeurs||[]).reduce((s,c)=>s+(parseFloat(c.montant)||0),0);
+  const pct=f.objectif>0?Math.min(100,Math.round(collecte/f.objectif*100)):0;
+  return `<div class="panel" style="margin-bottom:14px;">
+    <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;">
+      <div>
+        <div style="font-family:'Playfair Display',serif;font-size:17px;color:var(--dark);">${esc(f.nom)}</div>
+        <div style="font-size:11px;color:var(--tl);">${FUND_TYPES[f.type]||'Cagnotte'}</div>
+      </div>
+      <button class="btn-outline" style="font-size:11px;padding:5px 10px;" onclick="openFundModal(${f.id})">Gérer</button>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;">
+      <span style="font-weight:700;color:var(--pink);">${eur(collecte)}</span>
+      <span style="color:var(--tl);">objectif ${eur(f.objectif)}</span>
+    </div>
+    <div style="height:10px;background:var(--pink-pale);border-radius:6px;overflow:hidden;margin-bottom:6px;">
+      <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,var(--pink-dark),var(--pink));border-radius:6px;"></div>
+    </div>
+    <div style="font-size:11px;color:var(--tl);text-align:right;margin-bottom:10px;">${pct}% · ${(f.contributeurs||[]).length} contributeur${(f.contributeurs||[]).length>1?'s':''}</div>
+    ${(f.contributeurs||[]).length?`<div style="border-top:1px solid var(--border);padding-top:8px;">
+      ${f.contributeurs.map(c=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;color:var(--mid);">
+        <span>${esc(c.nom)}${c.message?` <span style="color:var(--tl);font-style:italic;">— ${esc(c.message)}</span>`:''}</span>
+        <span style="font-weight:700;color:var(--pink);">${eur(c.montant)}</span>
+      </div>`).join('')}
+    </div>`:''}
+    <button class="btn-outline" style="width:100%;font-size:12px;padding:7px;margin-top:10px;" onclick="openContribModal(${f.id})">+ Ajouter une contribution</button>
+  </div>`;
+}
+function openFundModal(id){
+  const f=id?FUNDS.find(x=>x.id===id):null;
+  window._fundEdit={id:id||null,type:f?f.type:'voyage'};
+  openModal(`
+    <div class="modal-title">${f?'Gérer la cagnotte':'Nouvelle cagnotte'} <button class="modal-x" onclick="closeModal()">×</button></div>
+    <div class="m-field"><label class="m-label">Nom</label><input class="m-input" id="fm-nom" value="${f?esc(f.nom):''}" placeholder="Ex. Notre voyage à Bali" autocomplete="off"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="m-field"><label class="m-label">Type</label><button class="m-pick" id="fm-type" onclick="pickFundType()">${FUND_TYPES[window._fundEdit.type]} <span style="color:var(--tl);">▾</span></button></div>
+      <div class="m-field"><label class="m-label">Objectif (€)</label><input class="m-input" id="fm-obj" type="number" value="${f&&f.objectif?f.objectif:''}" placeholder="0" autocomplete="off"></div>
+    </div>
+    <div class="m-actions">
+      <button class="btn" onclick="saveFund()">${f?'Enregistrer':'Créer'}</button>
+      <button class="btn-outline" onclick="closeModal()">Annuler</button>
+      ${f?`<button class="btn-outline" style="border-color:var(--rd);color:var(--rd);margin-left:auto;" onclick="deleteFund(${f.id})">Supprimer</button>`:''}
+    </div>`);
+}
+async function pickFundType(){
+  const opts=Object.keys(FUND_TYPES).map(k=>({value:k,label:FUND_TYPES[k]}));
+  const v=await appPicker('Type de cagnotte',opts,window._fundEdit.type);
+  if(v){window._fundEdit.type=v;document.getElementById('fm-type').innerHTML=FUND_TYPES[v]+' <span style="color:var(--tl);">▾</span>';}
+}
+function saveFund(){
+  const nom=document.getElementById('fm-nom').value.trim();
+  if(!nom)return;
+  const e=window._fundEdit;
+  const data={nom,type:e.type,objectif:parseFloat(document.getElementById('fm-obj').value)||0};
+  if(e.id){FUNDS=FUNDS.map(f=>f.id===e.id?{...f,...data}:f);}
+  else{FUNDS.push({id:Date.now(),...data,contributeurs:[]});}
+  saveFunds();closeModal();renderRegistry();
+}
+async function deleteFund(id){
+  if(!(await appConfirm('Supprimer cette cagnotte et ses contributions ?')))return;
+  FUNDS=FUNDS.filter(f=>f.id!==id);
+  saveFunds();closeModal();renderRegistry();
+}
+function openContribModal(fundId){
+  window._contribFund=fundId;
+  openModal(`
+    <div class="modal-title">Ajouter une contribution <button class="modal-x" onclick="closeModal()">×</button></div>
+    <div class="m-field"><label class="m-label">Nom du contributeur</label><input class="m-input" id="cm-nom" placeholder="Ex. Famille Dupont" autocomplete="off"></div>
+    <div class="m-field"><label class="m-label">Montant (€)</label><input class="m-input" id="cm-montant" type="number" placeholder="0" autocomplete="off"></div>
+    <div class="m-field"><label class="m-label">Message (facultatif)</label><input class="m-input" id="cm-msg" placeholder="Un petit mot…" autocomplete="off"></div>
+    <div class="m-actions">
+      <button class="btn" onclick="saveContrib()">Ajouter</button>
+      <button class="btn-outline" onclick="closeModal()">Annuler</button>
+    </div>`);
+}
+function saveContrib(){
+  const nom=document.getElementById('cm-nom').value.trim();
+  const montant=parseFloat(document.getElementById('cm-montant').value)||0;
+  if(!nom||!montant)return;
+  const f=FUNDS.find(x=>x.id===window._contribFund);
+  if(!f)return;
+  if(!f.contributeurs)f.contributeurs=[];
+  f.contributeurs.push({id:Date.now(),nom,montant,date:new Date().toISOString().slice(0,10),message:document.getElementById('cm-msg').value.trim()});
+  saveFunds();closeModal();renderRegistry();
+}
+
+// ─────────── 3. CADEAUX REÇUS ───────────
+function renderRegReceived(el){
+  const total=RECEIVED.reduce((s,r)=>s+(parseFloat(r.montant)||0),0);
+  el.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+      <span style="font-size:13px;color:var(--tl);">${RECEIVED.length} reçu${RECEIVED.length>1?'s':''} · total ${eur(total)}</span>
+      <button class="btn" style="font-size:12px;padding:7px 14px;" onclick="openReceivedModal()">+ Ajouter</button>
+    </div>
+    ${RECEIVED.length?`<div style="overflow-x:auto;"><table class="data-table" style="min-width:560px;">
+      <thead><tr><th>Invité</th><th>Type</th><th>Montant</th><th>Date</th><th>Remerciement</th><th></th></tr></thead>
+      <tbody>${RECEIVED.map(r=>{
+        const thanked=r.remerciement==='envoye';
+        return `<tr>
+          <td><strong>${esc(r.invite)}</strong>${r.commentaire?`<div style="font-size:11px;color:var(--tl);">${esc(r.commentaire)}</div>`:''}</td>
+          <td style="font-size:12px;color:var(--mid);">${RECEIVED_TYPES[r.type]||r.type}</td>
+          <td style="font-weight:700;color:var(--pink);">${r.montant?eur(r.montant):'—'}</td>
+          <td style="font-size:12px;color:var(--tl);">${r.date?fmtDate(r.date):'—'}</td>
+          <td><span style="font-size:11px;font-weight:700;color:${thanked?'var(--gn)':'var(--am)'};">${thanked?'Envoyé':'À remercier'}</span></td>
+          <td><button class="btn-outline" style="font-size:11px;padding:4px 8px;" onclick="openReceivedModal(${r.id})">Modifier</button></td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>`:`<div style="background:#fafafa;border:1.5px dashed var(--border);border-radius:14px;padding:34px;text-align:center;color:var(--tl);">
+      Notez ici les cadeaux et sommes reçus pendant ou après le mariage.
+    </div>`}`;
+}
+function openReceivedModal(id){
+  const r=id?RECEIVED.find(x=>x.id===id):null;
+  window._recEdit={id:id||null,type:r?r.type:'cheque',fundId:r?r.fundId:'',remerciement:r?r.remerciement:'a_remercier'};
+  const fundOpts=FUNDS.length?`<div class="m-field"><label class="m-label">Associer à une cagnotte (facultatif)</label><button class="m-pick" id="rm-fund" onclick="pickRecFund()">${r&&r.fundId?(FUNDS.find(f=>f.id===r.fundId)?.nom||'Aucune'):'Aucune'} <span style="color:var(--tl);">▾</span></button></div>`:'';
+  openModal(`
+    <div class="modal-title">${r?'Modifier':'Cadeau reçu'} <button class="modal-x" onclick="closeModal()">×</button></div>
+    <div class="m-field"><label class="m-label">Invité ou groupe</label><input class="m-input" id="rm-invite" value="${r?esc(r.invite):''}" placeholder="Ex. Oncle Pierre & Tante Marie" autocomplete="off"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="m-field"><label class="m-label">Type</label><button class="m-pick" id="rm-type" onclick="pickRecType()">${RECEIVED_TYPES[window._recEdit.type]} <span style="color:var(--tl);">▾</span></button></div>
+      <div class="m-field"><label class="m-label">Montant / valeur (€)</label><input class="m-input" id="rm-montant" type="number" value="${r&&r.montant?r.montant:''}" placeholder="0" autocomplete="off"></div>
+    </div>
+    <div class="m-field"><label class="m-label">Date de réception</label><input class="m-input" id="rm-date" type="date" value="${r&&r.date?r.date:new Date().toISOString().slice(0,10)}"></div>
+    ${fundOpts}
+    <div class="m-field"><label class="m-label">Commentaire (facultatif)</label><input class="m-input" id="rm-comment" value="${r&&r.commentaire?esc(r.commentaire):''}" placeholder="Note…" autocomplete="off"></div>
+    <div class="m-field"><label class="m-label">Remerciement</label><button class="m-pick" id="rm-merci" onclick="pickRecMerci()">${window._recEdit.remerciement==='envoye'?'Envoyé':'À remercier'} <span style="color:var(--tl);">▾</span></button></div>
+    <div class="m-actions">
+      <button class="btn" onclick="saveReceivedItem()">${r?'Enregistrer':'Ajouter'}</button>
+      <button class="btn-outline" onclick="closeModal()">Annuler</button>
+      ${r?`<button class="btn-outline" style="border-color:var(--rd);color:var(--rd);margin-left:auto;" onclick="deleteReceived(${r.id})">Supprimer</button>`:''}
+    </div>`);
+}
+async function pickRecType(){
+  const opts=Object.keys(RECEIVED_TYPES).map(k=>({value:k,label:RECEIVED_TYPES[k]}));
+  const v=await appPicker('Type',opts,window._recEdit.type);
+  if(v){window._recEdit.type=v;document.getElementById('rm-type').innerHTML=RECEIVED_TYPES[v]+' <span style="color:var(--tl);">▾</span>';}
+}
+async function pickRecMerci(){
+  const v=await appPicker('Remerciement',[{value:'a_remercier',label:'À remercier'},{value:'envoye',label:'Envoyé'}],window._recEdit.remerciement);
+  if(v){window._recEdit.remerciement=v;document.getElementById('rm-merci').innerHTML=(v==='envoye'?'Envoyé':'À remercier')+' <span style="color:var(--tl);">▾</span>';}
+}
+async function pickRecFund(){
+  const opts=[{value:'',label:'Aucune'}].concat(FUNDS.map(f=>({value:f.id,label:f.nom})));
+  const v=await appPicker('Cagnotte',opts,window._recEdit.fundId);
+  window._recEdit.fundId=(v===''?'':v);
+  const lbl=v?(FUNDS.find(f=>f.id===v)?.nom||'Aucune'):'Aucune';
+  document.getElementById('rm-fund').innerHTML=lbl+' <span style="color:var(--tl);">▾</span>';
+}
+function saveReceivedItem(){
+  const invite=document.getElementById('rm-invite').value.trim();
+  if(!invite)return;
+  const e=window._recEdit;
+  const data={
+    invite,type:e.type,
+    montant:parseFloat(document.getElementById('rm-montant').value)||0,
+    date:document.getElementById('rm-date').value,
+    commentaire:document.getElementById('rm-comment').value.trim(),
+    fundId:e.fundId||'',
+    remerciement:e.remerciement||'a_remercier'
+  };
+  if(data.remerciement==='envoye'&&!(e.id&&RECEIVED.find(x=>x.id===e.id)?.dateRemerciement)){
+    data.dateRemerciement=new Date().toISOString().slice(0,10);
+  }
+  if(e.id){RECEIVED=RECEIVED.map(r=>r.id===e.id?{...r,...data}:r);}
+  else{RECEIVED.push({id:Date.now(),...data});}
+  saveReceived();closeModal();renderRegistry();
+}
+async function deleteReceived(id){
+  if(!(await appConfirm('Supprimer ce cadeau reçu ?')))return;
+  RECEIVED=RECEIVED.filter(r=>r.id!==id);
+  saveReceived();closeModal();renderRegistry();
+}
+
+// ─────────── 4. REMERCIEMENTS ───────────
+let THANKS_FILTER='all';
+function renderRegThanks(el){
+  const list=RECEIVED.filter(r=>THANKS_FILTER==='pending'?r.remerciement!=='envoye':THANKS_FILTER==='done'?r.remerciement==='envoye':true);
+  const done=RECEIVED.filter(r=>r.remerciement==='envoye').length;
+  const pct=RECEIVED.length?Math.round(done/RECEIVED.length*100):0;
+  el.innerHTML=`
+    <div class="panel" style="margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;">
+        <span style="color:var(--mid);">Remerciements envoyés</span>
+        <span style="font-weight:700;color:var(--pink);">${done}/${RECEIVED.length} · ${pct}%</span>
+      </div>
+      <div style="height:10px;background:var(--pink-pale);border-radius:6px;overflow:hidden;">
+        <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,var(--pink-dark),var(--pink));"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <button class="reg-tab ${THANKS_FILTER==='all'?'on':''}" onclick="setThanksFilter('all')">Tous</button>
+      <button class="reg-tab ${THANKS_FILTER==='pending'?'on':''}" onclick="setThanksFilter('pending')">En attente</button>
+      <button class="reg-tab ${THANKS_FILTER==='done'?'on':''}" onclick="setThanksFilter('done')">Envoyés</button>
+    </div>
+    ${list.length?list.map(r=>{
+      const thanked=r.remerciement==='envoye';
+      return `<div class="panel" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding:12px 14px;">
+        <div>
+          <div style="font-weight:700;color:var(--dark);font-size:14px;">${esc(r.invite)}</div>
+          <div style="font-size:11px;color:var(--tl);">${r.montant?eur(r.montant)+' · ':''}${RECEIVED_TYPES[r.type]||r.type}${thanked&&r.dateRemerciement?' · remercié le '+fmtDate(r.dateRemerciement):''}</div>
+        </div>
+        <button class="${thanked?'btn-outline':'btn'}" style="font-size:11px;padding:6px 12px;" onclick="toggleThanks(${r.id})">${thanked?'Annuler':'Marquer remercié'}</button>
+      </div>`;
+    }).join(''):`<div style="background:#fafafa;border:1.5px dashed var(--border);border-radius:14px;padding:30px;text-align:center;color:var(--tl);">Rien à afficher ici.</div>`}`;
+}
+function setThanksFilter(f){THANKS_FILTER=f;renderRegistry();}
+function toggleThanks(id){
+  RECEIVED=RECEIVED.map(r=>{
+    if(r.id!==id)return r;
+    const envoye=r.remerciement==='envoye';
+    return {...r,remerciement:envoye?'a_remercier':'envoye',dateRemerciement:envoye?'':new Date().toISOString().slice(0,10)};
+  });
+  saveReceived();renderRegistry();
+}
+
+// ─────────── 5. TABLEAU DE BORD ───────────
+function renderRegDash(el){
+  const nb=GIFTS.length;
+  const reserves=GIFTS.filter(g=>g.statut==='reserve').length;
+  const offerts=GIFTS.filter(g=>g.statut==='offert').length;
+  const recus=GIFTS.filter(g=>g.statut==='recu').length;
+  const totalGifts=GIFTS.reduce((s,g)=>s+(parseFloat(g.prix)||0),0);
+  const totalContrib=FUNDS.reduce((s,f)=>s+(f.contributeurs||[]).reduce((a,c)=>a+(parseFloat(c.montant)||0),0),0);
+  const totalRecu=RECEIVED.reduce((s,r)=>s+(parseFloat(r.montant)||0),0);
+  const thanked=RECEIVED.filter(r=>r.remerciement==='envoye').length;
+  const toThank=RECEIVED.length-thanked;
+  const thanksPct=RECEIVED.length?Math.round(thanked/RECEIVED.length*100):0;
+  // plus gros contributeurs (cagnottes + reçus)
+  const contribMap={};
+  FUNDS.forEach(f=>(f.contributeurs||[]).forEach(c=>{contribMap[c.nom]=(contribMap[c.nom]||0)+(parseFloat(c.montant)||0);}));
+  RECEIVED.forEach(r=>{if(r.montant)contribMap[r.invite]=(contribMap[r.invite]||0)+(parseFloat(r.montant)||0);});
+  const topContrib=Object.entries(contribMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const card=(label,val,color)=>`<div class="panel" style="text-align:center;padding:16px 10px;">
+    <div style="font-family:'Playfair Display',serif;font-size:24px;color:${color||'var(--pink)'};">${val}</div>
+    <div style="font-size:11px;color:var(--tl);text-transform:uppercase;letter-spacing:0.04em;margin-top:4px;">${label}</div>
+  </div>`;
+  el.innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:16px;">
+      ${card('Cadeaux',nb)}
+      ${card('Réservés',reserves,'var(--am)')}
+      ${card('Offerts',offerts,'var(--pink)')}
+      ${card('Reçus',recus,'var(--tl)')}
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px;">
+      ${card('Valeur liste',eur(totalGifts),'var(--dark)')}
+      ${card('Contributions',eur(totalContrib),'var(--gn)')}
+      ${card('Total reçu',eur(totalRecu),'var(--pink)')}
+    </div>
+    <div class="panel" style="margin-bottom:16px;">
+      <div class="panel-title">Remerciements</div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;">
+        <span style="color:var(--gn);">${thanked} envoyés</span>
+        <span style="color:var(--am);">${toThank} restants</span>
+        <span style="font-weight:700;color:var(--pink);">${thanksPct}%</span>
+      </div>
+      <div style="height:10px;background:var(--pink-pale);border-radius:6px;overflow:hidden;">
+        <div style="width:${thanksPct}%;height:100%;background:linear-gradient(90deg,var(--pink-dark),var(--pink));"></div>
+      </div>
+    </div>
+    ${FUNDS.length?`<div class="panel" style="margin-bottom:16px;">
+      <div class="panel-title">Progression des cagnottes</div>
+      ${FUNDS.map(f=>{
+        const c=(f.contributeurs||[]).reduce((s,x)=>s+(parseFloat(x.montant)||0),0);
+        const p=f.objectif>0?Math.min(100,Math.round(c/f.objectif*100)):0;
+        return `<div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span>${esc(f.nom)}</span><span style="color:var(--pink);font-weight:700;">${eur(c)} / ${eur(f.objectif)}</span></div>
+          <div style="height:8px;background:var(--pink-pale);border-radius:5px;overflow:hidden;"><div style="width:${p}%;height:100%;background:linear-gradient(90deg,var(--pink-dark),var(--pink));"></div></div>
+        </div>`;
+      }).join('')}
+    </div>`:''}
+    ${topContrib.length?`<div class="panel">
+      <div class="panel-title">Plus gros contributeurs</div>
+      ${topContrib.map(([nom,montant],i)=>`<div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:${i<topContrib.length-1?'1px solid var(--border)':'none'};">
+        <span style="color:var(--mid);">${i+1}. ${esc(nom)}</span><span style="font-weight:700;color:var(--pink);">${eur(montant)}</span>
+      </div>`).join('')}
+    </div>`:''}`;
+}
+
+// ─────────── 6. PARTAGE (lien + QR) ───────────
+function renderRegShare(el){
+  if(!REGISTRY_PUBLIC_ID){
+    REGISTRY_PUBLIC_ID='wl'+Math.random().toString(36).slice(2,10);
+    saveData('registry_pubid',REGISTRY_PUBLIC_ID);
+    syncPublicRegistry();
+  }
+  const base=location.origin+location.pathname;
+  const url=base+'?liste='+REGISTRY_PUBLIC_ID;
+  const qr=`https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(url)}&color=d4607a&bgcolor=ffffff&margin=10`;
+  el.innerHTML=`
+    <div class="panel" style="text-align:center;">
+      <div class="panel-title" style="text-align:left;">Partagez votre liste</div>
+      <p style="font-size:13px;color:var(--mid);line-height:1.5;margin-bottom:16px;">Envoyez ce lien (ou le QR code) à vos invités. Ils pourront voir vos cadeaux et en réserver, et les réservations apparaîtront automatiquement dans votre liste.</p>
+      <img src="${qr}" alt="QR Code" style="width:200px;height:200px;border:1px solid var(--border);border-radius:12px;margin-bottom:16px;">
+      <div style="display:flex;gap:8px;max-width:480px;margin:0 auto;">
+        <input class="m-input" id="reg-share-url" value="${url}" readonly style="flex:1;font-size:12px;">
+        <button class="btn" style="font-size:12px;padding:0 16px;" onclick="copyRegistryLink()">Copier</button>
+      </div>
+    </div>
+    <div class="panel" style="margin-top:14px;">
+      <div class="panel-title">Messages des invités</div>
+      ${REGISTRY_MSGS.length?REGISTRY_MSGS.map(m=>`<div style="border-bottom:1px solid var(--border);padding:8px 0;">
+        <div style="font-size:13px;color:var(--dark);font-weight:700;">${esc(m.nom)}</div>
+        <div style="font-size:12px;color:var(--mid);">${esc(m.message)}</div>
+      </div>`).join(''):'<div style="font-size:13px;color:var(--tl);">Aucun message pour le moment.</div>'}
+    </div>`;
+}
+function copyRegistryLink(){
+  const inp=document.getElementById('reg-share-url');
+  inp.select();
+  navigator.clipboard?.writeText(inp.value).then(()=>appAlert2('Lien copié !')).catch(()=>{document.execCommand('copy');appAlert2('Lien copié !');});
+}
+
+// ─────────── SUGGESTIONS IA (locale, gratuite) ───────────
+function suggestGifts(){
+  // basé sur budget moyen + catégories non couvertes
+  const avgBudget=BUDGET.length?BUDGET.reduce((s,b)=>s+(parseFloat(b.est)||0),0)/BUDGET.length:80;
+  const tier=avgBudget>1500?'haut':avgBudget>500?'moyen':'eco';
+  const bank={
+    Cuisine:[['Robot pâtissier',tier==='haut'?399:tier==='moyen'?199:69],['Service à raclette',49],['Set de couteaux',tier==='haut'?189:79],['Cocotte en fonte',tier==='haut'?259:89]],
+    'Linge de maison':[['Parure de lit en lin',tier==='haut'?199:89],['Set de serviettes',39],['Plaid douillet',59]],
+    'High-tech':[['Enceinte connectée',tier==='haut'?299:99],['Cadre photo numérique',79],['Machine à café à grains',tier==='haut'?599:249]],
+    Voyage:[['Bagage cabine',tier==='haut'?179:69],['Week-end surprise (cagnotte)',200]],
+    Loisirs:[['Cours de cuisine pour deux',120],['Abonnement streaming 1 an',120]],
+    Décoration:[['Vase design',tier==='haut'?129:39],['Guirlande lumineuse',29],['Tableau personnalisé',89]]
+  };
+  const existing=new Set(GIFTS.map(g=>(g.nom||'').toLowerCase()));
+  const sugg=[];
+  Object.entries(bank).forEach(([cat,items])=>{
+    items.forEach(([nom,prix])=>{
+      if(!existing.has(nom.toLowerCase()))sugg.push({nom,prix,categorie:cat});
+    });
+  });
+  const pick6=sugg.sort(()=>Math.random()-0.5).slice(0,6);
+  openModal(`
+    <div class="modal-title">Suggestions de cadeaux <button class="modal-x" onclick="closeModal()">×</button></div>
+    <p style="font-size:12px;color:var(--tl);margin-bottom:14px;">D'après votre budget (gamme ${tier==='haut'?'élevée':tier==='moyen'?'intermédiaire':'économique'}). Cliquez pour ajouter à votre liste.</p>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      ${pick6.map((s,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg);border-radius:11px;">
+        <div><div style="font-size:14px;color:var(--dark);">${s.nom}</div><div style="font-size:11px;color:var(--tl);">${s.categorie} · ${eur(s.prix)}</div></div>
+        <button class="btn-outline" style="font-size:11px;padding:6px 12px;" onclick='addSuggestedGift(${JSON.stringify(s).replace(/'/g,"&#39;")})'>+ Ajouter</button>
+      </div>`).join('')}
+    </div>
+    <div class="m-actions"><button class="btn-outline" onclick="closeModal()">Fermer</button></div>`);
+}
+function addSuggestedGift(s){
+  GIFTS.push({id:Date.now(),nom:s.nom,categorie:s.categorie,prix:s.prix,statut:'disponible',lien:'',photo:'',description:'',reservePar:'',acheteur:'',messageInvite:''});
+  saveGifts();closeModal();renderRegistry();
+}
+
+// ─────────── SYNCHRONISATION COLLECTION PUBLIQUE ───────────
+async function syncPublicRegistry(){
+  if(!REGISTRY_PUBLIC_ID||!window.firebaseDB)return;
+  try{
+    const {doc,setDoc}=window.firebaseLib;
+    const publicGifts=GIFTS.map(g=>({id:g.id,nom:g.nom,categorie:g.categorie,prix:g.prix,description:g.description,photo:g.photo,lien:g.lien,statut:g.statut,reservePar:g.reservePar||''}));
+    await setDoc(doc(window.firebaseDB,'publicRegistries',REGISTRY_PUBLIC_ID),{
+      p1:USER.p1,p2:USER.p2,wDate:USER.wDate,
+      gifts:publicGifts,
+      funds:FUNDS.map(f=>({id:f.id,nom:f.nom,type:f.type,objectif:f.objectif,collecte:(f.contributeurs||[]).reduce((s,c)=>s+(parseFloat(c.montant)||0),0)})),
+      ownerDocId:window._activeDataDocId,
+      _updatedAt:Date.now()
+    },{merge:true});
+  }catch(e){}
+}
+// écoute les réservations faites par les invités sur la collection publique
+function listenPublicReservations(){
+  if(!REGISTRY_PUBLIC_ID||!window.firebaseDB)return;
+  try{
+    const {doc,onSnapshot}=window.firebaseLib;
+    onSnapshot(doc(window.firebaseDB,'publicRegistries',REGISTRY_PUBLIC_ID),snap=>{
+      if(!snap.exists())return;
+      const data=snap.data();
+      let changed=false;
+      (data.gifts||[]).forEach(pg=>{
+        const local=GIFTS.find(g=>g.id===pg.id);
+        if(local&&pg.reservePar&&pg.reservePar!==local.reservePar){
+          local.reservePar=pg.reservePar;
+          if(local.statut==='disponible')local.statut='reserve';
+          changed=true;
+        }
+      });
+      if(Array.isArray(data.messages)){
+        data.messages.forEach(m=>{
+          if(!REGISTRY_MSGS.find(x=>x.id===m.id)){REGISTRY_MSGS.push(m);changed=true;}
+        });
+      }
+      if(changed){saveData('gifts',GIFTS);saveData('registry_msgs',REGISTRY_MSGS);if(REGISTRY_SUBTAB)renderRegistry();}
+    });
+  }catch(e){}
+}
+
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+
+
+// ═══════════════════════════════════════════════════════════
+//  PAGE PUBLIQUE — accessible via ?liste=ID (invités, sans connexion)
+// ═══════════════════════════════════════════════════════════
+async function initPublicRegistry(){
+  const params=new URLSearchParams(location.search);
+  const lid=params.get('liste');
+  if(!lid)return false;
+  window._publicMode=true;
+  // masquer les vues normales
+  ['view-landing','view-auth','view-app'].forEach(v=>{const e=document.getElementById(v);if(e)e.classList.remove('active');});
+  document.body.style.background='var(--bg)';
+  const root=document.createElement('div');
+  root.id='public-registry';
+  root.style.cssText='min-height:100vh;max-width:680px;margin:0 auto;padding:24px 16px 60px;';
+  root.innerHTML='<div style="text-align:center;padding:60px 0;color:var(--tl);">Chargement de la liste…</div>';
+  document.body.appendChild(root);
+  try{
+    const {doc,getDoc}=window.firebaseLib;
+    const snap=await getDoc(doc(window.firebaseDB,'publicRegistries',lid));
+    if(!snap.exists()){root.innerHTML='<div style="text-align:center;padding:60px 16px;color:var(--tl);">Cette liste de mariage est introuvable.</div>';return true;}
+    window._pubData=snap.data();window._pubId=lid;
+    renderPublicRegistry();
+  }catch(e){
+    root.innerHTML='<div style="text-align:center;padding:60px 16px;color:var(--tl);">Impossible de charger la liste pour le moment.</div>';
+  }
+  return true;
+}
+function renderPublicRegistry(){
+  const d=window._pubData;const root=document.getElementById('public-registry');
+  const gifts=d.gifts||[];const funds=d.funds||[];
+  const dispo=gifts.filter(g=>g.statut==='disponible'&&!g.reservePar);
+  root.innerHTML=`
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="font-family:'Josefin Sans',sans-serif;font-size:13px;letter-spacing:0.3em;color:var(--pink);margin-bottom:8px;">WEDDILYA</div>
+      <div style="font-family:'Playfair Display',serif;font-size:26px;color:var(--dark);">${esc(d.p1)} <em style="color:var(--pink);">&</em> ${esc(d.p2)}</div>
+      <div style="font-size:13px;color:var(--tl);margin-top:6px;">Liste de mariage${d.wDate?' · '+new Date(d.wDate+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}):''}</div>
+    </div>
+    ${funds.length?`<div style="margin-bottom:24px;">
+      <div style="font-family:'Playfair Display',serif;font-size:18px;color:var(--dark);margin-bottom:12px;">Cagnottes</div>
+      ${funds.map(f=>{const p=f.objectif>0?Math.min(100,Math.round((f.collecte||0)/f.objectif*100)):0;return `<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px;"><strong>${esc(f.nom)}</strong><span style="color:var(--pink);font-weight:700;">${Math.round(f.collecte||0)} € / ${Math.round(f.objectif)} €</span></div>
+        <div style="height:8px;background:var(--pink-pale);border-radius:5px;overflow:hidden;"><div style="width:${p}%;height:100%;background:linear-gradient(90deg,var(--pink-dark),var(--pink));"></div></div>
+        <div style="font-size:11px;color:var(--tl);margin-top:6px;">Pour contribuer, contactez les mariés directement.</div>
+      </div>`;}).join('')}
+    </div>`:''}
+    <div style="font-family:'Playfair Display',serif;font-size:18px;color:var(--dark);margin-bottom:12px;">Cadeaux ${dispo.length?`<span style="font-size:13px;color:var(--tl);font-family:'Lora',serif;">— ${dispo.length} disponible${dispo.length>1?'s':''}</span>`:''}</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;">
+      ${gifts.map(g=>publicGiftCard(g)).join('')}
+    </div>
+    <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px;margin-top:28px;">
+      <div style="font-family:'Playfair Display',serif;font-size:16px;color:var(--dark);margin-bottom:10px;">Laisser un message aux mariés</div>
+      <input id="pub-msg-nom" placeholder="Votre nom" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;margin-bottom:8px;font-family:'Lora',serif;box-sizing:border-box;">
+      <textarea id="pub-msg-txt" placeholder="Votre message…" rows="3" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;margin-bottom:8px;font-family:'Lora',serif;box-sizing:border-box;"></textarea>
+      <button onclick="sendPublicMessage()" style="background:linear-gradient(135deg,var(--pink-dark),var(--pink));color:#fff;border:none;border-radius:10px;padding:11px 20px;font-family:'Lora',serif;font-weight:700;cursor:pointer;width:100%;">Envoyer</button>
+    </div>
+    <div style="text-align:center;margin-top:30px;font-size:11px;color:var(--tl);">Propulsé par Weddilya</div>`;
+}
+function publicGiftCard(g){
+  const reserved=g.reservePar||g.statut!=='disponible';
+  return `<div style="background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;${reserved?'opacity:0.6;':''}">
+    <div style="height:130px;background:${g.photo?`url('${esc(g.photo)}') center/cover`:'linear-gradient(135deg,var(--pink-pale),#fff)'};display:flex;align-items:center;justify-content:center;">
+      ${g.photo?'':'<svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="var(--pink-light)" stroke-width="1.5"><path d="M20 12v10H4V12M2 7h20v5H2zM12 22V7"/></svg>'}
+    </div>
+    <div style="padding:12px;">
+      <div style="font-family:'Playfair Display',serif;font-size:15px;color:var(--dark);">${esc(g.nom)}</div>
+      ${g.categorie?`<div style="font-size:11px;color:var(--tl);margin-bottom:4px;">${esc(g.categorie)}</div>`:''}
+      ${g.description?`<div style="font-size:12px;color:var(--mid);margin:4px 0;">${esc(g.description).substring(0,80)}</div>`:''}
+      ${g.prix?`<div style="font-size:14px;font-weight:700;color:var(--pink);margin:6px 0;">${Math.round(g.prix)} €</div>`:''}
+      ${reserved?`<div style="font-size:12px;color:var(--am);font-weight:700;text-align:center;padding:8px 0;">Déjà réservé</div>`:`
+        <div style="display:flex;gap:6px;margin-top:8px;">
+          ${g.lien?`<a href="${esc(g.lien)}" target="_blank" style="flex:1;text-align:center;border:1.5px solid var(--border);border-radius:9px;padding:7px;font-size:11px;color:var(--mid);text-decoration:none;">Voir</a>`:''}
+          <button onclick="reservePublicGift(${g.id})" style="flex:1;background:linear-gradient(135deg,var(--pink-dark),var(--pink));color:#fff;border:none;border-radius:9px;padding:7px;font-size:11px;font-weight:700;cursor:pointer;">Réserver</button>
+        </div>`}
+    </div>
+  </div>`;
+}
+async function reservePublicGift(giftId){
+  const nom=prompt('Votre nom (pour réserver ce cadeau) :');
+  if(!nom||!nom.trim())return;
+  const acheteur=confirm('Avez-vous déjà acheté ce cadeau ?\n\nOK = oui, déjà acheté\nAnnuler = je le réserve seulement');
+  try{
+    const {doc,getDoc,setDoc}=window.firebaseLib;
+    const ref=doc(window.firebaseDB,'publicRegistries',window._pubId);
+    const snap=await getDoc(ref);
+    const data=snap.data();
+    data.gifts=(data.gifts||[]).map(g=>g.id===giftId?{...g,reservePar:nom.trim(),statut:acheteur?'offert':'reserve'}:g);
+    await setDoc(ref,{gifts:data.gifts,_updatedAt:Date.now()},{merge:true});
+    window._pubData=data;
+    renderPublicRegistry();
+    alert('Merci ! Votre réservation a bien été enregistrée.');
+  }catch(e){
+    alert("La réservation n'a pas pu être enregistrée. Réessayez plus tard.");
+  }
+}
+async function sendPublicMessage(){
+  const nom=(document.getElementById('pub-msg-nom').value||'').trim();
+  const txt=(document.getElementById('pub-msg-txt').value||'').trim();
+  if(!nom||!txt)return;
+  try{
+    const {doc,getDoc,setDoc}=window.firebaseLib;
+    const ref=doc(window.firebaseDB,'publicRegistries',window._pubId);
+    const snap=await getDoc(ref);
+    const data=snap.data();
+    const msgs=Array.isArray(data.messages)?data.messages:[];
+    msgs.push({id:Date.now(),nom,message:txt});
+    await setDoc(ref,{messages:msgs,_updatedAt:Date.now()},{merge:true});
+    document.getElementById('pub-msg-nom').value='';
+    document.getElementById('pub-msg-txt').value='';
+    alert('Message envoyé aux mariés !');
+  }catch(e){
+    alert("Le message n'a pas pu être envoyé.");
+  }
+}
+
 </script>
 </body>
 </html>
