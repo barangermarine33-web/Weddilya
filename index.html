@@ -6540,7 +6540,7 @@ if(new URLSearchParams(location.search).get('liste')){
 //   RECEIVED {id,invite,type,montant,date,commentaire,fundId,remerciement,dateRemerciement}
 // ═══════════════════════════════════════════════════════════
 
-let REGISTRY_SUBTAB='gifts';
+let REGISTRY_SUBTAB='dash';
 const GIFT_CATS=['Cuisine','Décoration','Électroménager','Linge de maison','High-tech','Loisirs','Voyage','Jardin','Autre'];
 const GIFT_STATUS={disponible:{label:'Disponible',color:'var(--gn)'},reserve:{label:'Réservé',color:'var(--am)'},offert:{label:'Offert',color:'var(--pink)'},recu:{label:'Reçu',color:'var(--tl)'}};
 const FUND_TYPES={voyage:'Voyage de noces',maison:'Maison',projet:'Projet personnel',libre:'Libre'};
@@ -6556,11 +6556,11 @@ function renderRegistry(){
   const el=document.getElementById('registry-content');
   if(!el)return;
   const tabs=[
+    {k:'dash',label:'Tableau de bord'},
     {k:'gifts',label:'Cadeaux'},
     {k:'funds',label:'Cagnottes'},
     {k:'received',label:'Cadeaux reçus'},
     {k:'thanks',label:'Remerciements'},
-    {k:'dash',label:'Tableau de bord'},
     {k:'share',label:'Partage'}
   ];
   el.innerHTML=`
@@ -6972,7 +6972,6 @@ function renderRegShare(el){
   if(!REGISTRY_PUBLIC_ID){
     REGISTRY_PUBLIC_ID='wl'+Math.random().toString(36).slice(2,10);
     saveData('registry_pubid',REGISTRY_PUBLIC_ID);
-    syncPublicRegistry();
   }
   const base=location.origin+location.pathname;
   const url=base+'?liste='+REGISTRY_PUBLIC_ID;
@@ -6986,6 +6985,7 @@ function renderRegShare(el){
         <input class="m-input" id="reg-share-url" value="${url}" readonly style="flex:1;font-size:12px;">
         <button class="btn" style="font-size:12px;padding:0 16px;" onclick="copyRegistryLink()">Copier</button>
       </div>
+      <div id="reg-sync-status" style="font-size:12px;color:var(--tl);margin-top:12px;">Publication de la liste…</div>
     </div>
     <div class="panel" style="margin-top:14px;">
       <div class="panel-title">Messages des invités</div>
@@ -6994,6 +6994,13 @@ function renderRegShare(el){
         <div style="font-size:12px;color:var(--mid);">${esc(m.message)}</div>
       </div>`).join(''):'<div style="font-size:13px;color:var(--tl);">Aucun message pour le moment.</div>'}
     </div>`;
+  // Publier la liste sur la collection publique et afficher le résultat
+  syncPublicRegistry().then(ok=>{
+    const s=document.getElementById('reg-sync-status');
+    if(!s)return;
+    if(ok)s.innerHTML='<span style="color:var(--gn);">✓ Votre liste est publiée et accessible via le lien.</span>';
+    else s.innerHTML='<span style="color:var(--rd);">La publication a échoué. <button class="btn-outline" style="font-size:11px;padding:4px 10px;" onclick="renderRegistry()">Réessayer</button></span>';
+  });
 }
 function copyRegistryLink(){
   const inp=document.getElementById('reg-share-url');
@@ -7040,18 +7047,19 @@ function addSuggestedGift(s){
 
 // ─────────── SYNCHRONISATION COLLECTION PUBLIQUE ───────────
 async function syncPublicRegistry(){
-  if(!REGISTRY_PUBLIC_ID||!window.firebaseDB)return;
+  if(!REGISTRY_PUBLIC_ID||!window.firebaseDB||!window.firebaseLib)return false;
   try{
     const {doc,setDoc}=window.firebaseLib;
-    const publicGifts=GIFTS.map(g=>({id:g.id,nom:g.nom,categorie:g.categorie,prix:g.prix,description:g.description,photo:g.photo,lien:g.lien,statut:g.statut,reservePar:g.reservePar||''}));
+    const publicGifts=GIFTS.map(g=>({id:g.id,nom:g.nom||'',categorie:g.categorie||'',prix:g.prix||0,description:g.description||'',photo:g.photo||'',lien:g.lien||'',statut:g.statut||'disponible',reservePar:g.reservePar||''}));
     await setDoc(doc(window.firebaseDB,'publicRegistries',REGISTRY_PUBLIC_ID),{
-      p1:USER.p1,p2:USER.p2,wDate:USER.wDate,
+      p1:USER.p1||'',p2:USER.p2||'',wDate:USER.wDate||'',
       gifts:publicGifts,
-      funds:FUNDS.map(f=>({id:f.id,nom:f.nom,type:f.type,objectif:f.objectif,collecte:(f.contributeurs||[]).reduce((s,c)=>s+(parseFloat(c.montant)||0),0)})),
-      ownerDocId:window._activeDataDocId,
+      funds:FUNDS.map(f=>({id:f.id,nom:f.nom||'',type:f.type||'libre',objectif:f.objectif||0,collecte:(f.contributeurs||[]).reduce((s,c)=>s+(parseFloat(c.montant)||0),0)})),
+      ownerDocId:window._activeDataDocId||'',
       _updatedAt:Date.now()
     },{merge:true});
-  }catch(e){}
+    return true;
+  }catch(e){return false;}
 }
 // écoute les réservations faites par les invités sur la collection publique
 function listenPublicReservations(){
@@ -7101,13 +7109,17 @@ async function initPublicRegistry(){
   root.innerHTML='<div style="text-align:center;padding:60px 0;color:var(--tl);">Chargement de la liste…</div>';
   document.body.appendChild(root);
   try{
+    // Attendre que Firebase soit initialisé (les modules se chargent en asynchrone)
+    let tries=0;
+    while((!window.firebaseLib||!window.firebaseDB)&&tries<50){await new Promise(r=>setTimeout(r,100));tries++;}
+    if(!window.firebaseLib||!window.firebaseDB){root.innerHTML='<div style="text-align:center;padding:60px 16px;color:var(--tl);">Connexion impossible. Vérifiez votre connexion internet et réessayez.</div>';return true;}
     const {doc,getDoc}=window.firebaseLib;
     const snap=await getDoc(doc(window.firebaseDB,'publicRegistries',lid));
-    if(!snap.exists()){root.innerHTML='<div style="text-align:center;padding:60px 16px;color:var(--tl);">Cette liste de mariage est introuvable.</div>';return true;}
+    if(!snap.exists()){root.innerHTML='<div style="text-align:center;padding:60px 16px;color:var(--tl);">Cette liste de mariage est introuvable.<br><br><span style="font-size:12px;">Les mariés doivent ouvrir l\'onglet « Liste de mariage » au moins une fois pour activer le partage.</span></div>';return true;}
     window._pubData=snap.data();window._pubId=lid;
     renderPublicRegistry();
   }catch(e){
-    root.innerHTML='<div style="text-align:center;padding:60px 16px;color:var(--tl);">Impossible de charger la liste pour le moment.</div>';
+    root.innerHTML='<div style="text-align:center;padding:60px 16px;color:var(--tl);">Impossible de charger la liste pour le moment.<br><br><span style="font-size:11px;color:#c43a3a;">'+(e&&e.message?esc(e.message):'')+'</span></div>';
   }
   return true;
 }
