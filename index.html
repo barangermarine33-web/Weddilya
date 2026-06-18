@@ -25,7 +25,7 @@ html,body{font-family:'Lora',serif;background:var(--white);color:var(--dark);ove
 /* ══════════════════════════════
    LANDING PAGE
 ══════════════════════════════ */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 60px;height:72px;background:rgba(253,248,245,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);transition:box-shadow 0.3s;}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 60px;height:72px;background:rgba(255,255,255,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);transition:box-shadow 0.3s;}
 nav.scrolled{box-shadow:0 2px 24px rgba(212,96,122,0.08);}
 .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
 .nav-logo svg{width:32px;height:32px;}
@@ -184,7 +184,7 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 .power-btn{margin-left:auto;width:36px;height:36px;border-radius:10px;border:1.5px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s;flex-shrink:0;}
 .power-btn:hover{background:var(--pink-pale);}
 .power-btn svg{width:16px;height:16px;stroke:#8a2d4a;fill:none;stroke-width:2;}
-.wedding-band{position:fixed;top:var(--topbar-h);left:0;right:0;height:var(--band-h);background:linear-gradient(180deg,#f7dbe5,#fdeff4);border-bottom:1px solid var(--border);z-index:190;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:0 12px;}
+.wedding-band{position:fixed;top:var(--topbar-h);left:0;right:0;height:var(--band-h);background:#fff;border-bottom:1px solid var(--border);z-index:190;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:0 12px;}
 .band-names{font-family:'Lora',serif;font-size:14px;color:var(--tl);font-style:italic;text-align:center;}
 .band-names strong{font-style:normal;font-weight:700;color:var(--dark);}
 .band-names .band-date{font-style:italic;color:var(--pink-dark);}
@@ -2328,7 +2328,7 @@ async function exportPlanPDF(){
           C_TM=[62,24,40],     // #3e1828 bordeaux
           C_TL=[138,74,96],    // #8a4a60 texte secondaire
           C_SF=[251,230,238],  // #fbe6ee rose clair
-          C_BG=[253,248,245],  // #fdf8f5 fond
+          C_BG=[253,244,247],  // #fdf4f7 fond
           C_BD=[216,160,184],  // #d8a0b8 bordures
           C_TX=[62,24,40],     // #3e1828 texte
           C_WH=[255,255,255];  // blanc
