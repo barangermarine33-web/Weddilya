@@ -12,7 +12,7 @@
   --bg:#fdf8f5; --dark:#3e1828; --mid:#7a4050; --gold:#c9a84c;
   --white:#ffffff; --border:#f5d5e0;
   --gn:#5a8a6a; --am:#c47a2a; --rd:#c43a3a; --tl:#b07080;
-  --sidebar-w:300px; --topbar-h:60px; --band-h:96px;
+  --sidebar-w:340px; --topbar-h:60px; --band-h:96px;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
@@ -422,7 +422,19 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 #pub-popup [style*="font-size:14px"],#pub-popup [style*="font-size: 14px"]{font-size:15px;}
 
 @media(min-width:901px){
-  :root{--sidebar-w:330px;}
+  .task-row{font-size:15px;}
+  .task-month{font-size:13px;}
+  .assist-card-body{font-size:15px;}
+  .vnd-badge{font-size:12px;}
+  .vnd-name{font-size:18px;}
+  .vnd-dist{font-size:13px;}
+  .vnd-addr{font-size:14px;}
+  .price-row label{font-size:13px;}
+  .price-input{font-size:14px;}
+  .btn-choose,.btn-fav2{font-size:13px;}
+  .cat-chip{font-size:14px;}
+  .count-badge{font-size:13px;}
+  :root{--sidebar-w:380px;}
   /* Boost global : tout le contenu de l'app + pop-ups agrandi d'un cran */
   #view-app,#modal-overlay,#picker-overlay{font-size:118%;}
   .modal-box,.picker-box,.modal-inner,.picker-inner{font-size:16px;}
@@ -2076,7 +2088,7 @@ function drawPlanVisual(){
       else if(isSq){const perSide=Math.ceil(n/4);const side=Math.floor(i/perSide);const idxOnSide=i%perSide;const realPerSide=(side===3)?(n-3*perSide):perSide;const step=SQ/(Math.max(realPerSide,1)+1);const pos=step*(idxOnSide+1);const off=SQ/2+GAP;if(side===0){sx=cx-SQ/2+pos;sy=cy-off;}else if(side===1){sx=cx+off;sy=cy-SQ/2+pos;}else if(side===2){sx=cx-SQ/2+pos;sy=cy+off;}else{sx=cx-off;sy=cy-SQ/2+pos;}}
       else{const half=Math.ceil(n/2);const isTop=i<half;const cnt=isTop?half:(n-half);const idx=isTop?i:i-half;const step=TW/(Math.max(cnt,1)+1);sx=cx-TW/2+step*(idx+1);sy=isTop?cy-(TH/2+GAP+SEAT/2):cy+(TH/2+GAP+SEAT/2);}
       const hidden=t.hiddenSeats.includes(i);
-      const g=hidden?null:placed[placedIdx];if(g)placedIdx++;
+      const g=hidden?null:placed.find(x=>x.seatIdx===i);
       const seat=document.createElement('div');
       const seatBg=hidden?'background:transparent;border:1.5px dotted var(--pink-light);opacity:0.45;':(g?'background:var(--pink);border:1.5px solid var(--pink-dark);':'background:#fff;border:1.5px dashed var(--pink-light);');
       seat.style.cssText=`position:absolute;left:${sx-SEAT/2}px;top:${sy-SEAT/2}px;width:${SEAT}px;height:${SEAT}px;border-radius:50%;${seatBg}display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;font-weight:700;cursor:pointer;z-index:5;`;
@@ -2145,12 +2157,20 @@ async function openSeatMenu(tableId,seatIdx,guestId){
   const opts=[];
   if(guestId){opts.push({value:'retirer',label:'Retirer cet invité'});}
   else{opts.push({value:'placer',label:'Placer un invité'});}
-  opts.push({value:'masquer',label:'Masquer cette chaise'});
+  const isHidden=t.hiddenSeats.includes(seatIdx);
+  if(isHidden)opts.push({value:'reafficher',label:'Réafficher cette chaise'});
+  else opts.push({value:'masquer',label:'Masquer cette chaise'});
   if(t.hiddenSeats.length)opts.push({value:'afficher',label:'Réafficher toutes les chaises'});
   const v=await appPicker('Chaise',opts,null);
   if(v==='retirer'&&guestId)unseatGuest(guestId);
-  else if(v==='placer')pickSeatGuest(tableId);
-  else if(v==='masquer'){if(!t.hiddenSeats.includes(seatIdx)){t.hiddenSeats.push(seatIdx);saveData('tables',TABLES);renderSeating();}}
+  else if(v==='placer')pickSeatGuest(tableId,seatIdx);
+  else if(v==='masquer'){
+    // libérer l'invité éventuellement présent sur cette chaise
+    GUESTS.forEach(g=>{if(g.seatTableId===tableId&&g.seatIdx===seatIdx){g.seatTableId=null;g.seatIdx=null;}});
+    if(!t.hiddenSeats.includes(seatIdx)){t.hiddenSeats.push(seatIdx);}
+    saveData('tables',TABLES);saveData('guests',GUESTS);renderSeating();
+  }
+  else if(v==='reafficher'){t.hiddenSeats=t.hiddenSeats.filter(x=>x!==seatIdx);saveData('tables',TABLES);renderSeating();}
   else if(v==='afficher'){t.hiddenSeats=[];saveData('tables',TABLES);renderSeating();}
 }
 
@@ -2184,14 +2204,31 @@ async function delTable(id){
   saveData('tables',TABLES);saveData('guests',GUESTS);renderSeating();
 }
 
-async function pickSeatGuest(tid){
+async function pickSeatGuest(tid,seatIdx){
   const unseated=GUESTS.filter(g=>!g.seatTableId);
+  if(!unseated.length){await appAlert2('Tous vos invités sont déjà placés.');return;}
   const v=await appPicker('Placer un invité',unseated.map(g=>({value:String(g.id),label:g.nom||'?'})),null);
-  if(v)seatGuest(Number(v),tid);
+  if(v)seatGuest(Number(v),tid,seatIdx);
 }
-function seatGuest(gid,tid){
+function seatGuest(gid,tid,seatIdx){
   const g=GUESTS.find(x=>x.id===gid);
-  if(g){g.seatTableId=tid;saveData('guests',GUESTS);renderSeating();}
+  if(!g)return;
+  // si la chaise visée est déjà occupée par un autre, libérer l'ancien occupant
+  if(seatIdx!=null){
+    GUESTS.forEach(o=>{if(o.id!==gid&&o.seatTableId===tid&&o.seatIdx===seatIdx){o.seatTableId=null;o.seatIdx=null;}});
+  }
+  g.seatTableId=tid;
+  if(seatIdx!=null)g.seatIdx=seatIdx;
+  else{
+    // pas de chaise précise : trouver la première chaise libre de la table
+    const t=TABLES.find(x=>x.id===tid);
+    const n=Math.min((t&&t.seats)||6,12);
+    const hidden=(t&&t.hiddenSeats)||[];
+    const occupied=GUESTS.filter(x=>x.seatTableId===tid&&x.id!==gid).map(x=>x.seatIdx);
+    let idx=0;while(idx<n&&(hidden.includes(idx)||occupied.includes(idx)))idx++;
+    g.seatIdx=idx<n?idx:0;
+  }
+  saveData('guests',GUESTS);renderSeating();
 }
 
 function unseatGuest(gid){
@@ -2257,9 +2294,12 @@ function runAutoSeat(){
   unseated.forEach(g=>{
     let placed=false;
     for(const t of TABLES){
-      const cap=t.seats||6;
-      const count=GUESTS.filter(x=>x.seatTableId===t.id).length;
-      if(count<cap&&!conflictsAtTable(t.id,g.nom)){g.seatTableId=t.id;placed=true;break;}
+      const cap=Math.min(t.seats||6,12);
+      const hidden=t.hiddenSeats||[];
+      const occupied=GUESTS.filter(x=>x.seatTableId===t.id).map(x=>x.seatIdx);
+      // chercher une chaise libre et non masquée
+      let idx=0;while(idx<cap&&(hidden.includes(idx)||occupied.includes(idx)))idx++;
+      if(idx<cap&&!conflictsAtTable(t.id,g.nom)){g.seatTableId=t.id;g.seatIdx=idx;placed=true;break;}
     }
     if(!placed)notPlaced++;
   });
@@ -3929,9 +3969,46 @@ const ASSIST_KB = {
   },
 
   // ─── 9. VOYAGE DE NOCES ──────────────────────────────────────────────────
+  evjfEvg: {
+    'detente': [
+      {nom:'Journée spa & hammam', desc:'Modelage, sauna, soins du visage entre proches. Réservez une privatisation pour plus d\'intimité. Budget : 60-120€/personne.'},
+      {nom:'Week-end en cabane ou chalet', desc:'Location d\'un gîte avec jacuzzi, au calme. Cuisine ensemble, jeux, détente. Budget : 80-150€/personne le week-end.'},
+      {nom:'Atelier bien-être (yoga + brunch)', desc:'Séance de yoga douce suivie d\'un brunch healthy. Parfait pour un groupe qui veut souffler. Budget : 40-70€/personne.'},
+      {nom:'Croisière apéritif au coucher du soleil', desc:'Bateau privatisé quelques heures, planches et bulles. Souvenirs photo garantis. Budget : 50-90€/personne.'},
+      {nom:'Atelier création (parfum, bougie, céramique)', desc:'Repartez avec un objet fait main en souvenir. Convivial et créatif. Budget : 45-80€/personne.'}
+    ],
+    'extreme': [
+      {nom:'Saut en parachute', desc:'La montée d\'adrénaline ultime. Vidéo en option. Réservez tôt (météo). Budget : 250-350€/personne.'},
+      {nom:'Karting ou pilotage sur circuit', desc:'Compétition entre amis, classement à la clé. Très fun en groupe. Budget : 40-120€/personne.'},
+      {nom:'Accrobranche & tyrolienne', desc:'Parcours dans les arbres, sensations et fous rires. Accessible à tous niveaux. Budget : 25-45€/personne.'},
+      {nom:'Rafting ou canyoning', desc:'Descente de rivière en équipe, idéal l\'été. Encadrement pro obligatoire. Budget : 50-90€/personne.'},
+      {nom:'Saut à l\'élastique', desc:'Pour les plus téméraires. Lieux emblématiques (viaduc, pont). Budget : 100-180€/personne.'},
+      {nom:'Vol en montgolfière', desc:'Spectaculaire et plus doux que le parachute. Au lever du soleil. Budget : 180-280€/personne.'}
+    ],
+    'voyage': [
+      {nom:'City-break à l\'étranger', desc:'Lisbonne, Barcelone, Budapest, Amsterdam… vols pas chers et ambiance festive. Budget : 200-450€/personne le week-end.'},
+      {nom:'Week-end vignoble & dégustation', desc:'Bordeaux, Champagne, Alsace. Visite de domaines, dégustations, gastronomie. Budget : 150-300€/personne.'},
+      {nom:'Escapade à la montagne', desc:'Été comme hiver : randonnée, ski, chalet convivial. Budget : 150-350€/personne.'},
+      {nom:'Week-end au bord de la mer', desc:'Location en bord de plage, activités nautiques, soirées. Budget : 130-280€/personne.'},
+      {nom:'Roadtrip surprise', desc:'Itinéraire mystère organisé par les témoins. Étapes ludiques. Budget : variable selon distance.'}
+    ],
+    'fete': [
+      {nom:'Soirée privatisée en club ou rooftop', desc:'Espace réservé, cocktails, DJ. L\'ambiance festive classique. Budget : 40-90€/personne.'},
+      {nom:'Bachelorette / Bachelor à thème', desc:'Déguisements, défis rigolos, photobooth. Personnalisez selon la star du jour. Budget : 30-70€/personne.'},
+      {nom:'Atelier cocktails (mixologie)', desc:'Un barman vous apprend à shaker. Dégustation incluse. Très convivial. Budget : 45-75€/personne.'},
+      {nom:'Dîner-spectacle ou cabaret', desc:'Repas + show. Élégant et festif sans organiser la soirée soi-même. Budget : 70-130€/personne.'},
+      {nom:'Brunch festif + activité', desc:'Pour ceux qui préfèrent le jour : brunch généreux suivi d\'une activité. Budget : 35-60€/personne.'}
+    ],
+    'culture-jeux': [
+      {nom:'Escape game', desc:'Énigmes en équipe contre la montre. Idéal pour souder le groupe. Budget : 25-40€/personne.'},
+      {nom:'Murder party', desc:'Enquête grandeur nature avec rôles à jouer. Soirée mémorable. Budget : 30-60€/personne.'},
+      {nom:'Atelier cuisine ou pâtisserie', desc:'Un chef vous guide, puis vous dégustez ensemble. Gourmand et fédérateur. Budget : 50-90€/personne.'},
+      {nom:'Chasse au trésor dans la ville', desc:'Parcours d\'énigmes en extérieur, défis photo. Économique et original. Budget : 10-30€/personne.'},
+      {nom:'Olympiades / blind test géant', desc:'Épreuves d\'équipe ou quiz musical. Rires garantis, facile à organiser soi-même. Budget : faible.'}
+    ]
+  },
   voyageNoces: {
-    'plage': [
-      {dest: 'Maldives', desc: 'L\'archipel romantique par excellence. Villas sur pilotis, eaux turquoise, snorkeling. Idéal 7-10 jours. Budget : 4000-10000€/couple.'},
+    'plage': [      {dest: 'Maldives', desc: 'L\'archipel romantique par excellence. Villas sur pilotis, eaux turquoise, snorkeling. Idéal 7-10 jours. Budget : 4000-10000€/couple.'},
       {dest: 'Seychelles', desc: 'Plages de sable blanc, granite, faune unique. Plus authentique que les Maldives. Budget : 3500-8000€/couple.'},
       {dest: 'Bora Bora (Polynésie)', desc: 'Le plus iconique. Lagons bleus, bungalows pilotis. Long voyage (24h). Budget : 5000-12000€/couple.'},
       {dest: 'République Dominicaine (Punta Cana)', desc: 'All-inclusive 5*, plages superbes, animations. Plus abordable. Budget : 2000-4500€/couple.'},
@@ -5236,6 +5313,7 @@ function renderAssistant(){
     {key:'tenueMarie',label:'Costume',desc:'Costumes et accessoires'},
     {key:'decoration',label:'Décoration mariage',desc:'Inspiration selon style'},
     {key:'enfants',label:'Enfants au mariage',desc:'Rôles et animations'},
+    {key:'evjfEvg',label:'EVJF / EVG',desc:'Idées d\'activités selon vos envies'},
     {key:'fairepart',label:'Faire-part',desc:'12 modèles prêts à utiliser'},
     {key:'stress',label:'Gestion du stress',desc:'Avant, pendant, après'},
     {key:'problemes',label:'Imprévus & solutions',desc:'Comment réagir'},
@@ -5295,6 +5373,7 @@ function assistOpen(service){
   if(service === 'prepReligieuse') return assistPrepReligieuse(cont);
   if(service === 'weddingDay')     return assistWeddingDay(cont);
   if(service === 'enfants')        return assistEnfants(cont);
+  if(service === 'evjfEvg')        return assistEVJF(cont);
   if(service === 'traditions')     return assistTraditions(cont);
   if(service === 'playlistAmbi')   return assistPlaylistAmbi(cont);
   if(service === 'emotion')        return assistEmotion(cont);
@@ -5795,6 +5874,35 @@ function assistRenderAnim(){
 }
 
 // ─── SERVICE 9 : VOYAGE DE NOCES ───
+function assistEVJF(cont){
+  const saved = ld('assist_evjf_cat', 'detente');
+  cont.innerHTML = `
+    <div class="card" style="padding:16px;">
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:6px;font-weight:700;">EVJF / EVG — idées d'activités</div>
+      <div style="font-size:13px;color:${tl};margin-bottom:14px;">Choisissez une envie pour découvrir des idées d'activités à organiser pour l'enterrement de vie de jeune fille ou de garçon.</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+        ${[
+          {k:'detente',l:'Détente'},
+          {k:'extreme',l:'Sensations fortes'},
+          {k:'voyage',l:'Voyage / escapade'},
+          {k:'fete',l:'Fête'},
+          {k:'culture-jeux',l:'Jeux & ateliers'}
+        ].map(c=>`<button onclick="sv('assist_evjf_cat','${c.k}');assistEVJF(el('assist-content'));" class="btn-sec" style="font-size:11px;padding:7px 12px;${saved===c.k?'background:'+pk+';color:#fff;border-color:'+pk+';':''}">${c.l}</button>`).join('')}
+      </div>
+      <div id="evjf-result"></div>
+    </div>
+  `;
+  assistRenderEVJF();
+}
+function assistRenderEVJF(){
+  const cat = ld('assist_evjf_cat', 'detente');
+  const list = ASSIST_KB.evjfEvg[cat] || [];
+  el('evjf-result').innerHTML = list.map(a=>`<div class="card" style="padding:14px;margin-bottom:8px;background:${sf};">
+    <div style="font-weight:700;color:${tx};font-size:14px;margin-bottom:5px;">${h(a.nom)}</div>
+    <div class="assist-card-body">${h(a.desc)}</div>
+  </div>`).join('');
+}
+
 function assistVoyageNoces(cont){
   const saved = ld('assist_voyage_cat', 'plage');
   cont.innerHTML = `
