@@ -25,7 +25,7 @@ html,body{font-family:'Lora',serif;background:var(--white);color:var(--dark);ove
 /* ══════════════════════════════
    LANDING PAGE
 ══════════════════════════════ */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 60px;height:72px;background:var(--bg);transition:box-shadow 0.3s;}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 60px;height:72px;background:rgba(255,255,255,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);transition:box-shadow 0.3s;}
 nav.scrolled{box-shadow:0 2px 24px rgba(212,96,122,0.08);}
 .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
 .nav-logo svg{width:32px;height:32px;}
@@ -171,7 +171,7 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
    APP DASHBOARD
 ══════════════════════════════ */
 #view-app{min-height:100vh;background:var(--bg);}
-.app-topbar{position:fixed;top:0;left:0;right:0;height:var(--topbar-h);background:white;z-index:200;display:flex;align-items:center;padding:0 28px;gap:16px;}
+.app-topbar{position:fixed;top:0;left:0;right:0;height:var(--topbar-h);background:white;border-bottom:1px solid var(--border);z-index:200;display:flex;align-items:center;padding:0 28px;gap:16px;box-shadow:0 2px 16px rgba(212,96,122,0.05);}
 .app-topbar-logo{font-family:'Josefin Sans',sans-serif;font-weight:300;font-size:16px;letter-spacing:0.25em;color:var(--pink);text-transform:uppercase;display:flex;align-items:center;gap:10px;text-decoration:none;}
 .app-topbar-logo svg{width:26px;height:26px;}
 .app-topbar-wedding{margin-left:auto;text-align:right;}
