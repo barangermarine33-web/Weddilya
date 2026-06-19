@@ -1583,7 +1583,7 @@ function renderChecklist(){
       <svg viewBox="0 0 36 36" width="68" height="68"><circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--border)" stroke-width="3"/><circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--pink)" stroke-width="3" stroke-dasharray="${pct} 100" stroke-linecap="round" transform="rotate(-90 18 18)"/><text x="18" y="22" text-anchor="middle" font-size="8" fill="var(--dark)" font-family="Playfair Display,serif" font-weight="bold">${pct}%</text></svg>
     </div>
     <div class="section-actions">
-      <input id="new-task-text" class="m-input" placeholder="Ajouter une tâche…" value="${(window._newTaskText||'').replace(/"/g,'&quot;')}" style="flex:1;min-width:180px;max-width:380px;" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
+      <input id="new-task-text" class="m-input" placeholder="Ajouter une tâche…" value="${(window._newTaskText||'').replace(/"/g,'&quot;')}" style="flex:1;min-width:180px;max-width:380px;background:#fff;" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
       <button class="m-pick" style="width:auto;min-width:150px;" onclick="pickTaskMonth()">${window._newTaskMonth} <span style="color:var(--tl);">▾</span></button>
       <button class="btn" onclick="addTask()">+ Ajouter</button>
     </div>
@@ -1657,7 +1657,7 @@ function renderBudget(){
       <div style="background:#fff8f0;border:1px solid #f0d8b8;border-radius:16px;padding:18px;text-align:center;"><div style="font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tl);margin-bottom:6px;">Reste à payer</div><div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--am);">${fmt(reste>0?reste:0)} €</div></div>
     </div>
     <div class="section-actions">
-      <input id="new-bgt-cat" class="m-input" autocomplete="off" data-lpignore="true" placeholder="Nouvelle catégorie" style="flex:1;min-width:160px;max-width:300px;" data-1p-ignore>
+      <input id="new-bgt-cat" class="m-input" autocomplete="off" data-lpignore="true" placeholder="Nouvelle catégorie" style="flex:1;min-width:160px;max-width:300px;background:#fff;" data-1p-ignore>
       <input id="new-bgt-est" class="m-input" type="number" autocomplete="off" data-lpignore="true" placeholder="Budget estimé €" style="width:160px;" data-1p-ignore>
       <button class="btn" onclick="addBudgetCat()">+ Ajouter</button>
     </div>
@@ -1734,7 +1734,7 @@ function renderGuests(){
       <button class="btn-outline" onclick="document.getElementById('guest-import-file').click()">Importer</button>
       <input type="file" id="guest-import-file" accept=".csv,.tsv,.txt" style="display:none;" onchange="importGuestsFile(this)" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
       <button class="btn-outline" onclick="exportGuestsCSV()">Exporter</button>
-      <input id="guest-search" type="text" placeholder="Rechercher…" oninput="filterGuests()" style="padding:8px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'Lora',serif;font-size:13px;outline:none;background:var(--bg);margin-left:auto;min-width:140px;flex:1;max-width:240px;" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
+      <input id="guest-search" type="text" placeholder="Rechercher…" oninput="filterGuests()" style="padding:8px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'Lora',serif;font-size:13px;outline:none;background:#fff;margin-left:auto;min-width:140px;flex:1;max-width:240px;" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
     </div>
     <div class="panel" style="padding:14px;">
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
@@ -2116,7 +2116,7 @@ function renderSeating(){
   const shapeBtn=(v,label)=>`<button onclick="setTpShape('${v}')" class="btn-outline" style="font-size:12px;padding:7px 13px;${tpShape===v?'background:var(--pink);color:#fff;border-color:var(--pink);':''}">${label}</button>`;
   el.innerHTML=`
     <div class="section-actions tp-actions">
-      <input id="new-table-name" class="m-input" placeholder="Nom de la table…" style="flex:1;min-width:140px;max-width:220px;" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
+      <input id="new-table-name" class="m-input" placeholder="Nom de la table…" style="flex:1;min-width:140px;max-width:220px;background:#fff;" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
       <input id="new-table-seats" class="m-input" type="number" placeholder="Places" value="6" style="width:90px;" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
       ${shapeBtn('round','Ronde')}${shapeBtn('rect','Rect.')}${shapeBtn('square','Carrée')}
       <button class="btn tp-btn" onclick="addTable()">+ Table</button>
@@ -2857,8 +2857,9 @@ function renderAlbum(){
     <div class="panel" style="display:flex;flex-direction:column;align-items:center;gap:14px;">
       <img src="${qr}" style="width:180px;height:180px;border-radius:10px;border:1px solid var(--border);" alt="QR Code">
       <div style="display:flex;gap:8px;width:100%;max-width:420px;">
-        <button class="btn-outline" style="flex:1;" onclick="copyDriveUrl()">Copier le lien</button>
-        <a href="${DRIVE_URL}" target="_blank" class="btn" style="flex:1;text-decoration:none;text-align:center;">Ouvrir l'album</a>
+        <button class="btn" style="flex:1;" onclick="shareDriveUrl()">Partager</button>
+        <button class="btn-outline" style="flex:1;" onclick="copyDriveUrl()">Copier</button>
+        <a href="${DRIVE_URL}" target="_blank" class="btn-outline" style="flex:1;text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;">Ouvrir</a>
       </div>
     </div>`:`
     <div style="background:#fafafa;border:1.5px dashed var(--border);border-radius:14px;padding:28px;text-align:center;color:var(--tl);font-size:13px;margin-bottom:16px;">
@@ -2878,6 +2879,12 @@ function renderAlbum(){
 function saveDriveUrl(){
   DRIVE_URL=document.getElementById('drive-url-input').value.trim();
   saveData('drive_url',DRIVE_URL);renderAlbum();
+}
+function shareDriveUrl(){
+  const url=DRIVE_URL;
+  if(!url){return;}
+  if(navigator.share){navigator.share({title:'Album photo de notre mariage',text:'Ajoutez vos photos !',url});}
+  else{copyDriveUrl();}
 }
 function copyDriveUrl(){
   navigator.clipboard.writeText(DRIVE_URL).then(()=>appAlert2('Lien copié !'));
@@ -2907,7 +2914,7 @@ function renderDecor(){
   if(!el)return;
   const data=getDecoData();
   window._decoCats=Object.keys(data);
-  el.innerHTML='<div style="display:flex;justify-content:flex-end;margin-bottom:14px;"><button class="btn-outline" style="font-size:12px;padding:6px 14px;" onclick="resetDecorations()">↺ Restaurer les décorations par défaut</button></div>'+window._decoCats.map((cat,ci)=>{
+  el.innerHTML='<div style="display:flex;gap:8px;margin-bottom:10px;"><input class="m-input" id="deco-new-cat" placeholder="Nouvelle catégorie…" style="flex:1;background:#fff;" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore><button class="btn" style="padding:8px 16px;" onclick="addDecoCategory()">+</button></div><div style="display:flex;justify-content:flex-end;margin-bottom:14px;"><button class="btn-outline" style="font-size:12px;padding:6px 14px;" onclick="resetDecorations()">↺ Restaurer les décorations par défaut</button></div>'+window._decoCats.map((cat,ci)=>{
     const items=data[cat];
     const done=items.filter((_,i)=>DECO_CHECKED[cat+i]).length;
     return`<div class="panel" style="margin-bottom:14px;padding:0;overflow:hidden;">
@@ -2950,6 +2957,14 @@ function addDecoIdx(ci){
   const data=getDecoData();
   data[cat]=[...data[cat],v];
   DECO_CUSTOM[cat]=data[cat];
+  saveData('deco_custom',DECO_CUSTOM);renderDecor();
+}
+function addDecoCategory(){
+  const inp=document.getElementById('deco-new-cat');
+  const v=(inp?inp.value.trim():'');
+  if(!v)return;
+  if(DECO_CUSTOM[v]!==undefined||(typeof DECO_ITEMS!=='undefined'&&DECO_ITEMS[v]!==undefined)){inp.value='';return;}
+  DECO_CUSTOM[v]=[];
   saveData('deco_custom',DECO_CUSTOM);renderDecor();
 }
 
