@@ -865,7 +865,7 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
             </div>
             <div class="auth-input-wrap">
               <div class="auth-label">Date du mariage</div>
-              <input class="auth-input" type="date" id="ar-date" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
+              <input type="hidden" id="ar-date"><div class="auth-input" id="ar-date-display" onclick="openDatePicker('ar-date','ar-date-label')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;"><span id="ar-date-label" style="color:#b07a90;">Choisir une date</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d4607a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
             </div>
             <div class="auth-input-wrap">
               <div class="auth-label">Email</div>
@@ -3353,7 +3353,7 @@ function openSettingsPage(){
     <div class="modal-title">Paramètres <button class="modal-x" onclick="closeModal()">×</button></div>
     <div class="m-field"><label class="m-label">Votre prénom</label><input class="m-input" id="set-p1" value="${(USER.p1||'').replace(/"/g,'&quot;')}" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore></div>
     <div class="m-field"><label class="m-label">Prénom partenaire</label><input class="m-input" id="set-p2" value="${(USER.p2||'').replace(/"/g,'&quot;')}" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore></div>
-    <div class="m-field"><label class="m-label">Date du mariage</label><input class="m-input" type="date" id="set-date" value="${USER.wDate||''}" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore></div>
+    <div class="m-field"><label class="m-label">Date du mariage</label><input type="hidden" id="set-date" value="${USER.wDate||''}"><div class="m-input" id="set-date-display" onclick="openDatePicker('set-date','set-date-label')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;"><span id="set-date-label" style="color:#b07a90;">${USER.wDate?_dpFmtLabel(USER.wDate):'Choisir une date'}</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d4607a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div></div>
     <div class="m-field"><label class="m-label">Nouveau mot de passe</label><input class="m-input" type="password" id="set-pass" placeholder="Laisser vide pour ne pas changer" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore></div>
     <div class="m-actions">
       <button class="btn" onclick="saveSettingsPage()">Enregistrer</button>
@@ -7612,6 +7612,148 @@ async function sendPublicMessage(){
   }
 }
 
+
+function _dpFmtLabel(val){if(!val)return 'Choisir une date';const d=new Date(val);const days=['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];const mo=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];return days[d.getDay()]+' '+d.getDate()+' '+mo[d.getMonth()]+' '+d.getFullYear();}
+let _dpYear, _dpMonth, _dpSelectedDate = null;
+
+const _dpMonths = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const _dpDays = ['L','M','M','J','V','S','D'];
+
+let _dpTargetId = 'set-date';
+let _dpLabelId = 'set-date-label';
+function openDatePicker(targetId, labelId){
+  _dpTargetId = targetId || 'set-date';
+  _dpLabelId = labelId || (_dpTargetId + '-label');
+  const tgt = document.getElementById(_dpTargetId);
+  const current = tgt ? tgt.value : '';
+  const d = current ? new Date(current) : new Date();
+  _dpYear = d.getFullYear();
+  _dpMonth = d.getMonth();
+  _dpSelectedDate = current ? new Date(current) : null;
+  document.getElementById('datepicker-modal').style.display = 'flex';
+  _dpRender();
+}
+
+function closeDatePicker(){
+  document.getElementById('datepicker-modal').style.display = 'none';
+}
+
+function confirmDatePicker(){
+  if(!_dpSelectedDate) return;
+  const y = _dpSelectedDate.getFullYear();
+  const m = String(_dpSelectedDate.getMonth()+1).padStart(2,'0');
+  const d = String(_dpSelectedDate.getDate()).padStart(2,'0');
+  const val = y+'-'+m+'-'+d;
+  const tgt = document.getElementById(_dpTargetId);
+  if(tgt){ tgt.value = val; tgt.dispatchEvent(new Event('change',{bubbles:true})); }
+  _dpUpdateLabel(val);
+  closeDatePicker();
+}
+
+function _dpUpdateLabel(val){
+  const lblEl = document.getElementById(_dpLabelId);
+  if(!lblEl) return;
+  if(!val){ lblEl.textContent='Choisir une date'; return; }
+  const d = new Date(val);
+  const days = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+  lblEl.style.color = '#3e1828';
+  lblEl.textContent = days[d.getDay()]+' '+d.getDate()+' '+_dpMonths[d.getMonth()]+' '+d.getFullYear();
+}
+
+function dpPrevMonth(){
+  _dpMonth--;
+  if(_dpMonth < 0){ _dpMonth = 11; _dpYear--; }
+  _dpRender();
+}
+
+function dpNextMonth(){
+  _dpMonth++;
+  if(_dpMonth > 11){ _dpMonth = 0; _dpYear++; }
+  _dpRender();
+}
+
+function _dpSelectDay(day){
+  _dpSelectedDate = new Date(_dpYear, _dpMonth, day);
+  _dpRender();
+}
+
+function _dpRender(){
+  // Header
+  const days = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+  if(_dpSelectedDate){
+    document.getElementById('dp-year').textContent = _dpSelectedDate.getFullYear();
+    document.getElementById('dp-selected').textContent = days[_dpSelectedDate.getDay()]+' '+_dpSelectedDate.getDate()+' '+_dpMonths[_dpSelectedDate.getMonth()].substring(0,3)+'.';
+  } else {
+    document.getElementById('dp-year').textContent = _dpYear;
+    document.getElementById('dp-selected').textContent = 'Choisir une date';
+  }
+  // Titre mois
+  document.getElementById('dp-month-title').textContent = _dpMonths[_dpMonth]+' '+_dpYear;
+  // Grille
+  const grid = document.getElementById('dp-grid');
+  grid.innerHTML = '';
+  // Premier jour du mois (0=dim, 1=lun...)
+  const firstDay = new Date(_dpYear, _dpMonth, 1).getDay();
+  const offset = firstDay === 0 ? 6 : firstDay - 1; // Lundi = 0
+  const daysInMonth = new Date(_dpYear, _dpMonth+1, 0).getDate();
+  // Cases vides
+  for(let i=0; i<offset; i++){
+    grid.appendChild(document.createElement('div'));
+  }
+  // Jours
+  for(let d=1; d<=daysInMonth; d++){
+    const isSelected = _dpSelectedDate &&
+      _dpSelectedDate.getDate()===d &&
+      _dpSelectedDate.getMonth()===_dpMonth &&
+      _dpSelectedDate.getFullYear()===_dpYear;
+    const btn = document.createElement('button');
+    btn.textContent = d;
+    btn.onclick = ()=>_dpSelectDay(d);
+    btn.style.cssText = 'width:100%;aspect-ratio:1;border:none;border-radius:50%;cursor:pointer;font-family:Lora,serif;font-size:13px;transition:all .15s;'+
+      (isSelected
+        ? 'background:#d4607a;color:#fff;font-weight:700;'
+        : 'background:transparent;color:#3e1828;');
+    grid.appendChild(btn);
+  }
+}
+
+// Initialiser le label au chargement des paramètres
+function _dpInitLabel(){
+  const val = document.getElementById('set-date') ? document.getElementById('set-date').value : '';
+  if(val) _dpUpdateLabel(val);
+}
 </script>
+
+<div id="datepicker-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1200;display:none;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fff;border-radius:20px;width:100%;max-width:340px;overflow:hidden;box-shadow:0 8px 32px rgba(62,24,40,0.2);">
+    <!-- Header -->
+    <div style="background:#d4607a;padding:20px 24px 16px;">
+      <div id="dp-year" style="font-family:'Josefin Sans',sans-serif;font-size:13px;font-weight:300;letter-spacing:2px;color:rgba(255,255,255,0.7);margin-bottom:4px;"></div>
+      <div id="dp-selected" style="font-family:Lora,serif;font-size:26px;font-weight:700;color:#fff;"></div>
+    </div>
+    <!-- Navigation mois -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px 8px;">
+      <button onclick="dpPrevMonth()" style="background:none;border:none;cursor:pointer;font-size:20px;color:#d4607a;padding:4px 8px;">‹</button>
+      <div id="dp-month-title" style="font-family:Lora,serif;font-size:15px;font-weight:700;color:#3e1828;"></div>
+      <button onclick="dpNextMonth()" style="background:none;border:none;cursor:pointer;font-size:20px;color:#d4607a;padding:4px 8px;">›</button>
+    </div>
+    <!-- Jours de la semaine -->
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);padding:0 12px 4px;">
+      <div style="text-align:center;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:1px;color:#b07a90;padding:4px 0;">L</div>
+      <div style="text-align:center;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:1px;color:#b07a90;padding:4px 0;">M</div>
+      <div style="text-align:center;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:1px;color:#b07a90;padding:4px 0;">M</div>
+      <div style="text-align:center;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:1px;color:#b07a90;padding:4px 0;">J</div>
+      <div style="text-align:center;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:1px;color:#b07a90;padding:4px 0;">V</div>
+      <div style="text-align:center;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:1px;color:#b07a90;padding:4px 0;">S</div>
+      <div style="text-align:center;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:1px;color:#b07a90;padding:4px 0;">D</div>
+    </div>
+    <div id="dp-grid" style="display:grid;grid-template-columns:repeat(7,1fr);padding:0 12px 12px;gap:2px;"></div>
+    <!-- Boutons -->
+    <div style="display:flex;gap:8px;padding:12px 16px 16px;">
+      <button onclick="closeDatePicker()" style="flex:1;background:#fbe6ee;color:#d4607a;border:1.5px solid #d8a0b8;border-radius:11px;padding:10px;cursor:pointer;font-family:Lora,serif;font-size:13px;font-weight:700;">Annuler</button>
+      <button onclick="confirmDatePicker()" style="flex:1;background:#d4607a;color:#fff;border:none;border-radius:11px;padding:10px;cursor:pointer;font-family:Lora,serif;font-size:13px;font-weight:700;">Confirmer</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
