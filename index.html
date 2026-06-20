@@ -1658,7 +1658,7 @@ function renderBudget(){
     </div>
     <div class="section-actions">
       <input id="new-bgt-cat" class="m-input" autocomplete="off" data-lpignore="true" placeholder="Nouvelle catégorie" style="flex:1;min-width:160px;max-width:300px;background:#fff;" data-1p-ignore>
-      <input id="new-bgt-est" class="m-input" type="number" autocomplete="off" data-lpignore="true" placeholder="Budget estimé €" style="width:160px;" data-1p-ignore>
+      <input id="new-bgt-est" class="m-input" type="number" autocomplete="off" data-lpignore="true" placeholder="Budget estimé €" style="width:160px;background:#fff;" data-1p-ignore>
       <button class="btn" onclick="addBudgetCat()">+ Ajouter</button>
     </div>
     <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:14px;"><button class="btn-outline" style="font-size:12px;padding:6px 14px;" onclick="exportBudgetPDF()">Export PDF</button><button class="btn-outline" style="font-size:12px;padding:6px 14px;" onclick="resetBudget()">↺ Restaurer les catégories par défaut</button></div>
@@ -1867,7 +1867,7 @@ function renderGuestRows(list){
   return list.map(g=>{
     const pc=g.presence==='confirmée'?'var(--gn)':g.presence==='déclinée'?'var(--rd)':'var(--am)';
     const ic=g.invitation==='envoyée'?'var(--gn)':'var(--tl)';
-    return`<tr data-gid="${g.id}" style="cursor:pointer;"><td class="drag-handle" style="cursor:grab;color:var(--pink-light);text-align:center;touch-action:none;" title="Glisser pour réordonner">⋮⋮</td><td onclick="openGuestModal(${g.id})"><strong>${g.nom||''}</strong></td><td class="hm" onclick="openGuestModal(${g.id})" style="color:var(--tl);">${g.cote==='p1'?USER.p1:USER.p2}</td><td class="hm" onclick="openGuestModal(${g.id})" style="color:var(--tl);">${g.role||'Invité·e'}</td><td onclick="openGuestModal(${g.id})"><span style="color:${ic};font-weight:700;font-size:12px;">${g.invitation==='envoyée'?'Envoyée':'Non envoyée'}</span></td><td onclick="openGuestModal(${g.id})"><span style="color:${pc};font-weight:700;font-size:12px;">${g.presence||'En attente'}</span></td><td class="hm" onclick="openGuestModal(${g.id})" style="color:var(--tl);font-size:12px;">${g.regime&&g.regime!=='Aucun'?g.regime:'—'}</td></tr>`;
+    return`<tr data-gid="${g.id}" style="cursor:pointer;"><td class="drag-handle" style="cursor:grab;color:var(--pink-light);text-align:center;touch-action:none;" title="Glisser pour réordonner">⋮⋮</td><td onclick="openGuestModal(${g.id})"><strong>${g.nom||''}</strong></td><td class="hm" onclick="openGuestModal(${g.id})" style="color:var(--tl);">${g.cote==='p1'?USER.p1:USER.p2}</td><td class="hm" onclick="openGuestModal(${g.id})" style="color:var(--tl);">${g.role||'Invité·e'}</td><td onclick="openGuestModal(${g.id})"><span style="color:${ic};font-weight:700;font-size:12px;">${g.invitation==='envoyée'?'Envoyée':'Non envoyée'}</span></td><td onclick="openGuestModal(${g.id})"><span style="color:${pc};font-weight:700;font-size:12px;">${(g.presence||'en attente').charAt(0).toUpperCase()+(g.presence||'en attente').slice(1)}</span></td><td class="hm" onclick="openGuestModal(${g.id})" style="color:var(--tl);font-size:12px;">${g.regime&&g.regime!=='Aucun'?g.regime:'—'}</td></tr>`;
   }).join('');
 }
 
@@ -1973,8 +1973,8 @@ function openGuestModal(id){
       ${pickField('role','Rôle',window._gm.role)}
       ${pickField('age','Âge',window._gm.age)}
       ${pickField('regime','Régime alimentaire',window._gm.regime)}
-      ${pickField('inv','Invitation',window._gm.inv)}
-      ${pickField('pres','Présence',window._gm.pres)}
+      ${pickField('inv','Invitation',(window._gm.inv||'').charAt(0).toUpperCase()+(window._gm.inv||'').slice(1))}
+      ${pickField('pres','Présence',(window._gm.pres||'').charAt(0).toUpperCase()+(window._gm.pres||'').slice(1))}
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
       <div class="m-field"><label class="m-label">Email</label><input class="m-input" id="gm-email" type="email" value="${(g.email||'').replace(/"/g,'&quot;')}" placeholder="email@…" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore></div>
@@ -1992,13 +1992,15 @@ async function pickGM(key){
     cote:{title:'Côté',options:[{value:'p1',label:USER.p1},{value:'p2',label:USER.p2}]},
     role:{title:'Rôle',options:ROLES},
     age:{title:'Âge',options:['Adulte','Enfant','Bébé']},
-    inv:{title:'Invitation',options:['non envoyée','envoyée']},
-    pres:{title:'Présence',options:['en attente','confirmée','déclinée']},
+    inv:{title:'Invitation',options:[{value:'non envoyée',label:'Non envoyée'},{value:'envoyée',label:'Envoyée'}]},
+    pres:{title:'Présence',options:[{value:'en attente',label:'En attente'},{value:'confirmée',label:'Confirmée'},{value:'déclinée',label:'Déclinée'}]},
     regime:{title:'Régime alimentaire',options:REGIMES}
   }[key];
   const v=await appPicker(cfg.title,cfg.options,window._gm[key]);
   if(v===null)return;
   window._gm[key]=v;
+  const _btn=document.getElementById('gmf-'+key);
+  if(_btn&&(key==='inv'||key==='pres')){_btn.innerHTML=(v.charAt(0).toUpperCase()+v.slice(1))+' <span style="color:var(--tl);">▾</span>';}
   const btn=document.getElementById('gmf-'+key);
   if(btn){
     const label=key==='cote'?(v==='p1'?USER.p1:USER.p2):v;
@@ -2115,15 +2117,18 @@ function renderSeating(){
   const unseated=GUESTS.filter(g=>!g.seatTableId);
   const shapeBtn=(v,label)=>`<button onclick="setTpShape('${v}')" class="btn-outline" style="font-size:12px;padding:7px 13px;${tpShape===v?'background:var(--pink);color:#fff;border-color:var(--pink);':''}">${label}</button>`;
   el.innerHTML=`
-    <div class="section-actions tp-actions">
-      <input id="new-table-name" class="m-input" placeholder="Nom de la table…" style="flex:1;min-width:140px;max-width:220px;background:#fff;" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
-      <input id="new-table-seats" class="m-input" type="number" placeholder="Places" value="6" style="width:90px;" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
-      ${shapeBtn('round','Ronde')}${shapeBtn('rect','Rect.')}${shapeBtn('square','Carrée')}
-      <button class="btn tp-btn" onclick="addTable()">+ Table</button>
+    <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:700;color:var(--pink-dark);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:10px;">Ajouter une table</div>
+      <div class="section-actions tp-actions" style="margin-bottom:0;">
+        <input id="new-table-name" class="m-input" placeholder="Nom de la table…" style="flex:1;min-width:140px;max-width:220px;background:var(--bg);" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
+        <input id="new-table-seats" class="m-input" type="number" placeholder="Places" value="6" style="width:90px;background:var(--bg);" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
+        ${shapeBtn('round','Ronde')}${shapeBtn('rect','Rect.')}${shapeBtn('square','Carrée')}
+        <button class="btn tp-btn" onclick="addTable()">+ Table</button>
+      </div>
     </div>
     <div class="section-actions tp-actions">
       <button class="btn-outline tp-btn" onclick="openAutoSeatModal()">Placement auto</button>
-      <button class="btn-outline tp-btn" id="pan-toggle" onclick="togglePanMode()">Déplacer</button>
+      <button class="btn-outline tp-btn" id="pan-toggle" onclick="togglePanMode()">Déplacer le plan</button>
       <button class="btn-outline tp-btn" onclick="resetSeating()">Réinitialiser</button>
       <button class="btn-outline tp-btn" onclick="exportPlanPDF()">Export PDF</button>
       <span style="font-size:12px;color:var(--tl);margin-left:auto;">${unseated.length} invité${unseated.length>1?'s':''} non placé${unseated.length>1?'s':''}</span>
@@ -2989,6 +2994,8 @@ const VND_CATEGORIES = {
 };
 const VCOLS={Photographe:"#7a5a9a",Traiteur:"#5a8a5a",Salle:"#9a5a3a",Fleuriste:"#c4697e","DJ / Musique":"#3a6a9a","Wedding Planner":"#8a6a2a",Autre:"#6a6a6a"};
 let sortFav='alpha', sortCho='alpha';
+function setSortFav(m){sortFav=m;renderVendors();}
+function setSortCho(m){sortCho=m;renderVendors();}
 
 const VND_ICONS={
   salle:'<path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/>',
@@ -3034,12 +3041,12 @@ function renderVendors(){
     <div id="vnd-results-wrap" style="margin-bottom:18px;"></div>
     <div class="panel" style="margin-bottom:16px;">
       <div class="panel-title">Prestataires favoris <span class="count-badge">${VENDORS_FAV.length}</span></div>
-      <div style="display:flex;justify-content:flex-end;margin-bottom:10px;"><button class="btn-outline" style="font-size:11px;padding:5px 12px;" onclick="addManualVendor('fav')">+ Ajouter manuellement</button></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px;"><div style="display:flex;gap:5px;flex-wrap:wrap;">${['alpha|A→Z','prix|Prix','distance|Distance'].map(s=>{const[v,l]=s.split('|');return `<button onclick="setSortFav('${v}')" style="background:${sortFav===v?'var(--pink)':'#fff'};color:${sortFav===v?'#fff':'var(--pink)'};border:1px solid var(--pink);border-radius:16px;padding:4px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;">${l}</button>`;}).join('')}</div><button class="btn-outline" style="font-size:11px;padding:5px 12px;" onclick="addManualVendor('fav')">+ Ajouter</button></div>
       <div id="vnd-favs"></div>
     </div>
     <div class="panel">
       <div class="panel-title">Prestataires choisis <span class="count-badge" style="background:#f0f8f0;color:var(--gn);">${VENDORS_CHO.length}</span></div>
-      <div style="display:flex;justify-content:flex-end;margin-bottom:10px;"><button class="btn-outline" style="font-size:11px;padding:5px 12px;" onclick="addManualVendor('cho')">+ Ajouter manuellement</button></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px;"><div style="display:flex;gap:5px;flex-wrap:wrap;">${['alpha|A→Z','prix|Prix','distance|Distance'].map(s=>{const[v,l]=s.split('|');return `<button onclick="setSortCho('${v}')" style="background:${sortCho===v?'var(--pink)':'#fff'};color:${sortCho===v?'#fff':'var(--pink)'};border:1px solid var(--pink);border-radius:16px;padding:4px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;">${l}</button>`;}).join('')}</div><button class="btn-outline" style="font-size:11px;padding:5px 12px;" onclick="addManualVendor('cho')">+ Ajouter</button></div>
       <div id="vnd-chosen"></div>
     </div>`;
   renderFavs();renderChosen();
