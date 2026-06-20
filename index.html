@@ -1584,7 +1584,7 @@ function renderChecklist(){
     </div>
     <div class="section-actions">
       <input id="new-task-text" class="m-input" placeholder="Ajouter une tâche…" value="${(window._newTaskText||'').replace(/"/g,'&quot;')}" style="flex:1;min-width:180px;max-width:380px;background:#fff;" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
-      <button class="m-pick" style="width:auto;min-width:150px;" onclick="pickTaskMonth()">${window._newTaskMonth} <span style="color:var(--tl);">▾</span></button>
+      <button class="m-pick" style="width:auto;min-width:150px;background:#fff;" onclick="pickTaskMonth()">${window._newTaskMonth} <span style="color:var(--tl);">▾</span></button>
       <button class="btn" onclick="addTask()">+ Ajouter</button>
     </div>
     <div style="display:flex;justify-content:flex-end;margin-bottom:14px;"><button class="btn-outline" style="font-size:12px;padding:6px 14px;" onclick="resetTasks()">↺ Restaurer les tâches par défaut</button></div>
@@ -2140,7 +2140,7 @@ function renderSeating(){
         const cap=t.seats||0;
         return`<div class="panel" style="padding:18px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-            <div style="font-family:'Playfair Display',serif;font-size:15px;color:var(--dark);">${t.nom||'Table'}</div>
+            <div style="font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--pink-dark);">${t.nom||'Table'}</div>
             <button onclick="delTable(${t.id})" style="background:none;border:none;color:var(--tl);cursor:pointer;font-size:15px;">×</button>
           </div>
           <div style="font-size:11px;color:var(--tl);margin-bottom:10px;">${seated.length}${cap?' / '+cap:''} place${seated.length>1?'s':''} · ${t.shape==='round'?'Ronde':t.shape==='square'?'Carrée':'Rectangulaire'}</div>
@@ -2149,7 +2149,7 @@ function renderSeating(){
             <span style="flex:1;">${g.nom||''}</span>
             <button onclick="unseatGuest(${g.id})" title="Retirer" style="background:none;border:none;color:var(--tl);cursor:pointer;font-size:13px;">×</button>
           </div>`).join('')}
-          ${unseated.length&&(!cap||seated.length<cap)?`<button class="m-pick" style="margin-top:10px;font-size:12px;padding:8px 12px;justify-content:center;color:var(--pink);font-weight:700;" onclick="pickSeatGuest(${t.id})">+ Placer un invité</button>`:''}
+          ${unseated.length&&(!cap||seated.length<cap)?`<button style="margin-top:10px;width:100%;background:#fff;border:1px solid var(--pink);border-radius:9px;font-size:12px;padding:8px 12px;color:var(--pink);font-weight:700;cursor:pointer;font-family:'Lora',serif;" onclick="pickSeatGuest(${t.id})">+ Placer un invité</button>`:''}
         </div>`;
       }).join('')}
     </div>`:'<div style="color:var(--tl);font-size:14px;">Aucune table. Créez votre première table ci-dessus.</div>'}`;
