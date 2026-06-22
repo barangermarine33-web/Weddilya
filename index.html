@@ -31,7 +31,7 @@ nav.scrolled{box-shadow:0 2px 24px rgba(212,96,122,0.08);}
 .nav-logo svg{width:32px;height:32px;}
 .nav-logo-text{font-family:'Josefin Sans',sans-serif;font-weight:300;font-size:18px;letter-spacing:0.25em;color:var(--pink);text-transform:uppercase;}
 .nav-links{display:flex;gap:36px;list-style:none;align-items:center;}
-.nav-links a{text-decoration:none;font-family:'Lora',serif;font-size:14px;color:var(--mid);transition:color 0.2s;}
+.nav-links a{text-decoration:none;font-family:'Lora',serif;font-size:15px;color:var(--mid);transition:color 0.2s;}
 .nav-links a:hover{color:var(--pink);}
 .nav-cta{background:linear-gradient(135deg,var(--pink-dark),var(--pink))!important;color:white!important;padding:10px 24px;border-radius:11px;font-weight:700!important;transition:opacity 0.2s,transform 0.2s!important;cursor:pointer;}
 .nav-cta:hover{opacity:0.9!important;transform:translateY(-1px);}
@@ -41,7 +41,7 @@ nav.scrolled{box-shadow:0 2px 24px rgba(212,96,122,0.08);}
 .hero-text{position:relative;z-index:2;}
 .hero h1{font-family:'Playfair Display',serif;font-size:clamp(38px,4.5vw,62px);font-weight:400;line-height:1.15;color:var(--dark);margin-bottom:24px;}
 .hero h1 em{font-style:italic;color:var(--pink);}
-.hero-sub{font-family:'Lora',serif;font-size:16px;color:var(--mid);line-height:1.8;max-width:440px;margin-bottom:40px;}
+.hero-sub{font-family:'Lora',serif;font-size:clamp(16px,1.3vw,18px);color:var(--mid);line-height:1.8;max-width:480px;margin-bottom:40px;}
 .hero-actions{display:flex;gap:16px;align-items:center;}
 .btn-primary{background:linear-gradient(135deg,var(--pink-dark),var(--pink));color:white;padding:14px 32px;border-radius:11px;text-decoration:none;font-family:'Lora',serif;font-size:15px;font-weight:700;transition:opacity 0.2s,transform 0.2s,box-shadow 0.2s;box-shadow:0 4px 20px rgba(212,96,122,0.3);cursor:pointer;border:none;}
 .btn-primary:hover{opacity:0.9;transform:translateY(-2px);box-shadow:0 8px 28px rgba(212,96,122,0.4);}
@@ -52,8 +52,8 @@ nav.scrolled{box-shadow:0 2px 24px rgba(212,96,122,0.08);}
 .hero-visual{position:relative;display:flex;justify-content:center;align-items:center;padding:20px 80px;}
 .phone-mockup{width:290px;height:580px;background:var(--bg);border-radius:44px;box-shadow:0 40px 80px rgba(62,24,40,0.18),0 0 0 8px #ffffff;position:relative;overflow:hidden;z-index:2;display:flex;flex-direction:column;}
 .floating-card{position:absolute;background:white;border-radius:14px;padding:10px 14px;box-shadow:0 8px 28px rgba(62,24,40,0.12);border:1px solid var(--border);}
-.fc-1{top:40px;right:10px;animation:float 3s ease-in-out infinite;z-index:3;}
-.fc-2{bottom:60px;left:10px;animation:float 3s ease-in-out infinite 1.5s;z-index:3;}
+.fc-1{top:60px;right:calc(50% - 230px);animation:float 3s ease-in-out infinite;z-index:3;}
+.fc-2{bottom:80px;left:calc(50% - 230px);animation:float 3s ease-in-out infinite 1.5s;z-index:3;}
 .fc-label{font-family:'Lora',serif;font-size:9px;color:var(--mid);margin-bottom:2px;}
 .fc-value{font-family:'Josefin Sans',sans-serif;font-weight:400;font-size:13px;color:var(--dark);}
 .fc-pink{color:var(--pink);}
@@ -88,7 +88,7 @@ nav.scrolled{box-shadow:0 2px 24px rgba(212,96,122,0.08);}
 
 .features{padding:110px 60px;background:white;}
 .section-header{text-align:center;margin-bottom:64px;}
-.section-tag{font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--pink);font-weight:400;margin-bottom:14px;display:block;}
+.section-tag{font-family:'Josefin Sans',sans-serif;font-size:12px;letter-spacing:0.2em;text-transform:uppercase;color:var(--pink);font-weight:400;margin-bottom:14px;display:block;}
 .section-title{font-family:'Playfair Display',serif;font-size:clamp(28px,3.5vw,46px);font-weight:400;line-height:1.2;color:var(--dark);}
 .section-title em{font-style:italic;color:var(--pink);}
 .features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;max-width:1100px;margin:0 auto;}
@@ -97,8 +97,8 @@ nav.scrolled{box-shadow:0 2px 24px rgba(212,96,122,0.08);}
 .feature-card:hover{transform:translateY(-5px);box-shadow:0 16px 40px rgba(212,96,122,0.1);border-color:var(--pink-light);}
 .feature-icon{width:46px;height:46px;background:white;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;box-shadow:0 2px 10px rgba(212,96,122,0.1);border:1px solid var(--border);}
 .feature-icon svg{width:22px;height:22px;stroke:var(--pink);fill:none;}
-.feature-card h3{font-family:'Playfair Display',serif;font-size:20px;font-weight:400;color:var(--dark);margin-bottom:10px;}
-.feature-card p{font-family:'Lora',serif;font-size:13px;color:var(--mid);line-height:1.75;}
+.feature-card h3{font-family:'Playfair Display',serif;font-size:clamp(20px,1.5vw,23px);font-weight:400;color:var(--dark);margin-bottom:10px;}
+.feature-card p{font-family:'Lora',serif;font-size:clamp(14px,1.05vw,15px);color:var(--mid);line-height:1.75;}
 
 .how{padding:110px 60px;background:var(--bg);}
 .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;max-width:960px;margin:0 auto;position:relative;}
@@ -107,7 +107,7 @@ nav.scrolled{box-shadow:0 2px 24px rgba(212,96,122,0.08);}
 .step-num{width:54px;height:54px;border-radius:50%;background:white;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 22px;font-family:'Playfair Display',serif;font-size:20px;color:var(--pink);position:relative;z-index:2;transition:background 0.3s,border-color 0.3s,color 0.3s;}
 .step:hover .step-num{background:var(--pink);border-color:var(--pink);color:white;}
 .step h4{font-family:'Playfair Display',serif;font-size:17px;font-weight:400;color:var(--dark);margin-bottom:8px;}
-.step p{font-family:'Lora',serif;font-size:13px;color:var(--mid);line-height:1.65;}
+.step p{font-family:'Lora',serif;font-size:clamp(14px,1.05vw,15px);color:var(--mid);line-height:1.65;}
 
 .contact{padding:110px 60px;background:var(--dark);display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;}
 .contact-text h2{font-family:'Playfair Display',serif;font-size:clamp(28px,3.5vw,46px);font-weight:400;color:white;line-height:1.25;margin-bottom:18px;}
@@ -1121,6 +1121,19 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 <div class="picker-overlay" id="picker-overlay"></div>
 
 <!-- FIREBASE -->
+<script>
+// ── Détection lien d'invitation partenaire (indépendant de Firebase) ──
+(function(){
+  try{
+    var t=new URLSearchParams(location.search).get('invite');
+    if(t){
+      var decoded=atob(t.replace(/-/g,'+').replace(/_/g,'/'));
+      var ownerDocId=decoded.split('|')[0];
+      if(ownerDocId){window._pendingInviteOwner=ownerDocId;}
+    }
+  }catch(e){}
+})();
+</script>
 <script type="module">
 import{initializeApp}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import*as fAuth from'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
@@ -1146,6 +1159,13 @@ fAuth.onAuthStateChanged(window.firebaseAuth,user=>{
     showView('app');
     loadUser(user).then(()=>{ if(typeof listenPublicReservations==='function') listenPublicReservations(); });
   } else {
+    // Lien d'invitation partenaire : rediriger vers la connexion
+    if(window._pendingInviteOwner){
+      showView('auth');
+      const st=document.getElementById('auth-subtitle');
+      if(st)st.textContent='Connectez-vous pour rejoindre le compte partagé de votre partenaire.';
+      return;
+    }
     // Ne pas forcer landing si on est sur la page auth
     if(document.getElementById('view-app').classList.contains('active')){
       showView('landing');
@@ -1348,10 +1368,11 @@ const RGPD_CONTENT = {
 function openRGPD(type){
   const data=RGPD_CONTENT[type];
   if(!data)return;
-  openModal(`<div class="modal-title">${data.title} <button class="modal-x" onclick="closeModal()">×</button></div>
-    <div style="font-size:13px;color:var(--mid);line-height:1.6;max-height:60vh;overflow-y:auto;">${data.html}</div>
-    <div class="m-actions"><button class="btn" style="width:100%;" onclick="closeModal()">Fermer</button></div>`);
+  document.getElementById('rgpd-title').textContent=data.title;
+  document.getElementById('rgpd-content').innerHTML=data.html;
+  document.getElementById('rgpd-overlay').style.display='flex';
 }
+function closeRGPD(){ document.getElementById('rgpd-overlay').style.display='none'; }
 
 async function doLogout(){
   if(_cdTimer)clearInterval(_cdTimer);
@@ -1363,10 +1384,19 @@ async function doLogout(){
 
 // ══ LOAD USER ══
 async function loadUser(firebaseUser){
-  const {doc,getDoc}=window.firebaseLib;
+  const {doc,getDoc,setDoc}=window.firebaseLib;
   const uid=firebaseUser.uid;
   const em=(firebaseUser.email||'');
   let data={}, docId=uid, loadErr=null;
+  // Lien d'invitation partenaire : lier ce compte au compte du propriétaire
+  if(window._pendingInviteOwner && window._pendingInviteOwner!==uid){
+    try{
+      await setDoc(doc(window.firebaseDB,'userData',uid),{_sharedOwnerDocId:window._pendingInviteOwner,_partnerEmail:em},{merge:true});
+    }catch(e){}
+    window._pendingInviteOwner=null;
+    // Nettoyer l'URL
+    try{history.replaceState(null,'',location.pathname);}catch(e){}
+  }
   const SYNC_PREFIXES=['tasks_','budget_','guests_','tables_','vfav_','vcho_','notes_','menu_','album_','drive_url_','cake_','menuqty_','deco_custom_','deco_','gifts_','funds_','received_','registry_msgs_','registry_pubid_'];
   const isSyncKey=k=>SYNC_PREFIXES.some(p=>k.indexOf(p)===0);
   try{
@@ -7775,6 +7805,16 @@ function _dpInitLabel(){
       <button onclick="closeDatePicker()" style="flex:1;background:#fbe6ee;color:#d4607a;border:1.5px solid #d8a0b8;border-radius:11px;padding:10px;cursor:pointer;font-family:Lora,serif;font-size:13px;font-weight:700;">Annuler</button>
       <button onclick="confirmDatePicker()" style="flex:1;background:#d4607a;color:#fff;border:none;border-radius:11px;padding:10px;cursor:pointer;font-family:Lora,serif;font-size:13px;font-weight:700;">Confirmer</button>
     </div>
+  </div>
+</div>
+<div id="rgpd-overlay" style="display:none;position:fixed;inset:0;background:rgba(62,24,40,0.55);z-index:500;align-items:center;justify-content:center;padding:18px;">
+  <div style="background:#fff;border-radius:20px;padding:24px;max-width:520px;width:100%;max-height:85vh;display:flex;flex-direction:column;border:1px solid var(--border);box-shadow:0 20px 60px rgba(62,24,40,0.25);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div id="rgpd-title" style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--dark);"></div>
+      <button onclick="closeRGPD()" style="background:none;border:none;cursor:pointer;font-size:24px;color:var(--tl);line-height:1;padding:0 4px;">×</button>
+    </div>
+    <div id="rgpd-content" style="font-family:'Lora',serif;font-size:13px;color:var(--mid);line-height:1.7;overflow-y:auto;flex:1;"></div>
+    <button onclick="closeRGPD()" class="btn" style="width:100%;margin-top:20px;flex-shrink:0;">Fermer</button>
   </div>
 </div>
 </body>
