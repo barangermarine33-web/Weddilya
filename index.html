@@ -2149,7 +2149,7 @@ function renderSeating(){
             <span style="flex:1;">${g.nom||''}</span>
             <button onclick="unseatGuest(${g.id})" title="Retirer" style="background:none;border:none;color:var(--tl);cursor:pointer;font-size:13px;">×</button>
           </div>`).join('')}
-          ${unseated.length&&(!cap||seated.length<cap)?`<button style="margin-top:10px;width:100%;background:#fff;border:1px solid var(--pink);border-radius:9px;font-size:12px;padding:8px 12px;color:var(--pink);font-weight:700;cursor:pointer;font-family:'Lora',serif;" onclick="pickSeatGuest(${t.id})">+ Placer un invité</button>`:''}
+          ${(!cap||seated.length<cap)?`<button style="margin-top:10px;width:100%;background:#fff;border:1px solid var(--pink);border-radius:9px;font-size:12px;padding:8px 12px;color:var(--pink);font-weight:700;cursor:pointer;font-family:'Lora',serif;" onclick="pickSeatGuest(${t.id})">+ Placer un invité</button>`:''}
         </div>`;
       }).join('')}
     </div>`:'<div style="color:var(--tl);font-size:14px;">Aucune table. Créez votre première table ci-dessus.</div>'}`;
