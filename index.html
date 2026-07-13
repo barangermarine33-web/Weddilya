@@ -389,8 +389,8 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
   .tp-btn{font-size:11px;padding:7px 11px;}
   .tp-actions .btn-outline{font-size:11px;padding:7px 11px;}
 }
-.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:16px;}
-.cat-chip{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--border);border-radius:13px;padding:11px 13px;cursor:pointer;font-size:13px;font-weight:600;color:var(--dark);transition:all .18s;font-family:'Lora',serif;text-align:left;}
+.cat-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px;margin-bottom:16px;}
+.cat-chip{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--border);border-radius:13px;padding:11px 13px;cursor:pointer;font-size:13px;font-weight:600;color:var(--dark);transition:all .18s;font-family:'Lora',serif;text-align:left;min-width:0;box-sizing:border-box;}
 .cat-chip:hover{border-color:var(--pink-light);background:var(--pink-pale);}
 .cat-chip.active{background:linear-gradient(135deg,var(--pink-pale),#fff);border-color:var(--pink);box-shadow:0 2px 12px rgba(212,96,122,0.12);}
 .cat-chip .ic{width:32px;height:32px;border-radius:9px;background:var(--pink-pale);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -603,7 +603,7 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 .add-sel{flex:1;border:1px solid #eedce5;border-radius:10px;padding:9px 8px;font-size:10px;color:#2d0a18;background:#fff;font-family:Lora,serif;display:flex;align-items:center;justify-content:space-between;}
 .add-btn{background:linear-gradient(135deg,#b84060,#d4607a);color:#fff;border-radius:11px;padding:9px 14px;font-size:18px;font-weight:700;display:flex;align-items:center;}
 .reset{display:flex;justify-content:flex-end;margin-bottom:12px;}
-.reset span{font-size:10px;color:#8a4a60;border:1px solid #d8a0b8;border-radius:11px;padding:5px 11px;background:#fdf8f5;}
+.reset span{font-size:10px;color:#d4607a;border:1px solid #d4607a;border-radius:11px;padding:5px 11px;background:#fff;font-weight:700;}
 .cat{display:flex;align-items:center;justify-content:center;gap:8px;background:#f5d4e0;border-radius:10px;padding:9px 16px;margin:8px 0 6px;}
 .cat-arrow{font-size:12px;color:#b84060;}
 .cat-name{font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:#5a1a30;letter-spacing:1px;}
@@ -1267,6 +1267,19 @@ function showView(v){
     document.getElementById('view-'+id).classList.toggle('active',id===v);
   });
   if(v==='landing') window.scrollTo({top:0});
+  // Neutralise la proposition "Enregistrer le mot de passe" de Chrome hors écran de connexion
+  neutralizePasswordPrompt(v!=='auth');
+}
+
+// Désactive les vrais champs mot de passe quand on n'est pas sur l'écran de connexion :
+// sans champ password actif, Chrome ne propose plus d'enregistrer un mot de passe.
+function neutralizePasswordPrompt(disable){
+  ['al-pass','ar-pass','inv-pass'].forEach(id=>{
+    const inp=document.getElementById(id);
+    if(!inp)return;
+    inp.disabled=!!disable;
+    if(disable){inp.value='';inp.setAttribute('autocomplete','off');}
+  });
 }
 
 function switchAuthTab(tab){
@@ -1612,6 +1625,7 @@ function startCountdown(){
 
 // ══ TABS ══
 function showTab(name, el){
+  if(name!=='home')window._homeTaskIds=null;
   document.querySelectorAll('.tab-page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.sidebar-item').forEach(i=>i.classList.remove('active'));
   const page=document.getElementById('tab-'+name);
@@ -1659,8 +1673,14 @@ function renderDashboard(){
   // Next tasks
   const nt=document.getElementById('next-tasks');
   if(nt){
-    const pending=CHECKLIST.filter(t=>!t.done).slice(0,5);
-    nt.innerHTML=pending.length?pending.map(t=>`<div class="task-row"><div class="task-dot"></div><span>${t.text||''}</span><span class="task-month">${t.month||''}</span></div>`).join(''):'<div style="color:var(--gn);font-size:13px;padding:8px 0;">Toutes les tâches sont complétées.</div>';
+    const pendingSorted=CHECKLIST.filter(t=>!t.done);
+    // Garder les tâches déjà affichées (même cochées) pour pouvoir les décocher
+    const prevIds=window._homeTaskIds||[];
+    let pending=prevIds.map(id=>CHECKLIST.find(t=>t.id===id)).filter(Boolean);
+    for(const t of pendingSorted){ if(pending.length>=5)break; if(!pending.some(x=>x.id===t.id))pending.push(t); }
+    pending=pending.slice(0,5);
+    window._homeTaskIds=pending.map(t=>t.id);
+    nt.innerHTML=pending.length?pending.map(t=>`<div class="task-row" onclick="toggleTask(${t.id})" style="cursor:pointer;"><div class="task-dot${t.done?' done':''}"></div><span style="${t.done?'text-decoration:line-through;color:var(--tl);':''}">${t.text||''}</span><span class="task-month">${t.month||''}</span></div>`).join(''):'<div style="color:var(--gn);font-size:13px;padding:8px 0;">Toutes les tâches sont complétées.</div>';
   }
   // Guests summary
   const gs=document.getElementById('guests-summary');
@@ -1770,11 +1790,12 @@ function renderBudget(){
       <div style="background:#fff8f0;border:1px solid #f0d8b8;border-radius:16px;padding:18px;text-align:center;"><div style="font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tl);margin-bottom:6px;">Reste à payer</div><div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--am);">${fmt(reste>0?reste:0)} €</div></div>
     </div>
     <div class="section-actions">
+      <input type="text" name="username" style="position:absolute;left:-9999px;top:-9999px;opacity:0;height:0;width:0;" tabindex="-1" aria-hidden="true"><input type="password" name="password" style="position:absolute;left:-9999px;top:-9999px;opacity:0;height:0;width:0;" tabindex="-1" aria-hidden="true">
       <input id="new-bgt-cat" class="m-input" autocomplete="off" data-lpignore="true" placeholder="Nouvelle catégorie" style="flex:1;min-width:160px;max-width:300px;background:#fff;" data-1p-ignore>
       <input id="new-bgt-est" class="m-input" type="number" autocomplete="off" data-lpignore="true" placeholder="Budget estimé €" style="width:160px;background:#fff;" data-1p-ignore>
-      <button class="btn" onclick="addBudgetCat()">+ Ajouter</button>
+      <button type="button" class="btn" onclick="addBudgetCat()">+ Ajouter</button>
     </div>
-    <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:14px;"><button class="btn-outline" style="font-size:12px;padding:6px 14px;" onclick="exportBudgetPDF()">Export PDF</button><button class="btn-outline" style="font-size:12px;padding:6px 14px;" onclick="resetBudget()">↺ Restaurer les catégories par défaut</button></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:14px;"><button type="button" class="btn-outline" style="font-size:12px;padding:6px 14px;" onclick="exportBudgetPDF()">Export PDF</button><button type="button" class="btn-outline" style="font-size:12px;padding:6px 14px;" onclick="resetBudget()">↺ Restaurer les catégories par défaut</button></div>
     ${BUDGET.length?BUDGET.map(item=>{
       const est=parseFloat(item.est||item.budget||0), reel=parseFloat(item.reel||0), paye=parseFloat(item.paye||0);
       const pct=est>0?Math.min(reel/est*100,100):0;
@@ -1941,7 +1962,9 @@ function importGuestsFile(input){
 }
 
 function parseGuestsCSV(txt){
-  const lines=txt.split(/\r?\n/).filter(l=>l.trim());
+  let lines=txt.split(/\r?\n/).filter(l=>l.trim());
+  // Ignorer la directive "sep=;" ajoutée pour Excel lors de l'export
+  if(lines.length && /^sep=/i.test(lines[0].trim())) lines=lines.slice(1);
   if(!lines.length){appAlert2('Fichier vide.');return;}
   const sep=lines[0].includes(';')?';':(lines[0].includes('\t')?'\t':',');
   const unq=s=>s.replace(/^"|"$/g,'').replace(/""/g,'"').trim();
@@ -1966,7 +1989,7 @@ function exportGuestsCSV(){
   const rows=[['Nom complet','Email','Cote','Role','Regime particulier',"Vin d'honneur uniquement",'Invitation','Presence']];
   GUESTS.forEach(g=>{rows.push([g.nom,g.email||'',g.cote==='p1'?USER.p1:USER.p2,g.role||'',g.regime||'',g.vinHonneur?'Oui':'Non',g.invitation,g.presence]);});
   const csvLines=rows.map(row=>row.map(cell=>'"'+String(cell).replace(/"/g,'""')+'"').join(';'));
-  const csvStr=csvLines.join('\r\n');
+  const csvStr='sep=;\r\n'+csvLines.join('\r\n');
   const iso=(()=>{const out=[];for(let j=0;j<csvStr.length;j++){const code=csvStr.charCodeAt(j);out.push(code<=255?code:63);}return new Uint8Array(out);})();
   const blob=new Blob([iso],{type:'text/csv;charset=iso-8859-1;'});
   const url=URL.createObjectURL(blob);const a=document.createElement('a');
@@ -2027,7 +2050,7 @@ function appConfirm(msg){
       </div>
       <div class="picker-inner">
         <div style="font-family:'Lora',serif;font-size:14px;color:var(--mid);line-height:1.6;margin-bottom:18px;text-align:center;">${msg}</div>
-        <div style="display:flex;gap:10px;"><button class="btn" id="pk-ok" style="flex:1;">Confirmer</button><button class="btn-outline" id="pk-no" style="flex:1;">Annuler</button></div>
+        <div style="display:flex;gap:10px;"><button class="btn-outline" id="pk-no" style="flex:1;">Annuler</button><button class="btn" id="pk-ok" style="flex:1;">Confirmer</button></div>
       </div>
     </div>`;
     ov.classList.add('open');
@@ -2061,7 +2084,7 @@ function appPrompt(title,value){
       </div>
       <div class="picker-inner">
         <input class="m-input" id="pk-input" value="${(value||'').replace(/"/g,'&quot;')}" style="margin-bottom:16px;" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
-        <div style="display:flex;gap:10px;"><button class="btn" id="pk-ok" style="flex:1;">Valider</button><button class="btn-outline" id="pk-no" style="flex:1;">Annuler</button></div>
+        <div style="display:flex;gap:10px;"><button class="btn-outline" id="pk-no" style="flex:1;">Annuler</button><button class="btn" id="pk-ok" style="flex:1;">Valider</button></div>
       </div>
     </div>`;
     ov.classList.add('open');
@@ -2163,8 +2186,8 @@ function openAddGuestModal(){
       <div class="m-field"><label class="m-label">Adresse postale</label><input class="m-input" id="ng-adresse" placeholder="N° rue, ville…" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore></div>
     </div>
     <div class="m-actions">
-      <button class="btn" onclick="confirmAddGuest()">Ajouter</button>
       <button class="btn-outline" onclick="closeModal()">Annuler</button>
+      <button class="btn" onclick="confirmAddGuest()">Ajouter</button>
     </div>`);
   setTimeout(()=>document.getElementById('ng-nom')?.focus(),50);
 }
@@ -2297,18 +2320,18 @@ function drawPlanVisual(){
       const hidden=t.hiddenSeats.includes(i);
       const g=hidden?null:placed.find(x=>x.seatIdx===i);
       const seat=document.createElement('div');
-      const seatBg=hidden?'background:transparent;border:1.5px dotted var(--pink-light);opacity:0.45;':(g?'background:var(--pink);border:1.5px solid var(--pink-dark);':'background:#fff;border:1.5px dashed var(--pink-light);');
-      seat.style.cssText=`position:absolute;left:${sx-SEAT/2}px;top:${sy-SEAT/2}px;width:${SEAT}px;height:${SEAT}px;border-radius:50%;${seatBg}display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;font-weight:700;cursor:pointer;z-index:5;`;
+      const seatBg=hidden?'background:transparent;border:1.5px dotted #d8a0b8;opacity:0.45;':(g?'background:'+(g.cote==='p1'?'#e8a0b0':'#a0b0e8')+';border:1.5px solid #fff;':'background:#f5e0e8;border:1.5px dashed #d8a0b8;');
+      seat.style.cssText=`position:absolute;left:${sx-SEAT/2}px;top:${sy-SEAT/2}px;width:${SEAT}px;height:${SEAT}px;border-radius:50%;${seatBg}display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:700;cursor:pointer;z-index:5;box-shadow:0 2px 6px rgba(0,0,0,.13);`;
       const seatIdx=i;
       if(hidden){seat.title='Chaise masquée';seat.onclick=ev=>{ev.stopPropagation();if(!panMode)openSeatMenu(t.id,seatIdx,null);};}
       else if(g){seat.textContent=(g.nom||'?').split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase();seat.title=g.nom;seat.onclick=ev=>{ev.stopPropagation();if(!panMode)openSeatMenu(t.id,seatIdx,g.id);};}
-      else{seat.title='Chaise libre';seat.onclick=ev=>{ev.stopPropagation();if(!panMode)openSeatMenu(t.id,seatIdx,null);};}
+      else{seat.innerHTML='<span style="color:#fff;font-size:14px;font-weight:700;line-height:1;text-shadow:0 1px 2px rgba(184,64,96,.35);">+</span>';seat.title='Chaise libre — cliquer pour placer un invité';seat.onclick=ev=>{ev.stopPropagation();if(!panMode)openSeatMenu(t.id,seatIdx,null);};}
       group.appendChild(seat);
     }
     const tbl=document.createElement('div');
     let w,h2,br;
     if(isR){w=RND;h2=RND;br='50%';}else if(isSq){w=SQ;h2=SQ;br='10px';}else{w=TW;h2=TH;br='10px';}
-    tbl.style.cssText=`position:absolute;left:${cx-w/2}px;top:${cy-h2/2}px;width:${w}px;height:${h2}px;border-radius:${br};background:var(--pink-pale);border:2px solid var(--pink);display:flex;align-items:center;justify-content:center;text-align:center;font-family:'Lora',serif;font-size:9px;font-weight:700;color:var(--pink-dark);cursor:grab;user-select:none;padding:4px;touch-action:none;z-index:10;`;
+    tbl.style.cssText=`position:absolute;left:${cx-w/2}px;top:${cy-h2/2}px;width:${w}px;height:${h2}px;border-radius:${br};background:linear-gradient(135deg,#f5d4e0,#fff);border:2px solid #e89aac;display:flex;align-items:center;justify-content:center;text-align:center;font-family:'Lora',serif;font-size:9px;font-weight:700;color:#b84060;cursor:grab;user-select:none;padding:4px;touch-action:none;z-index:10;box-shadow:0 2px 10px rgba(184,64,96,.12);overflow:hidden;`;
     tbl.textContent=t.nom||'Table';
     tbl.title=`${t.nom} — glisser pour déplacer, cliquer pour renommer`;
     let dragging=false,moved=false,sx0=0,sy0=0,ox=t.x,oy=t.y,tStart=0;
@@ -2457,8 +2480,8 @@ function openAutoSeatModal(){
       <button class="btn-outline" onclick="addConflict()">+ Ajouter la paire</button>
     </div>
     <div class="m-actions" style="margin-top:20px;">
-      <button class="btn" style="flex:1;" onclick="runAutoSeat()">Lancer le placement</button>
       <button class="btn-outline" onclick="closeModal()">Annuler</button>
+      <button class="btn" style="flex:1;" onclick="runAutoSeat()">Lancer le placement</button>
     </div>`);
 }
 function renderConflictsList(){
@@ -2698,7 +2721,7 @@ async function exportPlanPDF(){
     if(nonPlaces.length){ drawCard('Sans table', nonPlaces.map(g=>g.nom), [196,58,58]); }
 
     pdf.save(`plan_de_table_${USER.p1}_${USER.p2}.pdf`);
-    setTimeout(()=>{const r=document.getElementById('app-modal-root');if(r){r.style.display='none';r.innerHTML='';}},500);
+    setTimeout(()=>{const ov=document.getElementById('picker-overlay');if(ov){ov.classList.remove('open');ov.innerHTML='';}},500);
   }catch(err){
     appAlert('Impossible de générer le PDF (une connexion internet est nécessaire la première fois). Réessaie connectée.','Export PDF');
   }
@@ -2794,7 +2817,7 @@ async function exportBudgetPDF(){
     pdf.text(fmt(reste>0?reste:0),colX[4]+2,y+6);
 
     pdf.save('Weddilya-Budget.pdf');
-    setTimeout(()=>{const r=document.getElementById('app-modal-root');if(r){r.style.display='none';r.innerHTML='';}},500);
+    setTimeout(()=>{const ov=document.getElementById('picker-overlay');if(ov){ov.classList.remove('open');ov.innerHTML='';}},500);
   }catch(err){
     appAlert('Impossible de generer le PDF (une connexion internet est necessaire la premiere fois). Reessaie connectee.','Export PDF');
   }
@@ -2865,13 +2888,14 @@ function renderMenu(){
     <div class="panel" style="margin-bottom:16px;">
       <div class="panel-title" style="justify-content:center;">Répartition des invités</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <div><label class="m-label">Vin d'honneur uniquement</label><input class="m-input" type="number" min="0" id="mnu-h" value="${MENUQTY.honneur}" onchange="saveMenuQty(true,false)" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore></div>
-        <div><label class="m-label">Présents toute la réception</label><input class="m-input" type="number" min="0" id="mnu-r" value="${MENUQTY.repas}" onchange="saveMenuQty(false,true)" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore></div>
+        <input type="text" name="username" style="position:absolute;left:-9999px;top:-9999px;opacity:0;height:0;width:0;" tabindex="-1" aria-hidden="true"><input type="password" name="password" style="position:absolute;left:-9999px;top:-9999px;opacity:0;height:0;width:0;" tabindex="-1" aria-hidden="true">
+        <div><label class="m-label">Vin d'honneur uniquement</label><input class="m-input" type="number" min="0" id="mnu-h" value="${MENUQTY.honneur}" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore></div>
+        <div><label class="m-label">Présents toute la réception</label><input class="m-input" type="number" min="0" id="mnu-r" value="${MENUQTY.repas}" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore></div>
       </div>
       <div style="text-align:center;margin-top:10px;font-size:12px;color:var(--tl);">Total : <strong style="color:var(--dark);">${total}</strong> invités</div>
       <div style="display:flex;gap:8px;margin-top:12px;">
-        <button onclick="saveMenuQty(true,true)" class="btn" style="flex:1;">Calculer les quantités</button>
-        <button onclick="resetMenuQty()" class="btn-outline" style="white-space:nowrap;">↺ Réinitialiser</button>
+        <button type="button" onclick="saveMenuQty(true,true)" class="btn" style="flex:1;">Calculer les quantités</button>
+        <button type="button" onclick="resetMenuQty()" class="btn-outline" style="white-space:nowrap;">↺ Réinitialiser</button>
       </div>
     </div>
     <div class="panel" style="margin-bottom:16px;">
@@ -2893,7 +2917,7 @@ function renderMenu(){
         <button onclick="addMenuCategory()" class="btn" style="padding:8px 16px;">+</button>
       </div>
       <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
-        <button onclick="resetMenu()" class="btn-outline" style="font-size:11px;padding:5px 12px;">↺ Menu par défaut</button>
+        <button type="button" onclick="resetMenu()" class="btn-outline" style="font-size:11px;padding:5px 12px;">↺ Réinitialiser le menu par défaut</button>
       </div>
       ${MENU.map((section,si)=>`
         <div style="margin-bottom:16px;">
@@ -3490,8 +3514,8 @@ function openSettingsPage(){
     <div class="m-field"><label class="m-label">Date du mariage</label><input type="hidden" id="set-date" value="${USER.wDate||''}"><div class="m-input" id="set-date-display" onclick="openDatePicker('set-date','set-date-label')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;"><span id="set-date-label" style="color:#b07a90;">${USER.wDate?_dpFmtLabel(USER.wDate):'Choisir une date'}</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d4607a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div></div>
     <div class="m-field"><label class="m-label">Nouveau mot de passe</label><input class="m-input" type="password" id="set-pass" placeholder="Laisser vide pour ne pas changer" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore></div>
     <div class="m-actions">
-      <button class="btn" onclick="saveSettingsPage()">Enregistrer</button>
       <button class="btn-outline" onclick="closeModal()">Annuler</button>
+      <button class="btn" onclick="saveSettingsPage()">Enregistrer</button>
     </div>
     <div style="border-top:1px solid var(--border);margin:20px 0 14px;"></div>
     <div style="font-family:'Playfair Display',serif;font-size:16px;color:var(--dark);margin-bottom:6px;">Partenaire</div>
@@ -7039,9 +7063,9 @@ function openGiftModal(id){
     <div class="m-field"><label class="m-label">Photo (URL)</label><input class="m-input" id="gm-photo" value="${g&&g.photo?esc(g.photo):''}" placeholder="https://… (image)" autocomplete="off" data-lpignore="true" data-1p-ignore></div>
     <div class="m-field"><label class="m-label">Description</label><textarea class="m-input" id="gm-desc" rows="3" placeholder="Détails, couleur, modèle…" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>${g&&g.description?esc(g.description):''}</textarea></div>
     <div class="m-actions">
-      <button class="btn" onclick="saveGift()">${g?'Enregistrer':'Ajouter'}</button>
+      ${g?`<button class="btn-outline" style="border-color:var(--rd);color:var(--rd);margin-right:auto;" onclick="deleteGift(${g.id})">Supprimer</button>`:''}
       <button class="btn-outline" onclick="closeModal()">Annuler</button>
-      ${g?`<button class="btn-outline" style="border-color:var(--rd);color:var(--rd);margin-left:auto;" onclick="deleteGift(${g.id})">Supprimer</button>`:''}
+      <button class="btn" onclick="saveGift()">${g?'Enregistrer':'Ajouter'}</button>
     </div>`);
 }
 async function pickGiftCat(){
@@ -7131,9 +7155,9 @@ function openFundModal(id){
       <div class="m-field"><label class="m-label">Objectif (€)</label><input class="m-input" id="fm-obj" type="number" value="${f&&f.objectif?f.objectif:''}" placeholder="0" autocomplete="off" data-lpignore="true" data-1p-ignore></div>
     </div>
     <div class="m-actions">
-      <button class="btn" onclick="saveFund()">${f?'Enregistrer':'Créer'}</button>
+      ${f?`<button class="btn-outline" style="border-color:var(--rd);color:var(--rd);margin-right:auto;" onclick="deleteFund(${f.id})">Supprimer</button>`:''}
       <button class="btn-outline" onclick="closeModal()">Annuler</button>
-      ${f?`<button class="btn-outline" style="border-color:var(--rd);color:var(--rd);margin-left:auto;" onclick="deleteFund(${f.id})">Supprimer</button>`:''}
+      <button class="btn" onclick="saveFund()">${f?'Enregistrer':'Créer'}</button>
     </div>`);
 }
 async function pickFundType(){
@@ -7163,8 +7187,8 @@ function openContribModal(fundId){
     <div class="m-field"><label class="m-label">Montant (€)</label><input class="m-input" id="cm-montant" type="number" placeholder="0" autocomplete="off" data-lpignore="true" data-1p-ignore></div>
     <div class="m-field"><label class="m-label">Message (facultatif)</label><input class="m-input" id="cm-msg" placeholder="Un petit mot…" autocomplete="off" data-lpignore="true" data-1p-ignore></div>
     <div class="m-actions">
-      <button class="btn" onclick="saveContrib()">Ajouter</button>
       <button class="btn-outline" onclick="closeModal()">Annuler</button>
+      <button class="btn" onclick="saveContrib()">Ajouter</button>
     </div>`);
 }
 function saveContrib(){
@@ -7219,9 +7243,9 @@ function openReceivedModal(id){
     <div class="m-field"><label class="m-label">Commentaire (facultatif)</label><input class="m-input" id="rm-comment" value="${r&&r.commentaire?esc(r.commentaire):''}" placeholder="Note…" autocomplete="off" data-lpignore="true" data-1p-ignore></div>
     <div class="m-field"><label class="m-label">Remerciement</label><button class="m-pick" id="rm-merci" onclick="pickRecMerci()">${window._recEdit.remerciement==='envoye'?'Envoyé':'À remercier'} <span style="color:var(--tl);">▾</span></button></div>
     <div class="m-actions">
-      <button class="btn" onclick="saveReceivedItem()">${r?'Enregistrer':'Ajouter'}</button>
+      ${r?`<button class="btn-outline" style="border-color:var(--rd);color:var(--rd);margin-right:auto;" onclick="deleteReceived(${r.id})">Supprimer</button>`:''}
       <button class="btn-outline" onclick="closeModal()">Annuler</button>
-      ${r?`<button class="btn-outline" style="border-color:var(--rd);color:var(--rd);margin-left:auto;" onclick="deleteReceived(${r.id})">Supprimer</button>`:''}
+      <button class="btn" onclick="saveReceivedItem()">${r?'Enregistrer':'Ajouter'}</button>
     </div>`);
 }
 async function pickRecType(){
