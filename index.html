@@ -390,7 +390,9 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
   .tp-actions .btn-outline{font-size:11px;padding:7px 11px;}
 }
 .cat-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px;margin-bottom:16px;}
-.cat-chip{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--border);border-radius:13px;padding:11px 13px;cursor:pointer;font-size:13px;font-weight:600;color:var(--dark);transition:all .18s;font-family:'Lora',serif;text-align:left;min-width:0;box-sizing:border-box;line-height:1.2;overflow-wrap:normal;word-break:keep-all;hyphens:none;}
+.cat-chip{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--border);border-radius:13px;padding:11px 13px;cursor:pointer;font-size:13px;font-weight:600;color:var(--dark);transition:all .18s;font-family:'Lora',serif;text-align:left;min-width:0;box-sizing:border-box;line-height:1.25;white-space:normal;overflow-wrap:normal;word-break:normal;hyphens:none;}
+.cat-chip .ic{flex-shrink:0;}
+.cat-chip > *:not(.ic){min-width:0;}
 .cat-chip:hover{border-color:var(--pink-light);background:var(--pink-pale);}
 .cat-chip.active{background:linear-gradient(135deg,var(--pink-pale),#fff);border-color:var(--pink);box-shadow:0 2px 12px rgba(212,96,122,0.12);}
 .cat-chip .ic{width:32px;height:32px;border-radius:9px;background:var(--pink-pale);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -557,9 +559,7 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
   .features-grid{grid-template-columns:1fr;}
   .steps{grid-template-columns:1fr;}
   .widgets-row{grid-template-columns:1fr 1fr;}
-  .cat-chip{font-size:11.5px;padding:10px 9px;gap:6px;}
-  .cat-chip .ic{width:26px;height:26px;}
-  .cat-chip .ic svg{width:14px;height:14px;}
+
 }
 
 #view-app:not(.active) .app-topbar,
@@ -1989,11 +1989,14 @@ function parseGuestsCSV(txt){
 }
 
 function exportGuestsCSV(){
-  const headers=['Nom complet','Email','Côté','Rôle','Régime particulier',"Vin d'honneur uniquement",'Invitation','Présence'];
+  const headers=['Nom complet','Email','Cote','Role','Regime particulier',"Vin d'honneur uniquement",'Invitation','Presence'];
   const rows=GUESTS.map(g=>[g.nom,g.email||'',g.cote==='p1'?USER.p1:USER.p2,g.role||'',g.regime||'',g.vinHonneur?'Oui':'Non',g.invitation,g.presence]);
   const q=v=>{const s=String(v==null?'':v);return /[",;\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
-  const csv=[headers,...rows].map(r=>r.map(q).join(',')).join('\r\n');
-  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
+  const csv=[headers,...rows].map(r=>r.map(q).join(';')).join('\r\n');
+  // Encodage ISO-8859-1 (Latin-1) : les accents s'affichent correctement dans Excel et les apps mobiles
+  const bytes=new Uint8Array(csv.length);
+  for(let i=0;i<csv.length;i++){const c=csv.charCodeAt(i);bytes[i]=c<=255?c:63;}
+  const blob=new Blob([bytes],{type:'text/csv;charset=iso-8859-1;'});
   const url=URL.createObjectURL(blob);const a=document.createElement('a');
   a.href=url;a.download='invites_'+USER.p1+'_'+USER.p2+'.csv';
   document.body.appendChild(a);a.click();
