@@ -1989,18 +1989,63 @@ function parseGuestsCSV(txt){
 }
 
 function exportGuestsCSV(){
-  const headers=['Nom complet','Email','Cote','Role','Regime particulier',"Vin d'honneur uniquement",'Invitation','Presence'];
-  const rows=GUESTS.map(g=>[g.nom,g.email||'',g.cote==='p1'?USER.p1:USER.p2,g.role||'',g.regime||'',g.vinHonneur?'Oui':'Non',g.invitation,g.presence]);
-  const q=v=>{const s=String(v==null?'':v);return /[",;\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
-  const csv=[headers,...rows].map(r=>r.map(q).join(';')).join('\r\n');
-  // Encodage ISO-8859-1 (Latin-1) : les accents s'affichent correctement dans Excel et les apps mobiles
-  const bytes=new Uint8Array(csv.length);
-  for(let i=0;i<csv.length;i++){const c=csv.charCodeAt(i);bytes[i]=c<=255?c:63;}
-  const blob=new Blob([bytes],{type:'text/csv;charset=iso-8859-1;'});
+  const headers=['Nom complet','Email','Côté','Rôle','Régime particulier',"Vin d'honneur uniquement",'Invitation','Présence'];
+  const rows=GUESTS.map(g=>[g.nom||'',g.email||'',g.cote==='p1'?USER.p1:USER.p2,g.role||'',g.regime||'',g.vinHonneur?'Oui':'Non',g.invitation||'',g.presence||'']);
+  const blob=buildXLSX([headers,...rows]);
   const url=URL.createObjectURL(blob);const a=document.createElement('a');
-  a.href=url;a.download='invites_'+USER.p1+'_'+USER.p2+'.csv';
+  a.href=url;a.download='invites_'+USER.p1+'_'+USER.p2+'.xlsx';
   document.body.appendChild(a);a.click();
   setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},800);
+}
+// Génère un vrai fichier .xlsx (ZIP de XML) sans librairie externe.
+// UTF-8 natif => accents parfaits ; vraies cellules => colonnes parfaites, partout.
+function buildXLSX(rows){
+  const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const colName=n=>{let s='';n++;while(n>0){const m=(n-1)%26;s=String.fromCharCode(65+m)+s;n=Math.floor((n-1)/26);}return s;};
+  let sheet='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>';
+  rows.forEach((row,ri)=>{
+    sheet+='<row r="'+(ri+1)+'">';
+    row.forEach((cell,ci)=>{
+      const ref=colName(ci)+(ri+1);
+      sheet+='<c r="'+ref+'" t="inlineStr"><is><t xml:space="preserve">'+esc(cell)+'</t></is></c>';
+    });
+    sheet+='</row>';
+  });
+  sheet+='</sheetData></worksheet>';
+  const contentTypes='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>';
+  const rels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>';
+  const workbook='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Invités" sheetId="1" r:id="rId1"/></sheets></workbook>';
+  const wbRels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>';
+  const files=[
+    {name:'[Content_Types].xml',data:contentTypes},
+    {name:'_rels/.rels',data:rels},
+    {name:'xl/workbook.xml',data:workbook},
+    {name:'xl/_rels/workbook.xml.rels',data:wbRels},
+    {name:'xl/worksheets/sheet1.xml',data:sheet}
+  ];
+  return zipFiles(files);
+}
+// Mini-ZIP (STORE, sans compression) — suffisant pour un petit xlsx
+function zipFiles(files){
+  const enc=new TextEncoder();
+  const parts=[];const central=[];let offset=0;
+  const crcTable=(function(){let c,t=[];for(let n=0;n<256;n++){c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0;}return t;})();
+  const crc32=buf=>{let c=0xFFFFFFFF;for(let i=0;i<buf.length;i++)c=crcTable[(c^buf[i])&0xFF]^(c>>>8);return(c^0xFFFFFFFF)>>>0;};
+  const u16=n=>[n&0xFF,(n>>8)&0xFF];const u32=n=>[n&0xFF,(n>>8)&0xFF,(n>>16)&0xFF,(n>>24)&0xFF];
+  files.forEach(f=>{
+    const nameBuf=enc.encode(f.name);const dataBuf=enc.encode(f.data);const crc=crc32(dataBuf);
+    const local=[0x50,0x4b,0x03,0x04,...u16(20),...u16(0),...u16(0),...u16(0),...u16(0),...u32(crc),...u32(dataBuf.length),...u32(dataBuf.length),...u16(nameBuf.length),...u16(0),...nameBuf,...dataBuf];
+    parts.push(new Uint8Array(local));
+    central.push({nameBuf,crc,size:dataBuf.length,offset});
+    offset+=local.length;
+  });
+  const cdir=[];
+  central.forEach(c=>{
+    cdir.push(...[0x50,0x4b,0x01,0x02,...u16(20),...u16(20),...u16(0),...u16(0),...u16(0),...u16(0),...u32(c.crc),...u32(c.size),...u32(c.size),...u16(c.nameBuf.length),...u16(0),...u16(0),...u16(0),...u16(0),...u32(0),...u32(c.offset),...c.nameBuf]);
+  });
+  const cdirBuf=new Uint8Array(cdir);const cdirOffset=offset;
+  const end=new Uint8Array([0x50,0x4b,0x05,0x06,...u16(0),...u16(0),...u16(files.length),...u16(files.length),...u32(cdirBuf.length),...u32(cdirOffset),...u16(0)]);
+  return new Blob([...parts,cdirBuf,end],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
 }
 
 function renderGuestRows(list){
@@ -3112,20 +3157,20 @@ function addDecoCategory(){
 
 // ══ PRESTATAIRES ══
 const VND_CATEGORIES = {
-  salle:       {label:'Lieu/Salle',         tags:['amenity=events_venue','amenity=conference_centre','amenity=community_centre','tourism=hotel','historic=castle','building=castle','leisure=resort']},
+  salle:       {label:'Salle / Domaine',         tags:['amenity=events_venue','amenity=conference_centre','amenity=community_centre','tourism=hotel','historic=castle','building=castle','leisure=resort']},
   traiteur:    {label:'Traiteur',           tags:['shop=caterer','craft=caterer','craft=catering','amenity=catering']},
   photographe: {label:'Photographe',        tags:['shop=photo','craft=photographer','office=photographer']},
   videaste:    {label:'Vidéaste',           tags:['craft=videographer','office=videographer','shop=video']},
-  dj:          {label:'DJ/Musique',         tags:['craft=musical_instrument','shop=musical_instrument','office=dj','shop=music']},
+  dj:          {label:'DJ / Musique',         tags:['craft=musical_instrument','shop=musical_instrument','office=dj','shop=music']},
   fleuriste:   {label:'Fleuriste',          tags:['shop=florist']},
-  patisserie:  {label:'Pâtisserie/Cake',    tags:['shop=bakery','shop=pastry','shop=confectionery','craft=confectioner']},
+  patisserie:  {label:'Pâtisserie',    tags:['shop=bakery','shop=pastry','shop=confectionery','craft=confectioner']},
   robe:        {label:'Robe mariée',        tags:['shop=wedding_contract','shop=bridal']},
-  costume:     {label:'Costume/Tailleur',   tags:['craft=tailor','shop=tailor','shop=clothes']},
+  costume:     {label:'Costume',   tags:['craft=tailor','shop=tailor','shop=clothes']},
   coiffeur:    {label:'Coiffeur',           tags:['shop=hairdresser']},
-  beaute:      {label:'Maquillage/Beauté',  tags:['shop=beauty','shop=cosmetics','leisure=spa']},
-  bijou:       {label:'Bijoutier',          tags:['shop=jewelry']},
+  beaute:      {label:'Maquillage',  tags:['shop=beauty','shop=cosmetics','leisure=spa']},
+  bijou:       {label:'Bijouterie',          tags:['shop=jewelry']},
   imprimeur:   {label:'Imprimeur',          tags:['shop=stationery','shop=copyshop','craft=printer']},
-  voiture:     {label:'Véhicule',           tags:['amenity=car_rental','shop=car']},
+  voiture:     {label:'Voiture',           tags:['amenity=car_rental','shop=car']},
   hotel:       {label:'Hébergement',        tags:['tourism=hotel','tourism=guest_house','tourism=apartment','tourism=hostel']},
   decor:       {label:'Décoration',         tags:['shop=interior_decoration','craft=upholsterer','office=event_management']}
 };
@@ -3162,7 +3207,7 @@ function renderVendors(){
     <div class="panel" style="margin-bottom:18px;">
       <div class="panel-title">Rechercher un prestataire</div>
       <div class="cat-grid">
-        ${cats.map(([k,cat])=>`<button data-catkey="${k}" class="vnd-cat-btn cat-chip" onclick="selectCategory('${k}','${cat.label}')"><span class="ic"><svg viewBox="0 0 24 24">${vndIcon(k)}</svg></span>${cat.label}</button>`).join('')}
+        ${cats.map(([k,cat])=>`<button data-catkey="${k}" class="vnd-cat-btn cat-chip" onclick="selectCategory('${k}','${cat.label}')"><span class="ic"><svg viewBox="0 0 24 24">${vndIcon(k)}</svg></span><span style="min-width:0;overflow-wrap:normal;word-break:normal;">${cat.label}</span></button>`).join('')}
       </div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
         <input type="text" id="vnd-postal" placeholder="Code postal ou ville" class="m-input" style="flex:1;min-width:150px;" onkeydown="if(event.key==='Enter')doVendorSearch()" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
