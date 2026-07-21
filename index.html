@@ -1461,7 +1461,7 @@ const RGPD_CONTENT = {
       <p style="margin-bottom:8px;"><strong>Cookies analytiques</strong></p>
       <p style="margin-bottom:10px;">Weddilya n\'utilise pas de cookies analytiques ou publicitaires.</p>
       <p style="margin-bottom:8px;"><strong>Firebase (Google)</strong></p>
-      <p style="margin-bottom:10px;">Firebase peut déposer des cookies techniques pour l\'authentification. Firebase est conforme au RGPD. <a href="https://firebase.google.com/support/privacy" target="_blank" style="color:#d4607a;">En savoir plus</a></p>
+      <p style="margin-bottom:10px;">Firebase peut déposer des cookies techniques pour l\'authentification. Firebase est conforme au RGPD. <a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener noreferrer" style="color:#d4607a;">En savoir plus</a></p>
       <p>Contact : <strong>contact@weddilya.fr</strong></p>
     `
   }
@@ -1604,6 +1604,7 @@ function initApp(){
   renderVendors();
   renderAssistant();
   renderRegistry();
+  restoreLastTab();
 }
 
 function fmtDate(d){
@@ -1637,8 +1638,21 @@ function showTab(name, el){
   const page=document.getElementById('tab-'+name);
   if(page)page.classList.add('active');
   if(el)el.classList.add('active');
+  // Mémoriser l'onglet courant : au retour sur le site (nouvel onglet, retour arrière…)
+  // on retrouve l'onglet où on était, tant que la page n'a pas été fermée.
+  try{ sessionStorage.setItem('wd_tab', name); }catch(e){}
   closeSidebar();
   window.scrollTo({top:0});
+}
+// Restaure le dernier onglet consulté
+function restoreLastTab(){
+  let name=null;
+  try{ name=sessionStorage.getItem('wd_tab'); }catch(e){}
+  if(!name||name==='home')return;
+  const page=document.getElementById('tab-'+name);
+  if(!page)return;
+  const item=document.querySelector('.sidebar-item[data-tab="'+name+'"]');
+  showTab(name, item||null);
 }
 function toggleSidebar(){
   document.getElementById('app-sidebar').classList.toggle('open');
@@ -1870,7 +1884,7 @@ function renderGuests(){
     </div>
     <div class="section-actions" style="margin-top:18px;margin-bottom:24px;gap:10px;">
       <button class="btn" onclick="openAddGuestModal()">+ Ajouter un invité</button>
-      <a href="https://www.canva.com/fr_fr/" target="_blank" class="btn-outline" style="text-decoration:none;display:inline-block;">Créer mes invitations</a>
+      <a href="https://www.canva.com/fr_fr/" target="_blank" rel="noopener noreferrer" class="btn-outline" style="text-decoration:none;display:inline-block;">Créer mes invitations</a>
       <button class="btn-outline" onclick="document.getElementById('guest-import-file').click()">Importer</button>
       <input type="file" id="guest-import-file" accept=".csv,.tsv,.txt" style="display:none;" onchange="importGuestsFile(this)" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
       <button class="btn-outline" onclick="exportGuestsCSV()">Exporter</button>
@@ -3068,7 +3082,7 @@ function renderAlbum(){
       <div style="display:flex;gap:8px;width:100%;max-width:420px;">
         <button class="btn" style="flex:1;" onclick="shareDriveUrl()">Partager</button>
         <button class="btn-outline" style="flex:1;" onclick="copyDriveUrl()">Copier</button>
-        <a href="${DRIVE_URL}" target="_blank" class="btn-outline" style="flex:1;text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;">Ouvrir</a>
+        <a href="${DRIVE_URL}" target="_blank" rel="noopener noreferrer" class="btn-outline" style="flex:1;text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;">Ouvrir</a>
       </div>
     </div>`:`
     <div style="background:#fafafa;border:1.5px dashed var(--border);border-radius:14px;padding:28px;text-align:center;color:var(--tl);font-size:13px;margin-bottom:16px;">
@@ -3494,7 +3508,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
 
   if(!sorted.length){
     const gmUrl=`https://www.google.com/maps/search/${encodeURIComponent(catLabel+' mariage')}/@${lat},${lng},12z`;
-    wrap.innerHTML=`<div style="padding:20px;text-align:center;"><p style="font-size:13px;color:${tl};margin-bottom:16px;">Aucun résultat trouvé.<br><span style="font-size:11px;">Essaie un rayon plus large ou un autre code postal.</span></p><a href="${gmUrl}" target="_blank" style="display:block;padding:13px;background:${sf};border:1px solid ${br};border-radius:14px;text-decoration:none;color:${pk};font-size:13px;font-weight:700;font-family:Lora,serif;text-align:center;">Chercher sur Google Maps</a></div>`;
+    wrap.innerHTML=`<div style="padding:20px;text-align:center;"><p style="font-size:13px;color:${tl};margin-bottom:16px;">Aucun résultat trouvé.<br><span style="font-size:11px;">Essaie un rayon plus large ou un autre code postal.</span></p><a href="${gmUrl}" target="_blank" rel="noopener noreferrer" style="display:block;padding:13px;background:${sf};border:1px solid ${br};border-radius:14px;text-decoration:none;color:${pk};font-size:13px;font-weight:700;font-family:Lora,serif;text-align:center;">Chercher sur Google Maps</a></div>`;
     return;
   }
   renderVndResults(catLabel);
@@ -7116,7 +7130,7 @@ function giftCard(g){
       ${g.prix?`<div style="font-size:14px;font-weight:700;color:var(--pink);margin-bottom:8px;">${eur(g.prix)}</div>`:''}
       ${g.reservePar?`<div style="font-size:11px;color:var(--am);margin-bottom:8px;">Réservé par ${esc(g.reservePar)}${g.resEmail?` <span style="color:var(--tl);">(${esc(g.resEmail)})</span>`:''}</div>`:''}
       <div style="display:flex;gap:6px;">
-        ${g.lien?`<a href="${esc(g.lien)}" target="_blank" class="btn-outline" style="flex:1;text-align:center;font-size:11px;padding:6px;text-decoration:none;">Voir</a>`:''}
+        ${g.lien?`<a href="${esc(g.lien)}" target="_blank" rel="noopener noreferrer" class="btn-outline" style="flex:1;text-align:center;font-size:11px;padding:6px;text-decoration:none;">Voir</a>`:''}
         <button class="btn-outline" style="flex:1;font-size:11px;padding:6px;" onclick="openGiftModal(${g.id})">Modifier</button>
       </div>
     </div>
@@ -7746,11 +7760,11 @@ function publicGiftCard(g){
       ${g.description?`<div style="font-size:12px;color:var(--mid);margin:4px 0;">${esc(g.description).substring(0,80)}</div>`:''}
       ${g.prix?`<div style="font-size:14px;font-weight:700;color:var(--pink);margin:6px 0;">${Math.round(g.prix)} €</div>`:''}
       ${reserved?`<div style="font-size:12px;color:var(--am);font-weight:700;text-align:center;padding:6px 0;">${g.acheteur?'Déjà acheté':'Réservé'}${mine?' (par vous)':''}</div>
-        ${g.lien?`<a href="${esc(g.lien)}" target="_blank" style="display:block;text-align:center;border:1.5px solid var(--border);border-radius:9px;padding:7px;font-size:11px;color:var(--mid);text-decoration:none;margin-bottom:6px;">Voir le cadeau</a>`:''}
+        ${g.lien?`<a href="${esc(g.lien)}" target="_blank" rel="noopener noreferrer" style="display:block;text-align:center;border:1.5px solid var(--border);border-radius:9px;padding:7px;font-size:11px;color:var(--mid);text-decoration:none;margin-bottom:6px;">Voir le cadeau</a>`:''}
         ${mine?`${!g.acheteur?`<button onclick="markBoughtPublic(${g.id})" style="width:100%;background:#fff;border:1.5px solid var(--gn);color:var(--gn);border-radius:9px;padding:7px;font-size:11px;font-weight:700;cursor:pointer;margin-bottom:5px;">Je l'ai acheté</button>`:''}
         <button onclick="cancelReservePublic(${g.id})" style="width:100%;background:none;border:none;color:var(--tl);font-size:11px;cursor:pointer;text-decoration:underline;">Annuler ma réservation</button>`:''}`:`
         <div style="display:flex;gap:6px;margin-top:8px;">
-          ${g.lien?`<a href="${esc(g.lien)}" target="_blank" style="flex:1;text-align:center;border:1.5px solid var(--border);border-radius:9px;padding:7px;font-size:11px;color:var(--mid);text-decoration:none;">Voir</a>`:''}
+          ${g.lien?`<a href="${esc(g.lien)}" target="_blank" rel="noopener noreferrer" style="flex:1;text-align:center;border:1.5px solid var(--border);border-radius:9px;padding:7px;font-size:11px;color:var(--mid);text-decoration:none;">Voir</a>`:''}
           <button onclick="reservePublicGift(${g.id})" style="flex:1;background:linear-gradient(135deg,var(--pink-dark),var(--pink));color:#fff;border:none;border-radius:9px;padding:7px;font-size:11px;font-weight:700;cursor:pointer;">Réserver</button>
         </div>`}
     </div>
