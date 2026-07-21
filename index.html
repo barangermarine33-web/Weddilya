@@ -1406,6 +1406,9 @@ function togglePowerMenu(e){
 }
 function closePowerMenu(){const m=document.getElementById('power-menu');if(m)m.style.display='none';}
 document.addEventListener('click',e=>{if(!e.target.closest('#power-menu')&&!e.target.closest('.power-btn'))closePowerMenu();});
+// Fermer le menu dès que la page défile
+window.addEventListener('scroll',closePowerMenu,{passive:true});
+document.addEventListener('scroll',e=>{if(e.target!==document)closePowerMenu();},{capture:true,passive:true});
 
 const RGPD_CONTENT = {
   privacy: {
@@ -1989,13 +1992,32 @@ function parseGuestsCSV(txt){
 }
 
 function exportGuestsCSV(){
+  // Fenêtre "Préparation…" (comme dans l'application), fermée dès le téléchargement lancé
+  const ov=document.getElementById('picker-overlay');
+  if(ov){
+    ov.innerHTML=`<div class="picker-box">
+      <div style="background:var(--pink-pale);padding:20px 22px 16px;text-align:center;border-bottom:1px solid var(--border);">
+        <div style="width:46px;height:46px;border-radius:50%;background:#fff;border:2px solid var(--pink-light);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--pink)" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </div>
+        <div style="font-family:'Playfair Display',serif;font-size:18px;color:var(--pink-dark);">Export des invités</div>
+      </div>
+      <div class="picker-inner">
+        <div style="font-family:'Lora',serif;font-size:14px;color:var(--mid);line-height:1.6;text-align:center;">Préparation du fichier Excel…</div>
+      </div>
+    </div>`;
+    ov.classList.add('open');
+  }
   const headers=['Nom complet','Email','Côté','Rôle','Régime particulier',"Vin d'honneur uniquement",'Invitation','Présence'];
   const rows=GUESTS.map(g=>[g.nom||'',g.email||'',g.cote==='p1'?USER.p1:USER.p2,g.role||'',g.regime||'',g.vinHonneur?'Oui':'Non',g.invitation||'',g.presence||'']);
   const blob=buildXLSX([headers,...rows]);
   const url=URL.createObjectURL(blob);const a=document.createElement('a');
   a.href=url;a.download='invites_'+USER.p1+'_'+USER.p2+'.xlsx';
   document.body.appendChild(a);a.click();
-  setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},800);
+  setTimeout(()=>{
+    URL.revokeObjectURL(url);a.remove();
+    if(ov){ov.classList.remove('open');ov.innerHTML='';}
+  },800);
 }
 // Génère un vrai fichier .xlsx (ZIP de XML) sans librairie externe.
 // UTF-8 natif => accents parfaits ; vraies cellules => colonnes parfaites, partout.
