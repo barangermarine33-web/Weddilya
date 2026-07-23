@@ -2253,6 +2253,7 @@ async function delGuest(id){
   saveData('guests',GUESTS);closeModal();renderGuests();renderSeating();renderDashboard();
 }
 
+function _capf(v){return String(v==null?'':v).charAt(0).toUpperCase()+String(v==null?'':v).slice(1);}
 function openAddGuestModal(){
   window._ng={cote:'p1',role:'Invité·e',age:'Adulte',inv:'non envoyée',pres:'en attente',regime:'Aucun'};
   const pickField=(key,label,display)=>`<div class="m-field"><label class="m-label">${label}</label><button class="m-pick" id="ngf-${key}" onclick="pickNG('${key}')">${display} <span style="color:var(--tl);">▾</span></button></div>`;
@@ -2264,8 +2265,8 @@ function openAddGuestModal(){
       ${pickField('role','Rôle',window._ng.role)}
       ${pickField('age','Âge',window._ng.age)}
       ${pickField('regime','Régime alimentaire',window._ng.regime)}
-      ${pickField('inv','Invitation',window._ng.inv)}
-      ${pickField('pres','Présence',window._ng.pres)}
+      ${pickField('inv','Invitation',_capf(window._ng.inv))}
+      ${pickField('pres','Présence',_capf(window._ng.pres))}
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
       <div class="m-field"><label class="m-label">Email</label><input class="m-input" id="ng-email" type="text" inputmode="email" placeholder="email@…" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore></div>
@@ -2284,7 +2285,8 @@ async function pickNG(key){
   const map={
     cote:[{value:'p1',label:USER.p1},{value:'p2',label:USER.p2}],
     role:ROLES, age:['Adulte','Enfant','Bébé'],
-    inv:['non envoyée','envoyée'], pres:['en attente','confirmée','déclinée'],
+    inv:[{value:'non envoyée',label:'Non envoyée'},{value:'envoyée',label:'Envoyée'}],
+    pres:[{value:'en attente',label:'En attente'},{value:'confirmée',label:'Confirmée'},{value:'déclinée',label:'Déclinée'}],
     regime:REGIMES
   };
   const cur=window._ng[key];
@@ -2292,7 +2294,9 @@ async function pickNG(key){
   if(v===null||v===undefined)return;
   window._ng[key]=v;
   const btn=document.getElementById('ngf-'+key);
-  if(btn){const disp=key==='cote'?(v==='p1'?USER.p1:USER.p2):v;btn.innerHTML=disp+' <span style="color:var(--tl);">▾</span>';}
+  if(btn){let disp=key==='cote'?(v==='p1'?USER.p1:USER.p2):v;
+    if(key==='inv'||key==='pres')disp=String(disp).charAt(0).toUpperCase()+String(disp).slice(1);
+    btn.innerHTML=disp+' <span style="color:var(--tl);">▾</span>';}
 }
 function confirmAddGuest(){
   const nom=document.getElementById('ng-nom').value.trim();
