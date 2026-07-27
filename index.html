@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Weddilya — Créez le mariage dont vous rêvez</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23fdf8f5'/%3E%3Ccircle cx='12' cy='16' r='9' stroke='%23d4607a' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='20' cy='16' r='9' stroke='%23d4607a' stroke-width='1.5' fill='none'/%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23fdf8f5'/%3E%3Ccircle cx='12' cy='16' r='9' stroke='%23d4607a' stroke-width='1.8' fill='none'/%3E%3Ccircle cx='20' cy='16' r='9' stroke='%23d4607a' stroke-width='1.8' fill='none'/%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,700;1,400&family=Josefin+Sans:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -2202,6 +2202,9 @@ function openGuestModal(id){
       <div class="m-field"><label class="m-label">Email</label><input class="m-input" id="gm-email" type="email" value="${(g.email||'').replace(/"/g,'&quot;')}" placeholder="email@…" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore></div>
       <div class="m-field"><label class="m-label">Adresse postale</label><input class="m-input" id="gm-adresse" value="${(g.adresse||'').replace(/"/g,'&quot;')}" placeholder="N° rue, ville…" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore></div>
     </div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mid);cursor:pointer;padding:9px 11px;background:var(--pink-pale);border-radius:10px;margin-top:4px;margin-bottom:12px;">
+      <input type="checkbox" id="gm-vh" ${g.vinHonneur?'checked':''} autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore> Uniquement au vin d'honneur
+    </label>
     <div class="m-actions">
       <button class="btn-outline" style="border-color:var(--rd);color:var(--rd);margin-right:auto;" onclick="delGuest(${g.id})">Supprimer</button>
       <button class="btn-outline" onclick="closeModal()">Fermer</button>
@@ -2241,6 +2244,7 @@ function saveGuestModal(id){
   g.regime=window._gm.regime;
   g.email=document.getElementById('gm-email').value.trim();
   g.adresse=document.getElementById('gm-adresse').value.trim();
+  g.vinHonneur=document.getElementById('gm-vh')?.checked||false;
   saveData('guests',GUESTS);
   closeModal();
   // Re-render au prochain tick pour éviter que le clic se propage à une ligne du tableau
@@ -2408,7 +2412,7 @@ function drawPlanVisual(){
     for(let i=0;i<n;i++){
       let sx,sy;
       if(isR){const orbit=RND/2+GAP+SEAT/2;const a=(i/n)*2*Math.PI-Math.PI/2;sx=cx+orbit*Math.cos(a);sy=cy+orbit*Math.sin(a);}
-      else if(isSq){const perSide=Math.ceil(n/4);const side=Math.floor(i/perSide);const idxOnSide=i%perSide;const realPerSide=(side===3)?(n-3*perSide):perSide;const step=SQ/(Math.max(realPerSide,1)+1);const pos=step*(idxOnSide+1);const off=SQ/2+GAP;if(side===0){sx=cx-SQ/2+pos;sy=cy-off;}else if(side===1){sx=cx+off;sy=cy-SQ/2+pos;}else if(side===2){sx=cx-SQ/2+pos;sy=cy+off;}else{sx=cx-off;sy=cy-SQ/2+pos;}}
+      else if(isSq){const perSide=Math.ceil(n/4);const side=Math.floor(i/perSide);const idxOnSide=i%perSide;const realPerSide=(side===3)?(n-3*perSide):perSide;const step=SQ/(Math.max(realPerSide,1)+1);const pos=step*(idxOnSide+1);const off=SQ/2+GAP+SEAT/2;if(side===0){sx=cx-SQ/2+pos;sy=cy-off;}else if(side===1){sx=cx+off;sy=cy-SQ/2+pos;}else if(side===2){sx=cx-SQ/2+pos;sy=cy+off;}else{sx=cx-off;sy=cy-SQ/2+pos;}}
       else{const half=Math.ceil(n/2);const isTop=i<half;const cnt=isTop?half:(n-half);const idx=isTop?i:i-half;const step=TW/(Math.max(cnt,1)+1);sx=cx-TW/2+step*(idx+1);sy=isTop?cy-(TH/2+GAP+SEAT/2):cy+(TH/2+GAP+SEAT/2);}
       const hidden=t.hiddenSeats.includes(i);
       const g=hidden?null:placed.find(x=>x.seatIdx===i);
@@ -2514,9 +2518,17 @@ function addTable(){
   const seatsEl=document.getElementById('new-table-seats');
   const nom=(nomEl?nomEl.value.trim():'')||('Table '+(TABLES.length+1));
   const seats=Math.max(1,Math.min(Number(seatsEl?seatsEl.value:6)||6,12));
-  const x=80+(TABLES.length%4)*220;
-  const y=80+Math.floor(TABLES.length/4)*220;
-  TABLES.push({id:Date.now(),nom,shape:tpShape,seats,x,y,hiddenSeats:[]});
+  // Placer la nouvelle table à l'endroit actuellement visible du plan (scroll), pas dans une grille fixe
+  const wrap=document.getElementById('tp-visual');
+  let x,y;
+  if(wrap){
+    x=wrap.scrollLeft+wrap.clientWidth/2-70;
+    y=wrap.scrollTop+wrap.clientHeight/2-70;
+  }else{
+    x=80+(TABLES.length%4)*220;
+    y=80+Math.floor(TABLES.length/4)*220;
+  }
+  TABLES.push({id:Date.now(),nom,shape:tpShape,seats,x:Math.max(0,x),y:Math.max(0,y),hiddenSeats:[]});
   saveData('tables',TABLES);renderSeating();
 }
 
@@ -2733,7 +2745,7 @@ async function exportPlanPDF(){
           const realPerSide=(side===3)?(n-3*perSide):perSide;
           const step=SQ/(realPerSide+1);
           const pos=step*(idxOnSide+1);
-          const off=SQ/2+GAP;
+          const off=SQ/2+GAP+SEAT/2;
           if(side===0){ sx=cx-SQ/2+pos; sy=cy-off; }
           else if(side===1){ sx=cx+off; sy=cy-SQ/2+pos; }
           else if(side===2){ sx=cx-SQ/2+pos; sy=cy+off; }
