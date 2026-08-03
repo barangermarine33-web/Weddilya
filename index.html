@@ -2402,7 +2402,9 @@ function drawPlanVisual(){
   TABLES.forEach(t=>{
     if(!t.hiddenSeats)t.hiddenSeats=[];
     const placed=GUESTS.filter(g=>g.seatTableId===t.id);
-    const n=Math.min(t.seats||6,12);
+    const fixedSeats=t.shape==='square'?4:6;
+    if(t.seats!==fixedSeats){t.seats=fixedSeats;const ti=TABLES.findIndex(x=>x.id===t.id);if(ti>=0)TABLES[ti].seats=fixedSeats;}
+    const n=fixedSeats;
     const isR=t.shape==='round',isSq=t.shape==='square';
     // Conteneur du groupe table+chaises, positionné en (t.x,t.y), centre interne à (70,70)
     const group=document.createElement('div');
