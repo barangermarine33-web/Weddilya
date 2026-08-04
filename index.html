@@ -1034,7 +1034,7 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
           <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
           Télécharger l'application
         </button>
-        <div class="dl-sub">Bientôt sur Google Play Store</div>
+        <div class="dl-sub">Sur Google Play Store</div>
       </div>
     </aside>
     <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
@@ -2359,7 +2359,13 @@ function renderSeating(){
       <button class="btn-outline tp-btn" onclick="exportPlanPDF()">Export PDF</button>
       <span style="font-size:12px;color:var(--tl);margin-left:auto;">${unseated.length} invité${unseated.length>1?'s':''} non placé${unseated.length>1?'s':''}</span>
     </div>
-    <div id="tp-visual" style="position:relative;background:#fff;border:1.5px solid var(--border);border-radius:16px;height:480px;overflow:auto;margin-bottom:20px;-webkit-overflow-scrolling:touch;"></div>
+    <div style="position:relative;">
+      <div id="tp-visual" style="position:relative;background:#fff;border:1.5px solid var(--border);border-radius:16px;height:480px;overflow:auto;margin-bottom:20px;-webkit-overflow-scrolling:touch;"></div>
+      <div style="position:absolute;top:10px;right:10px;display:flex;gap:6px;z-index:50;">
+        <button onclick="tpZoomOut()" title="Dézoomer" style="width:34px;height:34px;border-radius:50%;background:#fff;border:1.5px solid var(--pink);color:var(--pink-dark);font-family:'Lora',serif;font-size:18px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.15);display:flex;align-items:center;justify-content:center;line-height:1;padding:0;">−</button>
+        <button onclick="tpZoomIn()" title="Zoomer" style="width:34px;height:34px;border-radius:50%;background:#fff;border:1.5px solid var(--pink);color:var(--pink-dark);font-family:'Lora',serif;font-size:18px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.15);display:flex;align-items:center;justify-content:center;line-height:1;padding:0;">+</button>
+      </div>
+    </div>
     ${TABLES.length?`<div class="vendor-grid" style="grid-template-columns:repeat(auto-fill,minmax(250px,1fr));">
       ${TABLES.map(t=>{
         const seated=GUESTS.filter(g=>g.seatTableId===t.id);
@@ -2385,6 +2391,9 @@ function renderSeating(){
 // Visualisation dessinée — même géométrie que l'application
 // Visualisation dessinée — même géométrie que l'application
 let panMode=false;
+let tpZoom=1;
+function tpZoomIn(){tpZoom=Math.min(2,+(tpZoom+0.1).toFixed(2));drawPlanVisual();}
+function tpZoomOut(){tpZoom=Math.max(0.4,+(tpZoom-0.1).toFixed(2));drawPlanVisual();}
 function togglePanMode(){
   panMode=!panMode;
   const btn=document.getElementById('pan-toggle');
@@ -2399,7 +2408,7 @@ function drawPlanVisual(){
   let maxX=900,maxY=600;
   TABLES.forEach(t=>{maxX=Math.max(maxX,t.x+300);maxY=Math.max(maxY,t.y+300);});
   const inner=document.createElement('div');
-  inner.style.cssText=`position:relative;width:${maxX}px;height:${maxY}px;`;
+  inner.style.cssText=`position:relative;width:${maxX}px;height:${maxY}px;zoom:${tpZoom};`;
   TABLES.forEach(t=>{
     if(!t.hiddenSeats)t.hiddenSeats=[];
     const placed=GUESTS.filter(g=>g.seatTableId===t.id);
