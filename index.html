@@ -2348,8 +2348,7 @@ function renderSeating(){
     <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px;">
       <div style="font-size:11px;font-weight:700;color:var(--pink-dark);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:10px;">Ajouter une table</div>
       <div class="section-actions tp-actions" style="margin-bottom:0;">
-        <input id="new-table-name" class="m-input" placeholder="Nom de la table…" style="flex:1;min-width:140px;max-width:220px;background:var(--bg);" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
-        <input id="new-table-seats" class="m-input" type="number" placeholder="Places" value="6" style="width:90px;background:var(--bg);" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
+        <input id="new-table-name" class="m-input" placeholder="Nom de la table…" style="flex:1;min-width:140px;background:var(--bg);" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
         ${shapeBtn('round','Ronde')}${shapeBtn('rect','Rect.')}${shapeBtn('square','Carrée')}
         <button class="btn tp-btn" onclick="addTable()">+ Table</button>
       </div>
@@ -2519,9 +2518,8 @@ async function deleteTable(id){
 }
 function addTable(){
   const nomEl=document.getElementById('new-table-name');
-  const seatsEl=document.getElementById('new-table-seats');
   const nom=(nomEl?nomEl.value.trim():'')||('Table '+(TABLES.length+1));
-  const seats=Math.max(1,Math.min(Number(seatsEl?seatsEl.value:6)||6,12));
+  const seats=tpShape==='square'?4:6;
   // Placer la nouvelle table à l'endroit actuellement visible du plan (scroll), pas dans une grille fixe
   const wrap=document.getElementById('tp-visual');
   let x,y;
