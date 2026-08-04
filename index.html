@@ -2345,22 +2345,22 @@ function renderSeating(){
   const el=document.getElementById('seating-content');
   if(!el)return;
   const unseated=GUESTS.filter(g=>!g.seatTableId);
-  const shapeBtn=(v,label)=>`<button onclick="setTpShape('${v}')" class="btn-outline" style="font-size:12px;padding:7px 13px;${tpShape===v?'background:var(--pink);color:#fff;border-color:var(--pink);':''}">${label}</button>`;
+  const shapeSeg=(v,label)=>`<div onclick="setTpShape('${v}')" style="flex:1;padding:10px 6px;text-align:center;font-family:'Lora',serif;font-size:12px;font-weight:700;cursor:pointer;border-right:1.5px solid var(--border);${tpShape===v?'background:var(--pink);color:#fff;':'background:#fff;color:var(--pink);'}">${label}</div>`;
   el.innerHTML=`
     <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px;">
       <div style="font-size:11px;font-weight:700;color:var(--pink-dark);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:10px;">Ajouter une table</div>
-      <div class="section-actions tp-actions" style="margin-bottom:0;">
-        <input id="new-table-name" class="m-input" placeholder="Nom de la table…" style="flex:1;min-width:140px;background:var(--bg);" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
-        ${shapeBtn('round','Ronde')}${shapeBtn('rect','Rect.')}${shapeBtn('square','Carrée')}
-        <button class="btn tp-btn" onclick="addTable()">+ Table</button>
+      <input id="new-table-name" class="m-input" placeholder="Nom de la table…" style="background:var(--bg);margin-bottom:10px;" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
+      <div style="display:flex;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;">
+        ${shapeSeg('rect','Rect.')}${shapeSeg('round','Ronde')}${shapeSeg('square','Carrée')}
+        <button class="btn" onclick="addTable()" style="flex:1;padding:10px 6px;border-radius:0;box-shadow:none;font-size:12px;">+ Table</button>
       </div>
     </div>
-    <div class="section-actions tp-actions">
-      <button class="btn-outline tp-btn" onclick="openAutoSeatModal()">Placement auto</button>
-      <button class="btn-outline tp-btn" onclick="resetSeating()">Réinitialiser</button>
-      <button class="btn-outline tp-btn" onclick="exportPlanPDF()">Export PDF</button>
-      <span style="font-size:12px;color:var(--tl);margin-left:auto;">${unseated.length} invité${unseated.length>1?'s':''} non placé${unseated.length>1?'s':''}</span>
+    <div style="display:flex;gap:8px;margin-bottom:8px;">
+      <button class="btn-outline" onclick="openAutoSeatModal()" style="flex:1;padding:9px 8px;font-size:12px;white-space:nowrap;">Placement auto</button>
+      <button class="btn-outline" onclick="resetSeating()" style="flex:1;padding:9px 8px;font-size:12px;white-space:nowrap;">Réinitialiser</button>
+      <button class="btn-outline" onclick="exportPlanPDF()" style="flex:1;padding:9px 8px;font-size:12px;white-space:nowrap;">Export PDF</button>
     </div>
+    <div style="font-size:12px;color:var(--tl);text-align:right;margin-bottom:14px;">${unseated.length} invité${unseated.length>1?'s':''} non placé${unseated.length>1?'s':''}</div>
     <div style="position:relative;">
       <div id="tp-visual" style="position:relative;background:#fff;border:1.5px solid var(--border);border-radius:16px;height:480px;overflow:auto;margin-bottom:20px;-webkit-overflow-scrolling:touch;"></div>
       <div style="position:absolute;top:10px;right:10px;display:flex;gap:6px;z-index:50;">
