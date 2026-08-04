@@ -1635,6 +1635,7 @@ function startCountdown(){
 // ══ TABS ══
 function showTab(name, el){
   if(name!=='home')window._homeTaskIds=null;
+  if(name==='seating'){tpZoom=1;if(document.getElementById('tp-visual'))drawPlanVisual();}
   document.querySelectorAll('.tab-page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.sidebar-item').forEach(i=>i.classList.remove('active'));
   const page=document.getElementById('tab-'+name);
@@ -2340,6 +2341,7 @@ let SEAT_CONFLICTS=[];
 function setTpShape(s){tpShape=s;renderSeating();}
 
 function renderSeating(){
+  tpZoom=1;
   const el=document.getElementById('seating-content');
   if(!el)return;
   const unseated=GUESTS.filter(g=>!g.seatTableId);
