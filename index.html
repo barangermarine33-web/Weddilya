@@ -5660,6 +5660,13 @@ function setupAssistSelectPickers(){
   const cont=document.getElementById('assistant-content');
   if(!cont||cont._assistPickerBound)return;
   cont._assistPickerBound=true;
+  // mousedown : empêche le menu déroulant natif du système de s'ouvrir
+  cont.addEventListener('mousedown',e=>{
+    const sel=e.target.closest('select.inp');
+    if(!sel)return;
+    e.preventDefault();
+  });
+  // click : ouvre notre picker rose (se déclenche normalement dès le tap, sans appui long)
   cont.addEventListener('click',async e=>{
     const sel=e.target.closest('select.inp');
     if(!sel)return;
