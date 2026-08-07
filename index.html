@@ -5729,28 +5729,28 @@ function assistOpen(service){
   if(service === 'budget')         return assistBudget(cont);
   if(service === 'timeline')       return assistTimeline(cont);
   if(service === 'decoration')     return assistDecoration(cont);
-  if(service === 'weddingCake')    return assistWeddingCake(cont);
-  if(service === 'animations')     return assistAnimations(cont);
-  if(service === 'voyageNoces')    return assistVoyageNoces(cont);
-  if(service === 'cadeauxInvites') return assistCadeauxInvites(cont);
+  if(service === 'weddingCake'){sv('assist_cake_cat','classiques');return assistWeddingCake(cont);}
+  if(service === 'animations'){sv('assist_anim_cat','classique');return assistAnimations(cont);}
+  if(service === 'voyageNoces'){sv('assist_voyage_cat','plage');return assistVoyageNoces(cont);}
+  if(service === 'cadeauxInvites'){sv('assist_cadeau_cat','petit-budget');return assistCadeauxInvites(cont);}
   if(service === 'tenueMariee')    return assistTenueMariee(cont);
   if(service === 'tenueMarie')     return assistTenueMarie(cont);
   if(service === 'bijouxMariee')   return assistBijouxMariee(cont);
   if(service === 'photos')         return assistPhotos(cont);
-  if(service === 'stress')         return assistStress(cont);
+  if(service === 'stress'){sv('assist_stress_cat','avant');return assistStress(cont);}
   if(service === 'belleFamille')   return assistBelleFamille(cont);
-  if(service === 'questions')      return assistQuestions(cont);
+  if(service === 'questions'){sv('assist_quest_presta','lieu');return assistQuestions(cont);}
   if(service === 'voeux')          return assistVoeux(cont);
   if(service === 'remerciements')  return assistRemerciements(cont);
   if(service === 'invitesLoin')    return assistInvitesLoin(cont);
   if(service === 'listeCadeaux')   return assistListeCadeaux(cont);
   if(service === 'prepCivile')     return assistPrepCivile(cont);
-  if(service === 'prepReligieuse') return assistPrepReligieuse(cont);
-  if(service === 'weddingDay')     return assistWeddingDay(cont);
+  if(service === 'prepReligieuse'){sv('assist_religion','catholique');return assistPrepReligieuse(cont);}
+  if(service === 'weddingDay'){sv('assist_wday_phase','reveil');return assistWeddingDay(cont);}
   if(service === 'enfants')        return assistEnfants(cont);
-  if(service === 'evjfEvg')        return assistEVJF(cont);
-  if(service === 'traditions')     return assistTraditions(cont);
-  if(service === 'playlistAmbi')   return assistPlaylistAmbi(cont);
+  if(service === 'evjfEvg'){sv('assist_evjf_cat','detente');return assistEVJF(cont);}
+  if(service === 'traditions'){sv('assist_region','sud-ouest');return assistTraditions(cont);}
+  if(service === 'playlistAmbi'){sv('assist_playlist_moment','cocktail-chill');return assistPlaylistAmbi(cont);}
   if(service === 'emotion')        return assistEmotion(cont);
   if(service === 'problemes')      return assistProblemes(cont);
   if(service === 'checklistAvant') return assistChecklistAvant(cont);
@@ -6197,7 +6197,7 @@ function assistGenerateDeco(){
 
 // ─── SERVICE 7 : WEDDING CAKE ───
 function assistWeddingCake(cont){
-  const saved = 'classiques'; sv('assist_cake_cat', saved);
+  const saved = ld('assist_cake_cat', 'classiques');
   const cats = ASSIST_KB.weddingCake;
   const catKeys = Object.keys(cats);
   const current = cats[saved] || cats[catKeys[0]];
@@ -6221,7 +6221,7 @@ function assistWeddingCake(cont){
 
 // ─── SERVICE 8 : ANIMATIONS ───
 function assistAnimations(cont){
-  const saved = 'classique'; sv('assist_anim_cat', saved);
+  const saved = ld('assist_anim_cat', 'classique');
   cont.innerHTML = `
     <div class="card" style="padding:16px;">
       <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Animations pour la soirée</div>
@@ -6250,7 +6250,7 @@ function assistRenderAnim(){
 
 // ─── SERVICE 9 : VOYAGE DE NOCES ───
 function assistEVJF(cont){
-  const saved = 'detente'; sv('assist_evjf_cat', saved);
+  const saved = ld('assist_evjf_cat', 'detente');
   cont.innerHTML = `
     <div class="card" style="padding:16px;">
       <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:6px;font-weight:700;">EVJF / EVG — idées d'activités</div>
@@ -6279,7 +6279,7 @@ function assistRenderEVJF(){
 }
 
 function assistVoyageNoces(cont){
-  const saved = 'plage'; sv('assist_voyage_cat', saved);
+  const saved = ld('assist_voyage_cat', 'plage');
   cont.innerHTML = `
     <div class="card" style="padding:16px;">
       <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">️ Voyage de noces</div>
@@ -6305,7 +6305,7 @@ function assistRenderVoyage(){
 
 // ─── SERVICE 10 : CADEAUX INVITÉS ───
 function assistCadeauxInvites(cont){
-  const saved = 'petit-budget'; sv('assist_cadeau_cat', saved);
+  const saved = ld('assist_cadeau_cat', 'petit-budget');
   cont.innerHTML = `
     <div class="card" style="padding:16px;">
       <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;"> Cadeaux pour les invités</div>
@@ -6406,7 +6406,7 @@ function assistBijouxMariee(cont){
 
 // ─── SERVICE 14 : MUSIQUE CÉRÉMONIE ───
 function assistMusiqueCer(cont){
-  const saved = 'entree-moderne'; sv('assist_musique_moment', saved);
+  const saved = ld('assist_musique_moment', 'entree-moderne');
   const moments = [
     {k:'entree-classique',l:' Entrée — Classique'},
     {k:'entree-moderne',l:' Entrée — Moderne'},
@@ -6464,7 +6464,7 @@ function assistPhotos(cont){
 
 // ─── SERVICE 16 : STRESS ───
 function assistStress(cont){
-  const saved = 'avant'; sv('assist_stress_cat', saved);
+  const saved = ld('assist_stress_cat', 'avant');
   const cats = [
     {k:'avant',l:' Avant le mariage'},
     {k:'jour-j',l:'⭐ Le jour J'},
@@ -6514,7 +6514,7 @@ function assistBelleFamille(cont){
 
 // ─── SERVICE 18 : QUESTIONS PRESTATAIRES ───
 function assistQuestions(cont){
-  const saved = 'lieu'; sv('assist_quest_presta', saved);
+  const saved = ld('assist_quest_presta', 'lieu');
   const types = [
     {k:'lieu',l:'️ Lieu de réception'},
     {k:'traiteur',l:'️ Traiteur'},
@@ -6680,7 +6680,7 @@ function assistPrepCivile(cont){
 
 // ─── SERVICE : PRÉPARATION RELIGIEUSE ───
 function assistPrepReligieuse(cont){
-  const saved = 'catholique'; sv('assist_religion', saved);
+  const saved = ld('assist_religion', 'catholique');
   const types = [
     {k:'catholique',l:' Catholique'},
     {k:'protestant',l:'️ Protestant'},
@@ -6708,7 +6708,7 @@ function assistRenderReligion(){
 // ─── SERVICE : CONSEILS JOUR J ───
 function assistWeddingDay(cont){
   const d = ASSIST_KB.weddingDay;
-  const saved = 'reveil'; sv('assist_wday_phase', saved);
+  const saved = ld('assist_wday_phase', 'reveil');
   const phases = [
     {k:'reveil',l:'️ Réveil & matin'},
     {k:'preparatifs',l:' Préparatifs'},
@@ -6760,7 +6760,7 @@ function assistEnfants(cont){
 
 // ─── SERVICE : TRADITIONS RÉGIONALES ───
 function assistTraditions(cont){
-  const saved = 'sud-ouest'; sv('assist_region', saved);
+  const saved = ld('assist_region', 'sud-ouest');
   const regions = [
     {k:'sud-ouest',l:' Sud-Ouest'},
     {k:'bretagne',l:' Bretagne'},
@@ -7010,7 +7010,7 @@ const PLAYLIST_KB = {
 };
 
 function assistPlaylistAmbi(cont){
-  const saved = 'cocktail-chill'; sv('assist_playlist_moment', saved);
+  const saved = ld('assist_playlist_moment', 'cocktail-chill');
   const moments = [
     {k:'ceremonie-entree',l:' Entrée mariée'},
     {k:'ceremonie-voeux',l:' Vœux / signature'},
