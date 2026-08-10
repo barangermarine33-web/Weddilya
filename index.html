@@ -5731,7 +5731,7 @@ function assistOpen(service){
   // Scroller en douceur jusqu'au contenu après le clic
   setTimeout(()=>{try{if(cont&&cont.scrollIntoView)cont.scrollIntoView({behavior:'smooth',block:'start'});}catch(e){}}, 50);
   if(service === 'menu')           return assistMenu(cont);
-  if(service === 'fairepart')      return assistFairepart(cont);
+  if(service === 'fairepart'){sv('assist_fp_style','romantique');return assistFairepart(cont);}
   if(service === 'budget')         return assistBudget(cont);
   if(service === 'timeline')       return assistTimeline(cont);
   if(service === 'decoration')     return assistDecoration(cont);
