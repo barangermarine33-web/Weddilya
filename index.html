@@ -4814,7 +4814,6 @@ const ASSIST_KB = {
   listeCadeaux: {
     'cagnotte-en-ligne': [
       {nom: 'Cagnotte en ligne mixte', desc: 'Plateformes qui combinent produits + voyage + projets. Généralement gratuites pour le couple, prélèvent ~3 % sur les contributions. Pratique pour récolter pour un projet commun. Exemples : Leetchi, Cagnottes.com.'},
-      {nom: 'Site mariage tout-en-un', desc: 'Certaines plateformes combinent site mariage et liste cadeaux. Gratuit. Pratique si vous voulez aussi un site dédié pour informer vos invités. Exemples : Zankyou, Mariages.net.'},
       {nom: 'Liste en grand magasin', desc: 'Liste traditionnelle de produits chez un grand magasin avec scanette. Pas de frais. Pratique pour électroménager et arts de la table. Exemples : Galeries Lafayette, Printemps, BHV.'},
       {nom: 'Liste en magasin de décoration', desc: 'Listes mariage dans une enseigne d\'ameublement / décoration. Très simple. Pratique pour aménagement de votre futur foyer. Exemples : Maisons du Monde, Ikea.'},
       {nom: 'Cagnotte voyage spécialisée', desc: 'Plateformes dédiées au voyage de noces : les invités contribuent à une étape du voyage (vol, nuit d\'hôtel, excursion). Exemples : Misterfly, iCadeaux Voyages.'}
@@ -6098,7 +6097,7 @@ function assistTimeline(cont){
   const savedRec = ld('assist_tl_rec', 'Domaine de [nom]');
   cont.innerHTML = `
     <div class="card" style="padding:16px;">
-      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">⏰ Timeline du jour J</div>
+      <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:14px;font-weight:700;">Timeline du jour J</div>
       <div style="margin-bottom:10px;">
         <label style="font-size:11px;color:${tl};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Heure de la cérémonie</label>
         <input id="tl-heure" type="time" class="inp" value="${savedHeure}" style="margin-top:4px;" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
@@ -7034,7 +7033,7 @@ function assistPlaylistAmbi(cont){
     {k:'ouverture-bal',l:' Ouverture de bal'},
     {k:'soiree-dancefloor',l:' Dancefloor'},
     {k:'soiree-annees80',l:' Années 80'},
-    {k:'soiree-francaise',l:'🇫🇷 Française'},
+    {k:'soiree-francaise',l:'Française'},
     {k:'fin-soiree',l:' Fin de soirée'}
   ];
   const list = PLAYLIST_KB[saved] || PLAYLIST_KB['cocktail-chill'];
