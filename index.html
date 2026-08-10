@@ -4813,11 +4813,11 @@ const ASSIST_KB = {
   // ─── 22. LISTE DE MARIAGE / CAGNOTTE ──────────────────────────────────
   listeCadeaux: {
     'cagnotte-en-ligne': [
-      {nom: 'Cagnotte en ligne mixte', desc: 'Plateformes qui combinent produits + voyage + projets. Généralement gratuites pour le couple, prélèvent ~3 % sur les contributions. Pratique pour récolter pour un projet commun.'},
-      {nom: 'Site mariage tout-en-un', desc: 'Certaines plateformes combinent site mariage et liste cadeaux. Gratuit. Pratique si vous voulez aussi un site dédié pour informer vos invités.'},
-      {nom: 'Liste en grand magasin', desc: 'Liste traditionnelle de produits chez un grand magasin avec scanette. Pas de frais. Pratique pour électroménager et arts de la table.'},
-      {nom: 'Liste en magasin de décoration', desc: 'Listes mariage dans une enseigne d\'ameublement / décoration. Très simple. Pratique pour aménagement de votre futur foyer.'},
-      {nom: 'Cagnotte voyage spécialisée', desc: 'Plateformes dédiées au voyage de noces : les invités contribuent à une étape du voyage (vol, nuit d\'hôtel, excursion).'}
+      {nom: 'Cagnotte en ligne mixte', desc: 'Plateformes qui combinent produits + voyage + projets. Généralement gratuites pour le couple, prélèvent ~3 % sur les contributions. Pratique pour récolter pour un projet commun. Exemples : Leetchi, Cagnottes.com.'},
+      {nom: 'Site mariage tout-en-un', desc: 'Certaines plateformes combinent site mariage et liste cadeaux. Gratuit. Pratique si vous voulez aussi un site dédié pour informer vos invités. Exemples : Zankyou, Mariages.net.'},
+      {nom: 'Liste en grand magasin', desc: 'Liste traditionnelle de produits chez un grand magasin avec scanette. Pas de frais. Pratique pour électroménager et arts de la table. Exemples : Galeries Lafayette, Printemps, BHV.'},
+      {nom: 'Liste en magasin de décoration', desc: 'Listes mariage dans une enseigne d\'ameublement / décoration. Très simple. Pratique pour aménagement de votre futur foyer. Exemples : Maisons du Monde, Ikea.'},
+      {nom: 'Cagnotte voyage spécialisée', desc: 'Plateformes dédiées au voyage de noces : les invités contribuent à une étape du voyage (vol, nuit d\'hôtel, excursion). Exemples : Misterfly, iCadeaux Voyages.'}
     ],
     'idees': [
       'Voyage de noces : la plus populaire. Précisez une destination ou laissez libre.',
@@ -6474,7 +6474,7 @@ function assistStress(cont){
   const saved = ld('assist_stress_cat', 'avant');
   const cats = [
     {k:'avant',l:' Avant le mariage'},
-    {k:'jour-j',l:'⭐ Le jour J'},
+    {k:'jour-j',l:'Le jour J'},
     {k:'apres',l:' Après le mariage'}
   ];
   cont.innerHTML = `
@@ -6812,7 +6812,7 @@ function assistEmotion(cont){
 function assistProblemes(cont){
   const list = ASSIST_KB.problemes;
   cont.innerHTML = `<div class="card" style="padding:16px;">
-    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:6px;font-weight:700;">🆘 Imprévus du jour J</div>
+    <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:6px;font-weight:700;">Imprévus du jour J</div>
     <div style="font-size:11px;color:${tl};font-style:italic;margin-bottom:14px;">Anticiper les problèmes courants pour mieux les gérer.</div>
     ${list.map(p=>`<div class="assist-card">
       <div style="font-weight:700;color:${rd};font-size:13px;margin-bottom:5px;"> ${h(p.pb)}</div>
@@ -6824,17 +6824,23 @@ function assistProblemes(cont){
 // ─── SERVICE : CHECK 10 MIN AVANT CÉRÉMONIE ───
 function assistChecklistAvant(cont){
   const list = ASSIST_KB.checklistAvant;
+  const done = ld('assist_checklist_avant', []);
   cont.innerHTML = `<div class="card" style="padding:16px;">
     <div style="font-family:Playfair Display,serif;font-size:18px;color:${tm};margin-bottom:6px;font-weight:700;"> Check-list 10 min avant cérémonie</div>
     <div style="font-size:11px;color:${tl};font-style:italic;margin-bottom:14px;">La dernière vérification avant le grand moment. Coche au fur et à mesure.</div>
     ${list.map((item,i)=>`<label style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;margin-bottom:6px;background:${sf};border-radius:10px;cursor:pointer;">
-      <input type="checkbox" style="margin:3px 0 0;accent-color:${pk};width:16px;height:16px;flex-shrink:0;" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
+      <input type="checkbox" ${done[i]?'checked':''} onchange="assistToggleChecklistAvant(${i},this.checked)" style="margin:3px 0 0;accent-color:${pk};width:16px;height:16px;flex-shrink:0;" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
       <span style="font-size:13px;color:${tx};line-height:1.6;">${h(item)}</span>
     </label>`).join('')}
     <div class="assist-tip" style="text-align:center;font-family:Playfair Display,serif;font-style:italic;color:${tm};font-size:14px;">
        Profite de cet instant. Tout est prêt.
     </div>
   </div>`;
+}
+function assistToggleChecklistAvant(i, checked){
+  const done = ld('assist_checklist_avant', []);
+  done[i] = checked;
+  sv('assist_checklist_avant', done);
 }
 
 // ─── SERVICE : PLAYLIST PAR AMBIANCE ───
