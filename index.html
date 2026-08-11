@@ -5756,7 +5756,7 @@ function assistOpen(service){
   if(service === 'enfants')        return assistEnfants(cont);
   if(service === 'evjfEvg'){sv('assist_evjf_cat','detente');return assistEVJF(cont);}
   if(service === 'traditions'){sv('assist_region','sud-ouest');return assistTraditions(cont);}
-  if(service === 'playlistAmbi'){sv('assist_playlist_moment','cocktail-chill');return assistPlaylistAmbi(cont);}
+  if(service === 'playlistAmbi'){sv('assist_playlist_moment','ceremonie-entree');return assistPlaylistAmbi(cont);}
   if(service === 'emotion')        return assistEmotion(cont);
   if(service === 'problemes')      return assistProblemes(cont);
   if(service === 'checklistAvant') return assistChecklistAvant(cont);
@@ -7022,7 +7022,7 @@ const PLAYLIST_KB = {
 };
 
 function assistPlaylistAmbi(cont){
-  const saved = ld('assist_playlist_moment', 'cocktail-chill');
+  const saved = ld('assist_playlist_moment', 'ceremonie-entree');
   const moments = [
     {k:'ceremonie-entree',l:' Entrée mariée'},
     {k:'ceremonie-voeux',l:' Vœux / signature'},
