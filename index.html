@@ -5734,7 +5734,7 @@ function assistOpen(service){
   if(service === 'fairepart'){sv('assist_fp_style','romantique');return assistFairepart(cont);}
   if(service === 'budget')         return assistBudget(cont);
   if(service === 'timeline')       return assistTimeline(cont);
-  if(service === 'decoration')     return assistDecoration(cont);
+  if(service === 'decoration'){sv('assist_deco_style','romantique');sv('assist_deco_saison','printemps');return assistDecoration(cont);}
   if(service === 'weddingCake'){sv('assist_cake_cat','classiques');return assistWeddingCake(cont);}
   if(service === 'animations'){sv('assist_anim_cat','classique');return assistAnimations(cont);}
   if(service === 'voyageNoces'){sv('assist_voyage_cat','plage');return assistVoyageNoces(cont);}
@@ -5746,8 +5746,8 @@ function assistOpen(service){
   if(service === 'stress'){sv('assist_stress_cat','avant');return assistStress(cont);}
   if(service === 'belleFamille')   return assistBelleFamille(cont);
   if(service === 'questions'){sv('assist_quest_presta','lieu');return assistQuestions(cont);}
-  if(service === 'voeux')          return assistVoeux(cont);
-  if(service === 'remerciements')  return assistRemerciements(cont);
+  if(service === 'voeux'){sv('assist_voeux_style','romantique');return assistVoeux(cont);}
+  if(service === 'remerciements'){sv('assist_remerciement_type','classique');return assistRemerciements(cont);}
   if(service === 'invitesLoin')    return assistInvitesLoin(cont);
   if(service === 'listeCadeaux')   return assistListeCadeaux(cont);
   if(service === 'prepCivile')     return assistPrepCivile(cont);
