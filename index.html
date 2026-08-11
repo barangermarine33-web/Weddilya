@@ -915,6 +915,10 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
               Vous avez été invité(e) à rejoindre un espace Weddilya
             </div>
             <div class="auth-input-wrap">
+              <div class="auth-label">Votre prénom</div>
+              <input class="auth-input" type="text" id="inv-prenom" placeholder="Votre prénom" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
+            </div>
+            <div class="auth-input-wrap">
               <div class="auth-label">Email</div>
               <input class="auth-input" type="email" id="inv-email" placeholder="votre@email.fr" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
             </div>
@@ -1316,13 +1320,15 @@ function cancelInviteFlow(){
 }
 
 async function doRegisterInvite(){
+  const prenom=document.getElementById('inv-prenom').value.trim();
   const email=document.getElementById('inv-email').value.trim();
   const pass=document.getElementById('inv-pass').value;
   const err=document.getElementById('aerr-invite');
   err.style.display='none';
-  if(!email||!pass){err.textContent='Veuillez remplir tous les champs.';err.style.display='block';return;}
+  if(!prenom||!email||!pass){err.textContent='Veuillez remplir tous les champs.';err.style.display='block';return;}
   try{
     await window.firebaseAuthLib.createUserWithEmailAndPassword(window.firebaseAuth,email,pass);
+    window._pendingInviteOwnName=prenom;
     // loadUser() liera automatiquement ce compte au propriétaire via window._pendingInviteOwner
   }catch(e){
     err.textContent=e.code==='auth/email-already-in-use'?'Cet email est déjà utilisé. Connectez-vous plutôt.':e.code==='auth/weak-password'?'Mot de passe trop court (6 caractères min.).':'Erreur : '+(e.message||e.code);
@@ -1497,9 +1503,10 @@ async function loadUser(firebaseUser){
   // Lien d'invitation partenaire : lier ce compte au compte du propriétaire
   if(window._pendingInviteOwner && window._pendingInviteOwner!==uid){
     try{
-      await setDoc(doc(window.firebaseDB,'userData',uid),{_sharedOwnerDocId:window._pendingInviteOwner,_partnerEmail:em},{merge:true});
+      await setDoc(doc(window.firebaseDB,'userData',uid),{_sharedOwnerDocId:window._pendingInviteOwner,_partnerEmail:em,_ownName:window._pendingInviteOwnName||''},{merge:true});
     }catch(e){}
     window._pendingInviteOwner=null;
+    window._pendingInviteOwnName=null;
     // Nettoyer l'URL
     try{history.replaceState(null,'',location.pathname);}catch(e){}
   }
@@ -1519,8 +1526,11 @@ async function loadUser(firebaseUser){
       }catch(e2){}
     }
     // Partage partenaire : charger les données du propriétaire
+    let ownName='', isSharedGuest=false;
     if(data._sharedOwnerDocId){
       const ownerId=data._sharedOwnerDocId;
+      ownName=data._ownName||'';
+      isSharedGuest=true;
       try{
         const oSnap=await getDoc(doc(window.firebaseDB,'userData',ownerId));
         if(oSnap.exists()){data=oSnap.data();docId=ownerId;}
@@ -1530,7 +1540,7 @@ async function loadUser(firebaseUser){
     loadErr=(e&&(e.code||e.message))||'erreur inconnue';
   }
   window._activeDataDocId=docId;
-  USER={email:em,p1:data.p1||'Mariée',p2:data.p2||'Marié',wDate:data.wDate||''};
+  USER={email:em, p1:data.p1||'Mariée', p2:data.p2||'Marié', wDate:data.wDate||'', ownName:ownName, isSharedGuest:isSharedGuest};
   // Recherche par préfixe : tolère les différences de casse/format de l'email dans les clés
   const findVal=prefix=>{
     let v=data[prefix+'_'+em];
@@ -1592,7 +1602,7 @@ function initApp(){
   const h=new Date().getHours();
   const g=h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir';
   const dg=document.getElementById('dash-greeting');
-  if(dg)dg.innerHTML=g+' <em>'+USER.p1+'</em>';
+  if(dg)dg.innerHTML=g+' <em>'+(USER.isSharedGuest&&USER.ownName?USER.ownName:USER.p1)+'</em>';
   // Countdown
   startCountdown();
   // Render
@@ -3637,10 +3647,10 @@ function openSettingsPage(){
       <button class="btn-outline" onclick="closeModal()">Annuler</button>
       <button class="btn" onclick="saveSettingsPage()">Enregistrer</button>
     </div>
-    <div style="border-top:1px solid var(--border);margin:20px 0 14px;"></div>
+    ${USER.isSharedGuest?'':`<div style="border-top:1px solid var(--border);margin:20px 0 14px;"></div>
     <div style="font-family:'Playfair Display',serif;font-size:16px;color:var(--dark);margin-bottom:6px;">Partenaire</div>
     <div style="font-size:12px;color:var(--tl);font-style:italic;margin-bottom:6px;">Générez un lien à partager à votre partenaire.</div>
-    <button class="btn" style="width:100%;" onclick="generatePartnerLink()">Générer un lien d'invitation</button>
+    <button class="btn" style="width:100%;" onclick="generatePartnerLink()">Générer un lien d'invitation</button>`}
     <div style="border-top:1px solid var(--border);margin:18px 0 14px;"></div>
     <button class="btn-outline" style="width:100%;" onclick="doLogout()">Se déconnecter</button>
     <div style="border-top:1px solid var(--border);margin:18px 0 14px;"></div>
@@ -3667,6 +3677,7 @@ async function saveSettingsPage(){
   closeModal();initApp();
 }
 async function generatePartnerLink(){
+  if(USER.isSharedGuest){await appAlert2('Seul le créateur du compte peut générer un lien d\'invitation.');return;}
   const docId=window._activeDataDocId;
   if(!docId){await appAlert2('Connectez-vous d\'abord.');return;}
   const token=btoa(docId+'|'+Date.now()).replace(/=/g,'');
