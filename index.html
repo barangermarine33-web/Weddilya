@@ -1898,6 +1898,7 @@ function renderGuests(){
       <span class="badge b-am" style="font-size:12px;padding:5px 12px;">${att} en attente</span>
       <span class="badge b-pk" style="font-size:12px;padding:5px 12px;">${dec} déclinés</span>
       <span class="badge b-tl" style="font-size:12px;padding:5px 12px;">${GUESTS.length} total</span>
+      <span class="badge" style="font-size:12px;padding:5px 12px;background:#faf3e0;color:#c9a84c;">${GUESTS.filter(g=>g.vinHonneur).length} uniquement vin d'honneur</span>
     </div>
     <div class="section-actions" style="margin-top:18px;margin-bottom:24px;gap:10px;">
       <button class="btn" onclick="openAddGuestModal()">+ Ajouter un invité</button>
