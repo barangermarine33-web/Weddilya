@@ -1512,6 +1512,7 @@ async function loadUser(firebaseUser){
   }
   const SYNC_PREFIXES=['tasks_','budget_','guests_','tables_','vfav_','vcho_','notes_','menu_','album_','drive_url_','cake_','menuqty_','deco_custom_','deco_','gifts_','funds_','received_','registry_msgs_','registry_pubid_'];
   const isSyncKey=k=>SYNC_PREFIXES.some(p=>k.indexOf(p)===0);
+  let ownName='', isSharedGuest=false;
   try{
     let snap=await getDoc(doc(window.firebaseDB,'userData',uid));
     data=snap.exists()?snap.data():{};
@@ -1526,7 +1527,6 @@ async function loadUser(firebaseUser){
       }catch(e2){}
     }
     // Partage partenaire : charger les données du propriétaire
-    let ownName='', isSharedGuest=false;
     if(data._sharedOwnerDocId){
       const ownerId=data._sharedOwnerDocId;
       ownName=data._ownName||'';
