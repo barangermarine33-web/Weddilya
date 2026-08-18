@@ -1649,6 +1649,7 @@ function showTab(name, el){
   if(name!=='home')window._homeTaskIds=null;
   else renderDashboard();
   if(name==='seating'){tpZoom=1;if(document.getElementById('tp-visual'))drawPlanVisual();}
+  if(name==='menu'){MENUQTY._manual_h=false;MENUQTY._manual_r=false;if(document.getElementById('menu-content'))renderMenu();}
   document.querySelectorAll('.tab-page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.sidebar-item').forEach(i=>i.classList.remove('active'));
   const page=document.getElementById('tab-'+name);
@@ -3020,12 +3021,12 @@ function renderMenu(){
       <div class="panel-title" style="justify-content:center;">Répartition des invités</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <input type="text" name="username" style="position:absolute;left:-9999px;top:-9999px;opacity:0;height:0;width:0;" tabindex="-1" aria-hidden="true"><input type="password" name="password" style="position:absolute;left:-9999px;top:-9999px;opacity:0;height:0;width:0;" tabindex="-1" aria-hidden="true">
-        <div><label class="m-label">Vin d'honneur uniquement</label><input class="m-input" type="number" min="0" id="mnu-h" value="${MENUQTY.honneur}" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore></div>
-        <div><label class="m-label">Présents toute la réception</label><input class="m-input" type="number" min="0" id="mnu-r" value="${MENUQTY.repas}" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore></div>
+        <div><label class="m-label">Vin d'honneur uniquement</label><input class="m-input" type="number" min="0" id="mnu-h" value="${MENUQTY.honneur}" onchange="MENUQTY.honneur=this.value;MENUQTY._manual_h=true;renderMenu();" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore></div>
+        <div><label class="m-label">Présents toute la réception</label><input class="m-input" type="number" min="0" id="mnu-r" value="${MENUQTY.repas}" onchange="MENUQTY.repas=this.value;MENUQTY._manual_r=true;renderMenu();" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore></div>
       </div>
       <div style="text-align:center;margin-top:10px;font-size:12px;color:var(--tl);">Total : <strong style="color:var(--dark);">${total}</strong> invités</div>
       <div style="display:flex;gap:8px;margin-top:12px;">
-        <button type="button" onclick="saveMenuQty(true,true)" class="btn" style="flex:1;">Calculer les quantités</button>
+        <button type="button" onclick="renderMenu()" class="btn" style="flex:1;">Calculer les quantités</button>
         <button type="button" onclick="resetMenuQty()" class="btn-outline" style="white-space:nowrap;">↺ Réinitialiser</button>
       </div>
     </div>
