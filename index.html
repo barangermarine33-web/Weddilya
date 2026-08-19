@@ -1819,7 +1819,7 @@ function renderBudget(){
   const reste=tR-tP;
   el2.innerHTML=`
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
-      <div class="panel" style="text-align:center;padding:18px;"><div style="font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tl);margin-bottom:6px;">Budget estimé total</div><div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--dark);">${fmt(tE)} €</div></div>
+      <div class="panel" style="text-align:center;padding:18px;"><div style="font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tl);margin-bottom:6px;">Budget estimé total</div><div style="display:inline-flex;align-items:center;gap:6px;border-bottom:2px dashed var(--pink);padding:2px 22px 4px 2px;background:var(--pink-pale);border-radius:6px;position:relative;"><input type="number" id="bgt-total-input" value="${Math.round(tE)}" onchange="updBudgetTotal(this.value)" style="border:none;background:transparent;outline:none;text-align:center;font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--dark);width:110px;" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore><span style="position:absolute;right:0;bottom:6px;font-size:13px;color:var(--pink);">✎</span></div> €<div style="font-size:10px;color:var(--pink);margin-top:6px;font-style:italic;">Modifiable</div></div>
       <div class="panel" style="text-align:center;padding:18px;"><div style="font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tl);margin-bottom:6px;">Budget réel total</div><div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--pink);">${fmt(tR)} €</div></div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;">
@@ -1859,6 +1859,18 @@ function renderBudget(){
 }
 
 
+function updBudgetTotal(val){
+  const newTotal=Number(val)||0;
+  const currentSum=BUDGET.reduce((s,i)=>s+(parseFloat(i.est||i.budget)||0),0);
+  if(currentSum>0){
+    BUDGET.forEach(b=>{
+      const est=parseFloat(b.est||b.budget||0);
+      const pct=est/currentSum;
+      b.est=Math.round(newTotal*pct);
+    });
+  }
+  saveData('budget',BUDGET);renderBudget();renderDashboard();
+}
 async function resetBudget(){
   if(await appConfirm('Restaurer les catégories par défaut ? Vos modifications seront perdues.')){
     BUDGET=DEF_BUDGET.map(d=>({...d,reel:0,paye:0}));
