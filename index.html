@@ -1648,7 +1648,7 @@ function startCountdown(){
 function showTab(name, el){
   if(name!=='home')window._homeTaskIds=null;
   else renderDashboard();
-  if(name==='seating'){tpZoom=1;if(document.getElementById('tp-visual'))drawPlanVisual();}
+  if(name==='seating'){tpZoom=1;tpShape='rect';if(document.getElementById('seating-content'))renderSeating();}
   if(name==='menu'){MENUQTY._manual_h=false;MENUQTY._manual_r=false;if(document.getElementById('menu-content'))renderMenu();}
   document.querySelectorAll('.tab-page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.sidebar-item').forEach(i=>i.classList.remove('active'));
@@ -2353,7 +2353,7 @@ function renderNotes(){
 }
 
 // ══ PLAN DE TABLE ══
-let tpShape='round';
+let tpShape='rect';
 let SEAT_CONFLICTS=[];
 function setTpShape(s){tpShape=s;renderSeating();}
 
