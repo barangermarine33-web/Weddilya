@@ -1862,11 +1862,17 @@ function renderBudget(){
 function updBudgetTotal(val){
   const newTotal=Number(val)||0;
   const currentSum=BUDGET.reduce((s,i)=>s+(parseFloat(i.est||i.budget)||0),0);
-  if(currentSum>0){
-    BUDGET.forEach(b=>{
+  if(currentSum>0 && BUDGET.length){
+    let running=0;
+    BUDGET.forEach((b,idx)=>{
       const est=parseFloat(b.est||b.budget||0);
       const pct=est/currentSum;
-      b.est=Math.round(newTotal*pct);
+      if(idx<BUDGET.length-1){
+        b.est=Math.round(newTotal*pct);
+        running+=b.est;
+      }else{
+        b.est=newTotal-running; // la dernière catégorie absorbe l'écart d'arrondi
+      }
     });
   }
   saveData('budget',BUDGET);renderBudget();renderDashboard();
