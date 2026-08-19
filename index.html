@@ -1893,12 +1893,14 @@ function renderGuests(){
   const att=GUESTS.filter(g=>g.presence==='en attente').length;
   const dec=GUESTS.filter(g=>g.presence==='déclinée').length;
   el.innerHTML=`
-    <div class="section-actions" style="margin-bottom:18px;gap:10px;">
-      <span class="badge b-gn" style="font-size:12px;padding:5px 12px;">${conf} confirmés</span>
-      <span class="badge b-am" style="font-size:12px;padding:5px 12px;">${att} en attente</span>
-      <span class="badge b-pk" style="font-size:12px;padding:5px 12px;">${dec} déclinés</span>
-      <span class="badge b-tl" style="font-size:12px;padding:5px 12px;">${GUESTS.length} total</span>
-      <span class="badge" style="font-size:12px;padding:5px 12px;background:#faf3e0;color:#c9a84c;">${GUESTS.filter(g=>g.vinHonneur).length} uniquement vin d'honneur</span>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
+      <div style="background:#f0f8f0;border-radius:12px;padding:11px;text-align:center;"><div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:#5a8a6a;">${conf}</div><div style="font-size:9px;color:#5a8a6a;letter-spacing:1.5px;text-transform:uppercase;">Confirmés</div></div>
+      <div style="background:#fff8f0;border-radius:12px;padding:11px;text-align:center;"><div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:#c47a2a;">${att}</div><div style="font-size:9px;color:#c47a2a;letter-spacing:1.5px;text-transform:uppercase;">En attente</div></div>
+      <div style="background:#fff0f0;border-radius:12px;padding:11px;text-align:center;"><div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:#c43a3a;">${dec}</div><div style="font-size:9px;color:#c43a3a;letter-spacing:1.5px;text-transform:uppercase;">Déclinés</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;">
+      <div style="background:#f5f0f2;border-radius:12px;padding:11px;text-align:center;"><div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--tl);">${GUESTS.length}</div><div style="font-size:9px;color:var(--tl);letter-spacing:1.5px;text-transform:uppercase;">Total</div></div>
+      <div style="background:#faf3e0;border-radius:12px;padding:11px;text-align:center;"><div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:#c9a84c;">${GUESTS.filter(g=>g.vinHonneur).length}</div><div style="font-size:9px;color:#c9a84c;letter-spacing:1.5px;text-transform:uppercase;">Vin d'honneur seul.</div></div>
     </div>
     <div class="section-actions" style="margin-top:18px;margin-bottom:24px;gap:10px;">
       <button class="btn" onclick="openAddGuestModal()">+ Ajouter un invité</button>
