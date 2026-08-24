@@ -2805,11 +2805,22 @@ async function exportPlanPDF(){
           const cnt=isTop?half:(n-half);
           const step=TW/(cnt+1);
           sx=cx-TW/2+step*(idx+1);
-          sy=isTop?(cy-TH/2-GAP):(cy+TH/2+GAP);
+          sy=isTop?(cy-TH/2-GAP-SEAT/2):(cy+TH/2+GAP+SEAT/2);
         }
         const g=placed.find(x=>x.seatIdx===i);
-        setFill(C_WH); setStroke(C_PK); pdf.setLineWidth(0.5);
-        pdf.circle(PX(sx),PY(sy),seatR,'FD');
+        if(g){
+          const seatColor=g.cote==='p1'?[232,160,176]:[160,176,232]; // #e8a0b0 / #a0b0e8
+          setFill(seatColor); setStroke(C_WH); pdf.setLineWidth(0.5);
+          pdf.circle(PX(sx),PY(sy),seatR,'FD');
+          const initials=(g.nom||'?').split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase();
+          setText(C_WH);
+          pdf.setFontSize(Math.max(4,seatR*1.5));
+          pdf.setFont('helvetica','bold');
+          pdf.text(initials,PX(sx),PY(sy),{align:'center',baseline:'middle'});
+        }else{
+          setFill(C_WH); setStroke(C_PK); pdf.setLineWidth(0.5);
+          pdf.circle(PX(sx),PY(sy),seatR,'FD');
+        }
       }
 
       // ─── Table (même forme/dimensions que l'app) ───
