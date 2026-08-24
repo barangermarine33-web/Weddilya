@@ -3330,6 +3330,13 @@ function renderVendors(){
         <span id="vnd-radius-val" style="font-size:12px;color:var(--dark);font-weight:700;min-width:50px;text-align:right;">20 km</span>
       </div>
       <div id="vnd-location-status" style="font-size:11px;color:var(--tl);min-height:16px;"></div>
+      <details style="margin-top:8px;">
+        <summary style="font-size:11px;color:var(--tl);cursor:pointer;">+ Recherche par texte libre</summary>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+          <input class="m-input" id="vnd-loc" placeholder="Ex: domaine de la roseraie, château..." style="flex:1;min-width:140px;font-size:12px;" onkeydown="if(event.key==='Enter')searchVendors()" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
+          <button class="btn" onclick="searchVendors()" id="vnd-btn" style="min-width:100px;font-size:13px;">Rechercher</button>
+        </div>
+      </details>
     </div>
     <div id="vnd-results-wrap" style="margin-bottom:18px;"></div>
     <div class="panel" style="margin-bottom:16px;">
@@ -3591,33 +3598,44 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
 
 function renderVndResults(query){
   const r=window._vndResults||[];const wrap=el('vnd-results-wrap');if(!wrap||!r.length)return;
-  const googleSearchUrl=`https://www.google.com/search?q=${encodeURIComponent(query + " mariage")}`;
-  wrap.innerHTML=`<div class="panel"><div class="panel-title">${r.length} résultat${r.length>1?'s':''} — ${h(query)}</div>`+
+  // Construction d'une URL Google Maps de fallback pour la query complète
+  // (utile si OSM n'a pas tout — l'utilisateur peut compléter via Google)
+  const lat=window._userLat, lng=window._userLng;
+  const googleSearchUrl = (lat&&lng)
+    ? `https://www.google.com/search?q=${encodeURIComponent(query + " mariage")}`
+    : `https://www.google.com/search?q=${encodeURIComponent(query + " mariage")}`;
+
+  wrap.innerHTML=`<div style="font-family:Playfair Display,serif;font-size:15px;color:${tx};margin-bottom:10px;">${r.length} résultat${r.length>1?'s':''} pour "${h(query)}"</div>`+
   r.map((v,i)=>{
-    const inFav=VENDORS_FAV.find(f=>f.nom===v.nom);
+    const c=VCOLS[v.categorie]||pk;
     const mapsUrl=v.lat&&v.lng?`https://www.google.com/maps/search/?api=1&query=${v.lat},${v.lng}`:'';
-    return`<div class="vnd-card2">
-      <div class="vnd-head" onclick="toggleVndResult(${i})" style="cursor:pointer;">
-        <span class="vnd-badge">${h(v.categorie)}</span>
-        <span class="vnd-name">${h(v.nom)}</span>
-        ${v.distance!=null?`<span class="vnd-dist">${v.distance} km</span>`:''}
-        <span style="font-size:12px;color:var(--tl);flex-shrink:0;">▼</span>
+    return`<div class="card" style="margin-bottom:8px;overflow:hidden;">
+      <div onclick="toggleVndResult(${i})" style="padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;background:linear-gradient(135deg,${sf},#fff);">
+        <span style="background:${c}20;color:${c};font-size:10px;border-radius:20px;padding:3px 10px;font-weight:700;flex-shrink:0;">${h(v.categorie)}</span>
+        <span style="font-family:Playfair Display,serif;font-size:14px;font-weight:700;color:${tx};flex:1;">${h(v.nom)}</span>
+        ${v.distance!=null?`<span style="background:#f0f8f0;color:${gn};border-radius:8px;padding:3px 8px;font-size:11px;font-weight:700;flex-shrink:0;"> ${v.distance} km</span>`:''}
+        <span style="font-size:13px;color:${tl};">▼</span>
       </div>
-      <div id="vnd-detail-${i}" style="display:none;" class="vnd-body2">
-        ${v.adresse?`<div class="vnd-addr">${h(v.adresse)}</div>`:''}
-        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:11px;">
-          ${v.tel?`<a href="tel:${v.tel}" style="background:var(--pink-pale);color:var(--pink-dark);border-radius:9px;padding:7px 12px;font-size:11px;text-decoration:none;font-weight:700;">${h(v.tel)}</a>`:''}
+      <div id="vnd-detail-${i}" style="display:none;padding:12px 14px;border-top:1px solid ${br};">
+        ${v.adresse?`<div style="font-size:12px;color:${tl};margin-bottom:8px;line-height:1.5;"> ${h(v.adresse)}</div>`:''}
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+          ${v.tel?`<a href="tel:${v.tel}" style="background:${sf};color:${pk};border-radius:8px;padding:6px 10px;font-size:11px;text-decoration:none;font-weight:700;"> ${h(v.tel)}</a>`:''}
           ${v.site
-            ? `<a href="https://${v.site.replace(/^https?:\/\//,'')}" target="_blank" rel="noopener" style="background:var(--pink-pale);color:var(--pink-dark);border-radius:9px;padding:7px 12px;font-size:11px;text-decoration:none;font-weight:700;">Site web</a>`
-            : `<a href="https://www.google.com/search?q=${encodeURIComponent('"'+v.nom+'"')}" target="_blank" rel="noopener" style="background:var(--pink-pale);color:var(--pink-dark);border-radius:9px;padding:7px 12px;font-size:11px;text-decoration:none;font-weight:700;">Trouver le site</a>`}
-          ${mapsUrl?`<a href="${mapsUrl}" target="_blank" rel="noopener" style="background:#f0f8f0;color:var(--gn);border-radius:9px;padding:7px 12px;font-size:11px;text-decoration:none;font-weight:700;">Itinéraire</a>`:''}
+            ? `<a href="https://${v.site.replace(/^https?:\/\//,'')}" target="_blank" rel="noopener" style="background:${sf};color:${pk};border-radius:8px;padding:6px 10px;font-size:11px;text-decoration:none;font-weight:700;"> Site web</a>`
+            : `<a href="https://www.google.com/search?q=${encodeURIComponent('"'+v.nom+'"')}" target="_blank" rel="noopener" style="background:${sf};color:${pk};border-radius:8px;padding:6px 10px;font-size:11px;text-decoration:none;font-weight:700;"> Trouver le site</a>`}
+          ${mapsUrl?`<a href="${mapsUrl}" target="_blank" rel="noopener" style="background:#f0f8f0;color:${gn};border-radius:8px;padding:6px 10px;font-size:11px;text-decoration:none;font-weight:700;">️ Itinéraire</a>`:''}
         </div>
-        <button onclick="addToFav(${i})" class="${inFav?'btn-choose':'btn-fav2'}" style="width:100%;${inFav?'border-color:var(--gn);color:var(--gn);':''}">${inFav?'Déjà dans les favoris':'+ Ajouter aux favoris'}</button>
+        <button onclick="addToFav(${i})" style="width:100%;background:${VENDORS_FAV.find(f=>f.nom===v.nom)?'#f0f8f0':pk};color:${VENDORS_FAV.find(f=>f.nom===v.nom)?gn:'#fff'};border:none;border-radius:9px;padding:9px;cursor:pointer;font-size:13px;font-weight:700;font-family:Lora,serif;">
+          ${VENDORS_FAV.find(f=>f.nom===v.nom)?' Déjà dans les favoris':'+ Ajouter aux favoris'}
+        </button>
       </div>
     </div>`;
   }).join('')+
-  `<a href="${googleSearchUrl}" target="_blank" rel="noopener" style="display:block;margin-top:14px;padding:13px;background:#fff;border:1.5px solid #f0d4de;border-radius:12px;text-align:center;text-decoration:none;color:var(--dark);font-size:13px;font-weight:700;font-family:'Lora',serif;">Voir plus de résultats sur Google</a>`+
-  `</div>`;
+  // Lien Google Maps en bas pour compléter (OSM est incomplet sur certains commerces)
+  `<a href="${googleSearchUrl}" target="_blank" rel="noopener" style="display:block;margin-top:14px;padding:12px;background:#fff;border:1.5px solid #f0d4de;border-radius:12px;text-align:center;text-decoration:none;color:${tx};font-size:13px;font-weight:700;font-family:Lora,serif;">
+     Voir plus de résultats sur Google
+    <div style="font-size:10px;color:${tl};font-weight:400;margin-top:3px;font-style:italic;">Google a souvent plus de prestataires qu'OpenStreetMap</div>
+  </a>`;
 }
 
 async function searchByPostal(){
@@ -3647,14 +3665,492 @@ async function searchByCategory(catKey,catLabel){
   document.querySelectorAll('.vnd-cat-btn').forEach(b=>{
     b.classList.toggle('active',b.getAttribute('data-catkey')===catKey);
   });
-  // Ne lancer la recherche que si une position est déjà connue
-  if(window._userLat&&window._userLng){
-    const radiusKm=parseInt(el('vnd-radius')?.value||20);
-    await runCategorySearch(catKey,catLabel,window._userLat,window._userLng,radiusKm*1000);
-  } else {
-    const wrap=el('vnd-results-wrap');
-    if(wrap) wrap.innerHTML=`<p style="text-align:center;padding:20px;font-size:13px;color:${tl};">Entrez un code postal et cliquez sur <strong>Rechercher</strong>.</p>`;
+  // Ne jamais lancer la recherche automatiquement : attendre le clic sur "Rechercher"
+  const wrap=el('vnd-results-wrap');
+  if(wrap) wrap.innerHTML=`<p style="text-align:center;padding:20px;font-size:13px;color:${tl};">Entrez un code postal et cliquez sur <strong>Rechercher</strong>.</p>`;
+}
+
+async function searchVendors(){
+  const query=el('vnd-loc')?.value.trim();if(!query)return;
+  // Si on a déjà la position en cache, l'utiliser directement
+  const cachedLat=window._userLat;const cachedLng=window._userLng;
+  if(cachedLat&&cachedLng){
+    searchVendorsWithLocation(query,cachedLat,cachedLng);
+    return;
   }
+  // Sinon : demander la géoloc automatiquement (sans bouton dédié)
+  const btn=el('vnd-btn');
+  if(btn){btn.textContent='Localisation...';btn.disabled=true;}
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(
+      pos=>{
+        window._userLat=pos.coords.latitude;
+        window._userLng=pos.coords.longitude;
+        if(btn){btn.textContent='Rechercher';btn.disabled=false;}
+        searchVendorsWithLocation(query,pos.coords.latitude,pos.coords.longitude);
+      },
+      err=>{
+        console.warn('Géolocalisation indisponible :',err&&err.message);
+        if(btn){btn.textContent='Rechercher';btn.disabled=false;}
+        searchVendorsWithLocation(query,null,null);
+      },
+      {timeout:8000, maximumAge:300000, enableHighAccuracy:false}
+    );
+  } else {
+    if(btn){btn.textContent='Rechercher';btn.disabled=false;}
+    searchVendorsWithLocation(query,null,null);
+  }
+}
+
+
+// Lancée au clic sur un bouton catégorie : recherche par TAG OSM uniquement
+// (pas par nom). C'est ce qui fait que "Salle" trouve toutes les salles de
+// réception, pas seulement les établissements appelés "Salle".
+// Recherche par TAG OSM dans un rayon donné, sans recherche par nom
+// → résultats cohérents : tous les fleuristes, tous les traiteurs, etc.
+async function searchByPostal(){
+  const postal=el('vnd-postal')?.value.trim();
+  if(!postal){appAlert('Entrez un code postal ou une ville.');return;}
+  const status=el('vnd-location-status');
+  if(status)status.textContent='Recherche du lieu...';
+  try{
+    const res=await fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(postal+' France')+'&format=json&limit=1&addressdetails=1');
+    const data=await res.json();
+    if(!data||!data.length){if(status)status.textContent='Lieu non trouvé.';return;}
+    const lat=parseFloat(data[0].lat),lng=parseFloat(data[0].lon);
+    window._userLat=lat;window._userLng=lng;window._manualLocation=true;
+    const name=data[0].display_name.split(',').slice(0,2).join(', ');
+    if(status)status.textContent='Lieu défini : '+name;
+    if(window._activeCatKey&&window._activeCatLabel){
+      await searchByCategory(window._activeCatKey,window._activeCatLabel);
+    }else{if(status)status.textContent+=' — Sélectionnez une catégorie';}
+  }catch(e){if(status)status.textContent='Erreur de géocodage.';}
+}
+
+async function searchByCategory(catKey,catLabel){
+  const cat=VND_CATEGORIES[catKey];
+  if(!cat){console.warn('Catégorie inconnue:',catKey);return;}
+  window._activeCatKey=catKey;window._activeCatLabel=catLabel;
+  // Surbrillance du chip actif (design embelli)
+  document.querySelectorAll('.vnd-cat-btn').forEach(b=>{
+    const active=b.getAttribute('data-catkey')===catKey;
+    b.style.background=active?'linear-gradient(135deg,#fef2f6,#fff)':'#fff';
+    b.style.borderColor=active?pk:'#f5d5e0';
+    b.style.boxShadow=active?'0 2px 12px rgba(212,96,122,0.12)':'none';
+    const ic=b.querySelector('.vnd-cat-ic');
+    if(ic){ic.style.background=active?pk:'#fef2f6';const svg=ic.querySelector('svg');if(svg)svg.style.stroke=active?'#fff':pk;}
+  });
+  // Ne jamais lancer la recherche automatiquement : attendre le clic sur "Rechercher"
+  const wrap=el('vnd-results-wrap');
+  if(wrap) wrap.innerHTML=`<p style="text-align:center;padding:20px;font-size:13px;color:${tl};">Entrez un code postal et cliquez sur <strong>Rechercher</strong>.</p>`;
+}
+
+const FSQ_PROXY = 'https://weddilya-proxy.baranger-marine.workers.dev';
+
+async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
+  const wrap=el('vnd-results-wrap');
+  if(!wrap)return;
+  wrap.innerHTML=`<p style="text-align:center;padding:20px;font-size:13px;color:${tl};">Recherche en cours…</p>`;
+  window._vndLogs=[];
+  const log=(msg)=>{window._vndLogs=window._vndLogs||[];window._vndLogs.push(msg);console.log('[VND]',msg);};
+
+  const radiusKm=Math.round(radiusMeters/1000);
+  const results=[];const seen=new Set();
+
+  function hav(a,b,c,d){const R=6371,dLat=(c-a)*Math.PI/180,dLon=(d-b)*Math.PI/180,x=Math.sin(dLat/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dLon/2)**2;return Math.round(R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))*10)/10;}
+  function addPlace(nom,adresse,tel,site,plat,plng){
+    const key=nom.toLowerCase().trim();
+    if(!nom||nom.length<3||seen.has(key))return;
+    const la=parseFloat(plat),lo=parseFloat(plng);
+    const hasCoords=!isNaN(la)&&!isNaN(lo)&&la!==0&&lo!==0;
+    if(hasCoords){
+      const dist=hav(lat,lng,la,lo);
+      if(dist>radiusKm)return;
+      seen.add(key);
+      results.push({id:Date.now()+Math.random(),nom,categorie:catLabel,adresse:adresse||'',tel:tel||'',site:site||'',distance:dist,lat:la,lng:lo,notes:''});
+    } else {
+      const dept=(el('vnd-postal')?.value||'').trim().substring(0,2);
+      if(!dept||!adresse||!adresse.includes(dept))return;
+      seen.add(key);
+      results.push({id:Date.now()+Math.random(),nom,categorie:catLabel,adresse:adresse||'',tel:tel||'',site:site||'',distance:null,lat:lat,lng:lng,notes:''});
+    }
+  }
+
+  const MIRRORS=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://overpass.openstreetmap.fr/api/interpreter'];
+  const cat=VND_CATEGORIES[catKey];
+
+  async function srcOverpassTags(){
+    if(!cat)return;
+    const fp=cat.tags.map(t=>{const[k,v]=t.split('=');return `node["${k}"="${v}"](around:${radiusMeters},${lat},${lng});way["${k}"="${v}"](around:${radiusMeters},${lat},${lng});`;}).join('');
+    const oq=`[out:json][timeout:25];(${fp});out center 80;`;
+    for(const m of MIRRORS){try{const c=new AbortController();setTimeout(()=>c.abort(),20000);const r=await fetch(m+'?data='+encodeURIComponent(oq),{signal:c.signal});if(!r.ok){log('Overpass tags HTTP '+r.status);continue;}const d=await r.json();const n=(d.elements||[]).filter(e=>e.tags?.name).length;log('Overpass tags OK: '+n);(d.elements||[]).filter(e=>e.tags?.name).forEach(e=>{addPlace(e.tags.name,[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' '),e.tags.phone||e.tags['contact:phone'],e.tags.website||e.tags['contact:website'],e.lat||(e.center?.lat),e.lon||(e.center?.lon));});return;}catch(e){log('Overpass tags ERR: '+e.message);}}
+  }
+
+  async function srcOverpassName(){
+    const nkw={
+      salle:['mariage','réception','domaine','château','noces'],
+      traiteur:['traiteur','mariage'],photographe:['photographe','mariage'],
+      videaste:['vidéaste','mariage'],dj:['dj','mariage','animation'],
+      fleuriste:['fleur','mariage'],patisserie:['pâtisserie','mariage','wedding'],
+      robe:['mariage','mariée','bridal','wedding','noces','nuptiale'],costume:['mariage','smoking'],
+      coiffeur:['coiff','mariage'],beaute:['maquill','mariage'],
+      bijou:['bijou','mariage','alliance'],imprimeur:['imprim','mariage','faire-part'],
+      voiture:['mariage','limousine'],hotel:['hôtel','hotel','mariage'],decor:['mariage','décor']
+    };
+    const kws=(nkw[catKey]||['mariage']).slice(0,3);
+    await Promise.allSettled(kws.map(async kw=>{
+      for(const m of MIRRORS){try{const c=new AbortController();setTimeout(()=>c.abort(),15000);const nq=`[out:json][timeout:20];(node["name"~"${kw}",i](around:${radiusMeters},${lat},${lng});way["name"~"${kw}",i](around:${radiusMeters},${lat},${lng}););out center 40;`;const r=await fetch(m+'?data='+encodeURIComponent(nq),{signal:c.signal});if(!r.ok)continue;const d=await r.json();const n=(d.elements||[]).filter(e=>e.tags?.name).length;log('Overpass "'+kw+'": '+n);(d.elements||[]).filter(e=>e.tags?.name).forEach(e=>{addPlace(e.tags.name,[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' '),e.tags.phone,e.tags.website,e.lat||(e.center?.lat),e.lon||(e.center?.lon));});return;}catch(e){log('Overpass "'+kw+'" ERR: '+e.message);}}
+    }));
+  }
+
+  async function srcNominatim(){
+    const nt={
+      salle:['salle mariage','domaine mariage','château mariage'],
+      traiteur:['traiteur mariage'],photographe:['photographe mariage'],
+      videaste:['vidéaste mariage'],dj:['DJ mariage','animation mariage'],
+      fleuriste:['fleuriste mariage'],patisserie:['pâtisserie mariage','wedding cake'],
+      robe:['boutique mariage','robe mariée','robe noces','robe nuptiale'],costume:['costume mariage'],
+      coiffeur:['coiffeur mariage'],beaute:['maquillage mariage'],
+      bijou:['bijouterie mariage','alliance mariage'],
+      imprimeur:['faire-part mariage'],voiture:['voiture mariage'],
+      hotel:['hôtel mariage'],decor:['décoration mariage','wedding planner']
+    };
+    const terms=(nt[catKey]||[catLabel+' mariage']).slice(0,2);
+    await Promise.allSettled(terms.map(async term=>{
+      try{
+        const c=new AbortController();setTimeout(()=>c.abort(),10000);
+        const deg=radiusKm/60;
+        const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(term)}&format=json&limit=30&addressdetails=1&countrycodes=fr,be,ch,lu&viewbox=${lng-deg},${lat+deg},${lng+deg},${lat-deg}&bounded=0`,{signal:c.signal,headers:{'Accept-Language':'fr'}});
+        if(!r.ok){log('Nominatim HTTP '+r.status);return;}
+        const d=await r.json();
+        d.forEach(e=>{const a=e.address||{};addPlace((e.display_name||'').split(',')[0].trim(),[a.road,a.postcode,a.city||a.town||a.village].filter(Boolean).join(' '),'','',e.lat,e.lon);});
+        log('Nominatim "'+term+'": '+results.length);
+      }catch(e){log('Nominatim ERR: '+e.message);}
+    }));
+  }
+
+  async function srcAnnuaire(){
+    const qMap={
+      salle:       ['château','manoir','prieuré','salle','domaine'],
+      traiteur:    ['traiteur'],
+      photographe: ['photographe'],
+      videaste:    ['vidéaste','videaste'],
+      dj:          ['dj mariage','dj soirée','dj animation','dj événement','disc jockey','sonorisation mariage'],
+      fleuriste:   ['fleuriste','fleurs'],
+      patisserie:  ['pâtisserie','patisserie','pâtissier','patissier'],
+      robe:        ['mariage','mariée','nuptiale','noces','bridal','wedding','robe','couture'],
+      costume:     ['smoking','costume','costumier','location tenue','father','celio','devred','izac','hugo boss'],
+      coiffeur:    ['coiffeur','coiffure'],
+      beaute:      ['maquillage','esthétique','esthetique'],
+      bijou:       ['bijouterie','joaillerie','orfèvrerie'],
+      imprimeur:   ['faire-part','imprimerie','papeterie'],
+      voiture:     ['limousine','voiture mariage','location voiture mariage','myweddingcar','retro mariage','wedrivit','roadstr','classic rent'],
+      hotel:       ['hôtel','hotel','gîte','gite','hébergement','chambre hôtes','logis'],
+      decor:       ['décoration','decoration','jour de fete','jour de fête','vegaooparty','maisons du monde','ikea','centrakor','gifi','etsy']
+    };
+    const terms=(qMap[catKey]||[catLabel+' mariage']).slice(0,4);
+    const postalVal=(el('vnd-postal')?.value||'').trim();
+    const dept=postalVal.length>=2?postalVal.substring(0,2):'';
+    if(!dept){log('Annuaire: pas de département');return;}
+    const depts=new Set([dept]);
+    const n=parseInt(dept);
+    if(radiusKm>30){[-1,1].forEach(i=>depts.add(String(n+i).padStart(2,'0')));}
+    if(radiusKm>60){[-2,2].forEach(i=>depts.add(String(n+i).padStart(2,'0')));}
+    const deptStr=[...depts].join(',');
+    await Promise.allSettled(terms.map(async term=>{
+      try{
+        const c=new AbortController();setTimeout(()=>c.abort(),10000);
+        const url=`https://recherche-entreprises.api.gouv.fr/search?q=${encodeURIComponent(term)}&departement=${deptStr}&per_page=20&etat_administratif=A`;
+        const r=await fetch(url,{signal:c.signal,headers:{'Accept':'application/json'}});
+        if(!r.ok){log('Annuaire "'+term+'" HTTP '+r.status);return;}
+        const data=await r.json();
+        log('Annuaire "'+term+'": '+(data.total_results||0));
+        const EXCL_NAF=['64','65','66','68','69','70','84','85','86','87','88','91','92','94','99'];
+        const catFilters={
+          salle:       ['salle polyvalente','salle des fêtes','salle réception','château','manoir','prieuré','abbaye','domaine de','domaine du','domaine les','domaine la'],
+          traiteur:    ['traiteur'],
+          photographe: ['photographe'],
+          videaste:    ['vidéaste','videaste'],
+          dj:          ['dj mariage','dj soirée','dj animation','dj événement','disc jockey','sonorisation mariage'],
+          fleuriste:   ['fleuriste','fleurs'],
+          patisserie:  ['pâtisserie','patisserie','pâtissier','patissier'],
+          robe:        ['mariage','mariée','mariee','nuptiale','nuptial','noces','bridal','wedding','couture','robe'],
+          costume:     ['smoking','costume','costumier','location tenue','father','celio','devred','izac','hugo boss'],
+          coiffeur:    ['coiffeur','coiffure','coiff'],
+          beaute:      ['maquillage','esthétique','esthetique'],
+          bijou:       ['bijouterie','joaillerie','orfèvrerie','orfevrerie'],
+          imprimeur:   ['faire-part','imprimerie','papeterie'],
+          voiture:     ['limousine','voiture mariage','location voiture mariage','myweddingcar','retro mariage','wedrivit','roadstr','classic rent'],
+          hotel:       ['hôtel','hotel','gîte','gite','hébergement','hebergement','chambre','logis','auberge'],
+          decor:       ['décoration','decoration','jour de fete','jour de fête','vegaooparty','maisons du monde','ikea','centrakor','gifi','etsy']
+        };
+        const filters=catFilters[catKey]||[];
+        (data.results||[]).forEach(e=>{
+          const naf=(e.activite_principale||'').substring(0,2);
+          if(EXCL_NAF.includes(naf))return;
+          const nomDisplay=e.nom_complet||e.nom_raison_sociale||'';
+          if(!nomDisplay||nomDisplay.length<2)return;
+          if(filters.length>0){
+            const nomLower=nomDisplay.toLowerCase();
+            if(!filters.some(f=>nomLower.includes(f)))return;
+          }
+          const deptSet=[...depts];
+          const localEtabs=(e.matching_etablissements||[]).filter(m=>
+            deptSet.some(d=>m.code_postal&&m.code_postal.startsWith(d))
+          );
+          if(localEtabs.length>0){
+            localEtabs.forEach(m=>{
+              const coords=(m.coordonnees||'').split(',');
+              const adresse=m.adresse||[m.code_postal,m.libelle_commune].filter(Boolean).join(' ');
+              addPlace(nomDisplay,adresse,'','',coords[0],coords[1]);
+            });
+          }
+        });
+        log('Annuaire "'+term+'" filtre: '+results.length);
+      }catch(e){log('Annuaire "'+term+'" ERR: '+e.message);}
+    }));
+  }
+
+  await Promise.allSettled([srcNominatim(), srcAnnuaire()]);
+
+  const sorted=results.sort((a,b)=>(a.distance||999)-(b.distance||999)).slice(0,40);
+  window._vndResults=sorted;
+  console.log('[VND]',(window._vndLogs||[]).join(' | '),'| Total:',sorted.length);
+
+  if(!sorted.length){
+    const gmUrl=`https://www.google.com/maps/search/${encodeURIComponent(catLabel+' mariage')}/@${lat},${lng},12z`;
+    wrap.innerHTML=`<div style="padding:20px;text-align:center;"><p style="font-size:13px;color:${tl};margin-bottom:16px;">Aucun résultat trouvé.<br><span style="font-size:11px;">Essaie un rayon plus large ou un autre code postal.</span></p><a href="${gmUrl}" target="_blank" rel="noopener noreferrer" style="display:block;padding:13px;background:${sf};border:1px solid ${br};border-radius:14px;text-decoration:none;color:${pk};font-size:13px;font-weight:700;font-family:Lora,serif;text-align:center;">Chercher sur Google Maps</a></div>`;
+    return;
+  }
+  renderVndResults(catLabel);
+}
+
+async function searchVendorsWithLocation(query,lat,lng){
+  const btn=el('vnd-btn');btn.textContent='Recherche...';btn.disabled=true;
+  const wrap=el('vnd-results-wrap');
+  if(wrap)wrap.innerHTML=`<p style="text-align:center;padding:14px;font-size:12px;color:${tl};"> Recherche en cours...</p>`;
+  const radiusKm=parseInt(el('vnd-radius')?.value||20);
+
+  // ─── RECHERCHE RÉELLE VIA OPENSTREETMAP ───
+  // Si on a une position : Overpass API (rayon autour du point)
+  // Sinon : Nominatim (recherche par texte en France)
+
+  // Mappe le terme cherché vers une catégorie OSM (tag amenity/shop/craft)
+  // et un type de business pour l'affichage.
+  // Couvre les 18 catégories de l'onglet Budget avec des tags précis.
+  const q=query.toLowerCase();
+  function osmFilters(){
+    // ─── Lieu de réception / Salle ───
+    if(q.includes('lieu de réception')||q.includes('lieu de reception')||q.includes('salle')||
+       q.includes('domaine')||q.includes('château')||q.includes('chateau')||q.includes('réception')||
+       q.includes('reception')||q.includes('venue')||q.includes('mariage'))
+      return {f:['amenity=events_venue','amenity=conference_centre','amenity=community_centre',
+                 'tourism=hotel','historic=castle','building=castle','leisure=resort'],cat:'Salle / Domaine'};
+
+    // ─── Traiteur (PAS restaurant) ───
+    if(q.includes('traiteur')||q.includes('catering'))
+      return {f:['shop=caterer','craft=caterer','craft=catering','amenity=catering'],cat:'Traiteur'};
+
+    // ─── Photographe ───
+    if(q.includes('photographe')||q.includes('photograph'))
+      return {f:['shop=photo','craft=photographer','office=photographer'],cat:'Photographe'};
+
+    // ─── Vidéaste ───
+    if(q.includes('vidéaste')||q.includes('videaste')||q.includes('vidéo')||q.includes('video')||
+       q.includes('cameraman')||q.includes('filmaker')||q.includes('film'))
+      return {f:['craft=videographer','office=videographer','shop=video'],cat:'Vidéaste'};
+
+    // ─── DJ / Musique ───
+    if(q.includes('dj')||q.includes('musique')||q.includes('musicien')||q.includes('orchestre')||
+       q.includes('groupe de musique')||q.includes('groupe musical')||q.includes('animation musicale'))
+      return {f:['craft=musical_instrument','shop=musical_instrument','office=dj','shop=music'],cat:'DJ/Musique'};
+
+    // ─── Officiant ───
+    if(q.includes('officiant')||q.includes('céremon')||q.includes('ceremon')||q.includes('curé')||
+       q.includes('cure')||q.includes('prêtre')||q.includes('pretre')||q.includes('rabbin')||q.includes('imam'))
+      return {f:['amenity=place_of_worship','office=religion'],cat:'Officiant'};
+
+    // ─── Fleuriste ───
+    if(q.includes('fleuriste')||q.includes('fleur')||q.includes('bouquet'))
+      return {f:['shop=florist'],cat:'Fleuriste'};
+
+    // ─── Robe de mariée ───
+    if(q.includes('robe de mariée')||q.includes('robe de mariee')||q.includes('robe')||
+       q.includes('mariée')||q.includes('mariee')||q.includes('bridal'))
+      return {f:['shop=wedding_contract','shop=bridal'],cat:'Robe mariée'};
+
+    // ─── Costumier / Tailleur ───
+    if(q.includes('costumier')||q.includes('tailleur')||q.includes('costume')||q.includes('smoking')||
+       q.includes('marié homme')||q.includes('marie homme'))
+      return {f:['craft=tailor','shop=tailor','shop=clothes'],cat:'Costume'};
+
+    // ─── Coiffeur ───
+    if(q.includes('coiff'))
+      return {f:['shop=hairdresser','shop=hairdresser_supply'],cat:'Coiffeur'};
+
+    // ─── Maquilleur / Esthéticien ───
+    if(q.includes('maquill')||q.includes('estheti')||q.includes('esthéti')||q.includes('beaut')||
+       q.includes('makeup')||q.includes('institut'))
+      return {f:['shop=beauty','shop=cosmetics','leisure=spa'],cat:'Maquillage'};
+
+    // ─── Accessoiriste / Bijouterie ───
+    if(q.includes('accessoir')||q.includes('bijou')||q.includes('alliance')||q.includes('bague'))
+      return {f:['shop=jewelry','shop=accessories'],cat:'Bijoutier/Accessoires'};
+
+    // ─── Location de matériel ───
+    if(q.includes('location de matériel')||q.includes('location de materiel')||
+       q.includes('matériel')||q.includes('materiel')||q.includes('location événement')||
+       q.includes('location event'))
+      return {f:['shop=rental','amenity=rental'],cat:'Location matériel'};
+
+    // ─── Animateur / DJ events ───
+    if(q.includes('animateur')||q.includes('magicien')||q.includes('artiste')||q.includes('spectacle')||
+       q.includes('animation'))
+      return {f:['office=event_management','shop=art','craft=artist'],cat:'Animation'};
+
+    // ─── Imprimeur / Faire-parts ───
+    if(q.includes('imprimeur')||q.includes('imprimerie')||q.includes('faire-part')||q.includes('faire part')||
+       q.includes('papeterie')||q.includes('print'))
+      return {f:['shop=stationery','shop=copyshop','craft=printer','shop=print'],cat:'Imprimeur'};
+
+    // ─── Location de véhicule / Voiture ───
+    if(q.includes('voiture')||q.includes('limousine')||q.includes('location auto')||
+       q.includes('location de véhicule')||q.includes('location de vehicule')||q.includes('véhicule')||
+       q.includes('vehicule')||q.includes('chauffeur'))
+      return {f:['amenity=car_rental','shop=car','office=taxi'],cat:'Voiture'};
+
+    // ─── Navettes / Transport ───
+    if(q.includes('navette')||q.includes('transport')||q.includes('bus')||q.includes('autocar')||
+       q.includes('minibus'))
+      return {f:['office=travel_agent','amenity=bus_station','amenity=taxi'],cat:'Transport'};
+
+    // ─── Hébergement / Hôtel ───
+    if(q.includes('hébergement')||q.includes('hebergement')||q.includes('hôtel')||q.includes('hotel')||
+       q.includes('gîte')||q.includes('gite')||q.includes('chambres d\'hôtes')||q.includes('logement'))
+      return {f:['tourism=hotel','tourism=guest_house','tourism=apartment','tourism=hostel','tourism=motel'],cat:'Hébergement'};
+
+    // ─── Pâtisserie / Wedding cake ───
+    if(q.includes('boulang')||q.includes('patiss')||q.includes('pâtiss')||q.includes('gateau')||
+       q.includes('gâteau')||q.includes('wedding cake')||q.includes('cake')||q.includes('pièce montée')||
+       q.includes('piece montee'))
+      return {f:['shop=bakery','shop=pastry','shop=confectionery','craft=confectioner'],cat:'Pâtisserie'};
+
+    // ─── Décoration ───
+    if(q.includes('décor')||q.includes('decor')||q.includes('event design')||q.includes('wedding planner')||
+       q.includes('organisateur'))
+      return {f:['shop=interior_decoration','craft=upholsterer','office=event_management'],cat:'Décoration/Planner'};
+
+    // ─── Défaut : pas de filtre type, recherche par nom ───
+    return {f:null,cat:'Prestataire'};
+  }
+  const {f:filters,cat}=osmFilters();
+
+  // Distance Haversine (m → km arrondi 1 décimale)
+  function haversine(la1,lo1,la2,lo2){
+    const R=6371,toRad=x=>x*Math.PI/180;
+    const dLa=toRad(la2-la1),dLo=toRad(lo2-lo1);
+    const a=Math.sin(dLa/2)**2+Math.cos(toRad(la1))*Math.cos(toRad(la2))*Math.sin(dLo/2)**2;
+    return Math.round(R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))*10)/10;
+  }
+
+  // Helper fetch avec timeout dur (sinon une API lente bloque l'UI indéfiniment)
+  async function fetchWithTimeout(url, opts={}, timeoutMs=10000){
+    const ctrl = new AbortController();
+    const tid = setTimeout(()=>ctrl.abort(), timeoutMs);
+    try {
+      const r = await fetch(url, {...opts, signal: ctrl.signal});
+      return r;
+    } finally {
+      clearTimeout(tid);
+    }
+  }
+
+  let results=[];
+  const seenNames=new Set();
+
+  // try/finally pour GARANTIR la réactivation du bouton même si une exception survient
+  try{
+    if(lat&&lng){
+      // ─── NOMINATIM (viewbox centré sur la position) ───
+      try {
+        const dLat = 0.45, dLng = 0.65;
+        const viewbox = `${lng-dLng},${lat+dLat},${lng+dLng},${lat-dLat}`;
+        const nurl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=40&viewbox=${viewbox}&bounded=0&countrycodes=fr,be,ch,lu`;
+        const nres = await fetchWithTimeout(nurl, {headers:{'Accept-Language':'fr'}}, 10000);
+        if(nres.ok){
+          const ndata = await nres.json();
+          ndata.forEach((e,idx)=>{
+            const nom = (e.display_name||'').split(',')[0].trim();
+            if(!nom) return;
+            const key = nom.toLowerCase();
+            if(seenNames.has(key)) return;
+            seenNames.add(key);
+            const elat = parseFloat(e.lat), elon = parseFloat(e.lon);
+            if(isNaN(elat)||isNaN(elon)) return;
+            const dist = haversine(lat,lng,elat,elon);
+            const a = e.address||{};
+            const adresse = [a.house_number,a.road,a.postcode,a.city||a.town||a.village].filter(Boolean).join(' ');
+            results.push({id:idx,nom,categorie:cat,description:adresse||e.display_name,tel:'',site:'',distance:dist,adresse,lat:elat,lng:elon});
+          });
+        }
+      } catch(err){ console.warn('[search] Nominatim failed:', err.message); }
+
+      results = results.filter(r=>r.distance==null||r.distance<=radiusKm).sort((a,b)=>a.distance-b.distance).slice(0,25);
+
+    } else {
+      // ─── PAS DE GÉOLOC : Nominatim sur la France entière ───
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query+' France')}&format=json&addressdetails=1&limit=15`;
+        const res = await fetchWithTimeout(url, {headers:{'Accept-Language':'fr'}}, 8000);
+        if(res.ok){
+          const data = await res.json();
+          results = (data||[]).map((e,idx)=>{
+            const addr = e.address||{};
+            const adresse = [addr.house_number,addr.road,addr.postcode,addr.city||addr.town||addr.village]
+              .filter(Boolean).join(' ');
+            return {
+              id: idx,
+              nom: e.display_name.split(',')[0],
+              categorie: cat,
+              description: adresse||e.display_name,
+              tel: '',
+              site: '',
+              distance: null,
+              adresse: adresse,
+              lat: parseFloat(e.lat),
+              lng: parseFloat(e.lon)
+            };
+          });
+        }
+      } catch(nomErr){
+        console.warn('[search] Nominatim text failed:', nomErr.message);
+      }
+    }
+  } finally {
+    // GARANTIT que le bouton se réactive, quoi qu'il arrive
+    btn.textContent='Rechercher'; btn.disabled=false;
+  }
+
+  // Rendu des résultats (ou message si vide)
+  if(!results.length){
+    // Aucun résultat OSM : on propose directement Google Maps
+    const lat0=lat, lng0=lng;
+    const googleUrl = (lat0&&lng0)
+      ? `https://www.google.com/search?q=${encodeURIComponent(query + " mariage")}`
+      : `https://www.google.com/search?q=${encodeURIComponent(query + " mariage")}`;
+    if(wrap)wrap.innerHTML=`
+      <div style="text-align:center;padding:16px;font-size:13px;color:${tl};">
+        <div style="margin-bottom:8px;">Aucun résultat trouvé pour "${h(query)}" sur OpenStreetMap.</div>
+        <div style="font-size:11px;font-style:italic;margin-bottom:14px;">OpenStreetMap est une base collaborative ; certains prestataires n'y sont pas répertoriés.</div>
+        <a href="${googleUrl}" target="_blank" rel="noopener" style="display:inline-block;padding:10px 18px;background:#fff;border:1.5px solid #f0d4de;border-radius:12px;text-decoration:none;color:${tx};font-size:13px;font-weight:700;font-family:Lora,serif;">
+           Chercher sur Google
+        </a>
+      </div>`;
+    return;
+  }
+
+  window._vndResults = results;
+  renderVndResults(query);
 }
 
 function toggleVndResult(i){
