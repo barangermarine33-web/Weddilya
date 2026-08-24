@@ -3330,13 +3330,13 @@ function renderVendors(){
         <span id="vnd-radius-val" style="font-size:12px;color:var(--dark);font-weight:700;min-width:50px;text-align:right;">20 km</span>
       </div>
       <div id="vnd-location-status" style="font-size:11px;color:var(--tl);min-height:16px;"></div>
-      <details style="margin-top:8px;">
-        <summary style="font-size:11px;color:var(--tl);cursor:pointer;">+ Recherche par texte libre</summary>
-        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+      <div style="margin-top:8px;">
+        <label style="font-size:11px;color:var(--tl);font-weight:700;">Recherche par texte libre</label>
+        <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
           <input class="m-input" id="vnd-loc" placeholder="Ex: domaine de la roseraie, château..." style="flex:1;min-width:140px;font-size:12px;" onkeydown="if(event.key==='Enter')searchVendors()" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
           <button class="btn" onclick="searchVendors()" id="vnd-btn" style="min-width:100px;font-size:13px;">Rechercher</button>
         </div>
-      </details>
+      </div>
     </div>
     <div id="vnd-results-wrap" style="margin-bottom:18px;"></div>
     <div class="panel" style="margin-bottom:16px;">
