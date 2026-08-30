@@ -3696,9 +3696,25 @@ async function searchByPostal(){
   const status=el('vnd-location-status');
   if(status)status.textContent='Recherche du lieu...';
   try{
-    const res=await fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(postal+' France')+'&format=json&limit=1&addressdetails=1');
-    const data=await res.json();
-    if(!data||!data.length){if(status)status.textContent='Lieu non trouvé.';return;}
+    const isPostalCode=/^\d{4,5}$/.test(postal);
+    let data=[];
+    if(isPostalCode){
+      // Recherche structurée par code postal : bien plus fiable que le texte libre
+      const res=await fetch('https://nominatim.openstreetmap.org/search?postalcode='+encodeURIComponent(postal)+'&country=France&format=json&limit=1&addressdetails=1');
+      data=await res.json();
+      // Vérifie que le résultat correspond vraiment au code postal demandé
+      if(data&&data.length&&data[0].address&&data[0].address.postcode&&data[0].address.postcode.trim()!==postal){
+        data=[];
+      }
+    }
+    if(!data||!data.length){
+      const res=await fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(postal+' France')+'&format=json&limit=1&addressdetails=1');
+      data=await res.json();
+      if(isPostalCode&&data&&data.length&&data[0].address&&data[0].address.postcode&&data[0].address.postcode.trim()!==postal){
+        data=[];
+      }
+    }
+    if(!data||!data.length){if(status)status.textContent='Lieu non trouvé pour "'+h(postal)+'". Vérifiez le code postal ou la ville.';return;}
     const lat=parseFloat(data[0].lat),lng=parseFloat(data[0].lon);
     window._userLat=lat;window._userLng=lng;window._manualLocation=true;
     const name=data[0].display_name.split(',').slice(0,2).join(', ');
