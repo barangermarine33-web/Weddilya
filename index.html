@@ -239,8 +239,8 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 .panel{background:white;border-radius:16px;padding:22px 24px;box-shadow:0 2px 16px rgba(212,96,122,0.05);border:1px solid var(--border);}
 .cat-header{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;background:var(--pink-pale);border-radius:12px 12px 0 0;}
 .cat-header-light{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;background:#fff;border-bottom:1px solid var(--border);border-radius:12px 12px 0 0;}
-.cat-title{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--pink-dark);}
-.cat-sub{font-size:11px;color:var(--tl);margin-top:2px;}
+.cat-title{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--pink-dark);text-align:left;}
+.cat-sub{font-size:11px;color:var(--tl);margin-top:2px;text-align:left;}
 .panel-title{font-family:'Playfair Display',serif;font-size:16px;color:var(--pink-dark);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
 .panel-link{font-size:12px;color:var(--pink);font-family:'Lora',serif;cursor:pointer;font-weight:700;}
 .task-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px dashed var(--border);font-size:13px;}
@@ -616,9 +616,9 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 .cat-name{font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:#5a1a30;letter-spacing:1px;}
 .cat-count{font-size:10px;color:#8a4a60;margin-left:3px;}
 .tk{display:flex;align-items:center;gap:11px;background:#fff;border-bottom:1px solid #f9edf2;padding:9px 4px;}
-.tk-dot{width:18px;height:18px;border-radius:50%;border:2px solid #d8a0b8;flex-shrink:0;}
-.tk.done .tk-dot{background:#b84060;border-color:#b84060;}
-.tk-txt{flex:1;font-size:12px;color:#2d0a18;}
+.tk-dot{width:18px;height:18px;border-radius:50%;border:2px solid #f5d5e0;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.tk.done .tk-dot{background:#d4607a;border-color:#d4607a;}
+.tk-txt{flex:1;font-size:12px;color:#2d0a18;text-align:left;}
 .tk.done .tk-txt{color:#8a4a60;text-decoration:line-through;}
 .tk-x{color:#d8a0b8;font-size:15px;}
 
@@ -666,10 +666,10 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
     <div class="hd-logo">Weddilya</div>
     <div class="hd-sub">Mariage de <b>Marine</b> &amp; <b>Julian</b> — <span class="dt">31 mai 2027</span></div>
     <div class="cd">
-      <div class="cd-i"><div class="cd-v">345</div><div class="cd-l">Jours</div></div>
-      <div class="cd-i"><div class="cd-v">15</div><div class="cd-l">Heures</div></div>
-      <div class="cd-i"><div class="cd-v">40</div><div class="cd-l">Min</div></div>
-      <div class="cd-i"><div class="cd-v">00</div><div class="cd-l">Sec</div></div>
+      <div class="cd-i"><div class="cd-v">273</div><div class="cd-l">Jours</div></div>
+      <div class="cd-i"><div class="cd-v">12</div><div class="cd-l">Heures</div></div>
+      <div class="cd-i"><div class="cd-v">11</div><div class="cd-l">Min</div></div>
+      <div class="cd-i"><div class="cd-v">54</div><div class="cd-l">Sec</div></div>
     </div>
   </div>
   <div class="tabs">
@@ -688,11 +688,15 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
       <div class="add-btn">+</div>
     </div>
     <div class="reset"><span>↺ Restaurer les tâches par défaut</span></div>
-    <div class="cat"><span class="cat-arrow">▼</span><span class="cat-name">12 à 18 mois avant</span><span class="cat-count">(3/12)</span></div>
-    <div class="tk"><div class="tk-dot"></div><div class="tk-txt">Choisir la date du mariage</div><div class="tk-x">×</div></div>
-    <div class="tk"><div class="tk-dot"></div><div class="tk-txt">Définir le budget total</div><div class="tk-x">×</div></div>
-    <div class="tk done"><div class="tk-dot"></div><div class="tk-txt">Déterminer le nombre d'invités</div><div class="tk-x">×</div></div>
-    <div class="tk"><div class="tk-dot"></div><div class="tk-txt">Établir une liste d'invités provisoire</div><div class="tk-x">×</div></div>
+    <div style="background:#fff;border-radius:14px;overflow:hidden;margin:8px 0 0;box-shadow:0 2px 10px rgba(212,96,122,0.06);">
+      <div class="cat-header-light" style="padding:10px 14px;margin:0;border-radius:14px 14px 0 0;border-bottom:1px solid #f5d5e0;"><div><div class="cat-title" style="font-size:13px;">12 à 18 mois avant</div><div class="cat-sub" style="font-size:9px;">3/12 tâches</div></div></div>
+      <div style="padding:2px 10px 6px;">
+        <div class="tk"><div class="tk-dot"></div><div class="tk-txt">Choisir la date du mariage</div><div class="tk-x">×</div></div>
+        <div class="tk"><div class="tk-dot"></div><div class="tk-txt">Définir le budget total</div><div class="tk-x">×</div></div>
+        <div class="tk done"><div class="tk-dot"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4"><path d="M5 12l4 4L19 7"/></svg></div><div class="tk-txt">Déterminer le nombre d'invités</div><div class="tk-x">×</div></div>
+        <div class="tk"><div class="tk-dot"></div><div class="tk-txt">Établir une liste d'invités provisoire</div><div class="tk-x">×</div></div>
+      </div>
+    </div>
   </div>
 </div>
     <div class="floating-card fc-2">
@@ -1500,6 +1504,11 @@ function checkCookieBanner(){
     const consent = localStorage.getItem('cookie_consent');
     if(!consent) document.getElementById('cookie-banner').style.display = 'block';
   }catch(e){}
+}
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded', checkCookieBanner);
+}else{
+  checkCookieBanner();
 }
 
 async function doLogout(){
