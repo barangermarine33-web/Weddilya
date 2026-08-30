@@ -3321,8 +3321,10 @@ function renderVendors(){
         ${cats.map(([k,cat])=>`<button data-catkey="${k}" class="vnd-cat-btn cat-chip" onclick="selectCategory('${k}','${cat.label}')"><span class="ic"><svg viewBox="0 0 24 24">${vndIcon(k)}</svg></span><span style="min-width:0;overflow-wrap:normal;word-break:normal;">${cat.label}</span></button>`).join('')}
       </div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-        <input type="text" id="vnd-postal" placeholder="Code postal ou ville" class="m-input" style="flex:1;min-width:150px;" onkeydown="if(event.key==='Enter')doVendorSearch()" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
-        <button class="btn" onclick="doVendorSearch()">Rechercher</button>
+        <input type="text" id="vnd-search" placeholder="Code postal, ville, ou nom du prestataire..." class="m-input" style="flex:1;min-width:150px;" onkeydown="if(event.key==='Enter')unifiedVendorSearch()" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
+        <button class="btn" id="vnd-btn" onclick="unifiedVendorSearch()">Rechercher</button>
+        <input type="hidden" id="vnd-postal">
+        <input type="hidden" id="vnd-loc">
       </div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
         <label style="font-size:11px;color:var(--tl);font-weight:700;flex-shrink:0;">Rayon :</label>
@@ -3330,13 +3332,6 @@ function renderVendors(){
         <span id="vnd-radius-val" style="font-size:12px;color:var(--dark);font-weight:700;min-width:50px;text-align:right;">20 km</span>
       </div>
       <div id="vnd-location-status" style="font-size:11px;color:var(--tl);min-height:16px;"></div>
-      <div style="margin-top:8px;">
-        <label style="font-size:11px;color:var(--tl);font-weight:700;">Recherche par texte libre</label>
-        <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
-          <input class="m-input" id="vnd-loc" placeholder="Ex: domaine de la roseraie, château..." style="flex:1;min-width:140px;font-size:12px;" onkeydown="if(event.key==='Enter')searchVendors()" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
-          <button class="btn" onclick="searchVendors()" id="vnd-btn" style="min-width:100px;font-size:13px;">Rechercher</button>
-        </div>
-      </div>
     </div>
     <div id="vnd-results-wrap" style="margin-bottom:18px;"></div>
     <div class="panel" style="margin-bottom:16px;">
@@ -3413,6 +3408,35 @@ async function addManualVendor(zone){
 }
 function selectCategory(catKey,catLabel){searchByCategory(catKey,catLabel);}
 
+async function unifiedVendorSearch(){
+  const query=el('vnd-search')?.value.trim();
+  if(!query){await appAlert2('Entrez un code postal, une ville, ou le nom d\'un prestataire.');return;}
+  const looksLikePostal=/^\d{4,5}$/.test(query);
+  if(looksLikePostal){
+    // Code postal : toujours traité comme un lieu
+    const p=el('vnd-postal');if(p)p.value=query;
+    await doVendorSearch();
+    return;
+  }
+  if(window._activeCatKey&&window._activeCatLabel){
+    // Vérifie si la saisie correspond à un vrai lieu (ville) avant de s'en servir comme position.
+    // Sinon (ex: nom d'un établissement), on bascule automatiquement en recherche libre.
+    try{
+      const res=await fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(query+' France')+'&format=json&limit=1&addressdetails=1');
+      const data=await res.json();
+      const placeTypes=['city','town','village','postcode','administrative','suburb','municipality','hamlet'];
+      const isRealPlace=data&&data.length&&(data[0].class==='place'||data[0].class==='boundary'||placeTypes.includes(data[0].type));
+      if(isRealPlace){
+        const p=el('vnd-postal');if(p)p.value=query;
+        await doVendorSearch();
+        return;
+      }
+    }catch(e){}
+  }
+  // Nom de prestataire (ou lieu non reconnu) : recherche libre par nom
+  const l=el('vnd-loc');if(l)l.value=query;
+  await searchVendors();
+}
 async function doVendorSearch(){
   if(!window._activeCatKey){await appAlert2('Sélectionnez d\'abord un type de prestataire.');return;}
   await searchByPostal();
@@ -3439,12 +3463,9 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
       if(dist>radiusKm)return;
       seen.add(key);
       results.push({id:Date.now()+Math.random(),nom,categorie:catLabel,adresse:adresse||'',tel:tel||'',site:site||'',distance:dist,lat:la,lng:lo,notes:''});
-    } else {
-      const dept=(el('vnd-postal')?.value||'').trim().substring(0,2);
-      if(!dept||!adresse||!adresse.includes(dept))return;
-      seen.add(key);
-      results.push({id:Date.now()+Math.random(),nom,categorie:catLabel,adresse:adresse||'',tel:tel||'',site:site||'',distance:null,lat:lat,lng:lng,notes:''});
     }
+    // Sans coordonnées GPS précises, on ne peut pas calculer de distance fiable : on ignore ce résultat
+    // plutôt que de l'afficher sans distance (incohérent avec les autres résultats).
   }
 
   const MIRRORS=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://overpass.openstreetmap.fr/api/interpreter'];
@@ -3607,7 +3628,7 @@ function renderVndResults(query){
 
   wrap.innerHTML=`<div style="font-family:Playfair Display,serif;font-size:15px;color:${tx};margin-bottom:10px;">${r.length} résultat${r.length>1?'s':''} pour "${h(query)}"</div>`+
   r.map((v,i)=>{
-    const c=VCOLS[v.categorie]||pk;
+    const c=pk;
     const mapsUrl=v.lat&&v.lng?`https://www.google.com/maps/search/?api=1&query=${v.lat},${v.lng}`:'';
     return`<div class="card" style="margin-bottom:8px;overflow:hidden;">
       <div onclick="toggleVndResult(${i})" style="padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;background:linear-gradient(135deg,${sf},#fff);">
@@ -3666,6 +3687,11 @@ async function searchByCategory(catKey,catLabel){
   const cat=VND_CATEGORIES[catKey];
   if(!cat){console.warn('Catégorie inconnue:',catKey);return;}
   window._activeCatKey=catKey;window._activeCatLabel=catLabel;
+  // Réinitialiser la recherche par texte libre pour ne pas mélanger les deux recherches
+  const freeInput=el('vnd-loc');
+  if(freeInput)freeInput.value='';
+  const searchInput=el('vnd-search');
+  if(searchInput)searchInput.value='';
   // Surbrillance via la classe .active (design chips)
   document.querySelectorAll('.vnd-cat-btn').forEach(b=>{
     b.classList.toggle('active',b.getAttribute('data-catkey')===catKey);
@@ -3673,6 +3699,17 @@ async function searchByCategory(catKey,catLabel){
   // Ne jamais lancer la recherche automatiquement : attendre le clic sur "Rechercher"
   const wrap=el('vnd-results-wrap');
   if(wrap) wrap.innerHTML=`<p style="text-align:center;padding:20px;font-size:13px;color:${tl};">Entrez un code postal et cliquez sur <strong>Rechercher</strong>.</p>`;
+}
+
+// Consentement géolocalisation persistant (comme un bandeau cookies) :
+// mémorisé dans le stockage local du navigateur, redemandé si l'utilisateur
+// vide son historique/cache (ce qui efface aussi ce stockage).
+async function ensureGeoConsent(){
+  const consent=ld('geo_consent',null);
+  if(consent===true||consent===false)return consent;
+  const ok=await appConfirm('Pour trouver les prestataires près de chez toi, on a besoin de ta position. Ton navigateur va te demander la permission.');
+  sv('geo_consent',ok);
+  return ok;
 }
 
 async function searchVendors(){
@@ -3683,10 +3720,12 @@ async function searchVendors(){
     searchVendorsWithLocation(query,cachedLat,cachedLng);
     return;
   }
-  // Sinon : demander la géoloc automatiquement (sans bouton dédié)
+  // Sinon : vérifier/demander le consentement (une seule fois, mémorisé) avant la géolocalisation
   const btn=el('vnd-btn');
-  if(btn){btn.textContent='Localisation...';btn.disabled=true;}
   if(navigator.geolocation){
+    const ok=await ensureGeoConsent();
+    if(!ok){searchVendorsWithLocation(query,null,null);return;}
+    if(btn){btn.textContent='Localisation...';btn.disabled=true;}
     navigator.geolocation.getCurrentPosition(
       pos=>{
         window._userLat=pos.coords.latitude;
@@ -3884,33 +3923,12 @@ async function searchVendorsWithLocation(query,lat,lng){
       results = results.filter(r=>r.distance==null||r.distance<=radiusKm).sort((a,b)=>a.distance-b.distance).slice(0,25);
 
     } else {
-      // ─── PAS DE GÉOLOC : Nominatim sur la France entière ───
-      try {
-        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query+' France')}&format=json&addressdetails=1&limit=15`;
-        const res = await fetchWithTimeout(url, {headers:{'Accept-Language':'fr'}}, 8000);
-        if(res.ok){
-          const data = await res.json();
-          results = (data||[]).map((e,idx)=>{
-            const addr = e.address||{};
-            const adresse = [addr.house_number,addr.road,addr.postcode,addr.city||addr.town||addr.village]
-              .filter(Boolean).join(' ');
-            return {
-              id: idx,
-              nom: e.display_name.split(',')[0],
-              categorie: cat,
-              description: adresse||e.display_name,
-              tel: '',
-              site: '',
-              distance: null,
-              adresse: adresse,
-              lat: parseFloat(e.lat),
-              lng: parseFloat(e.lon)
-            };
-          });
-        }
-      } catch(nomErr){
-        console.warn('[search] Nominatim text failed:', nomErr.message);
-      }
+      // ─── PAS DE GÉOLOC : on ne fait plus de recherche non filtrée sur toute la France ───
+      // (ça ignorait complètement le rayon choisi). On demande une localisation à la place.
+      if(wrap)wrap.innerHTML=`<div style="padding:20px;text-align:center;">
+        <p style="font-size:13px;color:${tl};margin-bottom:14px;">Indique un code postal ou une ville pour chercher "${h(query)}" dans un rayon précis, ou autorise la géolocalisation.</p>
+      </div>`;
+      return;
     }
   } finally {
     // GARANTIT que le bouton se réactive, quoi qu'il arrive
