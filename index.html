@@ -1284,6 +1284,7 @@ function showView(v){
   if(v==='landing') window.scrollTo({top:0});
   // Neutralise la proposition "Enregistrer le mot de passe" de Chrome hors écran de connexion
   neutralizePasswordPrompt(v!=='auth');
+  if(v==='auth') prefillSavedCreds();
 }
 
 // Désactive les vrais champs mot de passe quand on n'est pas sur l'écran de connexion :
