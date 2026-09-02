@@ -3437,7 +3437,15 @@ function selectCategory(catKey,catLabel){searchByCategory(catKey,catLabel);}
 
 async function unifiedVendorSearch(){
   const query=el('vnd-search')?.value.trim();
-  if(!query){await appAlert2('Entrez un code postal, une ville, ou le nom d\'un prestataire.');return;}
+  if(!query){
+    // Champ vide : si une catégorie est choisie, on cherche directement via la géolocalisation
+    if(window._activeCatKey&&window._activeCatLabel){
+      await searchCategoryWithGeolocation();
+    }else{
+      await appAlert2('Entrez un code postal, une ville, ou le nom d\'un prestataire — ou sélectionnez d\'abord une catégorie pour chercher autour de vous.');
+    }
+    return;
+  }
   const looksLikePostal=/^\d{4,5}$/.test(query);
   if(looksLikePostal){
     // Code postal : toujours traité comme un lieu
@@ -3463,6 +3471,34 @@ async function unifiedVendorSearch(){
   // Nom de prestataire (ou lieu non reconnu) : recherche libre par nom
   const l=el('vnd-loc');if(l)l.value=query;
   await searchVendors();
+}
+
+async function searchCategoryWithGeolocation(){
+  const status=el('vnd-location-status');
+  const cachedLat=window._userLat,cachedLng=window._userLng;
+  if(cachedLat&&cachedLng){
+    const radiusKm=parseInt(el('vnd-radius')?.value||20);
+    await runCategorySearch(window._activeCatKey,window._activeCatLabel,cachedLat,cachedLng,radiusKm*1000);
+    return;
+  }
+  if(!navigator.geolocation){await appAlert2('Géolocalisation non disponible sur cet appareil.');return;}
+  const ok=await ensureGeoConsent();
+  if(!ok){await appAlert2('Entrez un code postal ou une ville pour lancer la recherche.');return;}
+  if(status)status.textContent='Localisation...';
+  navigator.geolocation.getCurrentPosition(
+    async pos=>{
+      window._userLat=pos.coords.latitude;
+      window._userLng=pos.coords.longitude;
+      if(status)status.textContent='';
+      const radiusKm=parseInt(el('vnd-radius')?.value||20);
+      await runCategorySearch(window._activeCatKey,window._activeCatLabel,pos.coords.latitude,pos.coords.longitude,radiusKm*1000);
+    },
+    err=>{
+      if(status)status.textContent='';
+      appAlert2('Impossible d\'obtenir votre position. Entrez un code postal ou une ville.');
+    },
+    {timeout:8000, maximumAge:300000, enableHighAccuracy:false}
+  );
 }
 async function doVendorSearch(){
   if(!window._activeCatKey){await appAlert2('Sélectionnez d\'abord un type de prestataire.');return;}
@@ -3543,6 +3579,10 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
     const terms=(nt[catKey]||[catLabel+' mariage']).slice(0,2);
     await Promise.allSettled(terms.map(async term=>{
       try{
+        const now=Date.now();
+        const wait=Math.max(0,(window._lastNominatimCall||0)+1100-now);
+        if(wait>0)await new Promise(res=>setTimeout(res,wait));
+        window._lastNominatimCall=Date.now();
         const c=new AbortController();setTimeout(()=>c.abort(),10000);
         const deg=radiusKm/60;
         const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(term)}&format=json&limit=30&addressdetails=1&countrycodes=fr,be,ch,lu&viewbox=${lng-deg},${lat+deg},${lng+deg},${lat-deg}&bounded=0`,{signal:c.signal,headers:{'Accept-Language':'fr'}});
@@ -3610,27 +3650,47 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
           decor:       ['décoration','decoration','jour de fete','jour de fête','vegaooparty','maisons du monde','ikea','centrakor','gifi','etsy']
         };
         const filters=catFilters[catKey]||[];
-        (data.results||[]).forEach(e=>{
+        for(const e of (data.results||[])){
           const naf=(e.activite_principale||'').substring(0,2);
-          if(EXCL_NAF.includes(naf))return;
+          if(EXCL_NAF.includes(naf))continue;
           const nomDisplay=e.nom_complet||e.nom_raison_sociale||'';
-          if(!nomDisplay||nomDisplay.length<2)return;
+          if(!nomDisplay||nomDisplay.length<2)continue;
           if(filters.length>0){
             const nomLower=nomDisplay.toLowerCase();
-            if(!filters.some(f=>nomLower.includes(f)))return;
+            if(!filters.some(f=>nomLower.includes(f)))continue;
           }
           const deptSet=[...depts];
           const localEtabs=(e.matching_etablissements||[]).filter(m=>
             deptSet.some(d=>m.code_postal&&m.code_postal.startsWith(d))
           );
           if(localEtabs.length>0){
-            localEtabs.forEach(m=>{
-              const coords=(m.coordonnees||'').split(',');
+            for(const m of localEtabs){
+              let coords=(m.coordonnees||'').split(',');
+              if((!coords[0]||!coords[1])&&m.code_postal){
+                // Pas de coordonnées précises fournies par l'annuaire : on géocode le code
+                // postal (mis en cache pour éviter de refaire la requête plusieurs fois).
+                if(!window._postalGeoCache)window._postalGeoCache={};
+                const cpKey=m.code_postal;
+                if(window._postalGeoCache[cpKey]===undefined){
+                  // Throttle : Nominatim limite à ~1 requête/seconde, on espace donc les appels
+                  // pour ne pas se faire bloquer silencieusement en cas de nombreux résultats.
+                  const now=Date.now();
+                  const wait=Math.max(0,(window._lastNominatimCall||0)+1100-now);
+                  if(wait>0)await new Promise(res=>setTimeout(res,wait));
+                  window._lastNominatimCall=Date.now();
+                  try{
+                    const gRes=await fetch('https://nominatim.openstreetmap.org/search?postalcode='+encodeURIComponent(cpKey)+'&country=France&format=json&limit=1');
+                    const gData=await gRes.json();
+                    window._postalGeoCache[cpKey]=(gData&&gData.length)?[gData[0].lat,gData[0].lon]:null;
+                  }catch(e2){window._postalGeoCache[cpKey]=null;}
+                }
+                if(window._postalGeoCache[cpKey])coords=window._postalGeoCache[cpKey];
+              }
               const adresse=m.adresse||[m.code_postal,m.libelle_commune].filter(Boolean).join(' ');
               addPlace(nomDisplay,adresse,'','',coords[0],coords[1]);
-            });
+            }
           }
-        });
+        }
         log('Annuaire "'+term+'" filtre: '+results.length);
       }catch(e){log('Annuaire "'+term+'" ERR: '+e.message);}
     }));
@@ -3953,7 +4013,12 @@ async function searchVendorsWithLocation(query,lat,lng){
         const nres = await fetchWithTimeout(nurl, {headers:{'Accept-Language':'fr'}}, 10000);
         if(nres.ok){
           const ndata = await nres.json();
+          // Sécurité : on ne garde que des lieux à caractère commercial/professionnel
+          // (magasin, artisan, hébergement...), jamais une simple rue, un quartier ou un
+          // lieu géographique qui pourrait matcher un mot au hasard tapé par erreur.
+          const validClasses=['shop','craft','office','tourism','leisure','amenity','historic'];
           ndata.forEach((e,idx)=>{
+            if(!validClasses.includes(e.class))return;
             const nom = (e.display_name||'').split(',')[0].trim();
             if(!nom) return;
             const key = nom.toLowerCase();
@@ -3969,7 +4034,53 @@ async function searchVendorsWithLocation(query,lat,lng){
         }
       } catch(err){ console.warn('[search] Nominatim failed:', err.message); }
 
-      results = results.filter(r=>r.distance==null||r.distance<=radiusKm).sort((a,b)=>a.distance-b.distance).slice(0,25);
+      // ─── ANNUAIRE D'ENTREPRISES (complète OSM, qui n'a pas toujours les petits commerces) ───
+      try {
+        const postalVal=(el('vnd-postal')?.value||'').trim();
+        const dept=postalVal.length>=2?postalVal.substring(0,2):'';
+        const aurl = `https://recherche-entreprises.api.gouv.fr/search?q=${encodeURIComponent(query)}${dept?'&departement='+dept:''}&per_page=10&etat_administratif=A`;
+        const ares = await fetchWithTimeout(aurl, {headers:{'Accept':'application/json'}}, 10000);
+        if(ares.ok){
+          const adata = await ares.json();
+          for(const e of (adata.results||[])){
+            const nomDisplay = e.nom_complet||e.nom_raison_sociale||'';
+            if(!nomDisplay||nomDisplay.length<2)continue;
+            const key = nomDisplay.toLowerCase();
+            if(seenNames.has(key))continue;
+            const etabs = e.matching_etablissements||[];
+            if(!etabs.length)continue;
+            const m = etabs[0];
+            let coords=(m.coordonnees||'').split(',');
+            if((!coords[0]||!coords[1])&&m.code_postal){
+              if(!window._postalGeoCache)window._postalGeoCache={};
+              const cpKey=m.code_postal;
+              if(window._postalGeoCache[cpKey]===undefined){
+                const now=Date.now();
+                const wait=Math.max(0,(window._lastNominatimCall||0)+1100-now);
+                if(wait>0)await new Promise(res=>setTimeout(res,wait));
+                window._lastNominatimCall=Date.now();
+                try{
+                  const gRes=await fetch('https://nominatim.openstreetmap.org/search?postalcode='+encodeURIComponent(cpKey)+'&country=France&format=json&limit=1');
+                  const gData=await gRes.json();
+                  window._postalGeoCache[cpKey]=(gData&&gData.length)?[gData[0].lat,gData[0].lon]:null;
+                }catch(e2){window._postalGeoCache[cpKey]=null;}
+              }
+              if(window._postalGeoCache[cpKey])coords=window._postalGeoCache[cpKey];
+            }
+            const elat=parseFloat(coords[0]),elon=parseFloat(coords[1]);
+            const adresse = m.adresse||[m.code_postal,m.libelle_commune].filter(Boolean).join(' ');
+            let dist=null;
+            if(!isNaN(elat)&&!isNaN(elon)){
+              dist=haversine(lat,lng,elat,elon);
+              if(dist>radiusKm)continue;
+            }
+            seenNames.add(key);
+            results.push({id:'ent-'+key,nom:nomDisplay,categorie:cat,description:adresse,tel:'',site:'',distance:dist,adresse,lat:elat,lng:elon});
+          }
+        }
+      } catch(err){ console.warn('[search] Annuaire failed:', err.message); }
+
+      results = results.filter(r=>r.distance==null||r.distance<=radiusKm).sort((a,b)=>(a.distance??999)-(b.distance??999)).slice(0,25);
 
     } else {
       // ─── PAS DE GÉOLOC : on ne fait plus de recherche non filtrée sur toute la France ───
