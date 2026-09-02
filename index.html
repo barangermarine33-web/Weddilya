@@ -2189,7 +2189,8 @@ function appPicker(title,options,current){
     ov.querySelectorAll('.picker-opt').forEach(d=>d.onclick=()=>close(opts[Number(d.dataset.i)].value));
   });
 }
-function appConfirm(msg){
+function appConfirm(msg,opts){
+  opts=opts||{};
   return new Promise(res=>{
     const ov=document.getElementById('picker-overlay');
     ov.innerHTML=`<div class="picker-box">
@@ -2201,7 +2202,7 @@ function appConfirm(msg){
       </div>
       <div class="picker-inner">
         <div style="font-family:'Lora',serif;font-size:14px;color:var(--mid);line-height:1.6;margin-bottom:18px;text-align:center;">${msg}</div>
-        <div style="display:flex;gap:10px;"><button class="btn-outline" id="pk-no" style="flex:1;">Annuler</button><button class="btn" id="pk-ok" style="flex:1;">Confirmer</button></div>
+        <div style="display:flex;gap:10px;"><button class="btn-outline" id="pk-no" style="flex:1;">${opts.cancelLabel||'Annuler'}</button><button class="btn" id="pk-ok" style="flex:1;">${opts.okLabel||'Confirmer'}</button></div>
       </div>
     </div>`;
     ov.classList.add('open');
@@ -3780,16 +3781,37 @@ async function searchByPostal(){
     const lat=parseFloat(data[0].lat),lng=parseFloat(data[0].lon);
     window._userLat=lat;window._userLng=lng;window._manualLocation=true;
     const name=data[0].display_name.split(',').slice(0,2).join(', ');
-    if(status)status.textContent='Lieu défini : '+name;
+    if(status)status.innerHTML='Lieu défini : '+h(name)+' <button type="button" onclick="resetToGeolocation()" style="background:none;border:none;color:var(--pink);text-decoration:underline;cursor:pointer;font-family:Lora,serif;font-size:11px;padding:0;">Réinitialiser</button>';
     const radiusKm=parseInt(el('vnd-radius')?.value||20);
     if(window._activeCatKey&&window._activeCatLabel){
       await runCategorySearch(window._activeCatKey,window._activeCatLabel,lat,lng,radiusKm*1000);
     }else{
       const freeQuery=el('vnd-loc')?.value.trim();
       if(freeQuery){await searchVendorsWithLocation(freeQuery,lat,lng);}
-      else{if(status)status.textContent+=' — Sélectionnez une catégorie ou entrez un mot-clé';}
+      else{if(status)status.innerHTML+=' — Sélectionnez une catégorie ou entrez un mot-clé';}
     }
   }catch(e){if(status)status.textContent='Erreur de géocodage.';}
+}
+
+async function resetToGeolocation(){
+  window._userLat=null;window._userLng=null;window._manualLocation=false;
+  const p=el('vnd-postal');if(p)p.value='';
+  const s=el('vnd-search');if(s)s.value='';
+  const status=el('vnd-location-status');
+  if(status)status.textContent='';
+  if(navigator.geolocation){
+    const ok=await ensureGeoConsent();
+    if(!ok)return;
+    if(status)status.textContent='Localisation...';
+    navigator.geolocation.getCurrentPosition(
+      pos=>{
+        window._userLat=pos.coords.latitude;window._userLng=pos.coords.longitude;
+        if(status)status.textContent='Position actuelle utilisée.';
+      },
+      ()=>{if(status)status.textContent='Impossible d\'obtenir votre position.';},
+      {timeout:8000, maximumAge:300000, enableHighAccuracy:false}
+    );
+  }
 }
 
 async function searchByCategory(catKey,catLabel){
@@ -3816,7 +3838,7 @@ async function searchByCategory(catKey,catLabel){
 async function ensureGeoConsent(){
   const consent=ld('geo_consent',null);
   if(consent===true||consent===false)return consent;
-  const ok=await appConfirm('Pour trouver les prestataires près de chez toi, on a besoin de ta position. Ton navigateur va te demander la permission.');
+  const ok=await appConfirm('Pour trouver les prestataires près de chez toi, nous avons besoin de ton accord pour accéder à ta position.');
   sv('geo_consent',ok);
   return ok;
 }
