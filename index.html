@@ -3511,6 +3511,26 @@ async function doVendorSearch(){
   await searchByPostal();
 }
 
+// Géocode un code postal (avec cache + throttle Nominatim + 1 réessai en cas d'échec).
+// Retourne [lat,lon] ou null. Ne touche à rien d'autre : simple ajout isolé.
+async function geocodePostalCached(cpKey){
+  if(!window._postalGeoCache)window._postalGeoCache={};
+  if(window._postalGeoCache[cpKey]!==undefined)return window._postalGeoCache[cpKey];
+  for(let attempt=0;attempt<2;attempt++){
+    const now=Date.now();
+    const wait=Math.max(0,(window._lastNominatimCall||0)+1100-now);
+    if(wait>0)await new Promise(res=>setTimeout(res,wait));
+    window._lastNominatimCall=Date.now();
+    try{
+      const gRes=await fetch('https://nominatim.openstreetmap.org/search?postalcode='+encodeURIComponent(cpKey)+'&country=France&format=json&limit=1');
+      const gData=await gRes.json();
+      if(gData&&gData.length){window._postalGeoCache[cpKey]=[gData[0].lat,gData[0].lon];return window._postalGeoCache[cpKey];}
+    }catch(e2){/* on retente une fois avant d'abandonner */}
+  }
+  window._postalGeoCache[cpKey]=null;
+  return null;
+}
+
 async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
   const wrap=el('vnd-results-wrap');
   if(!wrap)return;
@@ -3689,23 +3709,9 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
               let coords=(m.coordonnees||'').split(',');
               if((!coords[0]||!coords[1])&&m.code_postal){
                 // Pas de coordonnées précises fournies par l'annuaire : on géocode le code
-                // postal (mis en cache pour éviter de refaire la requête plusieurs fois).
-                if(!window._postalGeoCache)window._postalGeoCache={};
-                const cpKey=m.code_postal;
-                if(window._postalGeoCache[cpKey]===undefined){
-                  // Throttle : Nominatim limite à ~1 requête/seconde, on espace donc les appels
-                  // pour ne pas se faire bloquer silencieusement en cas de nombreux résultats.
-                  const now=Date.now();
-                  const wait=Math.max(0,(window._lastNominatimCall||0)+1100-now);
-                  if(wait>0)await new Promise(res=>setTimeout(res,wait));
-                  window._lastNominatimCall=Date.now();
-                  try{
-                    const gRes=await fetch('https://nominatim.openstreetmap.org/search?postalcode='+encodeURIComponent(cpKey)+'&country=France&format=json&limit=1');
-                    const gData=await gRes.json();
-                    window._postalGeoCache[cpKey]=(gData&&gData.length)?[gData[0].lat,gData[0].lon]:null;
-                  }catch(e2){window._postalGeoCache[cpKey]=null;}
-                }
-                if(window._postalGeoCache[cpKey])coords=window._postalGeoCache[cpKey];
+                // postal (mis en cache, throttlé, avec 1 réessai en cas d'échec).
+                const geo=await geocodePostalCached(m.code_postal);
+                if(geo)coords=geo;
               }
               const adresse=m.adresse||[m.code_postal,m.libelle_commune].filter(Boolean).join(' ');
               addPlace(nomDisplay,adresse,'','',coords[0],coords[1]);
@@ -4094,20 +4100,8 @@ async function searchVendorsWithLocation(query,lat,lng){
             const m = etabs[0];
             let coords=(m.coordonnees||'').split(',');
             if((!coords[0]||!coords[1])&&m.code_postal){
-              if(!window._postalGeoCache)window._postalGeoCache={};
-              const cpKey=m.code_postal;
-              if(window._postalGeoCache[cpKey]===undefined){
-                const now=Date.now();
-                const wait=Math.max(0,(window._lastNominatimCall||0)+1100-now);
-                if(wait>0)await new Promise(res=>setTimeout(res,wait));
-                window._lastNominatimCall=Date.now();
-                try{
-                  const gRes=await fetch('https://nominatim.openstreetmap.org/search?postalcode='+encodeURIComponent(cpKey)+'&country=France&format=json&limit=1');
-                  const gData=await gRes.json();
-                  window._postalGeoCache[cpKey]=(gData&&gData.length)?[gData[0].lat,gData[0].lon]:null;
-                }catch(e2){window._postalGeoCache[cpKey]=null;}
-              }
-              if(window._postalGeoCache[cpKey])coords=window._postalGeoCache[cpKey];
+              const geo=await geocodePostalCached(m.code_postal);
+              if(geo)coords=geo;
             }
             const elat=parseFloat(coords[0]),elon=parseFloat(coords[1]);
             const adresse = m.adresse||[m.code_postal,m.libelle_commune].filter(Boolean).join(' ');
