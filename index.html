@@ -3479,6 +3479,7 @@ async function searchCategoryWithGeolocation(){
       const radiusKm=parseInt(el('vnd-radius')?.value||20);
       await runCategorySearch(window._activeCatKey,window._activeCatLabel,cachedLat,cachedLng,radiusKm*1000);
     }else{
+      const wrap=el('vnd-results-wrap');if(wrap)wrap.innerHTML='';
       await appAlert2('Position déjà connue. Sélectionnez une catégorie ou entrez le nom d\'un prestataire.');
     }
     return;
@@ -3496,6 +3497,7 @@ async function searchCategoryWithGeolocation(){
         const radiusKm=parseInt(el('vnd-radius')?.value||20);
         await runCategorySearch(window._activeCatKey,window._activeCatLabel,pos.coords.latitude,pos.coords.longitude,radiusKm*1000);
       }else{
+        const wrap=el('vnd-results-wrap');if(wrap)wrap.innerHTML='';
         if(status)status.textContent='Position actuelle utilisée. Sélectionnez une catégorie ou entrez le nom d\'un prestataire.';
       }
     },
