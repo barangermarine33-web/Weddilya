@@ -3364,12 +3364,12 @@ function renderVendors(){
     <div id="vnd-results-wrap" style="margin-bottom:18px;"></div>
     <div class="panel" style="margin-bottom:16px;">
       <div class="panel-title">Prestataires favoris <span class="count-badge">${VENDORS_FAV.length}</span></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px;"><div style="display:flex;gap:5px;flex-wrap:wrap;">${['alpha|A→Z','prix|Prix','distance|Distance'].map(s=>{const[v,l]=s.split('|');return `<button onclick="setSortFav('${v}')" style="background:${sortFav===v?'var(--pink)':'#fff'};color:${sortFav===v?'#fff':'var(--pink)'};border:1px solid var(--pink);border-radius:16px;padding:4px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;">${l}</button>`;}).join('')}</div><button class="btn-outline" style="font-size:11px;padding:5px 12px;" onclick="addManualVendor('fav')">+ Ajouter</button></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px;"><div style="display:flex;gap:5px;flex-wrap:wrap;">${['alpha|A→Z','prix|Prix'].map(s=>{const[v,l]=s.split('|');return `<button onclick="setSortFav('${v}')" style="background:${sortFav===v?'var(--pink)':'#fff'};color:${sortFav===v?'#fff':'var(--pink)'};border:1px solid var(--pink);border-radius:16px;padding:4px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;">${l}</button>`;}).join('')}</div><button class="btn-outline" style="font-size:11px;padding:5px 12px;" onclick="addManualVendor('fav')">+ Ajouter</button></div>
       <div id="vnd-favs"></div>
     </div>
     <div class="panel">
       <div class="panel-title">Prestataires choisis <span class="count-badge" style="background:#f0f8f0;color:var(--gn);">${VENDORS_CHO.length}</span></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px;"><div style="display:flex;gap:5px;flex-wrap:wrap;">${['alpha|A→Z','prix|Prix','distance|Distance'].map(s=>{const[v,l]=s.split('|');return `<button onclick="setSortCho('${v}')" style="background:${sortCho===v?'var(--pink)':'#fff'};color:${sortCho===v?'#fff':'var(--pink)'};border:1px solid var(--pink);border-radius:16px;padding:4px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;">${l}</button>`;}).join('')}</div><button class="btn-outline" style="font-size:11px;padding:5px 12px;" onclick="addManualVendor('cho')">+ Ajouter</button></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px;"><div style="display:flex;gap:5px;flex-wrap:wrap;">${['alpha|A→Z','prix|Prix'].map(s=>{const[v,l]=s.split('|');return `<button onclick="setSortCho('${v}')" style="background:${sortCho===v?'var(--pink)':'#fff'};color:${sortCho===v?'#fff':'var(--pink)'};border:1px solid var(--pink);border-radius:16px;padding:4px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;">${l}</button>`;}).join('')}</div><button class="btn-outline" style="font-size:11px;padding:5px 12px;" onclick="addManualVendor('cho')">+ Ajouter</button></div>
       <div id="vnd-chosen"></div>
     </div>`;
   renderFavs();renderChosen();
@@ -3390,7 +3390,6 @@ function vndFavCard(v,zone){
     <div class="vnd-head" style="background:${headBg};">
       ${v.categorie?`<span class="vnd-badge" style="${badgeStyle}">${v.categorie}</span>`:''}
       <span class="vnd-name">${(v.nom||'').replace(/</g,'&lt;')}</span>
-      ${v.distance!=null?`<span class="vnd-dist">${v.distance} km</span>`:''}
     </div>
     <div class="vnd-body2">
       ${v.adresse?`<div class="vnd-addr">${(v.adresse||'').replace(/</g,'&lt;')}</div>`:''}
@@ -3727,7 +3726,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
 
   await Promise.allSettled([srcNominatim(), srcAnnuaire()]);
 
-  const sorted=results.sort((a,b)=>(a.distance||999)-(b.distance||999)).slice(0,40);
+  const sorted=results.sort((a,b)=>(a.distance??999)-(b.distance??999)).slice(0,40);
   window._vndResults=sorted;
   console.log('[VND]',(window._vndLogs||[]).join(' | '),'| Total:',sorted.length);
 
@@ -3756,7 +3755,6 @@ function renderVndResults(query){
       <div onclick="toggleVndResult(${i})" style="padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;background:linear-gradient(135deg,${sf},#fff);">
         <span style="background:${c}20;color:${c};font-size:10px;border-radius:20px;padding:3px 10px;font-weight:700;flex-shrink:0;">${h(v.categorie)}</span>
         <span style="font-family:Playfair Display,serif;font-size:14px;font-weight:700;color:${tx};flex:1;">${h(v.nom)}</span>
-        ${v.distance!=null?`<span style="background:#f0f8f0;color:${gn};border-radius:8px;padding:3px 8px;font-size:11px;font-weight:700;flex-shrink:0;"> ${v.distance} km</span>`:''}
         <span style="font-size:13px;color:${tl};">▼</span>
       </div>
       <div id="vnd-detail-${i}" style="display:none;padding:12px 14px;border-top:1px solid ${br};">
