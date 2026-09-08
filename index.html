@@ -1862,7 +1862,7 @@ function renderBudget(){
     <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:14px;"><button type="button" class="btn-outline" style="font-size:12px;padding:6px 14px;" onclick="exportBudgetPDF()">Export PDF</button><button type="button" class="btn-outline" style="font-size:12px;padding:6px 14px;" onclick="resetBudget()">↺ Restaurer les catégories par défaut</button></div>
     ${BUDGET.length?BUDGET.map(item=>{
       const est=parseFloat(item.est||item.budget||0), reel=parseFloat(item.reel||0), paye=parseFloat(item.paye||0);
-      const pct=est>0?Math.min(reel/est*100,100):0;
+      const pct=reel>0?Math.min(paye/reel*100,100):0;
       const over=reel>est&&est>0;
       const r=reel-paye;
       const inputStyle="width:100%;border:none;border-bottom:1.5px solid var(--pink-pale);padding:6px 4px;font-size:13px;font-weight:700;outline:none;background:transparent;text-align:left;";
