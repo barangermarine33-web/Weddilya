@@ -1236,7 +1236,7 @@ fAuth.onAuthStateChanged(window.firebaseAuth,user=>{
 </script>
 
 <script>
-let USER={}, GUESTS=[], BUDGET=[], CHECKLIST=[], NOTES='', VENDORS_FAV=[], VENDORS_CHO=[], TABLES=[], DRIVE_URL='', DECO_CHECKED={}, DECO_CUSTOM={}, MENUQTY={}, MENU=[];
+let USER={}, GUESTS=[], BUDGET=[], CHECKLIST=[], NOTES='', VENDORS_FAV=[], VENDORS_CHO=[], TABLES=[], DRIVE_URL='', DECO_CHECKED={}, DECO_CUSTOM={}, DECO_DELETED=[], MENUQTY={}, MENU=[];
 let GIFTS=[], FUNDS=[], RECEIVED=[], REGISTRY_MSGS=[], REGISTRY_PUBLIC_ID='';
 const MONTHS=["12 à 18 mois avant","9 à 12 mois avant","6 à 9 mois avant","3 à 6 mois avant","2 à 3 mois avant","1 mois avant","2 semaines avant","1 semaine avant","La veille","Jour J","Après le mariage"];
 const DEF_TASKS=[
@@ -1515,7 +1515,7 @@ if(document.readyState==='loading'){
 async function doLogout(){
   if(_cdTimer)clearInterval(_cdTimer);
   await window.firebaseAuthLib.signOut(window.firebaseAuth);
-  USER={}; GUESTS=[]; BUDGET=[]; CHECKLIST=[]; NOTES=''; VENDORS_FAV=[]; VENDORS_CHO=[]; TABLES=[]; DECO_CHECKED={}; DECO_CUSTOM={}; MENUQTY={}; MENU=[]; DRIVE_URL='';
+  USER={}; GUESTS=[]; BUDGET=[]; CHECKLIST=[]; NOTES=''; VENDORS_FAV=[]; VENDORS_CHO=[]; TABLES=[]; DECO_CHECKED={}; DECO_CUSTOM={}; DECO_DELETED=[]; MENUQTY={}; MENU=[]; DRIVE_URL='';
   document.getElementById('avatar-menu').classList.remove('open');
   showView('landing');
   prefillSavedCreds();
@@ -1537,7 +1537,7 @@ async function loadUser(firebaseUser){
     // Nettoyer l'URL
     try{history.replaceState(null,'',location.pathname);}catch(e){}
   }
-  const SYNC_PREFIXES=['tasks_','budget_','guests_','tables_','vfav_','vcho_','notes_','menu_','album_','drive_url_','cake_','menuqty_','deco_custom_','deco_','gifts_','funds_','received_','registry_msgs_','registry_pubid_'];
+  const SYNC_PREFIXES=['tasks_','budget_','guests_','tables_','vfav_','vcho_','notes_','menu_','album_','drive_url_','cake_','menuqty_','deco_custom_','deco_deleted_','deco_','gifts_','funds_','received_','registry_msgs_','registry_pubid_'];
   const isSyncKey=k=>SYNC_PREFIXES.some(p=>k.indexOf(p)===0);
   let ownName='', isSharedGuest=false;
   try{
@@ -1594,6 +1594,7 @@ async function loadUser(firebaseUser){
   if(typeof NOTES!=='string')NOTES=Array.isArray(NOTES)?NOTES.map(n=>typeof n==='string'?n:(n&&n.text||'')).join('\n\n'):'';
   DECO_CHECKED=pick('deco',{});if(!DECO_CHECKED||typeof DECO_CHECKED!=='object'||Array.isArray(DECO_CHECKED))DECO_CHECKED={};
   DECO_CUSTOM=pick('deco_custom',{});if(!DECO_CUSTOM||typeof DECO_CUSTOM!=='object'||Array.isArray(DECO_CUSTOM))DECO_CUSTOM={};
+  DECO_DELETED=pick('deco_deleted',[]);if(!Array.isArray(DECO_DELETED))DECO_DELETED=[];
   MENUQTY=pick('menuqty',{});if(!MENUQTY||typeof MENUQTY!=='object')MENUQTY={};
   VENDORS_FAV=pick('vfav',[]);if(!Array.isArray(VENDORS_FAV))VENDORS_FAV=[];
   VENDORS_CHO=pick('vcho',[]);if(!Array.isArray(VENDORS_CHO))VENDORS_CHO=[];
@@ -3228,6 +3229,7 @@ const DECO_ITEMS={
 function getDecoData(){
   const result={};
   for(const [cat,items] of Object.entries(DECO_ITEMS)){
+    if(DECO_DELETED.includes(cat))continue;
     result[cat]=DECO_CUSTOM[cat]!==undefined?DECO_CUSTOM[cat]:[...items];
   }
   for(const [cat,items] of Object.entries(DECO_CUSTOM)){
@@ -3278,13 +3280,20 @@ async function removeDecoCategory(ci){
   const data=getDecoData();
   const count=(data[cat]||[]).length;
   if(count>0&&!await appConfirm('Supprimer cette catégorie et ses '+count+' éléments ?'))return;
-  delete data[cat];saveDecoData(data);renderDecor();
+  if(typeof DECO_ITEMS!=='undefined'&&DECO_ITEMS[cat]!==undefined){
+    // Catégorie par défaut : on la marque comme supprimée pour qu'elle ne réapparaisse pas
+    if(!DECO_DELETED.includes(cat))DECO_DELETED.push(cat);
+    saveData('deco_deleted',DECO_DELETED);
+  }
+  delete DECO_CUSTOM[cat];
+  saveData('deco_custom',DECO_CUSTOM);
+  renderDecor();
 }
 function saveDecoData(data){ DECO_CUSTOM=data; saveData('deco_custom',DECO_CUSTOM); }
 async function resetDecorations(){
   if(await appConfirm('Réinitialiser les décorations par défaut ? Vos modifications seront perdues.')){
-    DECO_CHECKED={};DECO_CUSTOM={};
-    saveData('deco',DECO_CHECKED);saveData('deco_custom',DECO_CUSTOM);renderDecor();
+    DECO_CHECKED={};DECO_CUSTOM={};DECO_DELETED=[];
+    saveData('deco',DECO_CHECKED);saveData('deco_custom',DECO_CUSTOM);saveData('deco_deleted',DECO_DELETED);renderDecor();
   }
 }
 function toggleDecoIdx(ci,i,checked){
