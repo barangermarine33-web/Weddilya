@@ -7658,7 +7658,7 @@ function renderRegistry(){
   if(!el)return;
   const tabs=[
     {k:'dash',label:'Tableau de bord'},
-    {k:'gifts',label:'Cadeaux'},
+    {k:'gifts',label:'Liste de cadeaux'},
     {k:'funds',label:'Cagnottes'},
     {k:'received',label:'Cadeaux reçus'},
     {k:'thanks',label:'Remerciements'},
@@ -7821,7 +7821,7 @@ function fundCard(f){
   return `<div class="panel" style="margin-bottom:14px;">
     <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;">
       <div>
-        <div style="font-family:'Playfair Display',serif;font-size:17px;color:var(--dark);">${esc(f.nom)}</div>
+        <div style="font-family:'Playfair Display',serif;font-size:15px;color:var(--dark);">${esc(f.nom)}</div>
         <div style="font-size:11px;color:var(--tl);">${FUND_TYPES[f.type]||'Cagnotte'}</div>
       </div>
       <button class="btn-outline" style="font-size:11px;padding:5px 10px;" onclick="openFundModal(${f.id})">Gérer</button>
