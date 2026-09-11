@@ -228,7 +228,7 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 .page-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:400;color:var(--dark);margin-bottom:4px;text-align:center;}
 .page-title em{font-style:italic;color:var(--pink);}
 .page-sub{font-family:'Lora',serif;font-size:14px;color:var(--tl);margin-bottom:28px;text-align:center;}
-.widgets-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.widgets-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:24px;}
 .widget{background:white;border-radius:16px;padding:20px 22px;box-shadow:0 2px 16px rgba(212,96,122,0.05);border:1px solid var(--border);}
 .widget-label{font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--tl);margin-bottom:8px;}
 .widget-value{font-family:'Playfair Display',serif;font-size:30px;color:var(--pink);line-height:1;}
@@ -526,7 +526,7 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
   .app-sidebar{display:block;transform:translateX(-100%);transition:transform .25s ease;z-index:250;box-shadow:4px 0 24px rgba(62,24,40,0.12);}
   .app-sidebar.open{transform:translateX(0);}
   .app-main{margin-left:0;width:100%;}
-  .widgets-row{grid-template-columns:1fr 1fr;}
+  .widgets-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}
   .panels-row{grid-template-columns:1fr;}
 }
 @media(max-width:768px){
@@ -554,13 +554,13 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
   .auth-row{grid-template-columns:1fr;}
   .auth-input,.auth-box,.auth-form,.auth-input-wrap{max-width:100%;box-sizing:border-box;}
   .auth-tab{font-size:12px;padding:10px 6px;}
-  .widgets-row{grid-template-columns:1fr 1fr;}
+  .widgets-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}
   .app-main{padding:20px 16px;}
 }
 @media(max-width:480px){
   .features-grid{grid-template-columns:1fr;}
   .steps{grid-template-columns:1fr;}
-  .widgets-row{grid-template-columns:1fr 1fr;}
+  .widgets-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}
   .m-actions{gap:6px;flex-wrap:nowrap;}
   .m-actions .btn,.m-actions .btn-outline{padding:9px 10px;font-size:12px;white-space:nowrap;flex:0 1 auto;}
   .modal-inner{padding:18px;}
