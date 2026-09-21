@@ -3580,9 +3580,10 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
   const results=[];const seen=new Set();
 
   // Code postal effectif pour déterminer le département : celui tapé dans le champ,
-  // ou sinon déduit de la position GPS par reverse-géocodage (cas de la géolocalisation).
+  // ou sinon déduit de la position GPS par reverse-géocodage (cas de la géolocalisation,
+  // ou d'un nom de ville/lieu qui ne commence pas par un vrai code postal numérique).
   let effectivePostal=(el('vnd-postal')?.value||'').trim();
-  if(!effectivePostal&&lat&&lng){
+  if((!effectivePostal||!/^\d{4,5}$/.test(effectivePostal))&&lat&&lng){
     try{
       const now=Date.now();
       const wait=Math.max(0,(window._lastNominatimCall||0)+1100-now);
