@@ -1689,7 +1689,7 @@ function showTab(name, el){
   else renderDashboard();
   if(name==='seating'){tpZoom=1;tpShape='rect';if(document.getElementById('seating-content'))renderSeating();}
   if(name==='menu'){MENUQTY._manual_h=false;MENUQTY._manual_r=false;if(document.getElementById('menu-content'))renderMenu();}
-  if(name==='vendors'){filterFav='all';filterCho='all';filterMenuOpen=null;renderVendors();}
+  if(name==='vendors'){filterFav='all';filterCho='all';filterMenuOpen=null;window._activeCatKey=null;window._activeCatLabel=null;renderVendors();}
   document.querySelectorAll('.tab-page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.sidebar-item').forEach(i=>i.classList.remove('active'));
   const page=document.getElementById('tab-'+name);
@@ -3965,9 +3965,13 @@ async function searchByCategory(catKey,catLabel){
   document.querySelectorAll('.vnd-cat-btn').forEach(b=>{
     b.classList.toggle('active',b.getAttribute('data-catkey')===catKey);
   });
-  // Ne jamais lancer la recherche automatiquement : attendre le clic sur "Rechercher"
+  // Lance immédiatement la recherche : position déjà connue → recherche directe,
+  // sinon tente la géolocalisation automatiquement (demande la permission si besoin).
   const wrap=el('vnd-results-wrap');
-  if(wrap) wrap.innerHTML=`<p style="text-align:center;padding:20px;font-size:13px;color:${tl};">Entrez un code postal et cliquez sur <strong>Rechercher</strong>.</p>`;
+  const status=el('vnd-location-status');
+  if(status)status.textContent='';
+  if(wrap) wrap.innerHTML=`<p style="text-align:center;padding:20px;font-size:13px;color:${tl};">Recherche en cours…</p>`;
+  await searchCategoryWithGeolocation();
 }
 
 // Consentement géolocalisation persistant (comme un bandeau cookies) :
