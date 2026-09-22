@@ -3893,7 +3893,36 @@ async function searchByPostal(){
   try{
     const isPostalCode=/^\d{4,5}$/.test(postal);
     let data=[];
-    if(isPostalCode){
+    // 1) API officielles françaises (geo.api.gouv.fr / api-adresse.data.gouv.fr) :
+    // fiables pour les codes postaux et communes, contrairement à Nominatim qui renvoie
+    // souvent un code postal voisin ou composite (ex : "54000;54100") et faisait échouer la recherche.
+    // En cas d'échec ou d'absence de résultat, on retombe sur Nominatim (secours).
+    try{
+      if(/^\d{5}$/.test(postal)){
+        const gRes=await fetchWithTimeout('https://geo.api.gouv.fr/communes?codePostal='+encodeURIComponent(postal)+'&fields=nom,centre,population&format=json');
+        if(gRes.ok){
+          const communes=await gRes.json();
+          if(Array.isArray(communes)&&communes.length){
+            // Plusieurs communes peuvent partager un code postal : on prend la plus peuplée
+            communes.sort((a,b)=>(b.population||0)-(a.population||0));
+            const c=communes.find(x=>x.centre&&x.centre.coordinates);
+            if(c)data=[{lat:c.centre.coordinates[1],lon:c.centre.coordinates[0],display_name:c.nom+', '+postal}];
+          }
+        }
+      }else if(!isPostalCode){
+        const gRes=await fetchWithTimeout('https://api-adresse.data.gouv.fr/search/?q='+encodeURIComponent(postal)+'&type=municipality&limit=1');
+        if(gRes.ok){
+          const j=await gRes.json();
+          const f=j&&j.features&&j.features[0];
+          if(f&&f.geometry&&f.geometry.coordinates&&(f.properties?.score||0)>=0.5){
+            const p=f.properties;
+            data=[{lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0],display_name:[p.city||p.name,p.postcode].filter(Boolean).join(', ')}];
+          }
+        }
+      }
+    }catch(eGouv){/* API officielle indisponible : secours Nominatim ci-dessous */}
+    // 2) Secours : Nominatim (OpenStreetMap)
+    if(!data.length&&isPostalCode){
       // Recherche structurée par code postal : bien plus fiable que le texte libre
       const res=await fetchWithTimeout('https://nominatim.openstreetmap.org/search?postalcode='+encodeURIComponent(postal)+'&country=France&format=json&limit=1&addressdetails=1');
       if(!res.ok){const err=new Error('HTTP '+res.status);err.httpStatus=res.status;throw err;}
