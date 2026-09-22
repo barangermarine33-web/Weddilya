@@ -3352,8 +3352,11 @@ const VND_CATEGORIES = {
 };
 const VCOLS={Photographe:"#7a5a9a",Traiteur:"#5a8a5a",Salle:"#9a5a3a",Fleuriste:"#c4697e","DJ / Musique":"#3a6a9a","Wedding Planner":"#8a6a2a",Autre:"#6a6a6a"};
 let sortFav='alpha', sortCho='alpha';
+let filterFav='all', filterCho='all';
 function setSortFav(m){sortFav=m;renderVendors();}
 function setSortCho(m){sortCho=m;renderVendors();}
+function setFilterFav(v){filterFav=v;renderVendors();}
+function setFilterCho(v){filterCho=v;renderVendors();}
 
 const VND_ICONS={
   salle:'<path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/>',
@@ -3401,12 +3404,12 @@ function renderVendors(){
     <div id="vnd-results-wrap" style="margin-bottom:18px;"></div>
     <div class="panel" style="margin-bottom:16px;">
       <div class="panel-title">Prestataires favoris <span class="count-badge">${VENDORS_FAV.length}</span></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px;"><div style="display:flex;gap:5px;flex-wrap:wrap;">${['alpha|A→Z','prix|Prix'].map(s=>{const[v,l]=s.split('|');return `<button onclick="setSortFav('${v}')" style="background:${sortFav===v?'var(--pink)':'#fff'};color:${sortFav===v?'#fff':'var(--pink)'};border:1px solid var(--pink);border-radius:16px;padding:4px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;">${l}</button>`;}).join('')}</div><button class="btn-outline" style="font-size:11px;padding:5px 12px;" onclick="addManualVendor('fav')">+ Ajouter</button></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px;"><div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;">${['alpha|A→Z','prix|Prix'].map(s=>{const[v,l]=s.split('|');return `<button onclick="setSortFav('${v}')" style="background:${sortFav===v?'var(--pink)':'#fff'};color:${sortFav===v?'#fff':'var(--pink)'};border:1px solid var(--pink);border-radius:16px;padding:4px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;">${l}</button>`;}).join('')}<select onchange="setFilterFav(this.value)" style="border:1px solid var(--border);border-radius:16px;padding:4px 8px;font-size:11px;font-family:Lora,serif;color:var(--tx);background:#fff;"><option value="all"${filterFav==='all'?' selected':''}>Toutes catégories</option>${Object.values(VND_CATEGORIES).map(c=>`<option value="${c.label}"${filterFav===c.label?' selected':''}>${c.label}</option>`).join('')}</select></div><button class="btn-outline" style="font-size:11px;padding:5px 12px;" onclick="addManualVendor('fav')">+ Ajouter</button></div>
       <div id="vnd-favs"></div>
     </div>
     <div class="panel">
       <div class="panel-title">Prestataires choisis <span class="count-badge" style="background:#f0f8f0;color:var(--gn);">${VENDORS_CHO.length}</span></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px;"><div style="display:flex;gap:5px;flex-wrap:wrap;">${['alpha|A→Z','prix|Prix'].map(s=>{const[v,l]=s.split('|');return `<button onclick="setSortCho('${v}')" style="background:${sortCho===v?'var(--pink)':'#fff'};color:${sortCho===v?'#fff':'var(--pink)'};border:1px solid var(--pink);border-radius:16px;padding:4px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;">${l}</button>`;}).join('')}</div><button class="btn-outline" style="font-size:11px;padding:5px 12px;" onclick="addManualVendor('cho')">+ Ajouter</button></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px;"><div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;">${['alpha|A→Z','prix|Prix'].map(s=>{const[v,l]=s.split('|');return `<button onclick="setSortCho('${v}')" style="background:${sortCho===v?'var(--pink)':'#fff'};color:${sortCho===v?'#fff':'var(--pink)'};border:1px solid var(--pink);border-radius:16px;padding:4px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;">${l}</button>`;}).join('')}<select onchange="setFilterCho(this.value)" style="border:1px solid var(--border);border-radius:16px;padding:4px 8px;font-size:11px;font-family:Lora,serif;color:var(--tx);background:#fff;"><option value="all"${filterCho==='all'?' selected':''}>Toutes catégories</option>${Object.values(VND_CATEGORIES).map(c=>`<option value="${c.label}"${filterCho===c.label?' selected':''}>${c.label}</option>`).join('')}</select></div><button class="btn-outline" style="font-size:11px;padding:5px 12px;" onclick="addManualVendor('cho')">+ Ajouter</button></div>
       <div id="vnd-chosen"></div>
     </div>`;
   renderFavs();renderChosen();
@@ -3449,15 +3452,21 @@ function vndFavCard(v,zone){
 }
 function renderFavs(){
   const d=document.getElementById('vnd-favs');if(!d)return;
+  const list=filterFav==='all'?VENDORS_FAV:VENDORS_FAV.filter(v=>v.categorie===filterFav);
   d.innerHTML=VENDORS_FAV.length===0
     ?'<div style="background:var(--bg);border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;color:var(--tl);font-size:13px;font-style:italic;">Ajoutez vos prestataires favoris ici</div>'
-    :vSort(VENDORS_FAV,sortFav).map(v=>vndFavCard(v,'fav')).join('');
+    :list.length===0
+    ?'<div style="background:var(--bg);border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;color:var(--tl);font-size:13px;font-style:italic;">Aucun favori dans cette catégorie.</div>'
+    :vSort(list,sortFav).map(v=>vndFavCard(v,'fav')).join('');
 }
 function renderChosen(){
   const d=document.getElementById('vnd-chosen');if(!d)return;
+  const list=filterCho==='all'?VENDORS_CHO:VENDORS_CHO.filter(v=>v.categorie===filterCho);
   d.innerHTML=VENDORS_CHO.length===0
     ?'<div style="background:var(--bg);border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;color:var(--tl);font-size:13px;font-style:italic;">Vos prestataires confirmés apparaîtront ici</div>'
-    :vSort(VENDORS_CHO,sortCho).map(v=>vndFavCard(v,'cho')).join('');
+    :list.length===0
+    ?'<div style="background:var(--bg);border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;color:var(--tl);font-size:13px;font-style:italic;">Aucun prestataire choisi dans cette catégorie.</div>'
+    :vSort(list,sortCho).map(v=>vndFavCard(v,'cho')).join('');
 }
 function movToChosen(id){const v=VENDORS_FAV.find(f=>String(f.id)===String(id));if(!v)return;VENDORS_FAV=VENDORS_FAV.filter(f=>String(f.id)!==String(id));if(!VENDORS_CHO.find(c2=>String(c2.id)===String(id)))VENDORS_CHO.push(v);saveData('vfav',VENDORS_FAV);saveData('vcho',VENDORS_CHO);renderVendors();}
 function movToFav(id){const v=VENDORS_CHO.find(c2=>String(c2.id)===String(id));if(!v)return;VENDORS_CHO=VENDORS_CHO.filter(c2=>String(c2.id)!==String(id));if(!VENDORS_FAV.find(f=>String(f.id)===String(id)))VENDORS_FAV.push(v);saveData('vfav',VENDORS_FAV);saveData('vcho',VENDORS_CHO);renderVendors();}
@@ -3487,19 +3496,13 @@ async function unifiedVendorSearch(){
     return;
   }
   if(window._activeCatKey&&window._activeCatLabel){
-    // Vérifie si la saisie correspond à un vrai lieu (ville) avant de s'en servir comme position.
-    // Sinon (ex: nom d'un établissement), on bascule automatiquement en recherche libre.
-    try{
-      const res=await fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(query+' France')+'&format=json&limit=1&addressdetails=1');
-      const data=await res.json();
-      const placeTypes=['city','town','village','postcode','administrative','suburb','municipality','hamlet'];
-      const isRealPlace=data&&data.length&&(data[0].class==='place'||data[0].class==='boundary'||placeTypes.includes(data[0].type));
-      if(isRealPlace){
-        const p=el('vnd-postal');if(p)p.value=query;
-        await doVendorSearch();
-        return;
-      }
-    }catch(e){}
+    // Une catégorie est active : on traite systématiquement la saisie comme un lieu
+    // (doVendorSearch gère déjà tout le géocodage et respecte la catégorie active ;
+    // l'ancienne double-vérification via Nominatim était peu fiable et pouvait,
+    // à tort, faire perdre la catégorie sélectionnée en cours de route).
+    const p=el('vnd-postal');if(p)p.value=query;
+    await doVendorSearch();
+    return;
   }
   // Nom de prestataire (ou lieu non reconnu) : recherche libre par nom
   const l=el('vnd-loc');if(l)l.value=query;
@@ -4064,6 +4067,16 @@ async function searchVendorsWithLocation(query,lat,lng){
     return {f:null,cat:'Prestataire'};
   }
   const {f:filters,cat}=osmFilters();
+
+  // Si aucune catégorie n'a été sélectionnée avant la recherche ET que le texte tapé
+  // n'est pas reconnu comme un type de prestataire (ex: un nom de ville comme
+  // "Lunéville"), on arrête ici plutôt que de faire une recherche par nom qui remonte
+  // n'importe quelle entité (mairie, hôpital...) portant ce mot dans son nom.
+  if(!filters&&!window._activeCatKey){
+    btn.textContent='Rechercher';btn.disabled=false;
+    if(wrap)wrap.innerHTML=`<div style="padding:20px;text-align:center;"><p style="font-size:13px;color:${tl};">Sélectionnez d'abord une catégorie de prestataire ci-dessus, puis relancez la recherche.</p></div>`;
+    return;
+  }
 
   // Distance Haversine (m → km arrondi 1 décimale)
   function haversine(la1,lo1,la2,lo2){
