@@ -3915,15 +3915,23 @@ async function searchByPostal(){
     const name=data[0].display_name.split(',').slice(0,2).join(', ');
     if(status)status.innerHTML='Lieu défini : '+h(name)+' <button type="button" onclick="resetToGeolocation()" style="background:none;border:none;color:var(--pink);text-decoration:underline;cursor:pointer;font-family:Lora,serif;font-size:11px;padding:0;">Réinitialiser</button>';
     const radiusKm=parseInt(el('vnd-radius')?.value||20);
-    if(window._activeCatKey&&window._activeCatLabel){
-      await runCategorySearch(window._activeCatKey,window._activeCatLabel,lat,lng,radiusKm*1000);
-    }else{
-      const freeQuery=el('vnd-loc')?.value.trim();
-      if(freeQuery){await searchVendorsWithLocation(freeQuery,lat,lng);}
-      else{
-        const wrap=el('vnd-results-wrap');
-        if(wrap)wrap.innerHTML='<div style="padding:20px;text-align:center;"><p style="font-size:13px;color:var(--tl);">Sélectionnez d\'abord une catégorie de prestataire ci-dessus, puis relancez la recherche.</p></div>';
+    // À partir d'ici, le lieu est bien trouvé : toute erreur qui suit vient de la
+    // recherche des prestataires elle-même, pas du géocodage — message séparé
+    // pour ne pas induire en erreur (ex : laisser croire que le lieu est invalide).
+    try{
+      if(window._activeCatKey&&window._activeCatLabel){
+        await runCategorySearch(window._activeCatKey,window._activeCatLabel,lat,lng,radiusKm*1000);
+      }else{
+        const freeQuery=el('vnd-loc')?.value.trim();
+        if(freeQuery){await searchVendorsWithLocation(freeQuery,lat,lng);}
+        else{
+          const wrap=el('vnd-results-wrap');
+          if(wrap)wrap.innerHTML='<div style="padding:20px;text-align:center;"><p style="font-size:13px;color:var(--tl);">Sélectionnez d\'abord une catégorie de prestataire ci-dessus, puis relancez la recherche.</p></div>';
+        }
       }
+    }catch(e2){
+      const wrap=el('vnd-results-wrap');
+      if(wrap)wrap.innerHTML='<div style="padding:20px;text-align:center;"><p style="font-size:13px;color:var(--tl);">'+(e2.name==='AbortError'?'La recherche a pris trop de temps. Réessayez.':'Une erreur est survenue pendant la recherche des prestataires. Réessayez.')+'</p></div>';
     }
   }catch(e){
     const wrap=el('vnd-results-wrap');if(wrap)wrap.innerHTML='';
@@ -3965,13 +3973,10 @@ async function searchByCategory(catKey,catLabel){
   document.querySelectorAll('.vnd-cat-btn').forEach(b=>{
     b.classList.toggle('active',b.getAttribute('data-catkey')===catKey);
   });
-  // Lance immédiatement la recherche : position déjà connue → recherche directe,
-  // sinon tente la géolocalisation automatiquement (demande la permission si besoin).
+  // Ne jamais lancer la recherche automatiquement au clic sur une catégorie :
+  // attendre le clic sur "Rechercher" (avec ou sans code postal renseigné).
   const wrap=el('vnd-results-wrap');
-  const status=el('vnd-location-status');
-  if(status)status.textContent='';
-  if(wrap) wrap.innerHTML=`<p style="text-align:center;padding:20px;font-size:13px;color:${tl};">Recherche en cours…</p>`;
-  await searchCategoryWithGeolocation();
+  if(wrap) wrap.innerHTML=`<p style="text-align:center;padding:20px;font-size:13px;color:${tl};">Entrez un code postal et cliquez sur <strong>Rechercher</strong>, ou cliquez directement sur <strong>Rechercher</strong> pour utiliser votre position actuelle.</p>`;
 }
 
 // Consentement géolocalisation persistant (comme un bandeau cookies) :
