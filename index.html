@@ -3910,7 +3910,7 @@ async function searchByPostal(){
           }
         }
       }else if(!isPostalCode){
-        const gRes=await fetchWithTimeout('https://api-adresse.data.gouv.fr/search/?q='+encodeURIComponent(postal)+'&type=municipality&limit=1');
+        const gRes=await fetchWithTimeout('https://data.geopf.fr/geocodage/search?q='+encodeURIComponent(postal)+'&type=municipality&limit=1');
         if(gRes.ok){
           const j=await gRes.json();
           const f=j&&j.features&&j.features[0];
