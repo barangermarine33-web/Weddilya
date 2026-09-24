@@ -2666,6 +2666,11 @@ function openAutoSeatModal(){
   openModal(`
     <div class="modal-title">Placement automatique <button class="modal-x" onclick="closeModal()">×</button></div>
     <div style="font-size:13px;color:var(--mid);line-height:1.6;margin-bottom:16px;">Les invités confirmés seront placés en priorité. Vous pouvez d'abord indiquer les paires de personnes à ne pas placer à la même table.</div>
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--dark);font-weight:600;margin-bottom:6px;">
+      <input type="checkbox" id="as-conf-only" checked style="accent-color:var(--pink);width:16px;height:16px;" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
+      Placer uniquement les invités confirmés
+    </label>
+    <div style="font-size:11px;color:var(--tl);margin:-2px 0 16px 24px;">Décochez pour inclure aussi les invités en attente. Les invités déclinés ne sont jamais placés.</div>
     <div style="font-family:'Playfair Display',serif;font-size:15px;color:var(--dark);margin-bottom:8px;">Ne pas placer ensemble</div>
     <div id="conflicts-list">${renderConflictsList()}</div>
     <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;">
@@ -2710,10 +2715,12 @@ function conflictsAtTable(tableId,guestName){
   return SEAT_CONFLICTS.some(p=>(p[0]===guestName&&mates.includes(p[1]))||(p[1]===guestName&&mates.includes(p[0])));
 }
 function runAutoSeat(){
+  const confOnly = document.getElementById('as-conf-only') ? document.getElementById('as-conf-only').checked : true;
   closeModal();
   if(!TABLES.length){appAlert2('Créez d\'abord des tables.');return;}
-  const order=['confirmée','en attente','déclinée'];
-  const unseated=GUESTS.filter(g=>!g.seatTableId).sort((a,b)=>order.indexOf(a.presence||'en attente')-order.indexOf(b.presence||'en attente'));
+  const order=['confirmée','en attente'];
+  const eligible = confOnly ? ['confirmée'] : ['confirmée','en attente'];
+  const unseated=GUESTS.filter(g=>!g.seatTableId && eligible.includes(g.presence||'en attente')).sort((a,b)=>order.indexOf(a.presence||'en attente')-order.indexOf(b.presence||'en attente'));
   let notPlaced=0;
   unseated.forEach(g=>{
     let placed=false;
