@@ -2663,9 +2663,11 @@ function unseatGuest(gid){
 function openAutoSeatModal(){
   const names=GUESTS.map(g=>g.nom).filter(Boolean);
   window._cfA=null;window._cfB=null;
+  const confN=GUESTS.filter(g=>g.presence==='confirmée').length;
+  const totalSeatsN=TABLES.reduce((sum,t)=>sum+((t.seats||0)-((t.hiddenSeats||[]).length)),0);
   openModal(`
     <div class="modal-title">Placement automatique <button class="modal-x" onclick="closeModal()">×</button></div>
-    <div style="font-size:13px;color:var(--mid);line-height:1.6;margin-bottom:16px;">Les invités confirmés seront placés en priorité. Vous pouvez d'abord indiquer les paires de personnes à ne pas placer à la même table.</div>
+    <div style="font-size:13px;color:var(--mid);line-height:1.6;margin-bottom:16px;">${confN} invité${confN>1?'s':''} confirmé${confN>1?'s':''} · ${totalSeatsN} place${totalSeatsN>1?'s':''} disponible${totalSeatsN>1?'s':''} sur ${TABLES.length} table${TABLES.length>1?'s':''}.</div>
     <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--dark);font-weight:600;margin-bottom:6px;">
       <input type="checkbox" id="as-conf-only" checked style="accent-color:var(--pink);width:16px;height:16px;" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
       Placer uniquement les invités confirmés
