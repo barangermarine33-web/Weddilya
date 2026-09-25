@@ -8684,7 +8684,7 @@ function _dpRender(){
   const days = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
   if(_dpSelectedDate){
     document.getElementById('dp-year').textContent = _dpSelectedDate.getFullYear();
-    document.getElementById('dp-selected').textContent = days[_dpSelectedDate.getDay()]+' '+_dpSelectedDate.getDate()+' '+_dpMonths[_dpSelectedDate.getMonth()].substring(0,3)+'.';
+    document.getElementById('dp-selected').textContent = days[_dpSelectedDate.getDay()]+' '+_dpSelectedDate.getDate()+' '+_dpMonths[_dpSelectedDate.getMonth()];
   } else {
     document.getElementById('dp-year').textContent = _dpYear;
     document.getElementById('dp-selected').textContent = 'Choisir une date';
