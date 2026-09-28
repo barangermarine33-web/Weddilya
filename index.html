@@ -301,11 +301,11 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 .m-input,.m-select{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'Lora',serif;font-size:13px;color:var(--dark);outline:none;background:var(--bg);}
 .m-input:focus,.m-select:focus{border-color:var(--pink);}
 .m-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;justify-content:flex-end;}
-.picker-overlay{display:none;position:fixed;inset:0;background:rgba(62,24,40,0.45);z-index:450;align-items:center;justify-content:center;padding:18px;}
+.picker-overlay{display:none;position:fixed;inset:0;background:rgba(62,24,40,0.45);z-index:450;align-items:flex-start;justify-content:center;padding:18px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .picker-overlay.open{display:flex;}
-.picker-box{background:#fff;border-radius:20px;width:100%;max-width:340px;max-height:72vh;overflow:hidden;box-shadow:0 24px 80px rgba(62,24,40,0.25);border:1px solid var(--border);}
+.picker-box{background:#fff;border-radius:20px;width:100%;max-width:340px;max-height:80vh;margin:auto 0;overflow:hidden;box-shadow:0 24px 80px rgba(62,24,40,0.25);border:1px solid var(--border);}
 .picker-box::before{content:"";display:block;height:5px;background:linear-gradient(90deg,var(--pink-dark),var(--pink),var(--pink-light));}
-.picker-inner{padding:18px;max-height:calc(72vh - 5px);overflow-y:auto;}
+.picker-inner{padding:18px;max-height:calc(80vh - 5px);overflow-y:auto;}
 .picker-opt.sel{background:var(--pink-pale);color:var(--pink-dark);font-weight:700;}
 .picker-opt{padding:13px 16px;border-radius:11px;font-family:'Lora',serif;font-size:14px;color:var(--dark);cursor:pointer;display:flex;align-items:center;justify-content:space-between;}
 .picker-opt:hover{background:var(--bg);}
@@ -851,7 +851,7 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
         </div>
 
         <!-- LOGIN -->
-        <div id="auth-login-form">
+        <form id="auth-login-form" onsubmit="return false;" autocomplete="off">
           <div class="auth-form">
             <div class="auth-input-wrap">
               <div class="auth-label">Email</div>
@@ -872,13 +872,13 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
               Se souvenir de moi
             </label>
             <div class="auth-error" id="aerr-login"></div>
-            <button class="auth-btn" onclick="doLogin()">Se connecter</button>
+            <button type="button" class="auth-btn" onclick="doLogin()">Se connecter</button>
             <div class="auth-link" onclick="doForgot()">Mot de passe oublié ? <span>Réinitialiser</span></div>
           </div>
-        </div>
+        </form>
 
         <!-- REGISTER -->
-        <div id="auth-register-form" style="display:none;">
+        <form id="auth-register-form" style="display:none;" onsubmit="return false;" autocomplete="off">
           <div class="auth-form">
             <div class="auth-row">
               <div class="auth-input-wrap">
@@ -909,12 +909,12 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
               </div>
             </div>
             <div class="auth-error" id="aerr-register"></div>
-            <button class="auth-btn" onclick="doRegister()">Créer mon compte</button>
+            <button type="button" class="auth-btn" onclick="doRegister()">Créer mon compte</button>
           </div>
-        </div>
+        </form>
 
         <!-- INVITE (lien partenaire) -->
-        <div id="auth-invite-form" style="display:none;">
+        <form id="auth-invite-form" style="display:none;" onsubmit="return false;" autocomplete="off">
           <div class="auth-form">
             <div style="background:#f0f8ff;border:1px solid #b0d4f0;border-radius:8px;padding:10px 14px;font-family:'Lora',serif;font-size:13px;color:#1a5a8a;margin-bottom:6px;text-align:center;">
               Vous avez été invité(e) à rejoindre un espace Weddilya
@@ -938,10 +938,10 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
               </div>
             </div>
             <div class="auth-error" id="aerr-invite"></div>
-            <button class="auth-btn" onclick="doRegisterInvite()">Rejoindre l'espace partagé</button>
+            <button type="button" class="auth-btn" onclick="doRegisterInvite()">Rejoindre l'espace partagé</button>
             <div class="auth-link" onclick="cancelInviteFlow()">Déjà un compte ? <span>Se connecter</span></div>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   </div>
@@ -1238,7 +1238,7 @@ fAuth.onAuthStateChanged(window.firebaseAuth,user=>{
 </script>
 
 <script>
-let USER={}, GUESTS=[], BUDGET=[], CHECKLIST=[], NOTES='', VENDORS_FAV=[], VENDORS_CHO=[], TABLES=[], DRIVE_URL='', DECO_CHECKED={}, DECO_CUSTOM={}, DECO_DELETED=[], MENUQTY={}, MENU=[];
+let USER={}, GUESTS=[], BUDGET=[], CHECKLIST=[], NOTES='', VENDORS_FAV=[], VENDORS_CHO=[], TABLES=[], GROUPS=[], DRIVE_URL='', DECO_CHECKED={}, DECO_CUSTOM={}, DECO_DELETED=[], MENUQTY={}, MENU=[];
 let GIFTS=[], FUNDS=[], RECEIVED=[], REGISTRY_MSGS=[], REGISTRY_PUBLIC_ID='';
 const MONTHS=["12 à 18 mois avant","9 à 12 mois avant","6 à 9 mois avant","3 à 6 mois avant","2 à 3 mois avant","1 mois avant","2 semaines avant","1 semaine avant","La veille","Jour J","Après le mariage"];
 const DEF_TASKS=[
@@ -1526,7 +1526,7 @@ if(document.readyState==='loading'){
 async function doLogout(){
   if(_cdTimer)clearInterval(_cdTimer);
   await window.firebaseAuthLib.signOut(window.firebaseAuth);
-  USER={}; GUESTS=[]; BUDGET=[]; CHECKLIST=[]; NOTES=''; VENDORS_FAV=[]; VENDORS_CHO=[]; TABLES=[]; DECO_CHECKED={}; DECO_CUSTOM={}; DECO_DELETED=[]; MENUQTY={}; MENU=[]; DRIVE_URL='';
+  USER={}; GUESTS=[]; BUDGET=[]; CHECKLIST=[]; NOTES=''; VENDORS_FAV=[]; VENDORS_CHO=[]; TABLES=[]; GROUPS=[]; DECO_CHECKED={}; DECO_CUSTOM={}; DECO_DELETED=[]; MENUQTY={}; MENU=[]; DRIVE_URL='';
   document.getElementById('avatar-menu').classList.remove('open');
   showView('landing');
   prefillSavedCreds();
@@ -1611,6 +1611,25 @@ async function loadUser(firebaseUser){
   VENDORS_CHO=pick('vcho',[]);if(!Array.isArray(VENDORS_CHO))VENDORS_CHO=[];
   MENU=pick('menu',null);if(!Array.isArray(MENU)||!MENU.length)MENU=DEF_MENU.map(s=>({...s,items:s.items.map(i=>({...i}))}));
   TABLES=pick('tables',[]);if(!Array.isArray(TABLES))TABLES=[];
+  // Migration unique : avant l'ajout des chaises personnalisables, l'affichage
+  // forçait TOUJOURS 6 chaises (rond/rect.) ou 4 (carrée), quelle que soit la
+  // valeur stockée. On aligne donc une seule fois les tables existantes sur ce
+  // nombre par défaut, pour ne rien changer visuellement pour l'utilisatrice ;
+  // le nouveau bouton −/+ permet ensuite d'en ajouter volontairement.
+  if(!pick('seatsMigratedV1',false)){
+    TABLES=TABLES.map(t=>({...t, seats: t.shape==='square'?4:6}));
+    saveData('tables',TABLES);
+    saveData('seatsMigratedV1',true);
+  }
+  GROUPS=pick('groups',null);if(!Array.isArray(GROUPS)||!GROUPS.length)GROUPS=defaultGroups();
+  // Migration unique : les groupes "p1"/"p2" affichaient juste le prénom du
+  // marié (ex. "Marine"), on les préfixe une fois par "Côté de ".
+  if(!pick('groupLabelsMigratedV1',false)){
+    const n1=USER.p1||'Côté 1', n2=USER.p2||'Côté 2';
+    GROUPS=GROUPS.map(g=>g.id==='p1'?{...g,label:'Côté de '+n1}:(g.id==='p2'?{...g,label:'Côté de '+n2}:g));
+    saveData('groups',GROUPS);
+    saveData('groupLabelsMigratedV1',true);
+  }
   SEAT_CONFLICTS=pick('seat_conflicts',[]);if(!Array.isArray(SEAT_CONFLICTS))SEAT_CONFLICTS=[];
   DRIVE_URL=pick('drive_url','');if(typeof DRIVE_URL!=='string')DRIVE_URL='';
   GIFTS=pick('gifts',[]);if(!Array.isArray(GIFTS))GIFTS=[];
@@ -1867,7 +1886,7 @@ function renderBudget(){
       <div style="background:#fff8f0;border:1px solid #f0d8b8;border-radius:16px;padding:18px;text-align:center;"><div style="font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tl);margin-bottom:6px;">Reste à payer</div><div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--am);">${fmt(reste>0?reste:0)} €</div></div>
     </div>
     <div class="section-actions">
-      <input type="text" name="username" style="position:absolute;left:-9999px;top:-9999px;opacity:0;height:0;width:0;" tabindex="-1" aria-hidden="true"><input type="password" name="password" style="position:absolute;left:-9999px;top:-9999px;opacity:0;height:0;width:0;" tabindex="-1" aria-hidden="true">
+      
       <input id="new-bgt-cat" class="m-input" autocomplete="off" data-lpignore="true" placeholder="Nouvelle catégorie" style="flex:1;min-width:160px;max-width:300px;background:#fff;" data-1p-ignore>
       <input id="new-bgt-est" class="m-input" type="number" autocomplete="off" data-lpignore="true" placeholder="Budget estimé €" style="width:160px;background:#fff;" data-1p-ignore>
       <button type="button" class="btn" onclick="addBudgetCat()">+ Ajouter</button>
@@ -1972,7 +1991,14 @@ function renderGuests(){
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
         <button onclick="window._guestSort=(window._guestSort==='az'?'':'az');renderGuests();" class="gfilter ${window._guestSort==='az'?'on':''}">A → Z</button>
         <div style="position:relative;display:inline-block;">
-          <button onclick="window._showInvMenu=!window._showInvMenu;window._showPresMenu=false;renderGuests();" class="gfilter ${window._guestInv?'on':''}">Invitation ${window._guestInv==='envoyee'?'· Envoyée':window._guestInv==='non'?'· Non envoyée':'▾'}</button>
+          <button onclick="window._showGroupMenu=!window._showGroupMenu;window._showInvMenu=false;window._showPresMenu=false;renderGuests();" class="gfilter ${window._guestGroup?'on':''}">Groupe ${window._guestGroup?'· '+groupLabel(window._guestGroup):'▾'}</button>
+          ${window._showGroupMenu?`<div class="gfilter-menu">
+            ${(GROUPS||[]).map(gr=>`<div onclick="window._guestGroup='${gr.id}';window._showGroupMenu=false;renderGuests();">${gr.label}</div>`).join('')}
+            <div onclick="window._guestGroup='';window._showGroupMenu=false;renderGuests();" style="color:var(--tl);">Tous</div>
+          </div>`:''}
+        </div>
+        <div style="position:relative;display:inline-block;">
+          <button onclick="window._showInvMenu=!window._showInvMenu;window._showPresMenu=false;window._showGroupMenu=false;renderGuests();" class="gfilter ${window._guestInv?'on':''}">Invitation ${window._guestInv==='envoyee'?'· Envoyée':window._guestInv==='non'?'· Non envoyée':'▾'}</button>
           ${window._showInvMenu?`<div class="gfilter-menu">
             <div onclick="window._guestInv='envoyee';window._showInvMenu=false;renderGuests();">Envoyée</div>
             <div onclick="window._guestInv='non';window._showInvMenu=false;renderGuests();">Non envoyée</div>
@@ -1980,7 +2006,7 @@ function renderGuests(){
           </div>`:''}
         </div>
         <div style="position:relative;display:inline-block;">
-          <button onclick="window._showPresMenu=!window._showPresMenu;window._showInvMenu=false;renderGuests();" class="gfilter ${window._guestPres?'on':''}">Présence ${window._guestPres?'· '+window._guestPres.charAt(0).toUpperCase()+window._guestPres.slice(1):'▾'}</button>
+          <button onclick="window._showPresMenu=!window._showPresMenu;window._showInvMenu=false;window._showGroupMenu=false;renderGuests();" class="gfilter ${window._guestPres?'on':''}">Présence ${window._guestPres?'· '+window._guestPres.charAt(0).toUpperCase()+window._guestPres.slice(1):'▾'}</button>
           ${window._showPresMenu?`<div class="gfilter-menu">
             <div onclick="window._guestPres='confirmée';window._showPresMenu=false;renderGuests();" style="color:var(--gn);">Confirmée</div>
             <div onclick="window._guestPres='en attente';window._showPresMenu=false;renderGuests();" style="color:var(--am);">En attente</div>
@@ -1991,7 +2017,7 @@ function renderGuests(){
       </div>
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
         <table class="data-table" style="min-width:480px;">
-          <thead><tr><th style="width:24px;"></th><th>Nom</th><th class="hm">Côté</th><th class="hm">Rôle</th><th>Invitation</th><th>Présence</th><th class="hm">Régime</th></tr></thead>
+          <thead><tr><th style="width:24px;"></th><th>Nom</th><th class="hm">Groupe</th><th class="hm">Rôle</th><th>Invitation</th><th>Présence</th><th class="hm">Régime</th></tr></thead>
           <tbody id="guests-tbody">${renderGuestRows(applyGuestFilters(GUESTS))}</tbody>
         </table>
       </div>
@@ -2001,6 +2027,7 @@ function renderGuests(){
 
 function applyGuestFilters(arr){
   let list=[...arr];
+  if(window._guestGroup)list=list.filter(g=>(g.cote||'p1')===window._guestGroup);
   if(window._guestInv==='envoyee')list=list.filter(g=>g.invitation==='envoyée');
   if(window._guestInv==='non')list=list.filter(g=>g.invitation==='non envoyée'||!g.invitation);
   if(window._guestPres)list=list.filter(g=>(g.presence||'en attente')===window._guestPres);
@@ -2100,16 +2127,20 @@ function exportGuestsCSV(){
     </div>`;
     ov.classList.add('open');
   }
-  const headers=['Nom complet','Email','Côté','Rôle','Régime particulier',"Vin d'honneur uniquement",'Invitation','Présence'];
-  const rows=GUESTS.map(g=>[g.nom||'',g.email||'',g.cote==='p1'?USER.p1:USER.p2,g.role||'',g.regime||'',g.vinHonneur?'Oui':'Non',g.invitation||'',g.presence||'']);
-  const blob=buildXLSX([headers,...rows]);
-  const url=URL.createObjectURL(blob);const a=document.createElement('a');
-  a.href=url;a.download='invites_'+USER.p1+'_'+USER.p2+'.xlsx';
-  document.body.appendChild(a);a.click();
-  setTimeout(()=>{
-    URL.revokeObjectURL(url);a.remove();
+  try{
+    const headers=['Nom complet','Email','Groupe','Rôle','Régime particulier',"Vin d'honneur uniquement",'Invitation','Présence'];
+    const rows=GUESTS.map(g=>[g.nom||'',g.email||'',groupLabel(g.cote),g.role||'',g.regime||'',g.vinHonneur?'Oui':'Non',g.invitation||'',g.presence||'']);
+    const blob=buildXLSX([headers,...rows]);
+    const url=URL.createObjectURL(blob);const a=document.createElement('a');
+    a.href=url;a.download='invites_'+USER.p1+'_'+USER.p2+'.xlsx';
+    document.body.appendChild(a);a.click();
+    setTimeout(()=>{
+      URL.revokeObjectURL(url);a.remove();
+      if(ov){ov.classList.remove('open');ov.innerHTML='';}
+    },800);
+  }catch(err){
     if(ov){ov.classList.remove('open');ov.innerHTML='';}
-  },800);
+  }
 }
 // Génère un vrai fichier .xlsx (ZIP de XML) sans librairie externe.
 // UTF-8 natif => accents parfaits ; vraies cellules => colonnes parfaites, partout.
@@ -2167,7 +2198,7 @@ function renderGuestRows(list){
   return list.map(g=>{
     const pc=g.presence==='confirmée'?'var(--gn)':g.presence==='déclinée'?'var(--rd)':'var(--am)';
     const ic=g.invitation==='envoyée'?'var(--gn)':'var(--tl)';
-    return`<tr data-gid="${g.id}" style="cursor:pointer;"><td class="drag-handle" style="cursor:grab;color:var(--pink-light);text-align:center;touch-action:none;" title="Glisser pour réordonner">⋮⋮</td><td onclick="openGuestModal(${g.id})"><strong>${g.nom||''}</strong></td><td class="hm" onclick="openGuestModal(${g.id})" style="color:var(--tl);">${g.cote==='p1'?USER.p1:USER.p2}</td><td class="hm" onclick="openGuestModal(${g.id})" style="color:var(--tl);">${g.role||'Invité·e'}</td><td onclick="openGuestModal(${g.id})"><span style="color:${ic};font-weight:700;font-size:12px;">${g.invitation==='envoyée'?'Envoyée':'Non envoyée'}</span></td><td onclick="openGuestModal(${g.id})"><span style="color:${pc};font-weight:700;font-size:12px;">${(g.presence||'en attente').charAt(0).toUpperCase()+(g.presence||'en attente').slice(1)}</span></td><td class="hm" onclick="openGuestModal(${g.id})" style="color:var(--tl);font-size:12px;">${g.regime&&g.regime!=='Aucun'?g.regime:'—'}</td></tr>`;
+    return`<tr data-gid="${g.id}" style="cursor:pointer;"><td class="drag-handle" style="cursor:grab;color:var(--pink-light);text-align:center;touch-action:none;" title="Glisser pour réordonner">⋮⋮</td><td onclick="openGuestModal(${g.id})"><strong>${g.nom||''}</strong></td><td class="hm" onclick="openGuestModal(${g.id})" style="color:var(--tl);">${groupLabel(g.cote)}</td><td class="hm" onclick="openGuestModal(${g.id})" style="color:var(--tl);">${g.role||'Invité·e'}</td><td onclick="openGuestModal(${g.id})"><span style="color:${ic};font-weight:700;font-size:12px;">${g.invitation==='envoyée'?'Envoyée':'Non envoyée'}</span></td><td onclick="openGuestModal(${g.id})"><span style="color:${pc};font-weight:700;font-size:12px;">${(g.presence||'en attente').charAt(0).toUpperCase()+(g.presence||'en attente').slice(1)}</span></td><td class="hm" onclick="openGuestModal(${g.id})" style="color:var(--tl);font-size:12px;">${g.regime&&g.regime!=='Aucun'?g.regime:'—'}</td></tr>`;
   }).join('');
 }
 
@@ -2176,7 +2207,7 @@ const ROLES=["Invité·e","Témoin","Demoiselle d'honneur","Garçon d'honneur","
 
 function openModal(html){
   // Champ leurre invisible : neutralise la proposition "Enregistrer le mot de passe" de Chrome
-  const trap='<input type="text" name="username" style="position:absolute;left:-9999px;top:-9999px;opacity:0;height:0;width:0;" tabindex="-1" aria-hidden="true"><input type="password" name="password" style="position:absolute;left:-9999px;top:-9999px;opacity:0;height:0;width:0;" tabindex="-1" aria-hidden="true">';
+  const trap='';
   document.getElementById('modal-box').innerHTML='<div class="modal-inner">'+trap+html+'</div>';
   document.getElementById('modal-overlay').classList.add('open');
 }
@@ -2240,15 +2271,17 @@ function appAlert2(msg){
     ov.querySelector('#pk-ok').onclick=close;
   });
 }
-function appPrompt(title,value){
+function appPrompt(title,value,opts){
+  opts=opts||{};
   return new Promise(res=>{
     const ov=document.getElementById('picker-overlay');
+    const ml=opts.maxlength?' maxlength="'+opts.maxlength+'"':'';
     ov.innerHTML=`<div class="picker-box">
       <div style="background:linear-gradient(135deg,var(--pink-pale),#fff);padding:15px 20px;border-bottom:1px solid var(--border);">
         <span style="font-family:'Playfair Display',serif;font-size:17px;color:var(--pink-dark);">${title}</span>
       </div>
       <div class="picker-inner">
-        <input class="m-input" id="pk-input" value="${(value||'').replace(/"/g,'&quot;')}" style="margin-bottom:16px;" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
+        <input class="m-input" id="pk-input" value="${(value||'').replace(/"/g,'&quot;')}"${ml} style="margin-bottom:16px;" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore readonly onfocus="setTimeout(()=>this.removeAttribute('readonly'),80)">
         <div style="display:flex;gap:10px;"><button class="btn-outline" id="pk-no" style="flex:1;">Annuler</button><button class="btn" id="pk-ok" style="flex:1;">Valider</button></div>
       </div>
     </div>`;
@@ -2262,6 +2295,117 @@ function appPrompt(title,value){
   });
 }
 
+// Groupes d'invités (Feature Groupe) — remplace le simple Côté binaire par des
+// groupes personnalisables, tout en gardant 'p1'/'p2' comme identifiants de base
+// (aucune migration nécessaire pour les invités existants).
+function defaultGroups(){
+  const n1=USER.p1||'Côté 1', n2=USER.p2||'Côté 2';
+  return [
+    {id:'p1',label:'Côté de '+n1,side:'p1'},
+    {id:'p2',label:'Côté de '+n2,side:'p2'},
+    {id:'fam_p1',label:'Famille de '+n1,side:'p1'},
+    {id:'fam_p2',label:'Famille de '+n2,side:'p2'},
+    {id:'amis_p1',label:'Amis de '+n1,side:'p1'},
+    {id:'amis_p2',label:'Amis de '+n2,side:'p2'},
+    {id:'coll_p1',label:'Collègues de '+n1,side:'p1'},
+    {id:'coll_p2',label:'Collègues de '+n2,side:'p2'}
+  ];
+}
+function groupSide(id){
+  const g=(GROUPS||[]).find(x=>x.id===id);
+  if(g)return g.side;
+  return id==='p2'?'p2':'p1';
+}
+function groupLabel(id){
+  const g=(GROUPS||[]).find(x=>x.id===id);
+  if(g)return g.label;
+  return id==='p2'?(USER.p2||'Côté 2'):(USER.p1||'Côté 1');
+}
+// Couleur de siège selon le côté du groupe (p1 = rose, p2 = bleu, both = violet neutre)
+function groupSeatColor(id){
+  const s=groupSide(id);
+  return s==='p2'?'#a0b0e8':(s==='both'?'#c0a0e8':'#e8a0b0');
+}
+function groupSeatColorRGB(id){
+  const s=groupSide(id);
+  return s==='p2'?[160,176,232]:(s==='both'?[192,160,232]:[232,160,176]);
+}
+function mgSideLabel(side){
+  if(side==='both')return 'Des deux côtés';
+  return side==='p2'?USER.p2:USER.p1;
+}
+function mgSideDot(side){
+  return side==='p2'?'#485ea0':(side==='both'?'#7a4a9a':'#a0485e');
+}
+async function manageGroups(){
+  return new Promise(resolve=>{
+    const ov=document.getElementById('picker-overlay');
+    let mgSide='p1';
+    const render=()=>{
+      const rows=(GROUPS||[]).map(gr=>`
+        <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--bg);border-radius:10px;margin-bottom:6px;">
+          <span style="width:8px;height:8px;border-radius:50%;background:${mgSideDot(gr.side)};flex-shrink:0;"></span>
+          <span style="flex:1;font-size:13px;color:var(--mid);">${gr.label}</span>
+          <button data-rn="${gr.id}" title="Renommer" style="background:none;border:none;color:var(--tl);cursor:pointer;font-size:13px;">✎</button>
+          ${(gr.id!=='p1'&&gr.id!=='p2')?`<button data-del="${gr.id}" title="Supprimer" style="background:none;border:none;color:var(--tl);cursor:pointer;font-size:15px;">×</button>`:''}
+        </div>`).join('');
+      ov.innerHTML=`<div class="picker-box">
+        <div style="background:linear-gradient(135deg,var(--pink-pale),#fff);padding:15px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-family:'Playfair Display',serif;font-size:17px;color:var(--pink-dark);">Gérer les groupes</span>
+          <button class="modal-x" id="mg-x">×</button>
+        </div>
+        <div class="picker-inner" style="padding:14px;">
+          <div id="mg-list">${rows}</div>
+          <input id="mg-new" class="m-input" placeholder="Nouveau groupe…" style="margin-top:4px;" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore readonly onfocus="setTimeout(()=>this.removeAttribute('readonly'),80)">
+          <button type="button" id="mg-side-btn" class="m-pick" style="margin-top:8px;">${mgSideLabel(mgSide)} <span style="color:var(--tl);">▾</span></button>
+          <button class="btn" id="mg-add" style="margin-top:10px;width:100%;">+ Créer le groupe</button>
+        </div>
+      </div>`;
+      ov.classList.add('open');
+      ov.onclick=e=>{if(e.target===ov)close();};
+      ov.querySelector('#mg-x').onclick=close;
+      ov.querySelector('#mg-side-btn').onclick=async()=>{
+        const v=await appPicker('Côté du groupe',[
+          {value:'p1',label:mgSideLabel('p1')},
+          {value:'p2',label:mgSideLabel('p2')},
+          {value:'both',label:'Des deux côtés'}
+        ],mgSide);
+        if(v!==null){mgSide=v;render();}
+      };
+      ov.querySelector('#mg-add').onclick=()=>{
+        const inp=ov.querySelector('#mg-new');
+        const label=(inp.value||'').trim();if(!label)return;
+        GROUPS.push({id:'g_'+Date.now(),label,side:mgSide});
+        saveData('groups',GROUPS);render();
+      };
+      ov.querySelectorAll('[data-rn]').forEach(btn=>{
+        btn.onclick=async()=>{
+          const gid=btn.getAttribute('data-rn');
+          const gr=GROUPS.find(x=>x.id===gid);if(!gr)return;
+          const v=await appPrompt('Nom du groupe',gr.label||'');
+          if(v!==null&&v.trim()){gr.label=v.trim();saveData('groups',GROUPS);}
+          render();
+        };
+      });
+      ov.querySelectorAll('[data-del]').forEach(btn=>{
+        btn.onclick=async()=>{
+          const gid=btn.getAttribute('data-del');
+          const gr=GROUPS.find(x=>x.id===gid);if(!gr)return;
+          const sideName=mgSideLabel(gr.side);
+          const fallbackSide=(gr.side==='p1'||gr.side==='p2')?gr.side:'p1';
+          const ok=await appConfirm(`Supprimer le groupe « ${gr.label} » ? Les invités de ce groupe repasseront sur ${sideName==='Des deux côtés'?mgSideLabel('p1'):sideName}.`);
+          if(!ok){render();return;}
+          GUESTS.forEach(g=>{if(g.cote===gid)g.cote=fallbackSide;});
+          GROUPS=GROUPS.filter(x=>x.id!==gid);
+          saveData('groups',GROUPS);saveData('guests',GUESTS);
+          render();
+        };
+      });
+    };
+    const close=()=>{ov.classList.remove('open');ov.innerHTML='';ov.onclick=null;resolve();};
+    render();
+  });
+}
 function openGuestModal(id){
   const g=GUESTS.find(x=>x.id===id);if(!g)return;
   window._gm={cote:g.cote||'p1',role:g.role||'Invité·e',age:g.age||'Adulte',inv:g.invitation||'non envoyée',pres:g.presence||'en attente',regime:g.regime||'Aucun'};
@@ -2270,7 +2414,7 @@ function openGuestModal(id){
     <div class="modal-title">${g.nom||'Invité'} <button class="modal-x" onclick="closeModal()">×</button></div>
     <div class="m-field"><label class="m-label">Nom complet</label><input class="m-input" id="gm-nom" value="${(g.nom||'').replace(/"/g,'&quot;')}" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-      ${pickField('cote','Côté',window._gm.cote==='p1'?USER.p1:USER.p2)}
+      ${pickField('cote','Groupe',groupLabel(window._gm.cote))}
       ${pickField('role','Rôle',window._gm.role)}
       ${pickField('age','Âge',window._gm.age)}
       ${pickField('regime','Régime alimentaire',window._gm.regime)}
@@ -2293,7 +2437,7 @@ function openGuestModal(id){
 
 async function pickGM(key){
   const cfg={
-    cote:{title:'Côté',options:[{value:'p1',label:USER.p1},{value:'p2',label:USER.p2}]},
+    cote:{title:'Groupe',options:(GROUPS||[]).map(gr=>({value:gr.id,label:gr.label})).concat([{value:'__manage__',label:'⚙ Gérer les groupes'}])},
     role:{title:'Rôle',options:ROLES},
     age:{title:'Âge',options:['Adulte','Enfant','Bébé']},
     inv:{title:'Invitation',options:[{value:'non envoyée',label:'Non envoyée'},{value:'envoyée',label:'Envoyée'}]},
@@ -2302,12 +2446,13 @@ async function pickGM(key){
   }[key];
   const v=await appPicker(cfg.title,cfg.options,window._gm[key]);
   if(v===null)return;
+  if(key==='cote'&&v==='__manage__'){await manageGroups();return pickGM('cote');}
   window._gm[key]=v;
   const _btn=document.getElementById('gmf-'+key);
   if(_btn&&(key==='inv'||key==='pres')){_btn.innerHTML=(v.charAt(0).toUpperCase()+v.slice(1))+' <span style="color:var(--tl);">▾</span>';}
   const btn=document.getElementById('gmf-'+key);
   if(btn){
-    const label=key==='cote'?(v==='p1'?USER.p1:USER.p2):v;
+    const label=key==='cote'?groupLabel(v):v;
     btn.innerHTML=label+' <span style="color:var(--tl);">▾</span>';
   }
 }
@@ -2344,7 +2489,7 @@ function openAddGuestModal(){
     <div class="modal-title">Ajouter un invité <button class="modal-x" onclick="closeModal()">×</button></div>
     <div class="m-field"><label class="m-label">Nom complet</label><input class="m-input" id="ng-nom" placeholder="Prénom Nom" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-      ${pickField('cote','Côté',USER.p1)}
+      ${pickField('cote','Groupe',groupLabel(window._ng.cote))}
       ${pickField('role','Rôle',window._ng.role)}
       ${pickField('age','Âge',window._ng.age)}
       ${pickField('regime','Régime alimentaire',window._ng.regime)}
@@ -2366,18 +2511,19 @@ function openAddGuestModal(){
 }
 async function pickNG(key){
   const map={
-    cote:[{value:'p1',label:USER.p1},{value:'p2',label:USER.p2}],
+    cote:(GROUPS||[]).map(gr=>({value:gr.id,label:gr.label})).concat([{value:'__manage__',label:'⚙ Gérer les groupes'}]),
     role:ROLES, age:['Adulte','Enfant','Bébé'],
     inv:[{value:'non envoyée',label:'Non envoyée'},{value:'envoyée',label:'Envoyée'}],
     pres:[{value:'en attente',label:'En attente'},{value:'confirmée',label:'Confirmée'},{value:'déclinée',label:'Déclinée'}],
     regime:REGIMES
   };
   const cur=window._ng[key];
-  const v=await appPicker(({cote:'Côté',role:'Rôle',age:'Âge',inv:'Invitation',pres:'Présence',regime:'Régime alimentaire'})[key],map[key],cur);
+  const v=await appPicker(({cote:'Groupe',role:'Rôle',age:'Âge',inv:'Invitation',pres:'Présence',regime:'Régime alimentaire'})[key],map[key],cur);
   if(v===null||v===undefined)return;
+  if(key==='cote'&&v==='__manage__'){await manageGroups();return pickNG('cote');}
   window._ng[key]=v;
   const btn=document.getElementById('ngf-'+key);
-  if(btn){let disp=key==='cote'?(v==='p1'?USER.p1:USER.p2):v;
+  if(btn){let disp=key==='cote'?groupLabel(v):v;
     if(key==='inv'||key==='pres')disp=String(disp).charAt(0).toUpperCase()+String(disp).slice(1);
     btn.innerHTML=disp+' <span style="color:var(--tl);">▾</span>';}
 }
@@ -2425,7 +2571,7 @@ function renderSeating(){
   el.innerHTML=`
     <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px;">
       <div style="font-size:11px;font-weight:700;color:var(--pink-dark);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:10px;">Ajouter une table</div>
-      <input id="new-table-name" class="m-input" placeholder="Nom de la table…" style="background:var(--bg);margin-bottom:10px;" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
+      <input id="new-table-name" class="m-input" placeholder="Nom de la table…" maxlength="${TP_TABLE_NAME_MAXLEN}" style="background:var(--bg);margin-bottom:10px;" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
       <div style="display:flex;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;">
         ${shapeSeg('rect','Rect.')}${shapeSeg('round','Ronde')}${shapeSeg('square','Carrée')}
         <button class="btn" onclick="addTable()" style="flex:1;padding:10px 6px;border-radius:0;box-shadow:none;font-size:12px;">+ Table</button>
@@ -2454,6 +2600,14 @@ function renderSeating(){
             <button onclick="delTable(${t.id})" style="background:none;border:none;color:var(--tl);cursor:pointer;font-size:15px;">×</button>
           </div>
           <div style="font-size:11px;color:var(--tl);margin-bottom:10px;">${seated.length}${cap?' / '+cap:''} place${seated.length>1?'s':''} · ${t.shape==='round'?'Ronde':t.shape==='square'?'Carrée':'Rectangulaire'}</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;padding:8px 10px;background:var(--bg);border-radius:9px;">
+            <span style="font-size:11px;color:var(--tl);font-weight:700;">Chaises</span>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <button onclick="changeTableSeats(${t.id},-1)" style="width:26px;height:26px;border-radius:50%;border:1.5px solid var(--pink);background:#fff;color:var(--pink-dark);font-size:15px;font-weight:700;cursor:pointer;line-height:1;">−</button>
+              <span style="font-size:13px;font-weight:700;color:var(--mid);min-width:16px;text-align:center;">${t.seats}</span>
+              <button onclick="changeTableSeats(${t.id},1)" style="width:26px;height:26px;border-radius:50%;border:1.5px solid var(--pink);background:#fff;color:var(--pink-dark);font-size:15px;font-weight:700;cursor:pointer;line-height:1;">+</button>
+            </div>
+          </div>
           ${seated.map(g=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed var(--border);font-size:12px;color:var(--mid);">
             <span style="width:6px;height:6px;border-radius:50%;background:var(--pink);flex-shrink:0;"></span>
             <span style="flex:1;">${g.nom||''}</span>
@@ -2479,6 +2633,9 @@ function togglePanMode(){
   const wrap=document.getElementById('tp-visual');
   if(wrap)wrap.style.cursor=panMode?'grab':'default';
 }
+const TP_SEAT_OPTIONS={round:[4,6,8,10],square:[4,8],rect:[4,6,8,10]};
+const TP_TABLE_NAME_MAXLEN=16; // évite que le nom déborde de la forme de la table dans le plan
+function tpNearestSeats(shape,val){const opts=TP_SEAT_OPTIONS[shape]||TP_SEAT_OPTIONS.round;if(opts.includes(val))return val;return opts.reduce((best,v)=>Math.abs(v-(val||opts[0]))<Math.abs(best-(val||opts[0]))?v:best,opts[0]);}
 function drawPlanVisual(){
   const wrap=document.getElementById('tp-visual');
   if(!wrap)return;
@@ -2490,9 +2647,9 @@ function drawPlanVisual(){
   TABLES.forEach(t=>{
     if(!t.hiddenSeats)t.hiddenSeats=[];
     const placed=GUESTS.filter(g=>g.seatTableId===t.id);
-    const fixedSeats=t.shape==='square'?4:6;
-    if(t.seats!==fixedSeats){t.seats=fixedSeats;const ti=TABLES.findIndex(x=>x.id===t.id);if(ti>=0)TABLES[ti].seats=fixedSeats;}
-    const n=fixedSeats;
+    const validSeats=tpNearestSeats(t.shape,t.seats);
+    if(t.seats!==validSeats){t.seats=validSeats;const ti=TABLES.findIndex(x=>x.id===t.id);if(ti>=0)TABLES[ti].seats=validSeats;}
+    const n=validSeats;
     const isR=t.shape==='round',isSq=t.shape==='square';
     // Conteneur du groupe table+chaises, positionné en (t.x,t.y), centre interne à (70,70)
     const group=document.createElement('div');
@@ -2503,11 +2660,12 @@ function drawPlanVisual(){
       let sx,sy;
       if(isR){const orbit=RND/2+GAP+SEAT/2;const a=(i/n)*2*Math.PI-Math.PI/2;sx=cx+orbit*Math.cos(a);sy=cy+orbit*Math.sin(a);}
       else if(isSq){const perSide=Math.ceil(n/4);const side=Math.floor(i/perSide);const idxOnSide=i%perSide;const realPerSide=(side===3)?(n-3*perSide):perSide;const step=SQ/(Math.max(realPerSide,1)+1);const pos=step*(idxOnSide+1);const off=SQ/2+GAP+SEAT/2;if(side===0){sx=cx-SQ/2+pos;sy=cy-off;}else if(side===1){sx=cx+off;sy=cy-SQ/2+pos;}else if(side===2){sx=cx-SQ/2+pos;sy=cy+off;}else{sx=cx-off;sy=cy-SQ/2+pos;}}
+      else if(!isR&&!isSq&&n===10){if(i<4){const step=TW/5;sx=cx-TW/2+step*(i+1);sy=cy-(TH/2+GAP+SEAT/2);}else if(i<8){const idx=i-4;const step=TW/5;sx=cx-TW/2+step*(idx+1);sy=cy+(TH/2+GAP+SEAT/2);}else if(i===8){sx=cx-(TW/2+GAP+SEAT/2);sy=cy;}else{sx=cx+(TW/2+GAP+SEAT/2);sy=cy;}}
       else{const half=Math.ceil(n/2);const isTop=i<half;const cnt=isTop?half:(n-half);const idx=isTop?i:i-half;const step=TW/(Math.max(cnt,1)+1);sx=cx-TW/2+step*(idx+1);sy=isTop?cy-(TH/2+GAP+SEAT/2):cy+(TH/2+GAP+SEAT/2);}
       const hidden=t.hiddenSeats.includes(i);
       const g=hidden?null:placed.find(x=>x.seatIdx===i);
       const seat=document.createElement('div');
-      const seatBg=hidden?'background:transparent;border:1.5px dotted #d8a0b8;opacity:0.45;':(g?'background:'+(g.cote==='p1'?'#e8a0b0':'#a0b0e8')+';border:1.5px solid #fff;':'background:#f5e0e8;border:1.5px dashed #d8a0b8;');
+      const seatBg=hidden?'background:transparent;border:1.5px dotted #d8a0b8;opacity:0.45;':(g?'background:'+groupSeatColor(g.cote)+';border:1.5px solid #fff;':'background:#f5e0e8;border:1.5px dashed #d8a0b8;');
       seat.style.cssText=`position:absolute;left:${sx-SEAT/2}px;top:${sy-SEAT/2}px;width:${SEAT}px;height:${SEAT}px;border-radius:50%;${seatBg}display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:700;cursor:pointer;z-index:5;box-shadow:0 2px 6px rgba(0,0,0,.13);`;
       const seatIdx=i;
       if(hidden){seat.title='Chaise masquée';seat.onclick=ev=>{ev.stopPropagation();if(!panMode)openSeatMenu(t.id,seatIdx,null);};}
@@ -2518,9 +2676,18 @@ function drawPlanVisual(){
     const tbl=document.createElement('div');
     let w,h2,br;
     if(isR){w=RND;h2=RND;br='50%';}else if(isSq){w=SQ;h2=SQ;br='10px';}else{w=TW;h2=TH;br='10px';}
-    tbl.style.cssText=`position:absolute;left:${cx-w/2}px;top:${cy-h2/2}px;width:${w}px;height:${h2}px;border-radius:${br};background:linear-gradient(135deg,#f5d4e0,#fff);border:2px solid #e89aac;display:flex;align-items:center;justify-content:center;text-align:center;font-family:'Lora',serif;font-size:9px;font-weight:700;color:#b84060;cursor:grab;user-select:none;padding:4px;touch-action:none;z-index:10;box-shadow:0 2px 10px rgba(184,64,96,.12);overflow:hidden;`;
-    tbl.textContent=t.nom||'Table';
+    tbl.style.cssText=`position:absolute;left:${cx-w/2}px;top:${cy-h2/2}px;width:${w}px;height:${h2}px;border-radius:${br};background:linear-gradient(135deg,#f5d4e0,#fff);border:2px solid #e89aac;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-family:'Lora',serif;font-size:9px;font-weight:700;color:#b84060;cursor:grab;user-select:none;padding:4px;touch-action:none;z-index:10;box-shadow:0 2px 10px rgba(184,64,96,.12);overflow:hidden;`;
+    tbl.innerHTML=`<div style="width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.15;">${h(t.nom||'Table')}</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:3px;margin-top:9px;">
+        <button type="button" class="tp-seat-dec" style="width:14px;height:14px;border-radius:50%;border:1px solid #b84060;background:rgba(255,255,255,.85);color:#b84060;font-size:10px;font-weight:700;line-height:1;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;">−</button>
+        <span style="font-size:9px;font-weight:700;color:#b84060;min-width:11px;">${t.seats}</span>
+        <button type="button" class="tp-seat-inc" style="width:14px;height:14px;border-radius:50%;border:1px solid #b84060;background:rgba(255,255,255,.85);color:#b84060;font-size:10px;font-weight:700;line-height:1;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;">+</button>
+      </div>`;
     tbl.title=`${t.nom} — glisser pour déplacer, cliquer pour renommer`;
+    const seatDecBtn=tbl.querySelector('.tp-seat-dec'), seatIncBtn=tbl.querySelector('.tp-seat-inc');
+    [seatDecBtn,seatIncBtn].forEach(b=>{b.addEventListener('pointerdown',ev=>ev.stopPropagation());});
+    seatDecBtn.addEventListener('click',ev=>{ev.stopPropagation();changeTableSeats(t.id,-1);});
+    seatIncBtn.addEventListener('click',ev=>{ev.stopPropagation();changeTableSeats(t.id,1);});
     let dragging=false,moved=false,sx0=0,sy0=0,ox=t.x,oy=t.y,tStart=0;
     tbl.addEventListener('pointerdown',e=>{
       if(panMode)return;
@@ -2593,8 +2760,8 @@ async function openSeatMenu(tableId,seatIdx,guestId){
 
 async function renameTable(id){
   const t=TABLES.find(x=>x.id===id);if(!t)return;
-  const v=await appPrompt('Nom de la table',t.nom||'');
-  if(v!==null&&v.trim()){t.nom=v.trim();saveData('tables',TABLES);renderSeating();}
+  const v=await appPrompt('Nom de la table',t.nom||'',{maxlength:TP_TABLE_NAME_MAXLEN});
+  if(v!==null&&v.trim()){t.nom=v.trim().substring(0,TP_TABLE_NAME_MAXLEN);saveData('tables',TABLES);renderSeating();}
 }
 async function deleteTable(id){
   const t=TABLES.find(x=>x.id===id);if(!t)return;
@@ -2603,9 +2770,23 @@ async function deleteTable(id){
   TABLES=TABLES.filter(x=>x.id!==id);
   saveData('tables',TABLES);saveData('guests',GUESTS);renderSeating();
 }
+function changeTableSeats(tableId,dir){
+  const t=TABLES.find(x=>x.id===tableId);if(!t)return;
+  const opts=TP_SEAT_OPTIONS[t.shape]||TP_SEAT_OPTIONS.round;
+  let idx=opts.indexOf(tpNearestSeats(t.shape,t.seats));
+  idx=Math.max(0,Math.min(opts.length-1,idx+dir));
+  const newSeats=opts[idx];
+  if(newSeats===t.seats)return;
+  if(newSeats<t.seats){
+    GUESTS.forEach(g=>{if(g.seatTableId===tableId&&g.seatIdx>=newSeats){g.seatTableId=null;g.seatIdx=null;}});
+    t.hiddenSeats=(t.hiddenSeats||[]).filter(i=>i<newSeats);
+  }
+  t.seats=newSeats;
+  saveData('tables',TABLES);saveData('guests',GUESTS);renderSeating();
+}
 function addTable(){
   const nomEl=document.getElementById('new-table-name');
-  const nom=(nomEl?nomEl.value.trim():'')||('Table '+(TABLES.length+1));
+  const nom=((nomEl?nomEl.value.trim():'')||('Table '+(TABLES.length+1))).substring(0,TP_TABLE_NAME_MAXLEN);
   const seats=tpShape==='square'?4:6;
   // Placer la nouvelle table à l'endroit actuellement visible du plan (scroll), pas dans une grille fixe
   const wrap=document.getElementById('tp-visual');
@@ -2673,6 +2854,10 @@ function openAutoSeatModal(){
       Placer uniquement les invités confirmés
     </label>
     <div style="font-size:11px;color:var(--tl);margin:-2px 0 16px 24px;">Décochez pour inclure aussi les invités en attente. Les invités déclinés ne sont jamais placés.</div>
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--dark);font-weight:600;margin-bottom:16px;">
+      <input type="checkbox" id="as-group-together" style="accent-color:var(--pink);width:16px;height:16px;" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
+      Placer les invités d'un même groupe ensemble
+    </label>
     <div style="font-family:'Playfair Display',serif;font-size:15px;color:var(--dark);margin-bottom:8px;">Ne pas placer ensemble</div>
     <div id="conflicts-list">${renderConflictsList()}</div>
     <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;">
@@ -2718,11 +2903,36 @@ function conflictsAtTable(tableId,guestName){
 }
 function runAutoSeat(){
   const confOnly = document.getElementById('as-conf-only') ? document.getElementById('as-conf-only').checked : true;
+  const groupTogether = document.getElementById('as-group-together') ? document.getElementById('as-group-together').checked : false;
   closeModal();
   if(!TABLES.length){appAlert2('Créez d\'abord des tables.');return;}
   const order=['confirmée','en attente'];
   const eligible = confOnly ? ['confirmée'] : ['confirmée','en attente'];
-  const unseated=GUESTS.filter(g=>!g.seatTableId && eligible.includes(g.presence||'en attente')).sort((a,b)=>order.indexOf(a.presence||'en attente')-order.indexOf(b.presence||'en attente'));
+  const unseated=GUESTS.filter(g=>!g.seatTableId && eligible.includes(g.presence||'en attente'));
+  if(groupTogether){
+    unseated.sort((a,b)=>{
+      const pa=order.indexOf(a.presence||'en attente'), pb=order.indexOf(b.presence||'en attente');
+      if(pa!==pb) return pa-pb;
+      const sa=groupSide(a.cote), sb=groupSide(b.cote);
+      if(sa!==sb) return sa<sb?-1:1;
+      const ca=a.cote||'p1', cb=b.cote||'p1';
+      if(ca!==cb) return ca<cb?-1:1;
+      return (a.nom||'').localeCompare(b.nom||'');
+    });
+  } else {
+    // Placement totalement aléatoire (au sein de chaque niveau de priorité de présence)
+    unseated.sort((a,b)=>order.indexOf(a.presence||'en attente')-order.indexOf(b.presence||'en attente'));
+    let start=0;
+    while(start<unseated.length){
+      let end=start;
+      while(end<unseated.length && (unseated[end].presence||'en attente')===(unseated[start].presence||'en attente')) end++;
+      for(let i=end-1;i>start;i--){
+        const j=start+Math.floor(Math.random()*(i-start+1));
+        [unseated[i],unseated[j]]=[unseated[j],unseated[i]];
+      }
+      start=end;
+    }
+  }
   let notPlaced=0;
   unseated.forEach(g=>{
     let placed=false;
@@ -2824,7 +3034,7 @@ async function exportPlanPDF(){
 
     TABLES.forEach(t=>{
       const placed=GUESTS.filter(g=>g.seatTableId===t.id);
-      const n=Math.min(t.seats,12);
+      const n=tpNearestSeats(t.shape,t.seats);
       const isR=t.shape==='round', isSq=t.shape==='square';
       const cx=t.x+70, cy=t.y+70;            // centre surface (px app)
       const seatR=Math.max(1.8,(SEAT/2)*scale);
@@ -2848,6 +3058,11 @@ async function exportPlanPDF(){
           else if(side===1){ sx=cx+off; sy=cy-SQ/2+pos; }
           else if(side===2){ sx=cx-SQ/2+pos; sy=cy+off; }
           else { sx=cx-off; sy=cy-SQ/2+pos; }
+        } else if(n===10){
+          if(i<4){ const step=TW/5; sx=cx-TW/2+step*(i+1); sy=cy-(TH/2+GAP+SEAT/2); }
+          else if(i<8){ const idx=i-4; const step=TW/5; sx=cx-TW/2+step*(idx+1); sy=cy+(TH/2+GAP+SEAT/2); }
+          else if(i===8){ sx=cx-(TW/2+GAP+SEAT/2); sy=cy; }
+          else { sx=cx+(TW/2+GAP+SEAT/2); sy=cy; }
         } else {
           const half=Math.ceil(n/2);
           const isTop=i<half;
@@ -2859,7 +3074,7 @@ async function exportPlanPDF(){
         }
         const g=placed.find(x=>x.seatIdx===i);
         if(g){
-          const seatColor=g.cote==='p1'?[232,160,176]:[160,176,232]; // #e8a0b0 / #a0b0e8
+          const seatColor=groupSeatColorRGB(g.cote); // #e8a0b0 / #a0b0e8 / #c0a0e8
           setFill(seatColor); setStroke(C_WH); pdf.setLineWidth(0.5);
           pdf.circle(PX(sx),PY(sy),seatR,'FD');
           const initials=(g.nom||'?').split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase();
@@ -3102,7 +3317,7 @@ function renderMenu(){
     <div class="panel" style="margin-bottom:16px;">
       <div class="panel-title" style="justify-content:center;">Répartition des invités</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <input type="text" name="username" style="position:absolute;left:-9999px;top:-9999px;opacity:0;height:0;width:0;" tabindex="-1" aria-hidden="true"><input type="password" name="password" style="position:absolute;left:-9999px;top:-9999px;opacity:0;height:0;width:0;" tabindex="-1" aria-hidden="true">
+        
         <div><label class="m-label">Vin d'honneur uniquement</label><input class="m-input" type="number" min="0" id="mnu-h" value="${MENUQTY.honneur}" onchange="MENUQTY.honneur=this.value;MENUQTY._manual_h=true;renderMenu();" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore></div>
         <div><label class="m-label">Présents toute la réception</label><input class="m-input" type="number" min="0" id="mnu-r" value="${MENUQTY.repas}" onchange="MENUQTY.repas=this.value;MENUQTY._manual_r=true;renderMenu();" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore></div>
       </div>
