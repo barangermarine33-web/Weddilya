@@ -214,6 +214,10 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
   #guests-content .section-actions .btn,#guests-content .section-actions .btn-outline{
     flex:0 1 auto;min-width:0;
   }
+  /* Checklist et Budget : bouton "+" seul comme dans l'application (texte "Ajouter" masqué,
+     ordinateur non concerné puisque cette règle est dans une media query mobile). */
+  .plus-add-btn{padding:9px 14px;font-size:18px;}
+  .plus-add-btn .plus-add-txt{display:none;}
 }
 @media(max-width:600px){:root{--band-h:74px;}.band-countdown{gap:18px;}.bcd-num{font-size:22px;}.band-names{font-size:12.5px;}}
 
@@ -1837,7 +1841,7 @@ function renderChecklist(){
     <div class="section-actions">
       <input id="new-task-text" class="m-input" placeholder="Ajouter une tâche…" value="${(window._newTaskText||'').replace(/"/g,'&quot;')}" style="flex:1;min-width:180px;max-width:380px;background:#fff;" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
       <button class="m-pick" style="width:auto;min-width:150px;background:#fff;" onclick="pickTaskMonth()">${window._newTaskMonth} <span style="color:var(--tl);">▾</span></button>
-      <button class="btn" onclick="addTask()">+ Ajouter</button>
+      <button class="btn plus-add-btn" onclick="addTask()">+<span class="plus-add-txt"> Ajouter</span></button>
     </div>
     <div style="display:flex;justify-content:flex-end;margin-bottom:14px;"><button class="btn-outline" style="font-size:12px;padding:6px 14px;" onclick="resetTasks()">↺ Restaurer les tâches par défaut</button></div>
     ${monthsWithTasks.length?monthsWithTasks.map(m=>{
@@ -1912,7 +1916,7 @@ function renderBudget(){
       
       <input id="new-bgt-cat" class="m-input" autocomplete="off" data-lpignore="true" placeholder="Nouvelle catégorie" style="flex:1;min-width:160px;max-width:300px;background:#fff;" data-1p-ignore>
       <input id="new-bgt-est" class="m-input" type="number" autocomplete="off" data-lpignore="true" placeholder="Budget estimé €" style="width:160px;background:#fff;" data-1p-ignore>
-      <button type="button" class="btn" onclick="addBudgetCat()">+ Ajouter</button>
+      <button type="button" class="btn plus-add-btn" onclick="addBudgetCat()">+<span class="plus-add-txt"> Ajouter</span></button>
     </div>
     <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:14px;"><button type="button" class="btn-outline" style="font-size:12px;padding:6px 14px;" onclick="exportBudgetPDF()">Export PDF</button><button type="button" class="btn-outline" style="font-size:12px;padding:6px 14px;" onclick="resetBudget()">↺ Restaurer les catégories par défaut</button></div>
     ${BUDGET.length?BUDGET.map(item=>{
