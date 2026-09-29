@@ -207,6 +207,13 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
   .section-actions{gap:8px;}
   .section-actions .btn,.section-actions .btn-outline{flex:1;min-width:calc(50% - 4px);text-align:center;}
   #tp-visual{height:360px;}
+  /* Checklist, Budget, Invités : boutons à largeur naturelle qui s'enchaînent librement
+     (comme dans l'application), au lieu du regroupement forcé par 2 des autres onglets. */
+  #checklist-content .section-actions .btn,#checklist-content .section-actions .btn-outline,
+  #budget-content .section-actions .btn,#budget-content .section-actions .btn-outline,
+  #guests-content .section-actions .btn,#guests-content .section-actions .btn-outline{
+    flex:0 1 auto;min-width:0;
+  }
 }
 @media(max-width:600px){:root{--band-h:74px;}.band-countdown{gap:18px;}.bcd-num{font-size:22px;}.band-names{font-size:12.5px;}}
 
@@ -2033,7 +2040,7 @@ function renderGuests(){
       </div>
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
         <table class="data-table" style="min-width:480px;">
-          <thead><tr><th style="width:24px;"></th><th>Nom</th><th class="hm">Groupe</th><th class="hm">Rôle</th><th>Invitation</th><th>Présence</th><th class="hm">Régime</th></tr></thead>
+          <thead><tr><th style="width:24px;"></th><th>Nom</th><th class="hm">Groupe</th><th class="hm">Rôle</th><th>Invitation</th><th>Présence</th><th>Régime</th></tr></thead>
           <tbody id="guests-tbody">${renderGuestRows(applyGuestFilters(GUESTS))}</tbody>
         </table>
       </div>
@@ -2214,7 +2221,7 @@ function renderGuestRows(list){
   return list.map(g=>{
     const pc=g.presence==='confirmée'?'var(--gn)':g.presence==='déclinée'?'var(--rd)':'var(--am)';
     const ic=g.invitation==='envoyée'?'var(--gn)':'var(--tl)';
-    return`<tr data-gid="${g.id}" style="cursor:pointer;"><td class="drag-handle" style="cursor:grab;color:var(--pink-light);text-align:center;touch-action:none;" title="Glisser pour réordonner">⋮⋮</td><td onclick="openGuestModal(${g.id})"><strong>${g.nom||''}</strong></td><td class="hm" onclick="openGuestModal(${g.id})" style="color:var(--tl);">${groupLabel(g.cote)}</td><td class="hm" onclick="openGuestModal(${g.id})" style="color:var(--tl);">${g.role||'Invité·e'}</td><td onclick="openGuestModal(${g.id})"><span style="color:${ic};font-weight:700;font-size:12px;">${g.invitation==='envoyée'?'Envoyée':'Non envoyée'}</span></td><td onclick="openGuestModal(${g.id})"><span style="color:${pc};font-weight:700;font-size:12px;">${(g.presence||'en attente').charAt(0).toUpperCase()+(g.presence||'en attente').slice(1)}</span></td><td class="hm" onclick="openGuestModal(${g.id})" style="color:var(--tl);font-size:12px;">${g.regime&&g.regime!=='Aucun'?g.regime:'—'}</td></tr>`;
+    return`<tr data-gid="${g.id}" style="cursor:pointer;"><td class="drag-handle" style="cursor:grab;color:var(--pink-light);text-align:center;touch-action:none;" title="Glisser pour réordonner">⋮⋮</td><td onclick="openGuestModal(${g.id})"><strong>${g.nom||''}</strong></td><td class="hm" onclick="openGuestModal(${g.id})" style="color:var(--tl);">${groupLabel(g.cote)}</td><td class="hm" onclick="openGuestModal(${g.id})" style="color:var(--tl);">${g.role||'Invité·e'}</td><td onclick="openGuestModal(${g.id})"><span style="color:${ic};font-weight:700;font-size:12px;">${g.invitation==='envoyée'?'Envoyée':'Non envoyée'}</span></td><td onclick="openGuestModal(${g.id})"><span style="color:${pc};font-weight:700;font-size:12px;">${(g.presence||'en attente').charAt(0).toUpperCase()+(g.presence||'en attente').slice(1)}</span></td><td onclick="openGuestModal(${g.id})" style="color:var(--tl);font-size:12px;">${g.regime&&g.regime!=='Aucun'?g.regime:'—'}</td></tr>`;
   }).join('');
 }
 
@@ -3494,7 +3501,7 @@ function renderDecor(){
   if(!el)return;
   const data=getDecoData();
   window._decoCats=Object.keys(data);
-  el.innerHTML='<div style="display:flex;gap:8px;margin-bottom:10px;"><input class="m-input" id="deco-new-cat" placeholder="Nouvelle catégorie…" style="flex:1;background:#fff;" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore><button class="btn" style="padding:8px 16px;" onclick="addDecoCategory()">+</button></div><div style="display:flex;justify-content:flex-end;margin-bottom:14px;"><button class="btn-outline" style="font-size:12px;padding:6px 14px;" onclick="resetDecorations()">↺ Restaurer les décorations par défaut</button></div>'+window._decoCats.map((cat,ci)=>{
+  el.innerHTML='<div style="display:flex;gap:8px;margin-bottom:10px;"><input class="m-input" id="deco-new-cat" placeholder="Nouvelle catégorie…" style="flex:1;background:#fff;" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore><button class="btn" style="padding:8px 16px;" onclick="addDecoCategory()">+</button></div><div style="display:flex;justify-content:flex-end;margin-bottom:14px;"><button class="btn-outline" style="font-size:12px;padding:6px 14px;" onclick="resetDecorations()">↺ Réinitialiser les décorations par défaut</button></div>'+window._decoCats.map((cat,ci)=>{
     const items=data[cat];
     const done=items.filter((_,i)=>DECO_CHECKED[cat+i]).length;
     return`<div class="panel" style="margin-bottom:14px;padding:0;overflow:hidden;">
@@ -3513,7 +3520,7 @@ function renderDecor(){
         </label>`).join('')}
         <div style="display:flex;gap:8px;margin-top:10px;">
           <input class="m-input" id="deco-add-${ci}" placeholder="Ajouter un élément…" style="flex:1;font-size:12px;padding:8px 12px;" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
-          <button class="btn-outline" style="font-size:12px;padding:7px 14px;" onclick="addDecoIdx(${ci})">+ Ajouter</button>
+          <button class="btn" style="padding:7px 12px;font-size:13px;" onclick="addDecoIdx(${ci})">+</button>
         </div>
       </div>
     </div>`;
@@ -3606,10 +3613,10 @@ async function fetchWithTimeout(url, opts={}, timeoutMs=10000){
   }
 }
 function favToolbarHTML(){
-  return `${['alpha|A→Z','prix|Prix'].map(s=>{const[v,l]=s.split('|');return `<button onclick="setSortFav('${v}')" style="background:${sortFav===v?'var(--pink)':'#fff'};color:${sortFav===v?'#fff':'var(--pink)'};border:1px solid var(--pink);border-radius:16px;padding:4px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;">${l}</button>`;}).join('')}<div class="vnd-filter-wrap" style="position:relative;display:inline-block;"><button onclick="toggleFilterMenu('fav')" style="background:#fff;color:var(--pink);border:1px solid var(--pink);border-radius:16px;padding:4px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;display:flex;align-items:center;gap:4px;">${filterFav==='all'?'Toutes catégories':filterFav} <span style="font-size:9px;">▾</span></button>${filterMenuOpen==='fav'?`<div style="position:absolute;top:calc(100% + 4px);left:0;background:#fff;border:1px solid var(--pink);border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,0.12);z-index:100;max-height:260px;overflow-y:auto;min-width:170px;"><div onclick="setFilterFav('all')" style="padding:8px 12px;font-size:12px;font-family:Lora,serif;cursor:pointer;background:${filterFav==='all'?'var(--bg)':'#fff'};color:${filterFav==='all'?'var(--pink)':'var(--tx)'};font-weight:${filterFav==='all'?'700':'400'};">Toutes catégories</div>${Object.values(VND_CATEGORIES).map(c=>`<div onclick="setFilterFav('${c.label}')" style="padding:8px 12px;font-size:12px;font-family:Lora,serif;cursor:pointer;background:${filterFav===c.label?'var(--bg)':'#fff'};color:${filterFav===c.label?'var(--pink)':'var(--tx)'};font-weight:${filterFav===c.label?'700':'400'};">${c.label}</div>`).join('')}</div>`:''}</div><button class="btn-outline" style="font-size:11px;padding:5px 12px;" onclick="addManualVendor('fav')">+ Ajouter</button>`;
+  return `${['alpha|A→Z','prix|Prix'].map(s=>{const[v,l]=s.split('|');return `<button onclick="setSortFav('${v}')" style="background:${sortFav===v?'var(--pink)':'#fff'};color:${sortFav===v?'#fff':'var(--pink)'};border:1px solid var(--pink);border-radius:16px;padding:4px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;">${l}</button>`;}).join('')}<div class="vnd-filter-wrap" style="position:relative;display:inline-block;"><button onclick="toggleFilterMenu('fav')" style="background:#fff;color:var(--pink);border:1px solid var(--pink);border-radius:16px;padding:4px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;display:flex;align-items:center;gap:4px;">${filterFav==='all'?'Toutes catégories':filterFav} <span style="font-size:9px;">▾</span></button>${filterMenuOpen==='fav'?`<div style="position:absolute;top:calc(100% + 4px);left:0;background:#fff;border:1px solid var(--pink);border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,0.12);z-index:100;max-height:260px;overflow-y:auto;min-width:170px;"><div onclick="setFilterFav('all')" style="padding:8px 12px;font-size:12px;font-family:Lora,serif;cursor:pointer;background:${filterFav==='all'?'var(--bg)':'#fff'};color:${filterFav==='all'?'var(--pink)':'var(--tx)'};font-weight:${filterFav==='all'?'700':'400'};">Toutes catégories</div>${Object.values(VND_CATEGORIES).map(c=>`<div onclick="setFilterFav('${c.label}')" style="padding:8px 12px;font-size:12px;font-family:Lora,serif;cursor:pointer;background:${filterFav===c.label?'var(--bg)':'#fff'};color:${filterFav===c.label?'var(--pink)':'var(--tx)'};font-weight:${filterFav===c.label?'700':'400'};">${c.label}</div>`).join('')}</div>`:''}</div><button style="background:var(--pink-pale);color:var(--pink);border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Lora',serif;" onclick="addManualVendor('fav')">+ Ajouter</button>`;
 }
 function choToolbarHTML(){
-  return `${['alpha|A→Z','prix|Prix'].map(s=>{const[v,l]=s.split('|');return `<button onclick="setSortCho('${v}')" style="background:${sortCho===v?'var(--pink)':'#fff'};color:${sortCho===v?'#fff':'var(--pink)'};border:1px solid var(--pink);border-radius:16px;padding:4px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;">${l}</button>`;}).join('')}<div class="vnd-filter-wrap" style="position:relative;display:inline-block;"><button onclick="toggleFilterMenu('cho')" style="background:#fff;color:var(--pink);border:1px solid var(--pink);border-radius:16px;padding:4px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;display:flex;align-items:center;gap:4px;">${filterCho==='all'?'Toutes catégories':filterCho} <span style="font-size:9px;">▾</span></button>${filterMenuOpen==='cho'?`<div style="position:absolute;top:calc(100% + 4px);left:0;background:#fff;border:1px solid var(--pink);border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,0.12);z-index:100;max-height:260px;overflow-y:auto;min-width:170px;"><div onclick="setFilterCho('all')" style="padding:8px 12px;font-size:12px;font-family:Lora,serif;cursor:pointer;background:${filterCho==='all'?'var(--bg)':'#fff'};color:${filterCho==='all'?'var(--pink)':'var(--tx)'};font-weight:${filterCho==='all'?'700':'400'};">Toutes catégories</div>${Object.values(VND_CATEGORIES).map(c=>`<div onclick="setFilterCho('${c.label}')" style="padding:8px 12px;font-size:12px;font-family:Lora,serif;cursor:pointer;background:${filterCho===c.label?'var(--bg)':'#fff'};color:${filterCho===c.label?'var(--pink)':'var(--tx)'};font-weight:${filterCho===c.label?'700':'400'};">${c.label}</div>`).join('')}</div>`:''}</div><button class="btn-outline" style="font-size:11px;padding:5px 12px;" onclick="addManualVendor('cho')">+ Ajouter</button>`;
+  return `${['alpha|A→Z','prix|Prix'].map(s=>{const[v,l]=s.split('|');return `<button onclick="setSortCho('${v}')" style="background:${sortCho===v?'var(--pink)':'#fff'};color:${sortCho===v?'#fff':'var(--pink)'};border:1px solid var(--pink);border-radius:16px;padding:4px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;">${l}</button>`;}).join('')}<div class="vnd-filter-wrap" style="position:relative;display:inline-block;"><button onclick="toggleFilterMenu('cho')" style="background:#fff;color:var(--pink);border:1px solid var(--pink);border-radius:16px;padding:4px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:Lora,serif;display:flex;align-items:center;gap:4px;">${filterCho==='all'?'Toutes catégories':filterCho} <span style="font-size:9px;">▾</span></button>${filterMenuOpen==='cho'?`<div style="position:absolute;top:calc(100% + 4px);left:0;background:#fff;border:1px solid var(--pink);border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,0.12);z-index:100;max-height:260px;overflow-y:auto;min-width:170px;"><div onclick="setFilterCho('all')" style="padding:8px 12px;font-size:12px;font-family:Lora,serif;cursor:pointer;background:${filterCho==='all'?'var(--bg)':'#fff'};color:${filterCho==='all'?'var(--pink)':'var(--tx)'};font-weight:${filterCho==='all'?'700':'400'};">Toutes catégories</div>${Object.values(VND_CATEGORIES).map(c=>`<div onclick="setFilterCho('${c.label}')" style="padding:8px 12px;font-size:12px;font-family:Lora,serif;cursor:pointer;background:${filterCho===c.label?'var(--bg)':'#fff'};color:${filterCho===c.label?'var(--pink)':'var(--tx)'};font-weight:${filterCho===c.label?'700':'400'};">${c.label}</div>`).join('')}</div>`:''}</div><button style="background:#e8f5ed;color:var(--gn);border:1px solid #5a8a6a30;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Lora',serif;" onclick="addManualVendor('cho')">+ Ajouter</button>`;
 }
 function refreshVndToolbar(zone){
   const idx=zone==='fav'?'fav-toolbar':'cho-toolbar';
@@ -4581,8 +4588,19 @@ function openSettingsPage(){
     </div>
     ${USER.isSharedGuest?'':`<div style="border-top:1px solid var(--border);margin:20px 0 14px;"></div>
     <div style="font-family:'Playfair Display',serif;font-size:16px;color:var(--dark);margin-bottom:6px;">Partenaire</div>
-    <div style="font-size:12px;color:var(--tl);font-style:italic;margin-bottom:6px;">Générez un lien à partager à votre partenaire.</div>
-    <button class="btn" style="width:100%;" onclick="generatePartnerLink()">Générer un lien d'invitation</button>`}
+    <div id="partner-invite-wrap">
+      <div style="font-size:12px;color:var(--tl);font-style:italic;margin-bottom:6px;">Générez un lien à partager à votre partenaire.</div>
+      <button class="btn" style="width:100%;" onclick="generatePartnerLink()">Générer un lien d'invitation</button>
+      <div id="partner-link-wrap" style="display:none;margin-top:10px;">
+        <div style="font-size:11px;color:var(--tl);margin-bottom:6px;">Lien d'invitation :</div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <input id="partner-link-input" readonly style="flex:1;border:1.5px solid var(--border);border-radius:10px;padding:8px 10px;font-family:'Lora',serif;font-size:11px;color:var(--dark);background:var(--bg);outline:none;" value="" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore>
+          <button onclick="copyPartnerLink()" style="background:var(--bg);color:var(--pink-dark);border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Lora',serif;white-space:nowrap;">Copier</button>
+        </div>
+        <div id="partner-copy-ok" style="display:none;font-size:11px;color:#5a8a6a;font-family:'Lora',serif;margin-top:4px;">Lien copié !</div>
+        <p style="font-size:11px;color:var(--tl);font-style:italic;margin-top:6px;">Ce lien expire dans 7 jours.</p>
+      </div>
+    </div>`}
     <div style="border-top:1px solid var(--border);margin:18px 0 14px;"></div>
     <button class="btn-outline" style="width:100%;" onclick="doLogout()">Se déconnecter</button>
     <div style="border-top:1px solid var(--border);margin:18px 0 14px;"></div>
@@ -4614,8 +4632,15 @@ async function generatePartnerLink(){
   if(!docId){await appAlert2('Connectez-vous d\'abord.');return;}
   const token=btoa(docId+'|'+Date.now()).replace(/=/g,'');
   const link=location.origin+location.pathname+'?invite='+encodeURIComponent(token);
-  try{await navigator.clipboard.writeText(link);await appAlert2('Lien copié ! Partagez-le à votre partenaire (valable 7 jours).');}
-  catch(e){await appAlert2('Lien : '+link);}
+  const linkWrap=document.getElementById('partner-link-wrap'),linkInput=document.getElementById('partner-link-input'),copyOk=document.getElementById('partner-copy-ok');
+  if(linkInput)linkInput.value=link;
+  if(linkWrap)linkWrap.style.display='block';
+  if(copyOk)copyOk.style.display='none';
+}
+function copyPartnerLink(){
+  const inp=document.getElementById('partner-link-input'),ok=document.getElementById('partner-copy-ok');
+  if(!inp||!inp.value)return;
+  navigator.clipboard.writeText(inp.value).then(()=>{if(ok){ok.style.display='block';setTimeout(()=>{ok.style.display='none';},3000);}}).catch(()=>{inp.select();document.execCommand('copy');if(ok){ok.style.display='block';setTimeout(()=>{ok.style.display='none';},3000);}});
 }
 async function deleteAccountWeb(){
   if(!(await appConfirm('Supprimer définitivement votre compte et toutes vos données ? Cette action est irréversible.')))return;
