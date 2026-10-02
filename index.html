@@ -3195,6 +3195,9 @@ async function exportPlanPDF(){
     const url=URL.createObjectURL(blob);const a=document.createElement('a');
     a.href=url;a.download=`plan_de_table_${USER.p1}_${USER.p2}.pdf`;
     document.body.appendChild(a);a.click();
+    // Ouvre aussi le PDF dans un nouvel onglet (lecteur intégré du navigateur), comme
+    // l'appli l'ouvre automatiquement après l'avoir enregistré.
+    window.open(url,'_blank');
     setTimeout(()=>{
       URL.revokeObjectURL(url);a.remove();
       if(ov){ov.classList.remove('open');ov.innerHTML='';}
@@ -3312,6 +3315,9 @@ async function exportBudgetPDF(){
     const url=URL.createObjectURL(blob);const a=document.createElement('a');
     a.href=url;a.download='Weddilya-Budget.pdf';
     document.body.appendChild(a);a.click();
+    // Ouvre aussi le PDF dans un nouvel onglet (lecteur intégré du navigateur), comme
+    // l'appli l'ouvre automatiquement après l'avoir enregistré.
+    window.open(url,'_blank');
     setTimeout(()=>{
       URL.revokeObjectURL(url);a.remove();
       if(ov){ov.classList.remove('open');ov.innerHTML='';}
