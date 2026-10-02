@@ -194,7 +194,8 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 .bcd{text-align:center;}
 .bcd-num{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--pink);line-height:1;}
 .bcd-lbl{font-family:'Josefin Sans',sans-serif;font-size:8px;letter-spacing:0.15em;color:var(--mid);text-transform:uppercase;margin-top:2px;}
-@media(max-width:640px){.hm{display:none;}.data-table{min-width:0 !important;}}
+.hm-sub{display:none;}
+@media(max-width:640px){.hm{display:none;}.data-table{min-width:0 !important;}.hm-sub{display:block;}}
 .app-main{max-width:100%;overflow-x:hidden;}
 .tab-page{max-width:900px;margin:0 auto;width:100%;box-sizing:border-box;}
 .panel{box-sizing:border-box;width:100%;}
@@ -296,7 +297,7 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 .btn{padding:10px 20px;border:none;border-radius:10px;cursor:pointer;font-family:'Lora',serif;font-size:13px;font-weight:700;background:linear-gradient(135deg,var(--pink-dark),var(--pink));color:white;box-shadow:0 3px 12px rgba(212,96,122,0.25);transition:opacity .2s,transform .2s;}
 .btn:hover{opacity:.9;transform:translateY(-1px);}
 .btn-outline{padding:9px 18px;border:1.5px solid var(--pink);border-radius:10px;background:#fff;color:var(--pink);font-family:'Lora',serif;font-size:13px;font-weight:700;cursor:pointer;transition:background .2s;}
-.btn-outline:hover{background:var(--pink-pale);}
+@media(hover:hover){.btn-outline:hover{background:var(--pink-pale);}}
 .section-actions{display:flex;gap:10px;margin-bottom:20px;align-items:center;flex-wrap:wrap;}
 
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(62,24,40,0.45);z-index:400;align-items:center;justify-content:center;padding:18px;}
@@ -2225,7 +2226,7 @@ function renderGuestRows(list){
   return list.map(g=>{
     const pc=g.presence==='confirmée'?'var(--gn)':g.presence==='déclinée'?'var(--rd)':'var(--am)';
     const ic=g.invitation==='envoyée'?'var(--gn)':'var(--tl)';
-    return`<tr data-gid="${g.id}" style="cursor:pointer;"><td class="drag-handle" style="cursor:grab;color:var(--pink-light);text-align:center;touch-action:none;" title="Glisser pour réordonner">⋮⋮</td><td onclick="openGuestModal(${g.id})"><strong>${g.nom||''}</strong></td><td class="hm" onclick="openGuestModal(${g.id})" style="color:var(--tl);">${groupLabel(g.cote)}</td><td class="hm" onclick="openGuestModal(${g.id})" style="color:var(--tl);">${g.role||'Invité·e'}</td><td onclick="openGuestModal(${g.id})"><span style="color:${ic};font-weight:700;font-size:12px;">${g.invitation==='envoyée'?'Envoyée':'Non envoyée'}</span></td><td onclick="openGuestModal(${g.id})"><span style="color:${pc};font-weight:700;font-size:12px;">${(g.presence||'en attente').charAt(0).toUpperCase()+(g.presence||'en attente').slice(1)}</span></td><td onclick="openGuestModal(${g.id})" style="color:var(--tl);font-size:12px;">${g.regime&&g.regime!=='Aucun'?g.regime:'—'}</td></tr>`;
+    return`<tr data-gid="${g.id}" style="cursor:pointer;"><td class="drag-handle" style="cursor:grab;color:var(--pink-light);text-align:center;touch-action:none;" title="Glisser pour réordonner">⋮⋮</td><td onclick="openGuestModal(${g.id})"><strong>${g.nom||''}</strong><div class="hm-sub" style="font-size:11px;color:var(--tl);margin-top:2px;">${groupLabel(g.cote)} · ${g.role||'Invité·e'}</div></td><td class="hm" onclick="openGuestModal(${g.id})" style="color:var(--tl);">${groupLabel(g.cote)}</td><td class="hm" onclick="openGuestModal(${g.id})" style="color:var(--tl);">${g.role||'Invité·e'}</td><td onclick="openGuestModal(${g.id})"><span style="color:${ic};font-weight:700;font-size:12px;">${g.invitation==='envoyée'?'Envoyée':'Non envoyée'}</span></td><td onclick="openGuestModal(${g.id})"><span style="color:${pc};font-weight:700;font-size:12px;">${(g.presence||'en attente').charAt(0).toUpperCase()+(g.presence||'en attente').slice(1)}</span></td><td onclick="openGuestModal(${g.id})" style="color:var(--tl);font-size:12px;">${g.regime&&g.regime!=='Aucun'?g.regime:'—'}</td></tr>`;
   }).join('');
 }
 
@@ -2987,7 +2988,21 @@ async function resetSeating(){
 function appAlert(msg){appAlert2(msg);}
 
 async function exportPlanPDF(){
-  appAlert('Préparation du PDF en cours…','Export');
+  const ov=document.getElementById('picker-overlay');
+  if(ov){
+    ov.innerHTML=`<div class="picker-box">
+      <div style="background:var(--pink-pale);padding:20px 22px 16px;text-align:center;border-bottom:1px solid var(--border);">
+        <div style="width:46px;height:46px;border-radius:50%;background:#fff;border:2px solid var(--pink-light);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--pink)" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </div>
+        <div style="font-family:'Playfair Display',serif;font-size:18px;color:var(--pink-dark);">Export du plan de table</div>
+      </div>
+      <div class="picker-inner">
+        <div style="font-family:'Lora',serif;font-size:14px;color:var(--mid);line-height:1.6;text-align:center;">Préparation du PDF…</div>
+      </div>
+    </div>`;
+    ov.classList.add('open');
+  }
   try{
     const jsPDF = await loadJsPDF();
     const pdf = new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
@@ -3176,15 +3191,36 @@ async function exportPlanPDF(){
     const nonPlaces=GUESTS.filter(g=>g.presence==='confirmée'&&g.seatTableId==null);
     if(nonPlaces.length){ drawCard('Sans table', nonPlaces.map(g=>g.nom), [196,58,58]); }
 
-    pdf.save(`plan_de_table_${USER.p1}_${USER.p2}.pdf`);
-    setTimeout(()=>{const ov=document.getElementById('picker-overlay');if(ov){ov.classList.remove('open');ov.innerHTML='';}},500);
+    const blob=pdf.output('blob');
+    const url=URL.createObjectURL(blob);const a=document.createElement('a');
+    a.href=url;a.download=`plan_de_table_${USER.p1}_${USER.p2}.pdf`;
+    document.body.appendChild(a);a.click();
+    setTimeout(()=>{
+      URL.revokeObjectURL(url);a.remove();
+      if(ov){ov.classList.remove('open');ov.innerHTML='';}
+    },800);
   }catch(err){
+    if(ov){ov.classList.remove('open');ov.innerHTML='';}
     appAlert('Impossible de générer le PDF (une connexion internet est nécessaire la première fois). Réessaie connectée.','Export PDF');
   }
 }
 
 async function exportBudgetPDF(){
-  appAlert('Préparation du PDF en cours…','Export');
+  const ov=document.getElementById('picker-overlay');
+  if(ov){
+    ov.innerHTML=`<div class="picker-box">
+      <div style="background:var(--pink-pale);padding:20px 22px 16px;text-align:center;border-bottom:1px solid var(--border);">
+        <div style="width:46px;height:46px;border-radius:50%;background:#fff;border:2px solid var(--pink-light);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--pink)" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </div>
+        <div style="font-family:'Playfair Display',serif;font-size:18px;color:var(--pink-dark);">Export du budget</div>
+      </div>
+      <div class="picker-inner">
+        <div style="font-family:'Lora',serif;font-size:14px;color:var(--mid);line-height:1.6;text-align:center;">Préparation du PDF…</div>
+      </div>
+    </div>`;
+    ov.classList.add('open');
+  }
   try{
     const jsPDF = await loadJsPDF();
     const pdf = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
@@ -3272,9 +3308,16 @@ async function exportBudgetPDF(){
     pdf.text(fmt(tP),colX[3]+2,y+6);
     pdf.text(fmt(reste>0?reste:0),colX[4]+2,y+6);
 
-    pdf.save('Weddilya-Budget.pdf');
-    setTimeout(()=>{const ov=document.getElementById('picker-overlay');if(ov){ov.classList.remove('open');ov.innerHTML='';}},500);
+    const blob=pdf.output('blob');
+    const url=URL.createObjectURL(blob);const a=document.createElement('a');
+    a.href=url;a.download='Weddilya-Budget.pdf';
+    document.body.appendChild(a);a.click();
+    setTimeout(()=>{
+      URL.revokeObjectURL(url);a.remove();
+      if(ov){ov.classList.remove('open');ov.innerHTML='';}
+    },800);
   }catch(err){
+    if(ov){ov.classList.remove('open');ov.innerHTML='';}
     appAlert('Impossible de generer le PDF (une connexion internet est necessaire la premiere fois). Reessaie connectee.','Export PDF');
   }
 }
