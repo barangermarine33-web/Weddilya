@@ -219,6 +219,11 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
      ordinateur non concerné puisque cette règle est dans une media query mobile). */
   .plus-add-btn{padding:9px 14px;font-size:18px;}
   .plus-add-btn .plus-add-txt{display:none;}
+  /* Budget : total estimé plus compact comme sur l'application, pour que le signe €
+     et le bouton + de "Nouvelle catégorie" restent sur la même ligne sans retour à la ligne. */
+  #bgt-total-input{width:80px !important;font-size:19px !important;}
+  #new-bgt-cat{min-width:0 !important;max-width:none !important;flex:2 1 0 !important;}
+  #new-bgt-est{width:auto !important;min-width:0 !important;flex:1 1 0 !important;}
 }
 @media(max-width:600px){:root{--band-h:74px;}.band-countdown{gap:18px;}.bcd-num{font-size:22px;}.band-names{font-size:12.5px;}}
 
@@ -1576,7 +1581,7 @@ async function loadUser(firebaseUser){
     // Nettoyer l'URL
     try{history.replaceState(null,'',location.pathname);}catch(e){}
   }
-  const SYNC_PREFIXES=['tasks_','budget_','guests_','tables_','vfav_','vcho_','notes_','menu_','album_','drive_url_','cake_','menuqty_','deco_custom_','deco_deleted_','deco_','gifts_','funds_','received_','registry_msgs_','registry_pubid_'];
+  const SYNC_PREFIXES=['tasks_','budget_','guests_','tables_','vfav_','vcho_','notes_','menu_','album_','drive_url_','cake_','menuqty_','deco_custom_','deco_deleted_','deco_','gifts_','funds_','received_','registry_msgs_','registry_pubid_','groups_'];
   const isSyncKey=k=>SYNC_PREFIXES.some(p=>k.indexOf(p)===0);
   let ownName='', isSharedGuest=false;
   try{
@@ -1906,7 +1911,7 @@ function renderBudget(){
   const reste=tR-tP;
   el2.innerHTML=`
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
-      <div class="panel" style="text-align:center;padding:18px;"><div style="font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tl);margin-bottom:6px;">Budget estimé total</div><div style="display:inline-flex;align-items:center;gap:6px;border-bottom:2px dashed var(--pink);padding:2px 22px 4px 2px;background:var(--pink-pale);border-radius:6px;position:relative;"><input type="number" id="bgt-total-input" value="${Math.round(tE)}" onchange="updBudgetTotal(this.value)" style="border:none;background:transparent;outline:none;text-align:center;font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--dark);width:110px;" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore><span style="position:absolute;right:0;bottom:6px;font-size:13px;color:var(--pink);">✎</span></div> €<div style="font-size:10px;color:var(--pink);margin-top:6px;font-style:italic;">Modifiable</div></div>
+      <div class="panel" style="text-align:center;padding:18px;"><div style="font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tl);margin-bottom:6px;">Budget estimé total</div><div style="display:inline-flex;align-items:center;justify-content:center;gap:4px;flex-wrap:nowrap;"><div id="bgt-total-box" style="display:inline-flex;align-items:center;gap:6px;border-bottom:2px dashed var(--pink);padding:2px 22px 4px 2px;background:var(--pink-pale);border-radius:6px;position:relative;"><input type="number" id="bgt-total-input" value="${Math.round(tE)}" onchange="updBudgetTotal(this.value)" style="border:none;background:transparent;outline:none;text-align:center;font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--dark);width:110px;" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore><span style="position:absolute;right:0;bottom:6px;font-size:13px;color:var(--pink);">✎</span></div><span>€</span></div><div style="font-size:10px;color:var(--pink);margin-top:6px;font-style:italic;">Modifiable</div></div>
       <div class="panel" style="text-align:center;padding:18px;"><div style="font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tl);margin-bottom:6px;">Budget réel total</div><div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--pink);">${fmt(tR)} €</div></div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;">
@@ -4130,7 +4135,11 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
     }));
   }
 
-  await Promise.allSettled([srcNominatim(), srcAnnuaire()]);
+  // Les 4 sources tournent en parallèle : srcOverpassTags (tags précis OSM, ex. shop=caterer)
+  // et srcOverpassName (recherche par mot-clé dans le nom sur OSM) avaient été définies mais
+  // oubliées dans cet appel — elles ne tournaient donc jamais, ce qui privait la recherche
+  // de sa source la plus fiable et expliquait les "Aucun résultat" fréquents.
+  await Promise.allSettled([srcOverpassTags(), srcOverpassName(), srcNominatim(), srcAnnuaire()]);
 
   const sorted=results.sort((a,b)=>(a.distance??999)-(b.distance??999)).slice(0,40);
   window._vndResults=sorted;
