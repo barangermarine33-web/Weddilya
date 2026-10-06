@@ -414,7 +414,7 @@ footer{background:#250c14;padding:44px 60px;display:flex;align-items:center;just
 .cat-chip{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--border);border-radius:13px;padding:11px 13px;cursor:pointer;font-size:13px;font-weight:600;color:var(--dark);transition:all .18s;font-family:'Lora',serif;text-align:left;min-width:0;box-sizing:border-box;line-height:1.25;white-space:normal;overflow-wrap:normal;word-break:normal;hyphens:none;}
 .cat-chip .ic{flex-shrink:0;}
 .cat-chip > *:not(.ic){min-width:0;}
-.cat-chip:hover{border-color:var(--pink-light);background:var(--pink-pale);}
+@media(hover:hover){.cat-chip:hover{border-color:var(--pink-light);background:var(--pink-pale);}}
 .cat-chip.active{background:linear-gradient(135deg,var(--pink-pale),#fff);border-color:var(--pink);box-shadow:0 2px 12px rgba(212,96,122,0.12);}
 .cat-chip .ic{width:32px;height:32px;border-radius:9px;background:var(--pink-pale);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .cat-chip.active .ic{background:var(--pink);}
@@ -3927,6 +3927,22 @@ async function doVendorSearch(){
 async function geocodePostalCached(cpKey){
   if(!window._postalGeoCache)window._postalGeoCache={};
   if(window._postalGeoCache[cpKey]!==undefined)return window._postalGeoCache[cpKey];
+  // 1) API officielle française d'abord : rapide, sans limite de cadence, fiable.
+  // Nominatim (ci-dessous) ne sert plus que de secours, car il est lent/limité et, quand il
+  // ne répondait pas, faisait attendre la recherche des dizaines de secondes par code postal.
+  try{
+    if(/^\d{5}$/.test(String(cpKey))){
+      const gr=await fetchWithTimeout('https://geo.api.gouv.fr/communes?codePostal='+encodeURIComponent(cpKey)+'&fields=centre,population&format=json',{},6000);
+      if(gr.ok){
+        const cs=await gr.json();
+        if(Array.isArray(cs)&&cs.length){
+          cs.sort((a,b)=>(b.population||0)-(a.population||0));
+          const c=cs.find(x=>x.centre&&x.centre.coordinates);
+          if(c){window._postalGeoCache[cpKey]=[c.centre.coordinates[1],c.centre.coordinates[0]];return window._postalGeoCache[cpKey];}
+        }
+      }
+    }
+  }catch(eG){/* secours Nominatim ci-dessous */}
   for(let attempt=0;attempt<2;attempt++){
     const now=Date.now();
     const wait=Math.max(0,(window._lastNominatimCall||0)+1100-now);
@@ -4118,7 +4134,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
           );
           if(localEtabs.length>0){
             for(const m of localEtabs){
-              let coords=(m.coordonnees||'').split(',');
+              let coords=(m.latitude&&m.longitude)?[m.latitude,m.longitude]:(m.coordonnees||'').split(',');
               if((!coords[0]||!coords[1])&&m.code_postal){
                 // Pas de coordonnées précises fournies par l'annuaire : on géocode le code
                 // postal (mis en cache, throttlé, avec 1 réessai en cas d'échec).
@@ -4140,7 +4156,12 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
   // oubliées dans cet appel — elles ne tournaient donc jamais, ce qui privait la recherche
   // de sa source la plus fiable et expliquait les "Aucun résultat" fréquents.
   log('Zone: '+(effectivePostal||'?')+' | '+radiusKm+' km | '+catKey);
-  const _settled=await Promise.allSettled([srcOverpassTags(), srcOverpassName(), srcNominatim(), srcAnnuaire()]);
+  // Délai maximum de 25 s : on affiche ce qui a été trouvé au lieu de rester indéfiniment
+  // sur "Recherche en cours…" si une source (service externe) répond trop lentement.
+  let _timedOut=false;
+  const _all=Promise.allSettled([srcOverpassTags(), srcOverpassName(), srcNominatim(), srcAnnuaire()]);
+  const _settled=await Promise.race([_all,new Promise(r=>setTimeout(()=>{_timedOut=true;r([]);},25000))]);
+  if(_timedOut)log('Délai de 25 s dépassé : résultats partiels');
   _settled.forEach((s,i)=>{if(s.status==='rejected')log('Source '+['tags','nom','nominatim','annuaire'][i]+' ERREUR: '+((s.reason&&s.reason.message)||s.reason));});
 
   const sorted=results.sort((a,b)=>(a.distance??999)-(b.distance??999)).slice(0,40);
@@ -4571,7 +4592,7 @@ async function searchVendorsWithLocation(query,lat,lng){
             const etabs = e.matching_etablissements||[];
             if(!etabs.length)continue;
             const m = etabs[0];
-            let coords=(m.coordonnees||'').split(',');
+            let coords=(m.latitude&&m.longitude)?[m.latitude,m.longitude]:(m.coordonnees||'').split(',');
             if((!coords[0]||!coords[1])&&m.code_postal){
               const geo=await geocodePostalCached(m.code_postal);
               if(geo)coords=geo;
