@@ -4065,7 +4065,18 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
         const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(term)}&format=json&limit=30&addressdetails=1&countrycodes=fr,be,ch,lu&viewbox=${lng-deg},${lat+deg},${lng+deg},${lat-deg}&bounded=0`,{signal:c.signal,headers:{'Accept-Language':'fr'}});
         if(!r.ok){log('Nominatim HTTP '+r.status);return;}
         const d=await r.json();
-        d.forEach(e=>{const a=e.address||{};addPlace((e.display_name||'').split(',')[0].trim(),[a.road,a.postcode,a.city||a.town||a.village].filter(Boolean).join(' '),'','',e.lat,e.lon);});
+        // Nominatim est une recherche texte libre : il renvoie n'importe quel lieu proche (restaurants,
+        // épiceries…). On ne garde un résultat que si son type OSM correspond à la catégorie
+        // (ex. shop=caterer) ou si son nom contient un mot de la catégorie (ex. "traiteur").
+        const _tagSet=new Set((cat&&cat.tags)||[]);
+        const _kw=terms.join(' ').toLowerCase().split(/\s+/).filter(w=>w.length>2&&w!=='mariage'&&w!=='wedding');
+        d.forEach(e=>{
+          const _nom=(e.display_name||'').split(',')[0].trim();
+          const _typeOk=_tagSet.has((e.class||'')+'='+(e.type||''));
+          const _nameOk=_kw.some(k=>_nom.toLowerCase().includes(k));
+          if(!_typeOk&&!_nameOk)return;
+          const a=e.address||{};addPlace(_nom,[a.road,a.postcode,a.city||a.town||a.village].filter(Boolean).join(' '),'','',e.lat,e.lon);
+        });
         log('Nominatim "'+term+'": '+results.length);
       }catch(e){log('Nominatim ERR: '+e.message);}
     }));
