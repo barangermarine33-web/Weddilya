@@ -3870,6 +3870,7 @@ async function unifiedVendorSearch(){
     // (doVendorSearch gère déjà tout le géocodage et respecte la catégorie active ;
     // l'ancienne double-vérification via Nominatim était peu fiable et pouvait,
     // à tort, faire perdre la catégorie sélectionnée en cours de route).
+    if(!(await looksLikeFrenchPlace(query))){await keywordCategorySearch(query);return;}
     const p=el('vnd-postal');if(p)p.value=query;
     await doVendorSearch();
     return;
@@ -3877,6 +3878,47 @@ async function unifiedVendorSearch(){
   // Nom de prestataire (ou lieu non reconnu) : recherche libre par nom
   const l=el('vnd-loc');if(l)l.value=query;
   await searchVendors();
+}
+
+// Un texte saisi est-il un lieu (ville) ? Sinon, avec une catégorie active, on le traite comme
+// un nom de prestataire (ex. "Kiwi") et non plus comme un lieu au hasard (hameau homonyme…).
+async function looksLikeFrenchPlace(q){
+  try{
+    const r=await fetchWithTimeout('https://data.geopf.fr/geocodage/search?q='+encodeURIComponent(q)+'&type=municipality&limit=1',{},6000);
+    if(!r.ok)return true;
+    const j=await r.json();
+    const f=j&&j.features&&j.features[0];
+    if(!f)return false;
+    const p=f.properties||{};
+    const nrm=s=>(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+    const city=nrm(p.city||p.name),qq=nrm(q);
+    return (p.score||0)>=0.5&&!!city&&(city.startsWith(qq)||qq.startsWith(city));
+  }catch(e){return true;}
+}
+
+// Recherche d'un prestataire par son nom, dans la catégorie active, autour du lieu déjà défini
+// (code postal précédent ou position GPS).
+async function keywordCategorySearch(query){
+  let lat=window._userLat,lng=window._userLng;
+  if(!(lat&&lng)&&navigator.geolocation){
+    const ok=await ensureGeoConsent();
+    if(ok){
+      try{
+        const pos=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{timeout:8000,maximumAge:300000,enableHighAccuracy:false}));
+        lat=pos.coords.latitude;lng=pos.coords.longitude;
+        window._userLat=lat;window._userLng=lng;
+        const p=el('vnd-postal');if(p)p.value='';
+      }catch(e){}
+    }
+  }
+  if(!(lat&&lng)){
+    await appAlert('Pour chercher « '+query+' », indique d\'abord un code postal ou une ville (ou autorise la localisation), puis relance la recherche avec le nom du prestataire.');
+    return;
+  }
+  const status=el('vnd-location-status');
+  if(status)status.textContent='Recherche de « '+query+' » autour du lieu défini.';
+  const radiusKm=parseInt(el('vnd-radius')?.value||20);
+  await runCategorySearch(window._activeCatKey,window._activeCatLabel,lat,lng,radiusKm*1000,query);
 }
 
 async function searchCategoryWithGeolocation(){
@@ -3958,7 +4000,7 @@ async function geocodePostalCached(cpKey){
   return null;
 }
 
-async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
+async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters,nameKw){
   const wrap=el('vnd-results-wrap');
   if(!wrap)return;
   wrap.innerHTML=`<p style="text-align:center;padding:20px;font-size:13px;color:${tl};">Recherche en cours…</p>`;
@@ -3967,6 +4009,12 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
 
   const radiusKm=Math.round(radiusMeters/1000);
   const results=[];const seen=new Set();
+  // Recherche par nom (ex. "Kiwi") : on garde seulement les prestataires dont le nom contient
+  // les mots saisis (hors mots génériques de la catégorie, ex. "traiteur").
+  const normTxt=s=>(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const _generic=normTxt(catLabel).split(/[^a-z0-9]+/).filter(Boolean);
+  let nameTokens=nameKw?normTxt(nameKw).split(/[^a-z0-9]+/).filter(t=>t.length>1&&!_generic.includes(t)):[];
+  if(nameKw&&!nameTokens.length)nameTokens=normTxt(nameKw).split(/[^a-z0-9]+/).filter(t=>t.length>1);
 
   // Code postal effectif pour déterminer le département : celui tapé dans le champ,
   // ou sinon déduit de la position GPS par reverse-géocodage (cas de la géolocalisation,
@@ -4053,7 +4101,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
       imprimeur:['faire-part mariage'],voiture:['voiture mariage'],
       hotel:['hôtel mariage'],decor:['décoration mariage','wedding planner']
     };
-    const terms=(nt[catKey]||[catLabel+' mariage']).slice(0,2);
+    const terms=nameKw?[nameKw]:(nt[catKey]||[catLabel+' mariage']).slice(0,2);
     await Promise.allSettled(terms.map(async term=>{
       try{
         const now=Date.now();
@@ -4069,12 +4117,12 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
         // épiceries…). On ne garde un résultat que si son type OSM correspond à la catégorie
         // (ex. shop=caterer) ou si son nom contient un mot de la catégorie (ex. "traiteur").
         const _tagSet=new Set((cat&&cat.tags)||[]);
-        const _kw=terms.join(' ').toLowerCase().split(/\s+/).filter(w=>w.length>2&&w!=='mariage'&&w!=='wedding');
+        const _kw=nameKw?nameTokens:terms.join(' ').toLowerCase().split(/\s+/).filter(w=>w.length>2&&w!=='mariage'&&w!=='wedding');
         d.forEach(e=>{
           const _nom=(e.display_name||'').split(',')[0].trim();
           const _typeOk=_tagSet.has((e.class||'')+'='+(e.type||''));
-          const _nameOk=_kw.some(k=>_nom.toLowerCase().includes(k));
-          if(!_typeOk&&!_nameOk)return;
+          const _nameOk=nameKw?_kw.every(k=>normTxt(_nom).includes(k)):_kw.some(k=>_nom.toLowerCase().includes(k));
+          if(nameKw?!_nameOk:(!_typeOk&&!_nameOk))return;
           const a=e.address||{};addPlace(_nom,[a.road,a.postcode,a.city||a.town||a.village].filter(Boolean).join(' '),'','',e.lat,e.lon);
         });
         log('Nominatim "'+term+'": '+results.length);
@@ -4101,7 +4149,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
       hotel:       ['hôtel','hotel','gîte','gite','hébergement','chambre hôtes','logis'],
       decor:       ['décoration','decoration','jour de fete','jour de fête','vegaooparty','maisons du monde','ikea','centrakor','gifi','etsy']
     };
-    const terms=(qMap[catKey]||[catLabel+' mariage']).slice(0,4);
+    const terms=nameKw?[nameKw+' '+(qMap[catKey]||[catLabel])[0],nameKw]:(qMap[catKey]||[catLabel+' mariage']).slice(0,4);
     const postalVal=effectivePostal;
     const dept=postalVal.length>=2?postalVal.substring(0,2):'';
     if(!dept){log('Annuaire: pas de département');return;}
@@ -4143,7 +4191,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
           if(EXCL_NAF.includes(naf))continue;
           const nomDisplay=e.nom_complet||e.nom_raison_sociale||'';
           if(!nomDisplay||nomDisplay.length<2)continue;
-          if(filters.length>0){
+          if(filters.length>0&&!nameKw){
             const nomLower=nomDisplay.toLowerCase();
             if(!filters.some(f=>nomLower.includes(f)))continue;
           }
@@ -4183,6 +4231,12 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
   if(_timedOut)log('Délai de 12 s dépassé : résultats partiels');
   _settled.forEach((s,i)=>{if(s.status==='rejected')log('Source '+['tags','nominatim','annuaire'][i]+' ERREUR: '+((s.reason&&s.reason.message)||s.reason));});
 
+  if(nameTokens.length){
+    for(let i=results.length-1;i>=0;i--){
+      const n=normTxt(results[i].nom);
+      if(!nameTokens.every(t=>n.includes(t)))results.splice(i,1);
+    }
+  }
   const sorted=results.sort((a,b)=>(a.distance??999)-(b.distance??999)).slice(0,40);
   window._vndResults=sorted;
   console.log('[VND]',(window._vndLogs||[]).join(' | '),'| Total:',sorted.length);
@@ -4192,7 +4246,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
     wrap.innerHTML=`<div style="padding:20px;text-align:center;"><p style="font-size:13px;color:${tl};margin-bottom:16px;">Aucun résultat trouvé.<br><span style="font-size:11px;">Essaie un rayon plus large ou un autre code postal.</span></p><p style="font-size:10px;color:${tl};margin:0 0 14px;word-break:break-word;">Diagnostic : ${(window._vndLogs||[]).map(x=>h(String(x))).join(' · ')||'aucun journal'}</p><a href="${gmUrl}" target="_blank" rel="noopener noreferrer" style="display:block;padding:13px;background:${sf};border:1px solid ${br};border-radius:14px;text-decoration:none;color:${pk};font-size:13px;font-weight:700;font-family:Lora,serif;text-align:center;">Chercher sur Google Maps</a></div>`;
     return;
   }
-  renderVndResults(catLabel);
+  renderVndResults(nameKw?catLabel+' « '+nameKw+' »':catLabel);
 }
 
 function renderVndResults(query){
