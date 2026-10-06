@@ -4139,7 +4139,9 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
   // et srcOverpassName (recherche par mot-clé dans le nom sur OSM) avaient été définies mais
   // oubliées dans cet appel — elles ne tournaient donc jamais, ce qui privait la recherche
   // de sa source la plus fiable et expliquait les "Aucun résultat" fréquents.
-  await Promise.allSettled([srcOverpassTags(), srcOverpassName(), srcNominatim(), srcAnnuaire()]);
+  log('Zone: '+(effectivePostal||'?')+' | '+radiusKm+' km | '+catKey);
+  const _settled=await Promise.allSettled([srcOverpassTags(), srcOverpassName(), srcNominatim(), srcAnnuaire()]);
+  _settled.forEach((s,i)=>{if(s.status==='rejected')log('Source '+['tags','nom','nominatim','annuaire'][i]+' ERREUR: '+((s.reason&&s.reason.message)||s.reason));});
 
   const sorted=results.sort((a,b)=>(a.distance??999)-(b.distance??999)).slice(0,40);
   window._vndResults=sorted;
@@ -4147,7 +4149,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters){
 
   if(!sorted.length){
     const gmUrl=`https://www.google.com/maps/search/${encodeURIComponent(catLabel+' mariage')}/@${lat},${lng},12z`;
-    wrap.innerHTML=`<div style="padding:20px;text-align:center;"><p style="font-size:13px;color:${tl};margin-bottom:16px;">Aucun résultat trouvé.<br><span style="font-size:11px;">Essaie un rayon plus large ou un autre code postal.</span></p><a href="${gmUrl}" target="_blank" rel="noopener noreferrer" style="display:block;padding:13px;background:${sf};border:1px solid ${br};border-radius:14px;text-decoration:none;color:${pk};font-size:13px;font-weight:700;font-family:Lora,serif;text-align:center;">Chercher sur Google Maps</a></div>`;
+    wrap.innerHTML=`<div style="padding:20px;text-align:center;"><p style="font-size:13px;color:${tl};margin-bottom:16px;">Aucun résultat trouvé.<br><span style="font-size:11px;">Essaie un rayon plus large ou un autre code postal.</span></p><p style="font-size:10px;color:${tl};margin:0 0 14px;word-break:break-word;">Diagnostic : ${(window._vndLogs||[]).map(x=>h(String(x))).join(' · ')||'aucun journal'}</p><a href="${gmUrl}" target="_blank" rel="noopener noreferrer" style="display:block;padding:13px;background:${sf};border:1px solid ${br};border-radius:14px;text-decoration:none;color:${pk};font-size:13px;font-weight:700;font-family:Lora,serif;text-align:center;">Chercher sur Google Maps</a></div>`;
     return;
   }
   renderVndResults(catLabel);
