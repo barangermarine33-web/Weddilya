@@ -4015,6 +4015,31 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters,nameKw){
   const _generic=normTxt(catLabel).split(/[^a-z0-9]+/).filter(Boolean);
   let nameTokens=nameKw?normTxt(nameKw).split(/[^a-z0-9]+/).filter(t=>t.length>1&&!_generic.includes(t)):[];
   if(nameKw&&!nameTokens.length)nameTokens=normTxt(nameKw).split(/[^a-z0-9]+/).filter(t=>t.length>1);
+  // Pertinence des résultats OpenStreetMap, identique pour TOUTES les catégories :
+  // - un lieu qui porte aussi une autre étiquette principale (ex. amenity=restaurant sur un
+  //   "traiteur") n'est gardé que si son nom évoque la catégorie ;
+  // - les étiquettes très larges (tous les magasins de vêtements, toutes les boulangeries…)
+  //   exigent aussi que le nom évoque la catégorie.
+  const CAT_KW={
+    salle:['salle','domaine','chateau','manoir','abbaye','prieure','ferme','reception','moulin','mariage'],
+    traiteur:['traiteur','banquet','reception'],
+    photographe:['photo','studio'],
+    videaste:['video','videaste','film'],
+    dj:['dj','musique','sono','animation','orchestre'],
+    fleuriste:['fleur','florist'],
+    patisserie:['patisserie','patissier','boulangerie','gateau','cake','confiserie','chocolat'],
+    robe:['mariage','mariee','bridal','robe','noces','nuptial','wedding'],
+    costume:['costume','smoking','tailleur','mariage'],
+    coiffeur:['coiff','hair'],
+    beaute:['maquill','beaute','esthetique','spa','makeup'],
+    bijou:['bijou','joaill','orfevre','alliance'],
+    imprimeur:['imprim','papeterie','faire part','faire-part','copy','reprographie'],
+    voiture:['voiture','limousine','location','auto','car'],
+    hotel:['hotel','hebergement','gite','chambre','auberge','logis','residence','camping','bnb','hote'],
+    decor:['decor','deco','mariage','event','evenement','fete','location']
+  };
+  const BROAD_TAGS=['shop=clothes','shop=bakery','shop=stationery','shop=car','shop=music','shop=video'];
+  const catKw=(CAT_KW[catKey]||_generic).map(normTxt);
 
   // Code postal effectif pour déterminer le département : celui tapé dans le champ,
   // ou sinon déduit de la position GPS par reverse-géocodage (cas de la géolocalisation,
@@ -4041,7 +4066,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters,nameKw){
   }
 
   function hav(a,b,c,d){const R=6371,dLat=(c-a)*Math.PI/180,dLon=(d-b)*Math.PI/180,x=Math.sin(dLat/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dLon/2)**2;return Math.round(R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))*10)/10;}
-  function addPlace(nom,adresse,tel,site,plat,plng){
+  function addPlace(nom,adresse,tel,site,plat,plng,src){
     const key=nom.toLowerCase().trim();
     if(!nom||nom.length<3||seen.has(key))return;
     const la=parseFloat(plat),lo=parseFloat(plng);
@@ -4050,7 +4075,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters,nameKw){
       const dist=hav(lat,lng,la,lo);
       if(dist>radiusKm)return;
       seen.add(key);
-      results.push({id:Date.now()+Math.random(),nom,categorie:catLabel,adresse:adresse||'',tel:tel||'',site:site||'',distance:dist,lat:la,lng:lo,notes:''});
+      results.push({id:Date.now()+Math.random(),nom,categorie:catLabel,adresse:adresse||'',tel:tel||'',site:site||'',distance:dist,lat:la,lng:lo,notes:'',src:src||''});
     } else {
       // Sans coordonnées GPS précises (fréquent dans l'annuaire d'entreprises) : on garde
       // le résultat s'il est dans le bon département plutôt que de le perdre complètement.
@@ -4058,7 +4083,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters,nameKw){
       const dept=effectivePostal.length>=2?effectivePostal.substring(0,2):'';
       if(!dept||!adresse||!adresse.includes(dept))return;
       seen.add(key);
-      results.push({id:Date.now()+Math.random(),nom,categorie:catLabel,adresse:adresse||'',tel:tel||'',site:site||'',distance:null,lat:lat,lng:lng,notes:''});
+      results.push({id:Date.now()+Math.random(),nom,categorie:catLabel,adresse:adresse||'',tel:tel||'',site:site||'',distance:null,lat:lat,lng:lng,notes:'',src:src||''});
     }
   }
 
@@ -4069,7 +4094,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters,nameKw){
     if(!cat)return;
     const fp=cat.tags.map(t=>{const[k,v]=t.split('=');return `node["${k}"="${v}"](around:${radiusMeters},${lat},${lng});way["${k}"="${v}"](around:${radiusMeters},${lat},${lng});`;}).join('');
     const oq=`[out:json][timeout:25];(${fp});out center 80;`;
-    for(const m of MIRRORS){try{const c=new AbortController();setTimeout(()=>c.abort(),7000);const r=await fetch(m+'?data='+encodeURIComponent(oq),{signal:c.signal});if(!r.ok){log('Overpass tags HTTP '+r.status);continue;}const d=await r.json();const n=(d.elements||[]).filter(e=>e.tags?.name).length;log('Overpass tags OK: '+n);(d.elements||[]).filter(e=>e.tags?.name).forEach(e=>{addPlace(e.tags.name,[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' '),e.tags.phone||e.tags['contact:phone'],e.tags.website||e.tags['contact:website'],e.lat||(e.center?.lat),e.lon||(e.center?.lon));});return;}catch(e){log('Overpass tags ERR: '+e.message);}}
+    for(const m of MIRRORS){try{const c=new AbortController();setTimeout(()=>c.abort(),7000);const r=await fetch(m+'?data='+encodeURIComponent(oq),{signal:c.signal});if(!r.ok){log('Overpass tags HTTP '+r.status);continue;}const d=await r.json();const n=(d.elements||[]).filter(e=>e.tags?.name).length;log('Overpass tags OK: '+n);(d.elements||[]).filter(e=>e.tags?.name).forEach(e=>{const _p=new Set(cat.tags);const _conf=['amenity','shop','craft','office','tourism','leisure'].some(k=>e.tags[k]&&!_p.has(k+'='+e.tags[k]));const _broad=BROAD_TAGS.some(t=>_p.has(t)&&e.tags[t.split('=')[0]]===t.split('=')[1]);const _kwOk=catKw.some(k=>normTxt(e.tags.name).includes(k));if((_conf||_broad)&&!_kwOk)return;addPlace(e.tags.name,[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' '),e.tags.phone||e.tags['contact:phone'],e.tags.website||e.tags['contact:website'],e.lat||(e.center?.lat),e.lon||(e.center?.lon),'tags');});return;}catch(e){log('Overpass tags ERR: '+e.message);}}
   }
 
   async function srcOverpassName(){
@@ -4123,7 +4148,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters,nameKw){
           const _typeOk=_tagSet.has((e.class||'')+'='+(e.type||''));
           const _nameOk=nameKw?_kw.every(k=>normTxt(_nom).includes(k)):_kw.some(k=>_nom.toLowerCase().includes(k));
           if(nameKw?!_nameOk:(!_typeOk&&!_nameOk))return;
-          const a=e.address||{};addPlace(_nom,[a.road,a.postcode,a.city||a.town||a.village].filter(Boolean).join(' '),'','',e.lat,e.lon);
+          const a=e.address||{};addPlace(_nom,[a.road,a.postcode,a.city||a.town||a.village].filter(Boolean).join(' '),'','',e.lat,e.lon,'nominatim');
         });
         log('Nominatim "'+term+'": '+results.length);
       }catch(e){log('Nominatim ERR: '+e.message);}
@@ -4209,7 +4234,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters,nameKw){
                 if(geo)coords=geo;
               }
               const adresse=m.adresse||[m.code_postal,m.libelle_commune].filter(Boolean).join(' ');
-              addPlace(nomDisplay,adresse,'','',coords[0],coords[1]);
+              addPlace(nomDisplay,adresse,'','',coords[0],coords[1],'annuaire');
             }
           }
         }
@@ -4239,6 +4264,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters,nameKw){
   }
   const sorted=results.sort((a,b)=>(a.distance??999)-(b.distance??999)).slice(0,40);
   window._vndResults=sorted;
+  {const _c={};sorted.forEach(r=>{_c[r.src||'?']=(_c[r.src||'?']||0)+1;});window._vndSrc=Object.keys(_c).map(k=>k+' '+_c[k]).join(' · ');}
   console.log('[VND]',(window._vndLogs||[]).join(' | '),'| Total:',sorted.length);
 
   if(!sorted.length){
@@ -4283,6 +4309,7 @@ function renderVndResults(query){
       </div>
     </div>`;
   }).join('')+
+  `<p style="font-size:10px;color:${tl};margin:10px 0 0;text-align:center;">Sources : ${h(window._vndSrc||'')}</p>`+
   // Lien Google Maps en bas pour compléter (OSM est incomplet sur certains commerces)
   `<a href="${googleSearchUrl}" target="_blank" rel="noopener" style="display:block;margin-top:14px;padding:12px;background:#fff;border:1.5px solid #f0d4de;border-radius:12px;text-align:center;text-decoration:none;color:${tx};font-size:13px;font-weight:700;font-family:Lora,serif;">
      Voir plus de résultats sur Google
