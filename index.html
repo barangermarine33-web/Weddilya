@@ -3896,6 +3896,26 @@ async function looksLikeFrenchPlace(q){
   }catch(e){return true;}
 }
 
+// Géolocalisation plus robuste : deux demandes en parallèle (position rapide/en cache et GPS précis),
+// la première qui répond est utilisée ; sinon dernière position connue ; erreur après 10 s max.
+(function(){
+  if(!navigator.geolocation||navigator.geolocation._wdRobust)return;
+  const g=navigator.geolocation,orig=g.getCurrentPosition.bind(g);
+  g.getCurrentPosition=function(ok,ko,opt){
+    opt=opt||{};
+    let done=false,fails=0,lastErr=null;
+    const good=p=>{if(done)return;done=true;window._lastGeoPos=p;if(ok)ok(p);};
+    const bad=e=>{
+      lastErr=e;if(++fails<2||done)return;
+      done=true;
+      if(window._lastGeoPos&&ok)ok(window._lastGeoPos);else if(ko)ko(lastErr);
+    };
+    orig(good,bad,{timeout:6000,maximumAge:Math.max(opt.maximumAge||0,600000),enableHighAccuracy:false});
+    orig(good,bad,{timeout:10000,maximumAge:600000,enableHighAccuracy:true});
+  };
+  g._wdRobust=true;
+})();
+
 // Recherche d'un prestataire par son nom, dans la catégorie active, autour du lieu déjà défini
 // (code postal précédent ou position GPS).
 async function keywordCategorySearch(query){
@@ -4094,7 +4114,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters,nameKw){
     if(!cat)return;
     const fp=cat.tags.map(t=>{const[k,v]=t.split('=');return `node["${k}"="${v}"](around:${radiusMeters},${lat},${lng});way["${k}"="${v}"](around:${radiusMeters},${lat},${lng});`;}).join('');
     const oq=`[out:json][timeout:25];(${fp});out center 80;`;
-    for(const m of MIRRORS){try{const c=new AbortController();setTimeout(()=>c.abort(),7000);const r=await fetch(m+'?data='+encodeURIComponent(oq),{signal:c.signal});if(!r.ok){log('Overpass tags HTTP '+r.status);continue;}const d=await r.json();const n=(d.elements||[]).filter(e=>e.tags?.name).length;log('Overpass tags OK: '+n);(d.elements||[]).filter(e=>e.tags?.name).forEach(e=>{const _p=new Set(cat.tags);const _conf=['amenity','shop','craft','office','tourism','leisure'].some(k=>e.tags[k]&&!_p.has(k+'='+e.tags[k]));const _broad=BROAD_TAGS.some(t=>_p.has(t)&&e.tags[t.split('=')[0]]===t.split('=')[1]);const _kwOk=catKw.some(k=>normTxt(e.tags.name).includes(k));if((_conf||_broad)&&!_kwOk)return;addPlace(e.tags.name,[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' '),e.tags.phone||e.tags['contact:phone'],e.tags.website||e.tags['contact:website'],e.lat||(e.center?.lat),e.lon||(e.center?.lon),'tags');});return;}catch(e){log('Overpass tags ERR: '+e.message);}}
+    for(const m of MIRRORS){try{const c=new AbortController();setTimeout(()=>c.abort(),7000);const r=await fetch(m+'?data='+encodeURIComponent(oq),{signal:c.signal});if(!r.ok){log('Overpass tags HTTP '+r.status);continue;}const d=await r.json();const n=(d.elements||[]).filter(e=>e.tags?.name).length;log('Overpass tags OK: '+n);(d.elements||[]).filter(e=>e.tags?.name).forEach(e=>{const _p=new Set(cat.tags);const _conf=['amenity','shop','craft','office','tourism','leisure'].some(k=>e.tags[k]&&!_p.has(k+'='+e.tags[k]));const _broad=BROAD_TAGS.some(t=>_p.has(t)&&e.tags[t.split('=')[0]]===t.split('=')[1]);const _kwOk=catKw.some(k=>normTxt(e.tags.name).includes(k));if(!_kwOk)return;addPlace(e.tags.name,[e.tags['addr:housenumber'],e.tags['addr:street'],e.tags['addr:city']].filter(Boolean).join(' '),e.tags.phone||e.tags['contact:phone'],e.tags.website||e.tags['contact:website'],e.lat||(e.center?.lat),e.lon||(e.center?.lon),'tags');});return;}catch(e){log('Overpass tags ERR: '+e.message);}}
   }
 
   async function srcOverpassName(){
@@ -4147,7 +4167,7 @@ async function runCategorySearch(catKey,catLabel,lat,lng,radiusMeters,nameKw){
           const _nom=(e.display_name||'').split(',')[0].trim();
           const _typeOk=_tagSet.has((e.class||'')+'='+(e.type||''));
           const _nameOk=nameKw?_kw.every(k=>normTxt(_nom).includes(k)):_kw.some(k=>_nom.toLowerCase().includes(k));
-          if(nameKw?!_nameOk:(!_typeOk&&!_nameOk))return;
+          if(!_nameOk)return;
           const a=e.address||{};addPlace(_nom,[a.road,a.postcode,a.city||a.town||a.village].filter(Boolean).join(' '),'','',e.lat,e.lon,'nominatim');
         });
         log('Nominatim "'+term+'": '+results.length);
