@@ -1660,11 +1660,11 @@ async function loadUser(firebaseUser){
   // Les deux mariés sont ajoutés une seule fois à la liste des invités (prénoms saisis à l'inscription).
   // Ils restent modifiables/supprimables ; ils servent notamment à les placer dans le plan de table.
   if(!isSharedGuest && !pick('coupleSeededV1',false)){
-    const mkM=(nom,cote,role,i)=>({id:Date.now()+i,nom,email:'',adresse:'',cote,invitation:'envoyée',presence:'confirmée',role,regime:'Aucun',vinHonneur:false,age:'Adulte',seatTableId:null,seatIdx:null,marie:true});
+    const mkM=(nom,cote,role,i)=>({id:Date.now()+i,nom,email:'',adresse:'',cote,invitation:'envoyée',presence:'confirmée',role,regime:'Aucun',vinHonneur:false,age:'Adulte',seatTableId:null,seatIdx:null,marie:i});
     const hasG=n=>GUESTS.some(g=>(g.nom||'').trim().toLowerCase()===String(n||'').trim().toLowerCase());
     const addM=[];
-    if(data.p1&&!hasG(data.p1))addM.push(mkM(data.p1,'p1','Mariée',1));
-    if(data.p2&&!hasG(data.p2))addM.push(mkM(data.p2,'p2','Marié',2));
+    if(data.p1&&!hasG(data.p1))addM.push(mkM(data.p1,'maries','Marié 1',1));
+    if(data.p2&&!hasG(data.p2))addM.push(mkM(data.p2,'maries','Marié 2',2));
     if(addM.length){GUESTS=[...addM,...GUESTS];saveData('guests',GUESTS);}
     saveData('coupleSeededV1',true);
   }
@@ -1698,6 +1698,20 @@ async function loadUser(firebaseUser){
     GROUPS=GROUPS.map(g=>g.id==='p1'?{...g,label:'Côté de '+n1}:(g.id==='p2'?{...g,label:'Côté de '+n2}:g));
     saveData('groups',GROUPS);
     saveData('groupLabelsMigratedV1',true);
+  }
+  // Groupe « Les mariés » + rôles neutres « Marié 1 / Marié 2 » (une seule fois)
+  if(!pick('coupleGroupV2',false)){
+    if(!GROUPS.some(g=>g.id==='maries')){GROUPS.unshift({id:'maries',label:'Les mariés',side:'both'});saveData('groups',GROUPS);}
+    let chgC=false;
+    GUESTS.forEach(g=>{
+      if(!g.marie)return;
+      const n=(g.marie===2||g.cote==='p2'||g.role==='Marié')?2:1;
+      if(g.marie!==n){g.marie=n;chgC=true;}
+      if(g.cote==='p1'||g.cote==='p2'){g.cote='maries';chgC=true;}
+      if(g.role==='Marié'||g.role==='Mariée'){g.role='Marié '+n;chgC=true;}
+    });
+    if(chgC)saveData('guests',GUESTS);
+    saveData('coupleGroupV2',true);
   }
   SEAT_CONFLICTS=pick('seat_conflicts',[]);if(!Array.isArray(SEAT_CONFLICTS))SEAT_CONFLICTS=[];
   DRIVE_URL=pick('drive_url','');if(typeof DRIVE_URL!=='string')DRIVE_URL='';
@@ -2045,7 +2059,7 @@ function renderGuests(){
       <div style="background:#fff0f0;border-radius:12px;padding:11px;text-align:center;"><div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:#c43a3a;">${dec}</div><div style="font-size:9px;color:#c43a3a;letter-spacing:1.5px;text-transform:uppercase;">Déclinés</div></div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;">
-      <div style="background:#f5f0f2;border-radius:12px;padding:11px;text-align:center;"><div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--tl);">${GUESTS.length}</div><div style="font-size:9px;color:var(--tl);letter-spacing:1.5px;text-transform:uppercase;">Total</div></div>
+      <div style="background:#f5f0f2;border-radius:12px;padding:11px;text-align:center;"><div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--tl);">${GUESTS.length}</div><div style="font-size:9px;color:var(--tl);letter-spacing:1.5px;text-transform:uppercase;">Total</div>${GUESTS.some(g=>g.marie)?'<div style="font-size:10px;color:var(--tl);margin-top:2px;">avec les mariés inclus</div>':''}</div>
       <div style="background:#faf3e0;border-radius:12px;padding:11px;text-align:center;"><div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:#c9a84c;">${GUESTS.filter(g=>g.vinHonneur).length}</div><div style="font-size:9px;color:#c9a84c;letter-spacing:1.5px;text-transform:uppercase;">Vin d'honneur seul.</div></div>
     </div>
     <div class="section-actions" style="margin-top:18px;margin-bottom:24px;gap:10px;">
@@ -2421,7 +2435,7 @@ function renderGuestRows(list){
 }
 
 const REGIMES=["Aucun","Végétarien","Vegan","Sans gluten","Sans lactose","Halal","Sans porc","Sans fruits à coque et arachides","Sans poisson","Sans alcool"];
-const ROLES=["Invité·e","Témoin","Demoiselle d'honneur","Garçon d'honneur","Enfant d'honneur","Famille proche","Marié","Mariée"];
+const ROLES=["Invité·e","Témoin","Demoiselle d'honneur","Garçon d'honneur","Enfant d'honneur","Famille proche","Marié","Mariée","Marié 1","Marié 2"];
 
 function openModal(html){
   // Champ leurre invisible : neutralise la proposition "Enregistrer le mot de passe" de Chrome
@@ -5007,7 +5021,7 @@ async function saveSettingsPage(){
   const np=document.getElementById('set-pass').value;
   USER.p1=p1||USER.p1;USER.p2=p2||USER.p2;USER.wDate=wDate||USER.wDate;
   // Garder les noms des mariés (dans la liste d'invités) alignés sur les prénoms modifiés
-  {let chgM=false;GUESTS.forEach(g=>{if(g.marie){const nn=g.cote==='p1'?USER.p1:USER.p2;if(nn&&g.nom!==nn){g.nom=nn;chgM=true;}}});if(chgM)saveData('guests',GUESTS);}
+  {let chgM=false;GUESTS.forEach(g=>{if(g.marie){const nn=g.marie===2?USER.p2:USER.p1;if(nn&&g.nom!==nn){g.nom=nn;chgM=true;}}});if(chgM)saveData('guests',GUESTS);}
   const {doc,setDoc}=window.firebaseLib;
   try{await setDoc(doc(window.firebaseDB,'userData',window._activeDataDocId),{p1:USER.p1,p2:USER.p2,wDate:USER.wDate,email:USER.email},{merge:true});}catch(e){}
   if(np){
