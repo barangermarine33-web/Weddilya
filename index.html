@@ -1657,6 +1657,17 @@ async function loadUser(firebaseUser){
     return v;
   };
   GUESTS=pick('guests',[]);if(!Array.isArray(GUESTS))GUESTS=[];
+  // Les deux mariés sont ajoutés une seule fois à la liste des invités (prénoms saisis à l'inscription).
+  // Ils restent modifiables/supprimables ; ils servent notamment à les placer dans le plan de table.
+  if(!isSharedGuest && !pick('coupleSeededV1',false)){
+    const mkM=(nom,cote,role,i)=>({id:Date.now()+i,nom,email:'',adresse:'',cote,invitation:'envoyée',presence:'confirmée',role,regime:'Aucun',vinHonneur:false,age:'Adulte',seatTableId:null,seatIdx:null,marie:true});
+    const hasG=n=>GUESTS.some(g=>(g.nom||'').trim().toLowerCase()===String(n||'').trim().toLowerCase());
+    const addM=[];
+    if(data.p1&&!hasG(data.p1))addM.push(mkM(data.p1,'p1','Mariée',1));
+    if(data.p2&&!hasG(data.p2))addM.push(mkM(data.p2,'p2','Marié',2));
+    if(addM.length){GUESTS=[...addM,...GUESTS];saveData('guests',GUESTS);}
+    saveData('coupleSeededV1',true);
+  }
   BUDGET=pick('budget',[]);if(!Array.isArray(BUDGET))BUDGET=[];
   CHECKLIST=pick('tasks',[]);if(!Array.isArray(CHECKLIST))CHECKLIST=[];
   NOTES=pick('notes','');
@@ -4995,6 +5006,8 @@ async function saveSettingsPage(){
   const wDate=document.getElementById('set-date').value;
   const np=document.getElementById('set-pass').value;
   USER.p1=p1||USER.p1;USER.p2=p2||USER.p2;USER.wDate=wDate||USER.wDate;
+  // Garder les noms des mariés (dans la liste d'invités) alignés sur les prénoms modifiés
+  {let chgM=false;GUESTS.forEach(g=>{if(g.marie){const nn=g.cote==='p1'?USER.p1:USER.p2;if(nn&&g.nom!==nn){g.nom=nn;chgM=true;}}});if(chgM)saveData('guests',GUESTS);}
   const {doc,setDoc}=window.firebaseLib;
   try{await setDoc(doc(window.firebaseDB,'userData',window._activeDataDocId),{p1:USER.p1,p2:USER.p2,wDate:USER.wDate,email:USER.email},{merge:true});}catch(e){}
   if(np){
