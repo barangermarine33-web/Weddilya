@@ -2235,7 +2235,12 @@ function decodeXmlEntities(s){
 }
 
 // ─── Décompression ZIP minimale (entrées stored + deflate via DecompressionStream) ───
+// Lit d'abord le répertoire central du ZIP (fiable, y compris pour les exports Google Sheets/Excel), sinon parcours linéaire
 async function unzip(bytes){
+  try{ const f=await unzipViaCentral(bytes); if(Object.keys(f).length) return f; }catch(e){}
+  return await unzipLinear(bytes);
+}
+async function unzipLinear(bytes){
   const files={};
   const dv=new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   // Parcourir les "local file headers" (signature 0x04034b50)
