@@ -2818,6 +2818,7 @@ function renderSeating(){
     <div style="position:relative;">
       <div id="tp-visual" style="position:relative;background:#fff;border:1.5px solid var(--border);border-radius:16px;height:480px;overflow:auto;margin-bottom:20px;-webkit-overflow-scrolling:touch;"></div>
       <div style="position:absolute;top:10px;right:10px;display:flex;gap:6px;z-index:50;">
+        <button id="tp-eye" onclick="toggleTpBtns()" title="${tpHideBtns?'Afficher':'Masquer'} les boutons des tables" style="width:34px;height:34px;border-radius:50%;background:#fff;border:1.5px solid var(--pink);color:var(--pink-dark);font-family:'Lora',serif;font-size:18px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.15);display:flex;align-items:center;justify-content:center;line-height:1;padding:0;">${tpHideBtns?TP_EYEOFF:TP_EYE}</button>
         <button onclick="tpZoomOut()" title="Dézoomer" style="width:34px;height:34px;border-radius:50%;background:#fff;border:1.5px solid var(--pink);color:var(--pink-dark);font-family:'Lora',serif;font-size:18px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.15);display:flex;align-items:center;justify-content:center;line-height:1;padding:0;">−</button>
         <button onclick="tpZoomIn()" title="Zoomer" style="width:34px;height:34px;border-radius:50%;background:#fff;border:1.5px solid var(--pink);color:var(--pink-dark);font-family:'Lora',serif;font-size:18px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.15);display:flex;align-items:center;justify-content:center;line-height:1;padding:0;">+</button>
       </div>
@@ -2856,6 +2857,9 @@ function renderSeating(){
 // Visualisation dessinée — même géométrie que l'application
 let panMode=false;
 let tpZoom=1;
+let tpHideBtns=false;
+const TP_EYE='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>',TP_EYEOFF='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 19c-7 0-11-7-11-7a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 7 11 7a18.5 18.5 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+function toggleTpBtns(){tpHideBtns=!tpHideBtns;const b=document.getElementById('tp-eye');if(b){b.innerHTML=tpHideBtns?TP_EYEOFF:TP_EYE;b.title=(tpHideBtns?'Afficher':'Masquer')+' les boutons des tables';}drawPlanVisual();}
 function tpZoomIn(){tpZoom=Math.min(2,+(tpZoom+0.1).toFixed(2));drawPlanVisual();}
 function tpZoomOut(){tpZoom=Math.max(0.4,+(tpZoom-0.1).toFixed(2));drawPlanVisual();}
 function togglePanMode(){
@@ -2960,6 +2964,7 @@ function drawPlanVisual(){
     rotB.addEventListener('pointerdown',ev=>ev.stopPropagation());
     rotB.onclick=ev=>{ev.stopPropagation();t.rot=((t.rot||0)+15)%360;saveData('tables',TABLES);drawPlanVisual();};
     group.appendChild(rotB);
+    if(tpHideBtns){del.style.display='none';rotB.style.display='none';}
     inner.appendChild(group);
   });
   wrap.innerHTML='';
