@@ -2894,6 +2894,7 @@ function drawPlanVisual(){
       else if(isSq){const perSide=Math.ceil(n/4);const side=Math.floor(i/perSide);const idxOnSide=i%perSide;const realPerSide=(side===3)?(n-3*perSide):perSide;const step=SQ/(Math.max(realPerSide,1)+1);const pos=step*(idxOnSide+1);const off=SQ/2+GAP+SEAT/2;if(side===0){sx=cx-SQ/2+pos;sy=cy-off;}else if(side===1){sx=cx+off;sy=cy-SQ/2+pos;}else if(side===2){sx=cx-SQ/2+pos;sy=cy+off;}else{sx=cx-off;sy=cy-SQ/2+pos;}}
       else if(!isR&&!isSq&&n===10){if(i<4){const step=TW/5;sx=cx-TW/2+step*(i+1);sy=cy-(TH/2+GAP+SEAT/2);}else if(i<8){const idx=i-4;const step=TW/5;sx=cx-TW/2+step*(idx+1);sy=cy+(TH/2+GAP+SEAT/2);}else if(i===8){sx=cx-(TW/2+GAP+SEAT/2);sy=cy;}else{sx=cx+(TW/2+GAP+SEAT/2);sy=cy;}}
       else{const half=Math.ceil(n/2);const isTop=i<half;const cnt=isTop?half:(n-half);const idx=isTop?i:i-half;const step=TW/(Math.max(cnt,1)+1);sx=cx-TW/2+step*(idx+1);sy=isTop?cy-(TH/2+GAP+SEAT/2):cy+(TH/2+GAP+SEAT/2);}
+      const _rot=(t.rot||0)*Math.PI/180;if(_rot){const _dx=sx-cx,_dy=sy-cy;sx=cx+_dx*Math.cos(_rot)-_dy*Math.sin(_rot);sy=cy+_dx*Math.sin(_rot)+_dy*Math.cos(_rot);}
       const hidden=t.hiddenSeats.includes(i);
       const g=hidden?null:placed.find(x=>x.seatIdx===i);
       const seat=document.createElement('div');
@@ -2907,7 +2908,7 @@ function drawPlanVisual(){
     }
     const tbl=document.createElement('div');
     let w,h2,br;
-    if(isR){w=RND;h2=RND;br='50%';}else if(isSq){w=SQ;h2=SQ;br='10px';}else{w=TW;h2=TH;br='10px';}
+    if(isR){w=RND;h2=RND;br='50%';}else if(isSq){w=SQ;h2=SQ;br='10px';}else{const vt=(t.rot===90||t.rot===270);w=vt?TH:TW;h2=vt?TW:TH;br='10px';}
     tbl.style.cssText=`position:absolute;left:${cx-w/2}px;top:${cy-h2/2}px;width:${w}px;height:${h2}px;border-radius:${br};background:linear-gradient(135deg,#f5d4e0,#fff);border:2px solid #e89aac;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-family:'Lora',serif;font-size:9px;font-weight:700;color:#b84060;cursor:grab;user-select:none;padding:4px;touch-action:none;z-index:10;box-shadow:0 2px 10px rgba(184,64,96,.12);overflow:hidden;`;
     tbl.innerHTML=`<div style="width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.15;">${h(t.nom||'Table')}</div>
       <div style="display:flex;align-items:center;justify-content:center;gap:3px;margin-top:9px;">
@@ -2952,6 +2953,12 @@ function drawPlanVisual(){
     del.style.cssText=`position:absolute;left:128px;top:6px;width:22px;height:22px;border-radius:50%;background:#fff;border:1.5px solid var(--pink-light);color:var(--pink-dark);font-size:14px;line-height:1;cursor:pointer;z-index:25;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 2px 6px rgba(0,0,0,0.15);`;
     del.onclick=async ev=>{ev.stopPropagation();await deleteTable(t.id);};
     group.appendChild(del);
+    const rotB=document.createElement('button');
+    rotB.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg>';rotB.title='Faire pivoter la table';
+    rotB.style.cssText=`position:absolute;left:2px;top:6px;width:22px;height:22px;border-radius:50%;background:#fff;border:1.5px solid var(--pink-light);color:var(--pink-dark);cursor:pointer;z-index:25;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 2px 6px rgba(0,0,0,0.15);`;
+    rotB.addEventListener('pointerdown',ev=>ev.stopPropagation());
+    rotB.onclick=ev=>{ev.stopPropagation();t.rot=((t.rot||0)+90)%360;saveData('tables',TABLES);drawPlanVisual();};
+    group.appendChild(rotB);
     inner.appendChild(group);
   });
   wrap.innerHTML='';
@@ -3318,6 +3325,7 @@ async function exportPlanPDF(){
           sx=cx-TW/2+step*(idx+1);
           sy=isTop?(cy-TH/2-GAP-SEAT/2):(cy+TH/2+GAP+SEAT/2);
         }
+        const _rot=(t.rot||0)*Math.PI/180;if(_rot){const _dx=sx-cx,_dy=sy-cy;sx=cx+_dx*Math.cos(_rot)-_dy*Math.sin(_rot);sy=cy+_dx*Math.sin(_rot)+_dy*Math.cos(_rot);}
         const g=placed.find(x=>x.seatIdx===i);
         if(g){
           const seatColor=groupSeatColorRGB(g.cote); // #e8a0b0 / #a0b0e8 / #c0a0e8
@@ -3334,20 +3342,21 @@ async function exportPlanPDF(){
         }
       }
 
+      const _vt=(t.rot===90||t.rot===270), RW=_vt?TH:TW, RH=_vt?TW:TH;
       // ─── Table (même forme/dimensions que l'app) ───
       // ombre légère
       setFill(C_BD);
       if(isR){ pdf.circle(PX(cx)+0.6,PY(cy)+0.6,(RND/2)*scale,'F'); }
       else if(isSq){ pdf.roundedRect(PX(cx-SQ/2)+0.6,PY(cy-SQ/2)+0.6,SQ*scale,SQ*scale,1.5,1.5,'F'); }
-      else { pdf.roundedRect(PX(cx-TW/2)+0.6,PY(cy-TH/2)+0.6,TW*scale,TH*scale,1.5,1.5,'F'); }
+      else { pdf.roundedRect(PX(cx-RW/2)+0.6,PY(cy-RH/2)+0.6,RW*scale,RH*scale,1.5,1.5,'F'); }
       setFill(C_WH); setStroke(C_PK); pdf.setLineWidth(0.7);
       if(isR){ pdf.circle(PX(cx),PY(cy),(RND/2)*scale,'FD'); }
       else if(isSq){ pdf.roundedRect(PX(cx-SQ/2),PY(cy-SQ/2),SQ*scale,SQ*scale,1.5,1.5,'FD'); }
-      else { pdf.roundedRect(PX(cx-TW/2),PY(cy-TH/2),TW*scale,TH*scale,1.5,1.5,'FD'); }
+      else { pdf.roundedRect(PX(cx-RW/2),PY(cy-RH/2),RW*scale,RH*scale,1.5,1.5,'FD'); }
       // Nom
       setText(C_TM); pdf.setFont('times','bold');
       pdf.setFontSize(Math.max(7,11*scale));
-      pdf.text(t.nom||'Table',PX(cx),PY(cy),{align:'center',baseline:'middle',maxWidth:(isR?RND:isSq?SQ:TW)*scale*0.95});
+      pdf.text(t.nom||'Table',PX(cx),PY(cy),{align:'center',baseline:'middle',maxWidth:(isR?RND:isSq?SQ:RW)*scale*0.95});
     });
 
     // ─── PAGE 2+ : liste des invités par table (toutes ensemble, en cartes) ───
